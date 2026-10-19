@@ -1,12 +1,8 @@
 # Roadmap
 
-tey/starter is a set of features for tenant-aware Laravel apps. You can adopt them into the app you already have, or start a new app with all of them.
+tey/starter is the new-app template for tenant-aware Laravel apps: `laravel new app --using=tey/starter`. It is built on [tey/kit](https://github.com/teylabs/kit), the library that adds the same features to an app you already have (`composer require tey/kit` and `php artisan kit:add <features>`).
 
-- **Existing app:** `composer require tey/starter`, then `php artisan starter:adopt <features>`. Each feature declares the files it owns, what it requires and what it conflicts with. Adoption inspects your app, shows a plan and never overwrites your edits.
-- **New app:** `laravel new app --using=tey/starter` installs every feature.
-- **Upgrades:** `php artisan starter:maintain` upgrades what you adopted the same way.
-
-1.0 means the feature catalog, adoption and upgrade paths, public API and support policy are documented and frozen.
+1.0 means a new app gets every kit feature, upgrades with `kit:update` without overwriting your changes, and the template's public API and support policy are documented and frozen.
 
 **Versions are milestones, not dates.**
 
@@ -17,7 +13,7 @@ tey/starter is a set of features for tenant-aware Laravel apps. You can adopt th
 
 ## The countdown to 1.0
 
-- [ ] **[v0.3 — Adopt features into an existing app](https://github.com/teylabs/starter/milestone/8).** A feature catalog with per-feature manifests, and `starter:adopt` to inspect, plan and apply features into an app that didn't start from the starter, proven in a mature production app.
+- [ ] **[v0.3 — Built on tey/kit](https://github.com/teylabs/starter/milestone/8).** The template becomes tey/kit with every feature added, checked in CI against `kit:add --all`; feature adoption for existing apps lives in tey/kit.
 - [ ] **[v0.4 — Production first run](https://github.com/teylabs/starter/milestone/2).** A fresh install creates its first operator and verifies email, with no default credentials.
 - [ ] **[v0.5 — Real browsers and databases](https://github.com/teylabs/starter/milestone/3).** Browser, mobile, accessibility and PostgreSQL concurrency acceptance, with full hosted CI.
 - [ ] **[v0.6 — Wider isolation](https://github.com/teylabs/starter/milestone/4).** Jobs, files, cache and search stay inside their workspace.
