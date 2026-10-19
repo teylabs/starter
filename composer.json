@@ -37,6 +37,7 @@
     },
     "scripts": {
         "fixture:check": [
+            "@php bin/check.php FoundationCheck",
             "@php bin/check.php BoundaryCheck",
             "@php bin/check.php IntentCheck",
             "@php bin/check.php OwnershipCheck",

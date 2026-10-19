@@ -25,6 +25,7 @@ jobs:
           coverage: none
       - run: composer install --no-interaction
       - run: vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+      - run: composer fixture:check
 
   node:
     name: Node
