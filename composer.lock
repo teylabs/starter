@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89bed446a97b4ac2420df984a7001e50",
+    "content-hash": "a887dc53ecca704395caa639afb09acd",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -194,6 +194,83 @@
                 }
             ],
             "time": "2026-09-06T14:11:38+00:00"
+        },
+        {
+            "name": "composer/semver",
+            "version": "3.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/composer/semver.git",
+                "reference": "528948210cc46f967a4b98e83b19e76f2b504993"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/composer/semver/zipball/528948210cc46f967a4b98e83b19e76f2b504993",
+                "reference": "528948210cc46f967a4b98e83b19e76f2b504993",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.2 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.11",
+                "symfony/phpunit-bridge": "^3 || ^7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Composer\\Semver\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nils Adermann",
+                    "email": "naderman@naderman.de",
+                    "homepage": "http://www.naderman.de"
+                },
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be"
+                },
+                {
+                    "name": "Rob Bast",
+                    "email": "rob.bast@gmail.com",
+                    "homepage": "http://robbast.nl"
+                }
+            ],
+            "description": "Version comparison library that offers utilities, version constraint parsing and validation.",
+            "keywords": [
+                "semantic",
+                "semver",
+                "validation",
+                "versioning"
+            ],
+            "support": {
+                "irc": "ircs://irc.libera.chat:6697/composer",
+                "issues": "https://github.com/composer/semver/issues",
+                "source": "https://github.com/composer/semver/tree/3.5.1"
+            },
+            "funding": [
+                {
+                    "url": "https://packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/composer",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-10-05T13:12:12+00:00"
         },
         {
             "name": "dasprid/enum",
@@ -8989,16 +9066,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.7.1",
+            "version": "v0.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "3d2923f1eee704a6c640df948a1ea60dd9429707"
+                "reference": "b552bfcb11821fa4e425789a0b7165f58ac9b124"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/3d2923f1eee704a6c640df948a1ea60dd9429707",
-                "reference": "3d2923f1eee704a6c640df948a1ea60dd9429707",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/b552bfcb11821fa4e425789a0b7165f58ac9b124",
+                "reference": "b552bfcb11821fa4e425789a0b7165f58ac9b124",
                 "shasum": ""
             },
             "require": {
@@ -9006,7 +9083,7 @@
                 "php": "~8.4.0||~8.5.0",
                 "spatie/laravel-package-tools": "^1.93",
                 "spatie/laravel-permission": "^8.3",
-                "tey/mod": "^0.6.1 || ^0.7"
+                "tey/mod": "^0.6.1 || ^0.7 || ^0.8"
             },
             "require-dev": {
                 "larastan/larastan": "^3.12",
@@ -9069,7 +9146,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.7.1"
+                "source": "https://github.com/teylabs/concierge/tree/v0.7.2"
             },
             "funding": [
                 {
@@ -9077,20 +9154,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-13T14:15:57+00:00"
+            "time": "2026-10-19T14:56:36+00:00"
         },
         {
             "name": "tey/mod",
-            "version": "v0.7.2",
+            "version": "v0.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/mod.git",
-                "reference": "09b9c808167ad31f8eeb1e5078722ce3c04be07d"
+                "reference": "cf6546049ad6094d6dda1859ff10733632ffaee5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/mod/zipball/09b9c808167ad31f8eeb1e5078722ce3c04be07d",
-                "reference": "09b9c808167ad31f8eeb1e5078722ce3c04be07d",
+                "url": "https://api.github.com/repos/teylabs/mod/zipball/cf6546049ad6094d6dda1859ff10733632ffaee5",
+                "reference": "cf6546049ad6094d6dda1859ff10733632ffaee5",
                 "shasum": ""
             },
             "require": {
@@ -9126,6 +9203,17 @@
                     "providers": [
                         "Tey\\Mod\\ModServiceProvider"
                     ]
+                },
+                "tey-standards": {
+                    "ci": {
+                        "drafts": "full",
+                        "enforce": true,
+                        "distribution": "package",
+                        "default-branches": [
+                            "main",
+                            "*.x"
+                        ]
+                    }
                 }
             },
             "autoload": {
@@ -9174,7 +9262,78 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-13T19:56:57+00:00"
+            "time": "2026-10-19T14:29:39+00:00"
+        },
+        {
+            "name": "tey/starter-blueprint",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/teylabs/starter-blueprint.git",
+                "reference": "58284fbd4646e7659d4ac847914fc1e155870429"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/teylabs/starter-blueprint/zipball/58284fbd4646e7659d4ac847914fc1e155870429",
+                "reference": "58284fbd4646e7659d4ac847914fc1e155870429",
+                "shasum": ""
+            },
+            "require": {
+                "composer/semver": "^3.4",
+                "illuminate/support": "^13.0",
+                "php": "~8.4.0 || ~8.5.0",
+                "tey/mod": "^0.8"
+            },
+            "require-dev": {
+                "laravel/framework": "^13.0",
+                "laravel/mcp": "^1.0",
+                "laravel/pennant": "^1.0",
+                "spatie/laravel-multitenancy": "^4.2",
+                "spatie/laravel-settings": "^3.9",
+                "tey/concierge": "^0.7.2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Tey\\StarterBlueprint\\BlueprintServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Tey\\StarterBlueprint\\": "src/"
+                }
+            },
+            "scripts": {
+                "test:scaffold": [
+                    "@php tests/ScaffoldCheck.php vendor/autoload.php"
+                ],
+                "test:features": [
+                    "@php tests/FeatureCheck.php vendor/autoload.php"
+                ],
+                "test:lifecycle": [
+                    "@php tests/LifecycleCheck.php vendor/autoload.php"
+                ],
+                "test:resources": [
+                    "@php tests/ResourceCheck.php vendor/autoload.php"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Versioned application bindings and delivery recipes for the Tey Labs starter.",
+            "support": {
+                "source": "https://github.com/teylabs/starter-blueprint/tree/v0.1.0",
+                "issues": "https://github.com/teylabs/starter-blueprint/issues"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/jaspertey"
+                }
+            ],
+            "time": "2026-10-19T15:06:37+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -9710,83 +9869,6 @@
                 }
             ],
             "time": "2026-10-16T12:01:22+00:00"
-        },
-        {
-            "name": "composer/semver",
-            "version": "3.5.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/semver.git",
-                "reference": "528948210cc46f967a4b98e83b19e76f2b504993"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/528948210cc46f967a4b98e83b19e76f2b504993",
-                "reference": "528948210cc46f967a4b98e83b19e76f2b504993",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.3.2 || ^7.0 || ^8.0"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^1.11",
-                "symfony/phpunit-bridge": "^3 || ^7"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "3.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\Semver\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nils Adermann",
-                    "email": "naderman@naderman.de",
-                    "homepage": "http://www.naderman.de"
-                },
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                },
-                {
-                    "name": "Rob Bast",
-                    "email": "rob.bast@gmail.com",
-                    "homepage": "http://robbast.nl"
-                }
-            ],
-            "description": "Version comparison library that offers utilities, version constraint parsing and validation.",
-            "keywords": [
-                "semantic",
-                "semver",
-                "validation",
-                "versioning"
-            ],
-            "support": {
-                "irc": "ircs://irc.libera.chat:6697/composer",
-                "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.5.1"
-            },
-            "funding": [
-                {
-                    "url": "https://packagist.com",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/composer",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-10-05T13:12:12+00:00"
         },
         {
             "name": "fidry/cpu-core-counter",

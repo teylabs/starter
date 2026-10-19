@@ -6,7 +6,7 @@ The starter is a Laravel host application. Maintained packages own their jobs; t
 
 | Package | Job |
 | --- | --- |
-| `tey/concierge` (pinned to 0.7.1) | Workspace membership, ownership, account state and tenant/member invitations, with its own migrations. |
+| `tey/concierge` (pinned to 0.7.2) | Workspace membership, ownership, account state and tenant/member invitations, with its own migrations. |
 | `spatie/laravel-multitenancy` | The current workspace (tenant) context. |
 | `spatie/laravel-permission` (via Concierge) | Roles within a workspace. |
 | `spatie/laravel-settings` | Typed per-workspace settings (`WorkspaceSettings`). |
@@ -17,7 +17,8 @@ The starter is a Laravel host application. Maintained packages own their jobs; t
 | `laravel/passport` | OAuth authorization code with PKCE and explicit consent. |
 | `laravel/mcp` | The MCP web server and its tools. |
 | `lorisleiva/laravel-actions` | Used by `WorkspaceProfile`. |
-| `tey/mod` | Installed, not yet adopted by a feature. |
+| `tey/mod` | The lifecycle Maintenance API behind `starter:maintain`. |
+| `tey/starter-blueprint` | The starter's versioned blueprint, its features and the `starter:maintain` command; bound to the host by `StarterLifecycle`. |
 | `glhd/gretel`, `spatie/laravel-query-builder`, Pest, Larastan, Boost, Pail, Pao | Installed, not yet adopted by a feature. |
 | `laravel/pint` | Code style. |
 

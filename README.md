@@ -21,14 +21,14 @@ To run the app, copy `.env.example` to `.env`, set a key and database, then run 
 
 ## Status
 
-The first release (v0.2) is not tagged, and install and upgrade tooling is planned, not available. Not yet proven: production first run, browser acceptance, PostgreSQL concurrency, jobs and files. See [ROADMAP.md](ROADMAP.md).
+The first release (v0.2) is not tagged. `php artisan starter:maintain` plans, applies and resumes blueprint installs and upgrades through released `tey/mod` 0.8 and `tey/starter-blueprint` 0.1, preserving host-owned code and refusing conflicts (see [lifecycle](docs/lifecycle.md)). Not yet available: `laravel new --using=tey/starter` (neither the starter nor the blueprint is on Packagist yet) and adopting features into an existing app (v0.3). Not yet proven: production first run, browser acceptance, PostgreSQL concurrency, jobs and files. See [ROADMAP.md](ROADMAP.md).
 
 ## Docs
 
 - [Architecture](docs/architecture.md): packages and the job each owns
 - [Operations](docs/operations.md): settings and Notes, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
-- [Lifecycle](docs/lifecycle.md): clean-schema install today, upgrades planned
+- [Lifecycle](docs/lifecycle.md): clean-schema install and `starter:maintain`
 - [Testing](docs/testing.md): gates and focused checks
 - [llms.txt](llms.txt): index for coding agents
 - [AGENTS.md](AGENTS.md): contributor and agent conventions

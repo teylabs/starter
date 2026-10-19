@@ -36,6 +36,7 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 | `InertiaTransportTest.php` | Inertia components and props, navigation, redirects, validation and error outcomes |
 | `NotesTransportTest.php` | Notes CRUD over session HTTP: tenant refusal, retries, stale versions, viewer and capability refusal, validation, audit rollback |
 | `McpTransportTest.php` | OAuth consent, code and token exchange, MCP JSON-RPC for settings and Notes, scope, origin, expiry and revocation limits |
+| `LifecycleTest.php` | `starter:maintain` through released Mod 0.8 and starter-blueprint 0.1 in temp checkouts: plan/apply install, no-op retry, upgrade keeping host-owned edits, conflict refusal, mismatched or stale original refusal, fail-closed operation check, the console command |
 | `MigrationTest.php` | Migrating an empty database, ordering, no seeded data, repeat runs |
 
 `composer fixture:check` runs `bin/check.php` for `FoundationCheck`, `BoundaryCheck`, `IntentCheck`, `OwnershipCheck` and `ConciergeCheck`.
@@ -52,4 +53,4 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 
 ## Not covered
 
-These checks use the HTTP kernel with synthetic data. No browser, responsive, keyboard, visual or cookie-policy acceptance. No running network server or client. No PostgreSQL concurrency, jobs, files, providers, production install or rollback. Say so rather than implying coverage.
+These checks use the HTTP kernel with synthetic data. No browser, responsive, keyboard, visual or cookie-policy acceptance. No running network server or client. No PostgreSQL concurrency, jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published starter upgrade. Say so rather than implying coverage.

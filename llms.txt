@@ -6,7 +6,7 @@
 - [Architecture](docs/architecture.md): the packages and the job each one owns
 - [Operations](docs/operations.md): settings and Notes shared operations, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
-- [Lifecycle](docs/lifecycle.md): clean-schema install today; upgrades are planned
+- [Lifecycle](docs/lifecycle.md): clean-schema install and `starter:maintain` blueprint upgrades
 - [Testing](docs/testing.md): the gates and focused checks
 - [Roadmap](ROADMAP.md): what is shipped and what is planned
 - [Agent conventions](AGENTS.md): rules for contributors and coding agents

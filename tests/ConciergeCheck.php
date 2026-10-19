@@ -22,7 +22,7 @@ use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Concierge\Registration\Registration;
 
 check('Concierge released native membership is the only membership engine', function (): void {
-    same('0.7.1.0', InstalledVersions::getVersion('tey/concierge'));
+    same('0.7.2.0', InstalledVersions::getVersion('tey/concierge'));
     same(false, Schema::hasTable('memberships'));
     same(2, DB::table('concierge_ownerships')->count());
     same(3, DB::table('concierge_memberships')->count());
