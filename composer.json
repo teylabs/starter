@@ -2,7 +2,7 @@
     "name": "tey/starter",
     "description": "Tenant-aware Laravel starter built for the Tey Labs fleet.",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "require": {
         "php": "^8.4",
         "glhd/gretel": "^1.10",
@@ -44,7 +44,17 @@
             "@php bin/check.php OwnershipCheck",
             "@php bin/check.php ConciergeCheck"
         ],
-        "types:generate": "@php bin/generate-types.php"
+        "types:generate": "@php bin/generate-types.php",
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
     },
     "config": {
         "sort-packages": true,
