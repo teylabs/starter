@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWorkspaces;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Tey\Concierge\Concerns\InteractsWithMemberships;
 use Tey\Concierge\Contracts\Member;
 
 final class User extends Authenticatable implements Member, OAuthenticatable
 {
-    use HasApiTokens, HasRoles, InteractsWithMemberships;
-
-    protected $guard_name = 'web';
+    use HasApiTokens, HasWorkspaces;
 
     protected $guarded = [];
 

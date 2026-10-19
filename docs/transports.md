@@ -20,7 +20,7 @@ OAuth consent and connection approval are Blade views, not Inertia pages. No SSR
 
 ## MCP and OAuth
 
-`routes/mcp.php` registers Passport OAuth routes without dynamic client registration, and the MCP server at `/mcp/connections/{connection}`.
+`routes/starter/mcp.php` registers Passport OAuth routes without dynamic client registration, and the MCP server at `/mcp/connections/{connection}`.
 
 ### Flow
 

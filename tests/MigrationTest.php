@@ -48,7 +48,12 @@ final class MigrationTest extends TestCase
             'create_concierge_tables',
             'create_concierge_tenant_invitations_table',
             'create_concierge_user_accounts_table',
-            'create_starter_domain_tables',
+            'create_starter_access_tables',
+            'create_starter_core_tables',
+            'create_starter_mcp_tables',
+            'create_starter_notes_tables',
+            'create_starter_settings_tables',
+            'create_starter_workspaces_tables',
         ], $migrations);
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($migrations, DB::table('migrations')->orderBy('id')->pluck('migration')->all());

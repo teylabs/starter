@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+#### Changed
+
+- Each starter feature now plugs into the shared seams through a `StarterRegistry`: route files under `routes/starter/`, MCP tools, workspace navigation, token scopes, capabilities and error codes. Behaviour, routes and schema are unchanged (#15)
+- The single `create_starter_domain_tables` migration is split into one migration per feature. Fresh installs get the same schema; databases that already ran the old migration skip the new ones (#15)
+- `User` takes workspace membership and roles from a `HasWorkspaces` trait (#15)
+
 ## v0.2.1
 
 #### Fixed

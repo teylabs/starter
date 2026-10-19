@@ -11,7 +11,7 @@ final class TransportProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Passport::tokensCan(['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, update and delete workspace notes']);
+        Passport::tokensCan(app(StarterRegistry::class)->tokenScopes());
         Passport::tokensExpireIn(now()->addHour());
         Passport::authorizationView('auth.authorize');
         Fortify::loginView(fn () => Inertia::render('Auth/Login', ['title' => 'Sign in']));
