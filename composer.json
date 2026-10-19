@@ -49,10 +49,5 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": false
-    },
-    "repositories": [{
-        "name": "starter-blueprint",
-        "type": "vcs",
-        "url": "https://github.com/teylabs/starter-blueprint"
-    }]
+    }
 }

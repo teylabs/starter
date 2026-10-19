@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a887dc53ecca704395caa639afb09acd",
+    "content-hash": "3391fb124a28061bf319882c7d5615c5",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -9305,32 +9305,19 @@
                     "Tey\\StarterBlueprint\\": "src/"
                 }
             },
-            "scripts": {
-                "test:scaffold": [
-                    "@php tests/ScaffoldCheck.php vendor/autoload.php"
-                ],
-                "test:features": [
-                    "@php tests/FeatureCheck.php vendor/autoload.php"
-                ],
-                "test:lifecycle": [
-                    "@php tests/LifecycleCheck.php vendor/autoload.php"
-                ],
-                "test:resources": [
-                    "@php tests/ResourceCheck.php vendor/autoload.php"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "Versioned application bindings and delivery recipes for the Tey Labs starter.",
             "support": {
-                "source": "https://github.com/teylabs/starter-blueprint/tree/v0.1.0",
-                "issues": "https://github.com/teylabs/starter-blueprint/issues"
+                "issues": "https://github.com/teylabs/starter-blueprint/issues",
+                "source": "https://github.com/teylabs/starter-blueprint/tree/v0.1.0"
             },
             "funding": [
                 {
-                    "type": "github",
-                    "url": "https://github.com/jaspertey"
+                    "url": "https://github.com/jaspertey",
+                    "type": "github"
                 }
             ],
             "time": "2026-10-19T15:06:37+00:00"
