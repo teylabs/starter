@@ -17,4 +17,3 @@
 - [Conformance](docs/conformance.json): acceptance scenario dispositions
 - [Feature transports](docs/feature-transports.json): which operation is reachable over which transport
 - [Generation manifest](docs/generation-manifest.json): generated files
-- [Source inventory](docs/source-inventory.json): source inventory

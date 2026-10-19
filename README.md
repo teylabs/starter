@@ -33,4 +33,4 @@ The first release (v0.2) is not tagged, and install and upgrade tooling is plann
 - [llms.txt](llms.txt): index for coding agents
 - [AGENTS.md](AGENTS.md): contributor and agent conventions
 
-Machine-readable maps live in `docs/*.json`: `package-map.json`, `conformance.json`, `feature-transports.json`, `generation-manifest.json` and `source-inventory.json`.
+Machine-readable maps live in `docs/*.json`: `package-map.json`, `conformance.json`, `feature-transports.json` and `generation-manifest.json`.
