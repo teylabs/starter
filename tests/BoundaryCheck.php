@@ -1,8 +1,8 @@
 <?php
 
 require __DIR__.'/FoundationCheck.php';
-use App\Operations\ComplimentaryAccess;
-use App\Support\Principal;
+use App\Starter\Access\Operations\ComplimentaryAccess;
+use App\Starter\Core\Principal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Laravel\Pennant\Feature;

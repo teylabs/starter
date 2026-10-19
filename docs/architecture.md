@@ -24,11 +24,23 @@ The starter is a Laravel host application. Maintained packages own their jobs; t
 
 ## Host layout
 
-- `app/Operations`: shared operations, one per job. `WorkspaceProfile` (settings), `WorkspaceNotes`, `WorkspaceConnection` (MCP connection approval and revocation), `ComplimentaryAccess`, `ProvisionWorkspace`, `AcceptWorkspaceInvitation`.
-- `app/Support`: `Access` (the one authorization check), `Audit`, `Principal`, `TenantBoundary`, `PageShell`, and the service providers.
-- `app/Http`: session controllers and middleware. `app/Mcp`: the MCP server and its seven tools. `app/Adapters`: the settings UI and MCP adapters.
-- `app/Data`: Data objects exposed to clients. `app/Settings`: `WorkspaceSettings`.
-- `resources/js`: Inertia/Vue pages, layout and components. `resources/views`: Blade views for OAuth consent and connection approval.
+Starter code is split into features under `app/Starter/<Feature>`, with their pages under `resources/js/starter/<feature>`. A feature uses only itself and the features it requires; `tests/FeatureGraphTest.php` enforces this.
+
+| Feature | Requires | Contents |
+|---|---|---|
+| `Core` | none | `Principal`, `Audit`, `StarterRegistry` (the shared seams) |
+| `Workspaces` | Core | `Workspace`, `TenantBoundary`, `WorkspaceCache`, the `HasWorkspaces` user trait, provisioning, invitation acceptance, the workspaces controller |
+| `Access` | Workspaces | `Access` (the one authorization check), `ComplimentaryAccess`, the Pennant capabilities |
+| `Settings` | Workspaces, Access | `WorkspaceSettings`, `WorkspaceProfile`, `SettingsView`, the settings UI adapter and controller |
+| `Mcp` | Workspaces, Access | the MCP server, `Context`, connection approval and revocation, Passport setup |
+| `Notes` | Workspaces, Access | `Note`, `WorkspaceNotes`, the Data objects and the session controller |
+| `SessionUi` | Workspaces, Access | `PageShell`, `ShellData`, the Inertia middleware, the sign-in view; the layout and shared pages |
+
+Optional integrations live in `<Feature>/Integrations/<Other>`, the one place a feature may use a feature it doesn't require: the settings and Notes MCP tools are under `Settings/Integrations/Mcp` and `Notes/Integrations/Mcp`. `App\Starter\FeatureProvider` is the composition root: it registers each feature's provider and its routes, tools, navigation, scopes, capabilities, provisioning steps and error codes. A feature's pages may import the session-ui layout.
+
+The host keeps `App\Models\User`, `bootstrap/`, `routes/web.php`, `resources/js/app.ts` and the lifecycle binding in `app/Support`.
+
+- `resources/views`: Blade views for OAuth consent and connection approval.
 - `database/migrations`: the clean schema. See [lifecycle.md](lifecycle.md).
 - `config/foundation.php`: which workspace capabilities are on.
 

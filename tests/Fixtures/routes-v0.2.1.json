@@ -24,7 +24,7 @@
     "GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS|QUERY / web",
     "POST login web,guest:web",
     "POST logout web,auth:web",
-    "POST mcp/connections/{connection} Laravel\\Mcp\\Server\\Middleware\\ReorderJsonAccept,Laravel\\Mcp\\Server\\Middleware\\ValidateMcpHeaders,Laravel\\Mcp\\Server\\Middleware\\AddWwwAuthenticateHeader,auth:api,concierge.active,App\\Http\\Middleware\\BindMcpConnection",
+    "POST mcp/connections/{connection} Laravel\\Mcp\\Server\\Middleware\\ReorderJsonAccept,Laravel\\Mcp\\Server\\Middleware\\ValidateMcpHeaders,Laravel\\Mcp\\Server\\Middleware\\AddWwwAuthenticateHeader,auth:api,concierge.active,App\\Starter\\Mcp\\Http\\Middleware\\BindMcpConnection",
     "POST oauth/authorize web,auth:web,concierge.active",
     "POST oauth/device/authorize web,auth:web",
     "POST oauth/device/code throttle",

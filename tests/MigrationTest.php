@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\User;
-use App\Models\Workspace;
-use App\Operations\AcceptWorkspaceInvitation;
-use App\Operations\WorkspaceNotes;
-use App\Operations\WorkspaceProfile;
-use App\Support\Principal;
-use App\Support\TenantBoundary;
+use App\Starter\Core\Principal;
+use App\Starter\Notes\Operations\WorkspaceNotes;
+use App\Starter\Settings\Operations\WorkspaceProfile;
+use App\Starter\Workspaces\Models\Workspace;
+use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
+use App\Starter\Workspaces\TenantBoundary;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;

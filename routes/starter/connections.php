@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\ConnectionController;
+use App\Starter\Mcp\Http\ConnectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/workspaces/{workspace}/connections', [ConnectionController::class, 'store'])->whereNumber('workspace')->middleware(['auth:web', 'concierge.active']);

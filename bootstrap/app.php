@@ -1,11 +1,9 @@
 <?php
 
-use App\Http\Middleware\HandleInertiaRequests;
-use App\Support\FeatureProvider;
-use App\Support\FoundationProvider;
+use App\Starter\Core\StarterRegistry;
+use App\Starter\FeatureProvider;
+use App\Starter\SessionUi\Http\Middleware\HandleInertiaRequests;
 use App\Support\InstallProvider;
-use App\Support\StarterRegistry;
-use App\Support\TransportProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -24,7 +22,7 @@ $app = Application::configure(basePath: dirname(__DIR__))->withMiddleware(fn ($m
             return Inertia::render('Error', ['status' => $status, 'message' => $registry->message($e->getMessage()) ?? 'This request is unavailable. Your access or the resource may have changed.', 'recovery_url' => '/workspaces', 'recovery_label' => 'Return to your workspaces'])->toResponse($request)->setStatusCode($status);
         }
     });
-})->withProviders([FeatureProvider::class, InstallProvider::class, FoundationProvider::class, TransportProvider::class])->create();
+})->withProviders([FeatureProvider::class, InstallProvider::class])->create();
 $app->make(Kernel::class)->bootstrap();
 
 return $app;

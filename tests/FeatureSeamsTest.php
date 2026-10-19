@@ -1,13 +1,13 @@
 <?php
 
-use App\Mcp\CreateNote;
-use App\Mcp\DeleteNote;
-use App\Mcp\ListNotes;
-use App\Mcp\ReadNote;
-use App\Mcp\ReadSettings;
-use App\Mcp\UpdateNote;
-use App\Mcp\UpdateSettings;
-use App\Support\StarterRegistry;
+use App\Starter\Core\StarterRegistry;
+use App\Starter\Notes\Integrations\Mcp\CreateNote;
+use App\Starter\Notes\Integrations\Mcp\DeleteNote;
+use App\Starter\Notes\Integrations\Mcp\ListNotes;
+use App\Starter\Notes\Integrations\Mcp\ReadNote;
+use App\Starter\Notes\Integrations\Mcp\UpdateNote;
+use App\Starter\Settings\Integrations\Mcp\ReadSettings;
+use App\Starter\Settings\Integrations\Mcp\UpdateSettings;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;

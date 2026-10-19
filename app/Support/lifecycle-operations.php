@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Workspace;
-use App\Support\TenantBoundary;
+use App\Starter\Workspaces\Models\Workspace;
+use App\Starter\Workspaces\TenantBoundary;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
