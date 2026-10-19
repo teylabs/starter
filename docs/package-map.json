@@ -63,15 +63,21 @@
     },
     {
       "package": "tey/concierge",
-      "constraint": "0.7.1",
-      "locked": "v0.7.1",
+      "constraint": "0.7.2",
+      "locked": "v0.7.2",
       "state": "executed-focused"
     },
     {
       "package": "tey/mod",
-      "constraint": "^0.7.2",
-      "locked": "v0.7.2",
-      "state": "installed-not-feature-accepted"
+      "constraint": "^0.8",
+      "locked": "v0.8.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "tey/starter-blueprint",
+      "constraint": "^0.1",
+      "locked": "v0.1.0",
+      "state": "executed-focused"
     },
     {
       "package": "larastan/larastan",

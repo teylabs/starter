@@ -17,8 +17,9 @@
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
-        "tey/concierge": "0.7.1",
-        "tey/mod": "^0.7.2"
+        "tey/concierge": "0.7.2",
+        "tey/mod": "^0.8",
+        "tey/starter-blueprint": "^0.1"
     },
     "require-dev": {
         "larastan/larastan": "^3.9",
