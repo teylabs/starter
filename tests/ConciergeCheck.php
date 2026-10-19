@@ -2,10 +2,10 @@
 
 require __DIR__.'/FoundationCheck.php';
 use App\Models\User;
-use App\Models\Workspace;
-use App\Operations\AcceptWorkspaceInvitation;
-use App\Operations\ComplimentaryAccess;
-use App\Support\Principal;
+use App\Starter\Access\Operations\ComplimentaryAccess;
+use App\Starter\Core\Principal;
+use App\Starter\Workspaces\Models\Workspace;
+use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Composer\InstalledVersions;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

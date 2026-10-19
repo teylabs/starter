@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Note;
 use App\Models\User;
-use App\Models\Workspace;
-use App\Operations\AcceptWorkspaceInvitation;
-use App\Support\Principal;
+use App\Starter\Core\Principal;
+use App\Starter\Notes\Models\Note;
+use App\Starter\Workspaces\Models\Workspace;
+use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

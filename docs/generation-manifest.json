@@ -7,7 +7,7 @@
     "command": "composer types:generate"
   },
   "generated": {
-    "resources/js/types.generated.d.ts": "a5215d390a48cdd08fbc9ba4d9b8b227540d69b72004949f0905fadf98726acb"
+    "resources/js/types.generated.d.ts": "5f32f4814757a617aeefc331dff89a2f5f5c82d279b858db7086419206f49f62"
   },
   "host_owned": [
     "app/",

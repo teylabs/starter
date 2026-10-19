@@ -3,11 +3,11 @@
 require __DIR__.'/environment.php';
 require dirname(__DIR__).'/bootstrap/app.php';
 require dirname(__DIR__).'/database/fixture.php';
-use App\Adapters\SettingsUi;
-use App\Models\Workspace;
-use App\Operations\ComplimentaryAccess;
-use App\Support\Access;
-use App\Support\Principal;
+use App\Starter\Access\Access;
+use App\Starter\Access\Operations\ComplimentaryAccess;
+use App\Starter\Core\Principal;
+use App\Starter\Settings\Adapters\SettingsUi;
+use App\Starter\Workspaces\Models\Workspace;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 

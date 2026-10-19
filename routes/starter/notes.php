@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\NoteController;
+use App\Starter\Notes\Http\NoteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:web', 'concierge.active'])->prefix('workspaces/{workspace}')->whereNumber('workspace')->group(function (): void {

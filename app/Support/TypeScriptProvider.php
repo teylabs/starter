@@ -12,7 +12,7 @@ final class TypeScriptProvider extends TypeScriptTransformerApplicationServicePr
     protected function configure(TypeScriptTransformerConfigFactory $config): void
     {
         $config->transformer(AttributedClassTransformer::class)
-            ->transformDirectories(app_path('Data'))
+            ->transformDirectories(app_path('Starter'))
             ->outputDirectory(resource_path('js'))
             ->writer(new GlobalNamespaceWriter('types.generated.d.ts'))
             ->withoutManifest();

@@ -14,7 +14,7 @@ Fortify handles password login, throttling and logout. Registration is closed an
 | `POST /tenant-invitations/accept` | Accept a workspace invitation |
 | `GET`/`POST /workspaces/{workspace}/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
 
-Pages are Inertia/Vue (`resources/js/pages`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
+Pages are Inertia/Vue (`resources/js/starter/<feature>/pages`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
 
 OAuth consent and connection approval are Blade views, not Inertia pages. No SSR service is enabled.
 

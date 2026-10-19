@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Middleware\BindMcpConnection;
-use App\Mcp\WorkspaceServer;
+use App\Starter\Mcp\Http\Middleware\BindMcpConnection;
+use App\Starter\Mcp\WorkspaceServer;
 use Illuminate\Support\Facades\Route;
 use Laravel\Mcp\Facades\Mcp;
 

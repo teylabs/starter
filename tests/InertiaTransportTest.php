@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
-use App\Models\Workspace;
+use App\Starter\SessionUi\Http\Middleware\HandleInertiaRequests;
+use App\Starter\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

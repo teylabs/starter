@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\WorkspaceController;
+use App\Starter\Workspaces\Http\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:web', 'concierge.active'])->group(function (): void {
