@@ -2,7 +2,7 @@
     "name": "tey/starter",
     "description": "Tenant-aware Laravel starter built for the Tey Labs fleet.",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "require": {
         "php": "^8.4",
         "glhd/gretel": "^1.10",

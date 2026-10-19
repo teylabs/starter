@@ -23,6 +23,10 @@ To run the app, copy `.env.example` to `.env`, set a key and database, then run 
 
 The first release (v0.2) is not tagged. `php artisan starter:maintain` plans, applies and resumes blueprint installs and upgrades through released `tey/mod` 0.8 and `tey/starter-blueprint` 0.1, preserving host-owned code and refusing conflicts (see [lifecycle](docs/lifecycle.md)). Not yet available: `laravel new --using=tey/starter` (neither the starter nor the blueprint is on Packagist yet) and adopting features into an existing app (v0.3). Not yet proven: production first run, browser acceptance, PostgreSQL concurrency, jobs and files. See [ROADMAP.md](ROADMAP.md).
 
+## License
+
+MIT, see [LICENSE](LICENSE). Provided as is, with no support.
+
 ## Docs
 
 - [Architecture](docs/architecture.md): packages and the job each owns
