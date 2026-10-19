@@ -1,0 +1,248 @@
+{
+  "contract_version": "0.1.0",
+  "overall": "PARTIAL",
+  "evidence": "Focused domain checks and real session/Inertia/OAuth/MCP HTTP-kernel integration; Vue typecheck and production build; no browser/network/PostgreSQL/full acceptance",
+  "scenarios": [
+    {
+      "scenario_id": "tenant.list",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: rows are scoped",
+        "NotesTransportTest: scoped CRUD/foreign IDs/stale intent and held receipt identity",
+        "McpTransportTest: scoped Notes CRUD/foreign IDs/version+intent/audit"
+      ],
+      "gap": "Focused HTTP-kernel session/MCP Notes evidence only; browser/network and PostgreSQL concurrency remain unverified"
+    },
+    {
+      "scenario_id": "tenant.read",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: foreign workspace refusal",
+        "NotesTransportTest: scoped CRUD/foreign IDs/stale intent and held receipt identity",
+        "McpTransportTest: scoped Notes CRUD/foreign IDs/version+intent/audit"
+      ],
+      "gap": "Focused HTTP-kernel session/MCP Notes evidence only; browser/network and PostgreSQL concurrency remain unverified"
+    },
+    {
+      "scenario_id": "tenant.mutate",
+      "status": "partial",
+      "tests": [
+        "OwnershipCheck: forged owner/key/stale persisted owner save and delete",
+        "NotesTransportTest: scoped CRUD/foreign IDs/stale intent and held receipt identity",
+        "McpTransportTest: scoped Notes CRUD/foreign IDs/version+intent/audit"
+      ],
+      "gap": "Focused HTTP-kernel session/MCP Notes evidence only; browser/network and PostgreSQL concurrency remain unverified"
+    },
+    {
+      "scenario_id": "tenant.bind",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: resolveRouteBinding foreign id",
+        "NotesTransportTest: scoped CRUD/foreign IDs/stale intent and held receipt identity",
+        "McpTransportTest: scoped Notes CRUD/foreign IDs/version+intent/audit"
+      ],
+      "gap": "Focused HTTP-kernel session/MCP Notes evidence only; browser/network and PostgreSQL concurrency remain unverified"
+    },
+    {
+      "scenario_id": "tenant.export",
+      "status": "unimplemented",
+      "tests": [],
+      "gap": "No export/file surface or storage driver yet"
+    },
+    {
+      "scenario_id": "tenant.file",
+      "status": "unimplemented",
+      "tests": [],
+      "gap": "No export/file surface or storage driver yet"
+    },
+    {
+      "scenario_id": "tenant.missing",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: no-context reads/writes/settings",
+        "McpTransportTest: missing/unbound/foreign connection and unauthenticated route refusal"
+      ],
+      "gap": "Network and PostgreSQL worker/context evidence remain unverified"
+    },
+    {
+      "scenario_id": "tenant.forged-owner",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: unknown argument rejection",
+        "OwnershipCheck",
+        "NotesTransportTest: held receipt foreign persisted identity; OwnershipCheck: forged held model owner/primary key"
+      ],
+      "gap": "Browser/network and PostgreSQL ownership races remain unverified"
+    },
+    {
+      "scenario_id": "context.lifecycle",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: same worker/nested exception",
+        "ConciergeCheck: Spatie and permission context agreement"
+      ],
+      "gap": "No queued retry/file client lifecycle yet"
+    },
+    {
+      "scenario_id": "context.nested",
+      "status": "focused-domain-pass",
+      "tests": [
+        "ConciergeCheck: nested failure restores tenant, team, role relations"
+      ],
+      "gap": "Postgres/process worker still unverified"
+    },
+    {
+      "scenario_id": "context.job-revoked",
+      "status": "unimplemented",
+      "tests": [],
+      "gap": "No mutation job yet"
+    },
+    {
+      "scenario_id": "cache.partition",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: cache and settings groups partition"
+      ],
+      "gap": "No public response cache yet"
+    },
+    {
+      "scenario_id": "settings.roundtrip",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: UI/MCP fixture adapters share operation",
+        "InertiaTransportTest + McpTransportTest: actual shared settings updates/readback"
+      ],
+      "gap": "Browser/network and PostgreSQL concurrency remain unverified"
+    },
+    {
+      "scenario_id": "settings.invalid",
+      "status": "partial",
+      "tests": [
+        "BoundaryCheck: invalid timezone both adapters",
+        "TransportTest + McpTransportTest: shared input/argument validation"
+      ],
+      "gap": "Browser validation interaction remains unverified"
+    },
+    {
+      "scenario_id": "settings.non-owner",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: viewer/refused write/read-only scopes",
+        "InertiaTransportTest: viewer read-only props and server write refusal"
+      ],
+      "gap": "Browser controls and PostgreSQL races remain unverified"
+    },
+    {
+      "scenario_id": "capability.off",
+      "status": "partial",
+      "tests": [
+        "BoundaryCheck: complimentary grant does not bypass disabled capability",
+        "InertiaTransportTest: server-authorised navigation removes disabled Notes and direct route refuses"
+      ],
+      "gap": "Browser/network and async/file surfaces remain unverified"
+    },
+    {
+      "scenario_id": "grant.lifecycle",
+      "status": "partial",
+      "tests": [
+        "IntentCheck: retry/conflict/revoke/regrant/expiry",
+        "FoundationCheck: paid history unchanged"
+      ],
+      "gap": "Operator domain only, no UI/MCP grant surface"
+    },
+    {
+      "scenario_id": "grant.no-bypass",
+      "status": "partial",
+      "tests": [
+        "BoundaryCheck: missing membership/capability off",
+        "ConciergeCheck: suspended/deactivated/unverified"
+      ],
+      "gap": "Commercial/security usage quota model not implemented"
+    },
+    {
+      "scenario_id": "grant.audit-failure",
+      "status": "focused-domain-pass",
+      "tests": [
+        "FoundationCheck: grant rollback",
+        "IntentCheck: revoke rollback"
+      ],
+      "gap": "SQLite only; Postgres concurrency unverified"
+    },
+    {
+      "scenario_id": "grant.unlimited",
+      "status": "unimplemented",
+      "tests": [],
+      "gap": "No commercial allowance/usage catalogue selected"
+    },
+    {
+      "scenario_id": "actor.revoked",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: connection revoked",
+        "IntentCheck: package membership revoked before retry",
+        "ConciergeCheck: suspension both adapters",
+        "McpTransportTest: real consent/token/connection revoke and expiry/refusal"
+      ],
+      "gap": "Automatic token-refresh continuity and browser recovery remain unsupported/unverified"
+    },
+    {
+      "scenario_id": "operation.stale",
+      "status": "partial",
+      "tests": [
+        "IntentCheck: stale expected version refused",
+        "InertiaTransportTest + McpTransportTest: stale version refusal through actual transports"
+      ],
+      "gap": "Browser stale-form UX and PostgreSQL races remain unverified"
+    },
+    {
+      "scenario_id": "operation.retry",
+      "status": "partial",
+      "tests": [
+        "IntentCheck: same intent one commit, changed intent conflict",
+        "InertiaTransportTest + McpTransportTest: stable intent without duplicate audit"
+      ],
+      "gap": "PostgreSQL concurrency, jobs/provider retries remain unverified"
+    },
+    {
+      "scenario_id": "admission.closed",
+      "status": "partial",
+      "tests": [
+        "ConciergeCheck: Registration::decide closed and local login disabled",
+        "TransportTest: actual closed registration endpoint404"
+      ],
+      "gap": "Delegated initial onboarding and browser invitation flow remain incomplete"
+    },
+    {
+      "scenario_id": "mcp.no-escape",
+      "status": "partial",
+      "tests": [
+        "FoundationCheck: tools allowlist and unknown args",
+        "McpTransportTest: actual Laravel MCP Tool allowlist and strict argument validation"
+      ],
+      "gap": "Network client/server and browser consent remain unverified"
+    },
+    {
+      "scenario_id": "readiness.truth",
+      "status": "unimplemented",
+      "tests": [],
+      "gap": "No setup/readiness view; safe settings read is not provider verification"
+    }
+  ],
+  "transport_increment": {
+    "tests": [
+      "TransportTest: session HTTP settings and CSRF",
+      "McpTransportTest: PKCE consent/exchange and MCP JSON-RPC settings",
+      "NotesTransportTest: scoped CRUD, versions/intents/audit rollback/viewer and reused identity refusal",
+      "InertiaTransportTest: guest/owner/viewer props, server navigation, CRUD/settings redirects/validation/stale/error pages"
+    ],
+    "scope": "Settings and Notes CRUD through Inertia/Vue source and HTTP-kernel protocol; OAuth/connections remain Blade handoffs",
+    "remaining": [
+      "delegated initial onboarding",
+      "automatic token-refresh workspace continuity",
+      "installation and two-consumer upgrade",
+      "jobs/files",
+      "PostgreSQL concurrency",
+      "network/browser/full/hosted evidence"
+    ]
+  }
+}

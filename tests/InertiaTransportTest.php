@@ -1,0 +1,94 @@
+<?php
+
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\User;
+use App\Models\Workspace;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+final class InertiaTransportTest extends TestCase
+{
+    public function createApplication()
+    {
+        require __DIR__.'/environment.php';
+
+        return require dirname(__DIR__).'/bootstrap/app.php';
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+    }
+
+    public function test_inertia_session_pages_share_real_operations_and_fresh_navigation(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
+        $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'Auth/Login')->assertJsonPath('props.shell.user', null)
+            ->assertJsonPath('props.shell.workspaces', [])->assertJsonPath('props.shell.navigation', []);
+        $password = Str::random(40);
+        User::findOrFail(1)->update(['password' => Hash::make($password)]);
+        $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
+        $this->withCookie(config('session.cookie'), app('session')->getId());
+        Auth::forgetGuards();
+        $this->get('/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspaces')
+            ->assertJsonPath('props.shell.workspace', null)->assertJsonCount(1, 'props.shell.workspaces')
+            ->assertJsonPath('props.shell.workspaces.0.id', 1)->assertJsonMissingPath('props.shell.user.password');
+        $page = $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'Notes')->assertJsonPath('props.can_write', true)
+            ->assertJsonPath('props.notes.0.body', 'Alpha private')->assertJsonCount(1, 'props.notes')
+            ->assertJsonPath('props.shell.workspace.id', 1)->assertJsonPath('props.shell.navigation.1.label', 'Notes')
+            ->assertJsonPath('props.shell.navigation.1.current', true)->json();
+        $intent = $page['props']['create_intent'];
+        $this->post('/workspaces/1/notes', ['body' => 'Inertia-created', 'intent_key' => $intent], $inertia)->assertRedirect('/workspaces/1/notes');
+        $this->post('/workspaces/1/notes', ['body' => 'Inertia-created', 'intent_key' => $intent], $inertia)->assertRedirect('/workspaces/1/notes');
+        $this->assertSame(1, DB::table('audit_events')->where('event', 'workspace.note.create')->count());
+        $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertJsonCount(2, 'props.notes')->assertJsonPath('props.notes.1.body', 'Inertia-created');
+        $this->from('/workspaces/1/notes')->post('/workspaces/1/notes', ['body' => '', 'intent_key' => 'invalid'], $inertia)->assertRedirect('/workspaces/1/notes')->assertSessionHasErrors('body');
+        $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertJsonPath('props.errors.body', 'The body field is required.');
+        $notesPage = $this->get('/workspaces/1/notes', $inertia)->assertOk()->json('props');
+        $created = $notesPage['notes'][1];
+        $action = $notesPage['actions'][$created['id']];
+        $edit = ['body' => 'Inertia updated', 'expected_version' => 1, 'intent_key' => $action['update_intent']];
+        $this->put($action['url'], $edit, $inertia)->assertStatus(303)->assertRedirect('/workspaces/1/notes');
+        $edit['intent_key'] = 'stale-note-inertia';
+        $this->put($action['url'], $edit, $inertia)->assertConflict()->assertJsonPath('component', 'Error')->assertJsonPath('props.status', 409);
+        $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertJsonPath('props.notes.1.body', 'Inertia updated')->assertJsonPath('props.notes.1.version', 2);
+        $remove = ['expected_version' => 2, 'intent_key' => $action['delete_intent']];
+        $this->delete($action['url'], $remove, $inertia)->assertStatus(303)->assertRedirect('/workspaces/1/notes');
+        $this->delete($action['url'], $remove, $inertia)->assertStatus(303)->assertRedirect('/workspaces/1/notes');
+        $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertJsonCount(1, 'props.notes');
+        $settings = $this->get('/workspaces/1/settings', $inertia)->assertOk()->assertJsonPath('component', 'Settings')->assertJsonPath('props.can_write', true)->json('props');
+        $payload = ['display_name' => 'Inertia Alpha', 'timezone' => 'America/Toronto', 'expected_version' => $settings['settings']['version'], 'intent_key' => $settings['intent_key']];
+        $this->put('/workspaces/1/settings', $payload, $inertia)->assertStatus(303)->assertRedirect('/workspaces/1/settings');
+        $payload['intent_key'] = 'stale-inertia';
+        $this->put('/workspaces/1/settings', $payload, $inertia)->assertConflict()->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'Error')->assertJsonPath('props.status', 409)
+            ->assertJsonPath('props.message', 'These settings changed since you opened the form. Reload and review the current values.');
+        $this->get('/workspaces/2/notes', $inertia)->assertNotFound()->assertJsonPath('component', 'Error')
+            ->assertJsonPath('props.shell.workspace', null)->assertJsonCount(1, 'props.shell.workspaces');
+        config(['foundation.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
+        $this->get('/workspaces/1/settings', $inertia)->assertOk()->assertJsonCount(1, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.0.label', 'Settings');
+        $this->get('/workspaces/1/notes', $inertia)->assertForbidden()->assertJsonPath('component', 'Error');
+        config(['foundation.capabilities' => ['workspace.settings' => true, 'workspace.notes' => true]]);
+        $this->postJson('/logout')->assertNoContent();
+        User::findOrFail(3)->update(['password' => Hash::make($password)]);
+        Auth::forgetGuards();
+        $this->postJson('/login', ['email' => 'actor3@example.test', 'password' => $password])->assertOk();
+        $this->withCookie(config('session.cookie'), app('session')->getId());
+        Auth::forgetGuards();
+        $this->get('/workspaces/1/settings', $inertia)->assertOk()->assertJsonPath('props.can_write', false);
+        $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertJsonPath('props.can_write', false);
+        $this->post('/workspaces/1/notes', ['body' => 'forged owner', 'intent_key' => 'forged'], $inertia)->assertForbidden()->assertJsonPath('component', 'Error');
+        $this->assertSame('Beta private', DB::table('notes')->where('workspace_id', 2)->value('body'));
+        $this->assertNull(Workspace::current());
+    }
+}

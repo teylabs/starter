@@ -1,0 +1,161 @@
+{
+  "contract_version": "0.1.0",
+  "packages": [
+    {
+      "package": "glhd/gretel",
+      "constraint": "^1.10",
+      "locked": "1.10.0",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "inertiajs/inertia-laravel",
+      "constraint": "^3.0",
+      "locked": "v3.5.1",
+      "state": "executed-focused-http-kernel-vue-build"
+    },
+    {
+      "package": "laravel/framework",
+      "constraint": "^13.17",
+      "locked": "v13.37.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "laravel/mcp",
+      "constraint": "^1.0",
+      "locked": "v1.0.2",
+      "state": "executed-focused-http-kernel"
+    },
+    {
+      "package": "laravel/pennant",
+      "constraint": "^1.0",
+      "locked": "v1.26.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "lorisleiva/laravel-actions",
+      "constraint": "^2.12",
+      "locked": "2.13.0",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "spatie/laravel-data",
+      "constraint": "^4.23",
+      "locked": "4.23.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "spatie/laravel-multitenancy",
+      "constraint": "^4.2",
+      "locked": "4.2.1",
+      "state": "executed-focused"
+    },
+    {
+      "package": "spatie/laravel-query-builder",
+      "constraint": "^7.3",
+      "locked": "7.3.6",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "spatie/laravel-settings",
+      "constraint": "^3.9",
+      "locked": "3.9.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "tey/concierge",
+      "constraint": "0.7.1",
+      "locked": "v0.7.1",
+      "state": "executed-focused"
+    },
+    {
+      "package": "tey/mod",
+      "constraint": "^0.7.2",
+      "locked": "v0.7.2",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "larastan/larastan",
+      "constraint": "^3.9",
+      "locked": "v3.13.0",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "laravel/boost",
+      "constraint": "^2.4",
+      "locked": "v2.10.3",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "laravel/pail",
+      "constraint": "^1.2",
+      "locked": "v1.2.7",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "laravel/pao",
+      "constraint": "^1.0.6",
+      "locked": "v1.1.5",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "laravel/pint",
+      "constraint": "^1.27",
+      "locked": "v1.32.1",
+      "state": "executed-focused"
+    },
+    {
+      "package": "pestphp/pest",
+      "constraint": "^5.0",
+      "locked": "v5.3.3",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "pestphp/pest-plugin-laravel",
+      "constraint": "^5.0",
+      "locked": "v5.0.1",
+      "state": "installed-not-feature-accepted"
+    },
+    {
+      "package": "spatie/laravel-typescript-transformer",
+      "constraint": "^3.3",
+      "locked": "3.3.0",
+      "state": "executed-focused"
+    },
+    {
+      "package": "laravel/fortify",
+      "constraint": "^1.41",
+      "locked": "v1.41.0",
+      "state": "executed-focused-http-kernel"
+    },
+    {
+      "package": "laravel/passport",
+      "constraint": "^13.10",
+      "locked": "v13.10.0",
+      "state": "executed-focused-http-kernel"
+    }
+  ],
+  "conditional": {
+    "auth": "Fortify/session, Sanctum or Passport requires host protocol decision; none inferred from MCP dependency",
+    "uploads": "spatie/laravel-medialibrary plus host file isolation when uploads appear",
+    "billing": "Cashier/provider SDK only after product billing requirement",
+    "roles": "Concierge requires spatie/laravel-permission; native workspace teams enabled. No competing membership enum/pivot.",
+    "frontend": "Inertia/Vue3/Tailwind4/Wayfinder when a real browser surface is selected",
+    "developer_baseline": "Pint/Pest/Laravel plugin/Larastan/Boost/Pail/Pao locked; only Pint and focused synthetic scripts exercised. Frontend tooling remains unselected until host browser shell exists."
+  },
+  "frontend_increment": {
+    "lock": "package-lock.json",
+    "client": "@inertiajs/vue3 3.9.1",
+    "vue": "3.5.44",
+    "vite": "8.3.4",
+    "evidence": [
+      "HTTP-kernel Inertia components/props",
+      "vue-tsc",
+      "Vite client build"
+    ],
+    "gaps": [
+      "browser/accessibility/visual",
+      "Mod page/module layout adoption",
+      "maintained UI modules and public frontpage"
+    ]
+  }
+}

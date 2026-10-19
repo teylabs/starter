@@ -1,0 +1,52 @@
+{
+    "name": "tey/starter",
+    "description": "Tenant-aware Laravel starter built for the Tey Labs fleet.",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "glhd/gretel": "^1.10",
+        "inertiajs/inertia-laravel": "^3.0",
+        "laravel/fortify": "^1.41",
+        "laravel/framework": "^13.17",
+        "laravel/mcp": "^1.0",
+        "laravel/passport": "^13.10",
+        "laravel/pennant": "^1.0",
+        "lorisleiva/laravel-actions": "^2.12",
+        "spatie/laravel-data": "^4.23",
+        "spatie/laravel-multitenancy": "^4.2",
+        "spatie/laravel-query-builder": "^7.3",
+        "spatie/laravel-settings": "^3.9",
+        "tey/concierge": "0.7.1",
+        "tey/mod": "^0.7.2"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.9",
+        "laravel/boost": "^2.4",
+        "laravel/pail": "^1.2",
+        "laravel/pao": "^1.0.6",
+        "laravel/pint": "^1.27",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "spatie/laravel-typescript-transformer": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "scripts": {
+        "fixture:check": [
+            "@php bin/check.php FoundationCheck",
+            "@php bin/check.php BoundaryCheck",
+            "@php bin/check.php IntentCheck",
+            "@php bin/check.php OwnershipCheck",
+            "@php bin/check.php ConciergeCheck"
+        ],
+        "types:generate": "@php bin/generate-types.php"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": false
+    }
+}
