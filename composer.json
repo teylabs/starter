@@ -49,7 +49,7 @@
             "@php bin/check.php ConciergeCheck"
         ],
         "setup": "@php bin/setup.php",
-        "test:browser": "@php vendor/bin/pest tests/Browser/SignIn.php",
+        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

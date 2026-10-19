@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pest's configuration for the browser smoke test (composer test:browser). The PHPUnit suites take none. -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="../../vendor/autoload.php"
+         cacheDirectory="../../.phpunit.cache"
+         colors="true">
+    <testsuites>
+        <testsuite name="Browser">
+            <file>SignIn.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

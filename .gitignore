@@ -11,3 +11,4 @@
 /public/hot
 /.mod-maintenance/
 /tests/Browser/Screenshots/
+/.phpunit.cache/
