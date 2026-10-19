@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+#### Fixed
+
+- A fresh install now migrates with SQLite out of the box: `.env.example` no longer sets an empty `DB_DATABASE`, which overrode the default `database/database.sqlite` path (#25)
+
 ## v0.2.0
 
 ### Installs and upgrades from released packages
