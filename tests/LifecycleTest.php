@@ -22,15 +22,13 @@ final class LifecycleTest extends TestCase
 
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        $this->assertContains(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql', [':memory:', 'pgsql']);
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
     }
 
@@ -45,7 +43,7 @@ final class LifecycleTest extends TestCase
     public function test_released_packages_and_trusted_host_binding(): void
     {
         $this->assertSame('v0.9.1', InstalledVersions::getPrettyVersion('tey/mod'));
-        $this->assertSame('v0.7.3', InstalledVersions::getPrettyVersion('tey/concierge'));
+        $this->assertSame('v0.7.4', InstalledVersions::getPrettyVersion('tey/concierge'));
         $this->assertSame('v0.1.2', InstalledVersions::getPrettyVersion('tey/kit'));
         $this->assertStringEndsWith('/vendor/tey/mod/src/Maintenance/Maintenance.php', (new ReflectionClass(Maintenance::class))->getFileName());
         $host = app(LifecycleHost::class);
@@ -125,7 +123,7 @@ final class LifecycleTest extends TestCase
         $this->assertSame([], $this->files($root));
 
         // Without the host schema the check fails, so the first feature stays pending and nothing is recorded.
-        Schema::drop('users');
+        Schema::rename('users', 'users_moved');
         $this->assertFalse(($this->check($root))());
         $result = $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], 'install', $this->check($root));
         $this->assertNotSame('completed', $result['status']);

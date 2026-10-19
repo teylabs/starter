@@ -12,9 +12,7 @@ final class TimezoneTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     public function test_the_app_runs_and_stores_in_utc(): void

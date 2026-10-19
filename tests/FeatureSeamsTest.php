@@ -23,14 +23,15 @@ final class FeatureSeamsTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     public function test_fresh_schema_equals_the_released_schema(): void
     {
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
+        if (DB::getDriverName() !== 'sqlite') {
+            $this->markTestSkipped('The released schema fixture is a SQLite dump; on PostgreSQL only the migrations are checked.');
+        }
         $this->assertSame($this->released(), $this->schema());
     }
 
@@ -86,9 +87,12 @@ final class FeatureSeamsTest extends TestCase
         DB::table('workspaces')->insert(['id' => 1, 'name' => 'Legacy']);
         DB::table('notes')->insert(['workspace_id' => 1, 'body' => 'Kept']);
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
-        $this->assertSame($this->released(), $this->schema());
+        // The released schema fixture is a SQLite dump; on PostgreSQL the migrations and data are checked.
+        if (DB::getDriverName() === 'sqlite') {
+            $this->assertSame($this->released(), $this->schema());
+        }
         $this->assertSame(['Kept'], DB::table('notes')->pluck('body')->all());
-        $ran = DB::table('migrations')->pluck('migration')->all();
+        $ran = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
         foreach ($legacy as $id) {
             $this->assertContains($id, $ran);
             foreach (KitMigrationRepository::MAP[$id] as $kit) {
@@ -99,7 +103,12 @@ final class FeatureSeamsTest extends TestCase
         $this->assertCount(9, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
-        $this->assertSame($ran, DB::table('migrations')->pluck('migration')->all());
+        $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
+    }
+
+    private function schema(): array
+    {
+        return json_decode(json_encode((require __DIR__.'/schema.php')()), true);
     }
 
     /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary. */
@@ -113,8 +122,4 @@ final class FeatureSeamsTest extends TestCase
         return $schema;
     }
 
-    private function schema(): array
-    {
-        return json_decode(json_encode((require __DIR__.'/schema.php')()), true);
-    }
 }

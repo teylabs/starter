@@ -1,7 +1,6 @@
 <?php
 
-require __DIR__.'/environment.php';
-require dirname(__DIR__).'/bootstrap/app.php';
+require __DIR__.'/application.php';
 require dirname(__DIR__).'/database/fixture.php';
 use Tey\Kit\Features\Notes\Models\Note;
 use Tey\Kit\Features\Settings\WorkspaceSettings;
@@ -52,7 +51,7 @@ foreach (['save', 'delete'] as $method) {
         } finally {
             DB::table('notes')->where('id', 1)->update(['workspace_id' => 1]);
         }
-        if (DB::table('notes')->pluck('body')->all() !== ['Alpha private', 'Beta private']) {
+        if (DB::table('notes')->orderBy('id')->pluck('body')->all() !== ['Alpha private', 'Beta private']) {
             throw new RuntimeException('Foreign rows changed');
         }
         echo "PASS $method refuses $forgery forgery without row change\n";

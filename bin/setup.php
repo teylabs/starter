@@ -13,6 +13,8 @@ $run = function (string $command) use ($root): void {
 $php = escapeshellarg(PHP_BINARY);
 $interaction = in_array('--no-interaction', $argv, true) || ! stream_isatty(STDIN) ? ' --no-interaction' : '';
 
+// Composer names its own binary for the scripts it runs.
+$run(escapeshellarg(getenv('COMPOSER_BINARY') ?: 'composer').' install --no-interaction');
 if (! is_file($root.'/.env')) {
     copy($root.'/.env.example', $root.'/.env');
     echo "Copied .env.example to .env\n";

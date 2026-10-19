@@ -11,9 +11,7 @@ final class McpCapabilitiesTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     public function test_the_committed_inventory_matches_the_served_tools(): void

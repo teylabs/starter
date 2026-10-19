@@ -15,9 +15,7 @@ final class CacheGuardTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     protected function setUp(): void

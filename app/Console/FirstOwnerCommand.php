@@ -43,6 +43,9 @@ final class FirstOwnerCommand extends Command
         $generated = $interactive ? null : Str::password(24);
         $secret = $generated ?? password('Owner password', required: true, validate: fn (string $value): ?string => strlen($value) < 12 ? 'Use at least 12 characters.' : null);
 
+        if ($this->call('concierge:sync-roles', ['--no-interaction' => true]) !== self::SUCCESS) {
+            return self::FAILURE;
+        }
         $workspace = DB::transaction(function () use ($name, $email, $secret): int {
             $owner = User::create(['name' => $name, 'email' => $email, 'email_verified_at' => now(), 'password' => Hash::make($secret)]);
             // The local owner operates their own install; tenant invitations need an operator.

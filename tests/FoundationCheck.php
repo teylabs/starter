@@ -1,7 +1,7 @@
 <?php
 
-require __DIR__.'/environment.php';
-require dirname(__DIR__).'/bootstrap/app.php';
+require __DIR__.'/application.php';
+require_once __DIR__.'/failures.php';
 require dirname(__DIR__).'/database/fixture.php';
 
 use Tey\Kit\Features\Access\Access;
@@ -140,7 +140,7 @@ check('audit failure rolls back settings and complimentary grant', function () u
     $before = DB::table('settings')->get()->toJson();
     $grants = DB::table('complimentary_grants')->count();
     // An actual database audit failure, not a mock of the application operation.
-    DB::statement("CREATE TRIGGER fail_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT, 'synthetic_audit_failure'); END");
+    failInserts('fail_audit', 'audit_events', 'synthetic_audit_failure');
     foreach ([fn () => $ui->update($alpha, 1, ['display_name' => 'must rollback', 'timezone' => 'UTC', 'expected_version' => 3, 'intent_key' => 'rollback']), fn () => app(ComplimentaryAccess::class)->grant($operator, 1, 'must rollback', now()->addDay(), 'rollback-grant')] as $operation) {
         try {
             $operation();
@@ -151,10 +151,10 @@ check('audit failure rolls back settings and complimentary grant', function () u
             }
         }
     }
-    DB::statement('DROP TRIGGER fail_audit');
+    allowInserts('fail_audit', 'audit_events');
     same($before, DB::table('settings')->get()->toJson());
     same('Alpha MCP', $ui->show($alpha, 1)['display_name']);
     same($grants, DB::table('complimentary_grants')->count());
 });
 check('failed request leaves no workspace context', fn () => same(null, Workspace::current()));
-echo json_encode(['fixture' => 'starter-foundation', 'checks' => count($checks), 'database' => 'sqlite::memory:', 'evidence' => 'focused synthetic checks only', 'passed' => $checks], JSON_PRETTY_PRINT)."\n";
+echo json_encode(['fixture' => 'starter-foundation', 'checks' => count($checks), 'database' => DB::getDriverName() === 'pgsql' ? 'pgsql' : 'sqlite::memory:', 'evidence' => 'focused synthetic checks only', 'passed' => $checks], JSON_PRETTY_PRINT)."\n";

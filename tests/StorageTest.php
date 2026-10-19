@@ -14,13 +14,12 @@ final class StorageTest extends TestCase
 
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
         foreach (self::BUCKET as $key => $value) {
             putenv($key.'='.$value);
             $_ENV[$key] = $_SERVER[$key] = $value;
         }
 
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     protected function tearDown(): void

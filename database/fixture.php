@@ -127,3 +127,9 @@ $viewer = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'acto
 AcceptInvitation::run(User::findOrFail(3), $viewer->token);
 DB::table('connections')->insert(['id' => 1, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read', 'settings.write'])]);
 DB::table('connections')->insert(['id' => 2, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read'])]);
+// PostgreSQL sequences do not follow explicit ids; move them past the synthetic rows.
+if (DB::getDriverName() === 'pgsql') {
+    foreach (['users', 'connections'] as $table) {
+        DB::statement("select setval(pg_get_serial_sequence('{$table}', 'id'), (select max(id) from {$table}))");
+    }
+}

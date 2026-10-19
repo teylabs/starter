@@ -10,3 +10,4 @@
 /public/build/
 /public/hot
 /.mod-maintenance/
+/tests/Browser/Screenshots/

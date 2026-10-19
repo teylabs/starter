@@ -20,7 +20,7 @@
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
-        "tey/concierge": "^0.7.3",
+        "tey/concierge": "^0.7.4",
         "tey/kit": "^0.1.2"
     },
     "require-dev": {
@@ -49,6 +49,7 @@
             "@php bin/check.php ConciergeCheck"
         ],
         "setup": "@php bin/setup.php",
+        "test:browser": "@php vendor/bin/pest tests/Browser/SignIn.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -63,6 +64,8 @@
     },
     "config": {
         "sort-packages": true,
-        "allow-plugins": false
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

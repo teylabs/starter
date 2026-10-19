@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  PHP_EXTENSIONS: pdo_sqlite, sqlite3, pdo_pgsql, exif, sockets, intl, zip
+
 jobs:
   privacy:
     name: Privacy
@@ -19,7 +22,7 @@ jobs:
           PRIVACY_PATTERN: ${{ secrets.PRIVACY_PATTERN }}
 
   php:
-    name: PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }} (SQLite)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -30,7 +33,38 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_sqlite, sqlite3
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction
+      - run: vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+      - run: composer fixture:check
+
+  postgres:
+    name: PHP 8.4 (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: starter
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: starter
+      DB_USERNAME: starter
+      DB_PASSWORD: starter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: none
       - run: composer install --no-interaction
       - run: vendor/bin/phpunit --bootstrap vendor/autoload.php tests
@@ -48,3 +82,58 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
+      - run: npm test
+
+  parity:
+    name: Kit parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: template
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - name: A clean Laravel app
+        run: composer create-project laravel/laravel clean --no-interaction --no-progress
+      - name: The template's feature files equal kit:add of every feature
+        run: sh template/bin/kit-parity.sh clean
+
+  fresh-clone:
+    name: Fresh clone
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: composer setup
+        working-directory: app
+        run: composer setup --no-interaction
+      - name: The sign-in page returns 200
+        working-directory: app
+        run: |
+          php artisan serve --port=8000 > serve.log 2>&1 &
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do curl -s -o /dev/null http://127.0.0.1:8000/login 2>/dev/null && break; sleep 1; done
+          test "$(curl -s -o login.html -w '%{http_code}' http://127.0.0.1:8000/login)" = 200
+          grep -q 'Auth/SignIn/Page' login.html
+      - name: Browser smoke test
+        working-directory: app
+        run: |
+          npx playwright install --with-deps chromium
+          composer test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: app/tests/Browser/Screenshots
+          if-no-files-found: ignore

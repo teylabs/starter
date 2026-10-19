@@ -1,32 +1,28 @@
 import { createInertiaApp } from '@inertiajs/vue3';
-import { createApp, h, type DefineComponent, type VNode } from 'vue';
+import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
+import { initializeTheme } from '@/composables/useAppearance';
+import AppLayout from '@/layouts/AppLayout.vue';
+import GuestLayout from '@/layouts/GuestLayout.vue';
 
-// tey/kit pages live at ./pages/<Resource>/<Action>/Page.vue. A page declares no layout: the nearest folder
-// Layout.vue within its resource wraps it, with the backend's shared `layout` props.
+// Pages live at ./pages/<Resource>/<Action>/Page.vue and declare no layout: sign-in pages get the guest shell,
+// everything else the app shell, fed by the backend's shared `layout` props. tey/kit's own folder Layout.vue
+// (pages/Workspace/Layout.vue) is its unstyled starting point and is not used.
 const pages = import.meta.glob<DefineComponent>('./pages/**/Page.vue');
-const layouts = import.meta.glob<DefineComponent>('./pages/**/Layout.vue');
-
-function nearestLayout(name: string): string | undefined {
-    const folders = name.split('/').slice(0, -1);
-    for (let depth = folders.length - 1; depth >= 1; depth--) {
-        const path = `./pages/${folders.slice(0, depth).join('/')}/Layout.vue`;
-        if (path in layouts) return path;
-    }
-    return undefined;
-}
 
 createInertiaApp({
     resolve: async (name) => {
         const page = pages[`./pages/${name}.vue`];
         if (!page) throw new Error(`Unknown page: ${name}`);
-        const component = await page();
-        const layout = nearestLayout(name);
-        if (layout) {
-            const Layout = (await layouts[layout]()).default;
-            component.default.layout = (render: typeof h, child: VNode & { props: { layout: object } }) => render(Layout, child.props.layout, () => child);
-        }
-        return component;
+        return page();
     },
-    setup({ el, App, props, plugin }) { createApp({ render: () => h(App, props) }).use(plugin).mount(el); },
+    layout: (name) => (name.startsWith('Auth/') ? GuestLayout : AppLayout),
+    setup({ el, App, props, plugin }) {
+        createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .directive('focus', { mounted: (element: HTMLElement, binding) => { if (binding.value !== false) element.focus(); } })
+            .mount(el);
+    },
 });
+
+initializeTheme();

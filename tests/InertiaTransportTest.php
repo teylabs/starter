@@ -16,9 +16,7 @@ final class InertiaTransportTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     protected function setUp(): void
@@ -32,7 +30,7 @@ final class InertiaTransportTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
-            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.layout.user', null)
+            ->assertJsonPath('component', 'Auth/SignIn/Page')->assertJsonPath('props.layout.user', null)
             ->assertJsonPath('props.layout.workspaces', [])->assertJsonPath('props.layout.navigation', []);
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);

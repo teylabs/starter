@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f0e4d7202d4ed15628b6f05a98ab42f",
+    "content-hash": "55ef8ccb6b493a8c70d713e1b3f0ef4a",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -9750,16 +9750,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.7.3",
+            "version": "v0.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "a332eb91358bb1b0168b02e37fc7f8d4886de56b"
+                "reference": "28bdd015d95f4a8f077fed2db64c75070e748767"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/a332eb91358bb1b0168b02e37fc7f8d4886de56b",
-                "reference": "a332eb91358bb1b0168b02e37fc7f8d4886de56b",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/28bdd015d95f4a8f077fed2db64c75070e748767",
+                "reference": "28bdd015d95f4a8f077fed2db64c75070e748767",
                 "shasum": ""
             },
             "require": {
@@ -9767,7 +9767,7 @@
                 "php": "~8.4.0||~8.5.0",
                 "spatie/laravel-package-tools": "^1.93",
                 "spatie/laravel-permission": "^8.3",
-                "tey/mod": "^0.6.1 || ^0.7 || ^0.8 || ^0.9"
+                "tey/mod": "^0.6.1 || ^0.7 || ^0.8 || ^0.9 || ^0.10"
             },
             "require-dev": {
                 "larastan/larastan": "^3.12",
@@ -9830,7 +9830,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.7.3"
+                "source": "https://github.com/teylabs/concierge/tree/v0.7.4"
             },
             "funding": [
                 {
@@ -9838,7 +9838,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-19T18:38:25+00:00"
+            "time": "2026-10-19T23:27:40+00:00"
         },
         {
             "name": "tey/kit",

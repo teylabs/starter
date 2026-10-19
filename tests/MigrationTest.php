@@ -21,14 +21,12 @@ final class MigrationTest extends TestCase
 {
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     public function test_clean_framework_schema_and_explicit_synthetic_package_onboarding(): void
     {
-        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        $this->assertContains(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql', [':memory:', 'pgsql']);
         $this->assertFalse(Schema::hasTable('users'));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         foreach (['users', 'media', 'workspaces', 'settings', 'notes', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'note_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
@@ -39,8 +37,8 @@ final class MigrationTest extends TestCase
         $this->assertSame([
             '0001_01_01_000000_create_users_table',
             '0001_01_01_000001_create_media_table',
-            '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000200_create_kit_workspaces_table',
+            '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000201_create_permission_tables',
             '0001_01_02_000202_create_kit_operators_table',
             '0001_01_02_000300_create_kit_access_tables',
