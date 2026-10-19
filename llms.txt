@@ -1,18 +1,20 @@
 # tey/starter
 
-> A tenant-aware Laravel starter: workspaces and invitations, versioned settings and Notes shared by session pages and MCP tools, with Fortify sessions, Inertia/Vue pages and Passport OAuth. Public but unsupported; use at your own risk.
+> The new-app template for tenant-aware Laravel apps, built on tey/kit with every feature added: workspaces and invitations, versioned settings and Notes shared by session pages and MCP tools, with Fortify sessions, Inertia/Vue pages and Passport OAuth. Public but unsupported; use at your own risk.
 
-- [README](README.md): overview, install and check commands
-- [Architecture](docs/architecture.md): the packages and the job each one owns
+- [README](README.md): overview, `composer setup` and check commands
+- [Architecture](docs/architecture.md): tey/kit, the packages and the job each one owns
 - [Operations](docs/operations.md): settings and Notes shared operations, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
-- [Lifecycle](docs/lifecycle.md): clean-schema install and `starter:maintain` blueprint upgrades
+- [Lifecycle](docs/lifecycle.md): install, kit features, migrations from 0.2 and kit updates
+- [Deploy](docs/deploy.md): the Laravel Cloud deploy command order
 - [Testing](docs/testing.md): the gates and focused checks
 - [Roadmap](ROADMAP.md): what is shipped and what is planned
 - [Agent conventions](AGENTS.md): rules for contributors and coding agents
 
 ## Machine-readable maps
 
+- [MCP capabilities](docs/mcp-capabilities.json): the MCP inventory (v1): server, scopes and tools
 - [Package map](docs/package-map.json): locked packages and what has been executed
 - [Conformance](docs/conformance.json): acceptance scenario dispositions
 - [Feature transports](docs/feature-transports.json): which operation is reachable over which transport

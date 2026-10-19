@@ -8,13 +8,16 @@ Guidance for contributors and coding agents working in this repository.
 - Fail closed, and restore tenant, permission and settings context in `finally` blocks.
 - Keep capabilities, entitlements, membership and admission distinct.
 - State missing Inertia, protocol, lifecycle or platform coverage explicitly rather than implying it.
+- Never edit a file a kit feature owns (`database/migrations/kit/**`, the kit's pages): CI checks them against `kit:add`.
 
 ## Gates
 
 ```sh
 composer install --no-interaction
 vendor/bin/phpunit --bootstrap vendor/autoload.php tests
-npm ci && npm run typecheck && npm run build
+composer fixture:check
+npm ci && npm run typecheck && npm run build && npm test
+composer test:browser
 sh bin/privacy-check.sh
 ```
 

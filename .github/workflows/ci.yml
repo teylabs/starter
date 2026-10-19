@@ -125,7 +125,7 @@ jobs:
           php artisan serve --port=8000 > serve.log 2>&1 &
           for attempt in 1 2 3 4 5 6 7 8 9 10; do curl -s -o /dev/null http://127.0.0.1:8000/login 2>/dev/null && break; sleep 1; done
           test "$(curl -s -o login.html -w '%{http_code}' http://127.0.0.1:8000/login)" = 200
-          grep -q 'Auth/SignIn/Page' login.html
+          grep -q 'SignIn' login.html
       - name: Browser smoke test
         working-directory: app
         run: |

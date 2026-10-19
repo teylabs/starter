@@ -4,7 +4,7 @@
 // the published config/kit.php is the app's own file, and kit updates never touch it.
 return [
     // The adopted features. The template ships every feature's files, but no installed record, which is bound to a
-    // checkout's own path. Null reads them from that record once `kit:add` has claimed the files (docs/kit.md).
+    // checkout's own path. Null reads them from that record once `kit:add` has claimed the files (docs/lifecycle.md).
     'features' => ['core', 'workspaces', 'access', 'settings', 'session-ui', 'mcp', 'notes'],
 
     // The host's user model. Null uses the `users` auth provider's model.
