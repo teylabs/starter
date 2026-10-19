@@ -31,13 +31,14 @@ final class MigrationTest extends TestCase
         $this->assertSame(':memory:', config('database.connections.sqlite.database'));
         $this->assertFalse(Schema::hasTable('users'));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
-        foreach (['users', 'workspaces', 'settings', 'notes', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'note_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
+        foreach (['users', 'media', 'workspaces', 'settings', 'notes', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'note_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
             $this->assertTrue(Schema::hasTable($table), $table);
             $this->assertSame(0, DB::table($table)->count(), 'Migrate must not seed '.$table);
         }
         $migrations = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
         $this->assertSame([
             '0001_01_01_000000_create_users_table',
+            '0001_01_01_000001_create_media_table',
             '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000200_create_kit_workspaces_table',
             '0001_01_02_000201_create_permission_tables',

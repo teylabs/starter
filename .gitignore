@@ -1,6 +1,8 @@
 /vendor/
 /.env
-/storage/*
+/storage/**
+!/storage/**/
+!/storage/**/.gitkeep
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
 

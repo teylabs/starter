@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Console\FirstOwnerCommand;
 use App\Support\KitMigrationRepository;
 use Composer\InstalledVersions;
 use Illuminate\Support\ServiceProvider;
@@ -21,5 +22,6 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(InstalledVersions::getInstallPath('laravel/passport').'/database/migrations');
+        $this->commands([FirstOwnerCommand::class]);
     }
 }

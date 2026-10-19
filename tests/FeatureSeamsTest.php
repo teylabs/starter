@@ -102,9 +102,15 @@ final class FeatureSeamsTest extends TestCase
         $this->assertSame($ran, DB::table('migrations')->pluck('migration')->all());
     }
 
+    /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary. */
     private function released(): array
     {
-        return json_decode(file_get_contents(__DIR__.'/Fixtures/schema-v0.2.1.json'), true);
+        $schema = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-v0.2.1.json'), true);
+        $this->assertArrayNotHasKey('media', $schema);
+        $schema['media'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-media.json'), true);
+        ksort($schema);
+
+        return $schema;
     }
 
     private function schema(): array

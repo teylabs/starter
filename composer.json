@@ -13,8 +13,10 @@
         "laravel/nightwatch": "^1.30",
         "laravel/passport": "^13.10",
         "laravel/pennant": "^1.0",
+        "league/flysystem-aws-s3-v3": "^3.29",
         "lorisleiva/laravel-actions": "^2.12",
         "spatie/laravel-data": "^4.23",
+        "spatie/laravel-medialibrary": "^11.13",
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
@@ -27,6 +29,7 @@
         "laravel/pail": "^1.2",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
+        "laravel/tinker": "^3.0",
         "pestphp/pest": "^5.0",
         "pestphp/pest-plugin-browser": "^5.1",
         "pestphp/pest-plugin-laravel": "^5.0",
@@ -45,6 +48,7 @@
             "@php bin/check.php OwnershipCheck",
             "@php bin/check.php ConciergeCheck"
         ],
+        "setup": "@php bin/setup.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
