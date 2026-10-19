@@ -28,7 +28,7 @@ final class PageShell
                 }
                 $links = app(TenantBoundary::class)->run((int) $workspace->id, function () use ($workspace, $user, $request): array {
                     $links = [];
-                    foreach (['settings.read' => ['Settings', 'settings'], 'notes.read' => ['Notes', 'notes']] as $ability => [$label, $suffix]) {
+                    foreach (app(StarterRegistry::class)->navigationLinks() as ['ability' => $ability, 'label' => $label, 'suffix' => $suffix]) {
                         try {
                             app(Access::class)->authorize(new Principal((int) $user->id), $ability);
                             $href = '/workspaces/'.$workspace->id.'/'.$suffix;

@@ -17,7 +17,7 @@ final class FoundationProvider extends ServiceProvider
     {
         app(Concierge::class)->provisionWorkspaceUsing(fn ($owner, $invitation) => app(ProvisionWorkspace::class)->handle($owner, $invitation));
         Gate::define('concierge.manage-tenants', fn (User $user): bool => $user->conciergeHasVerifiedEmail() && app(Concierge::class)->account($user)->isActive() && DB::table('operators')->where('actor_id', $user->id)->exists());
-        foreach (['workspace.settings', 'workspace.notes'] as $capability) {
+        foreach (app(StarterRegistry::class)->workspaceCapabilities() as $capability) {
             Feature::define($capability, fn (Workspace $workspace): bool => (bool) (config('foundation.capabilities', [])[$capability] ?? false));
         }
     }
