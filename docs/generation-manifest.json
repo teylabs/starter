@@ -1,0 +1,20 @@
+{
+  "format_version": 1,
+  "contract_version": "0.1.0",
+  "generator": {
+    "package": "spatie/laravel-typescript-transformer",
+    "version": "3.3.0",
+    "command": "composer types:generate"
+  },
+  "generated": {
+    "resources/js/types.generated.d.ts": "a5215d390a48cdd08fbc9ba4d9b8b227540d69b72004949f0905fadf98726acb"
+  },
+  "host_owned": [
+    "app/",
+    "config/",
+    "database/",
+    "tests/",
+    "README.md"
+  ],
+  "upgrade_policy": "Update maintained dependencies through a reviewed lockfile diff. Preview regenerated types and review host changes; never copy a fresh template over host-owned files. No app/template upgrader is implemented."
+}

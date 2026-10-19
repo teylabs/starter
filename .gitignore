@@ -1,0 +1,9 @@
+/vendor/
+/.env
+/storage/*
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+
+/node_modules/
+/public/build/
+/public/hot
