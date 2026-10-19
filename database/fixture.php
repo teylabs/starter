@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\User;
-use App\Starter\Core\Principal;
-use App\Starter\Notes\Models\Note;
-use App\Starter\Workspaces\Models\Workspace;
-use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Notes\Models\Note;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

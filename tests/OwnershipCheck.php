@@ -3,9 +3,9 @@
 require __DIR__.'/environment.php';
 require dirname(__DIR__).'/bootstrap/app.php';
 require dirname(__DIR__).'/database/fixture.php';
-use App\Starter\Notes\Models\Note;
-use App\Starter\Settings\WorkspaceSettings;
-use App\Starter\Workspaces\TenantBoundary;
+use Tey\Kit\Features\Notes\Models\Note;
+use Tey\Kit\Features\Settings\WorkspaceSettings;
+use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Illuminate\Support\Facades\DB;
 
 $boundary = app(TenantBoundary::class);

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Starter\Workspaces\Concerns\HasWorkspaces;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Tey\Concierge\Contracts\Member;
+use Tey\Kit\Features\Workspaces\Concerns\HasWorkspaces;
 
 final class User extends Authenticatable implements Member, OAuthenticatable
 {

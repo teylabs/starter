@@ -2,10 +2,10 @@
 
 require __DIR__.'/FoundationCheck.php';
 use App\Models\User;
-use App\Starter\Access\Operations\ComplimentaryAccess;
-use App\Starter\Core\Principal;
-use App\Starter\Workspaces\Models\Workspace;
-use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
+use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Composer\InstalledVersions;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Concierge\Registration\Registration;
 
 check('Concierge released native membership is the only membership engine', function (): void {
-    same('0.7.2.0', InstalledVersions::getVersion('tey/concierge'));
+    same('0.7.3.0', InstalledVersions::getVersion('tey/concierge'));
     same(false, Schema::hasTable('memberships'));
     same(2, DB::table('concierge_ownerships')->count());
     same(3, DB::table('concierge_memberships')->count());

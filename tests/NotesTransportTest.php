@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Starter\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +77,7 @@ final class NotesTransportTest extends TestCase
         $this->withCookie(config('session.cookie'), app('session')->getId());
         $this->getJson('/workspaces/1/notes')->assertOk()->assertJsonPath('can_write', false);
         $this->postJson('/workspaces/1/notes', ['body' => 'Forbidden viewer note', 'intent_key' => 'viewer-write'])->assertForbidden();
-        config(['foundation.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
+        config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
         $this->getJson('/workspaces/1/notes')->assertForbidden();
         self::assertNull(Workspace::current());
     }

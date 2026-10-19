@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\User;
-use App\Starter\Core\Principal;
-use App\Starter\Notes\Operations\WorkspaceNotes;
-use App\Starter\Settings\Operations\WorkspaceProfile;
-use App\Starter\Workspaces\Models\Workspace;
-use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
-use App\Starter\Workspaces\TenantBoundary;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Notes\Operations\WorkspaceNotes;
+use Tey\Kit\Features\Settings\Operations\WorkspaceProfile;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
+use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -37,9 +37,16 @@ final class MigrationTest extends TestCase
         }
         $migrations = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
         $this->assertSame([
-            '0001_01_01_000000_create_starter_identity_tables',
-            '0001_01_01_000001_create_permission_tables',
-            '0001_01_01_000002_create_settings_table',
+            '0001_01_01_000000_create_users_table',
+            '0001_01_02_000100_create_kit_core_tables',
+            '0001_01_02_000200_create_kit_workspaces_table',
+            '0001_01_02_000201_create_permission_tables',
+            '0001_01_02_000202_create_kit_operators_table',
+            '0001_01_02_000300_create_kit_access_tables',
+            '0001_01_02_000400_create_settings_table',
+            '0001_01_02_000401_create_kit_settings_tables',
+            '0001_01_02_000600_create_kit_mcp_tables',
+            '0001_01_02_000700_create_kit_notes_tables',
             '2016_06_01_000001_create_oauth_auth_codes_table',
             '2016_06_01_000002_create_oauth_access_tokens_table',
             '2016_06_01_000003_create_oauth_refresh_tokens_table',
@@ -48,12 +55,6 @@ final class MigrationTest extends TestCase
             'create_concierge_tables',
             'create_concierge_tenant_invitations_table',
             'create_concierge_user_accounts_table',
-            'create_starter_access_tables',
-            'create_starter_core_tables',
-            'create_starter_mcp_tables',
-            'create_starter_notes_tables',
-            'create_starter_settings_tables',
-            'create_starter_workspaces_tables',
         ], $migrations);
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($migrations, DB::table('migrations')->orderBy('id')->pluck('migration')->all());

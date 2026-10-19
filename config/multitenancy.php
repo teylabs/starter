@@ -1,6 +1,6 @@
 <?php
 
-use App\Starter\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Concierge\Jobs\DeliverTenantInvitation;
 
 return ['tenant_finder' => null,

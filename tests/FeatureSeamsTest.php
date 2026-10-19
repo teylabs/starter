@@ -1,13 +1,14 @@
 <?php
 
-use App\Starter\Core\StarterRegistry;
-use App\Starter\Notes\Integrations\Mcp\CreateNote;
-use App\Starter\Notes\Integrations\Mcp\DeleteNote;
-use App\Starter\Notes\Integrations\Mcp\ListNotes;
-use App\Starter\Notes\Integrations\Mcp\ReadNote;
-use App\Starter\Notes\Integrations\Mcp\UpdateNote;
-use App\Starter\Settings\Integrations\Mcp\ReadSettings;
-use App\Starter\Settings\Integrations\Mcp\UpdateSettings;
+use Tey\Kit\Features\Core\Registry;
+use Tey\Kit\Features\Notes\Integrations\Mcp\CreateNote;
+use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
+use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
+use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
+use Tey\Kit\Features\Notes\Integrations\Mcp\UpdateNote;
+use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
+use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
+use App\Support\KitMigrationRepository;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ use Laravel\Pennant\Feature;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-/** The per-feature seams reproduce the 0.2.1 app exactly: schema, routes, tools, navigation, scopes, capabilities and error codes. */
+/** The template on tey/kit reproduces the 0.2.1 app exactly: schema, routes, tools, navigation, scopes, capabilities and error codes. */
 final class FeatureSeamsTest extends TestCase
 {
     public function createApplication()
@@ -33,23 +34,22 @@ final class FeatureSeamsTest extends TestCase
         $this->assertSame($this->released(), $this->schema());
     }
 
+    public function test_databases_migrated_by_0_2_move_onto_the_kit_migrations_with_their_schema_and_data(): void
+    {
+        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true, '--path' => 'tests/Fixtures/v0.2.1-migrations']));
+        $this->assertKeptOnUpgrade(array_keys(array_diff_key(KitMigrationRepository::MAP, ['create_starter_domain_tables' => true])));
+    }
+
     public function test_databases_migrated_before_the_split_keep_their_schema_and_data(): void
     {
-        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true, '--path' => 'database/migrations/0001_01_01_000000_create_starter_identity_tables.php']));
-        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true, '--path' => 'tests/Fixtures/legacy-migrations/create_starter_domain_tables.php']));
-        DB::table('workspaces')->insert(['id' => 1, 'name' => 'Legacy']);
-        DB::table('notes')->insert(['workspace_id' => 1, 'body' => 'Kept']);
-        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
-        $this->assertSame($this->released(), $this->schema());
-        $this->assertSame(['Kept'], DB::table('notes')->pluck('body')->all());
-        foreach (['access', 'core', 'mcp', 'notes', 'settings', 'workspaces'] as $feature) {
-            $this->assertTrue(DB::table('migrations')->where('migration', 'create_starter_'.$feature.'_tables')->exists(), $feature);
-        }
+        $paths = ['0001_01_01_000000_create_starter_identity_tables', '0001_01_01_000001_create_permission_tables', '0001_01_01_000002_create_settings_table'];
+        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true, '--path' => [...array_map(fn (string $id): string => 'tests/Fixtures/v0.2.1-migrations/'.$id.'.php', $paths), 'tests/Fixtures/legacy-migrations/create_starter_domain_tables.php']]));
+        $this->assertKeptOnUpgrade([...$paths, 'create_starter_domain_tables']);
     }
 
     public function test_registry_contributions_match_the_released_wiring(): void
     {
-        $registry = app(StarterRegistry::class);
+        $registry = app(Registry::class);
         $this->assertSame([ReadSettings::class, UpdateSettings::class, ListNotes::class, ReadNote::class, CreateNote::class, UpdateNote::class, DeleteNote::class], $registry->mcpTools());
         $this->assertSame([['ability' => 'settings.read', 'label' => 'Settings', 'suffix' => 'settings'], ['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes']], $registry->navigationLinks());
         $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, update and delete workspace notes'];
@@ -75,7 +75,31 @@ final class FeatureSeamsTest extends TestCase
             $routes[] = implode('|', $route->methods()).' '.$route->uri().' '.implode(',', $route->gatherMiddleware());
         }
         sort($routes);
-        $this->assertSame(json_decode(file_get_contents(__DIR__.'/Fixtures/routes-v0.2.1.json'), true), $routes);
+        // 0.3 moved the starter's classes into tey/kit; nothing else about the routes changed.
+        $released = str_replace('App\\\\Starter\\\\', 'Tey\\\\Kit\\\\Features\\\\', file_get_contents(__DIR__.'/Fixtures/routes-v0.2.1.json'));
+        $this->assertSame(json_decode($released, true), $routes);
+    }
+
+    /** @param list<string> $legacy the template ids the database recorded */
+    private function assertKeptOnUpgrade(array $legacy): void
+    {
+        DB::table('workspaces')->insert(['id' => 1, 'name' => 'Legacy']);
+        DB::table('notes')->insert(['workspace_id' => 1, 'body' => 'Kept']);
+        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
+        $this->assertSame($this->released(), $this->schema());
+        $this->assertSame(['Kept'], DB::table('notes')->pluck('body')->all());
+        $ran = DB::table('migrations')->pluck('migration')->all();
+        foreach ($legacy as $id) {
+            $this->assertContains($id, $ran);
+            foreach (KitMigrationRepository::MAP[$id] as $kit) {
+                $this->assertContains($kit, $ran, $id);
+            }
+        }
+        $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
+        $this->assertCount(9, $kit);
+        $this->assertSame([], array_diff($kit, $ran));
+        $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
+        $this->assertSame($ran, DB::table('migrations')->pluck('migration')->all());
     }
 
     private function released(): array

@@ -5,9 +5,9 @@ use PHPUnit\Framework\TestCase;
 require dirname(__DIR__).'/vendor/autoload.php';
 
 /**
- * Each feature under app/Starter/<Feature> and resources/js/starter/<feature> may use only itself and the features it requires.
+ * Each feature of the tey/kit library (vendor/tey/kit/src/Features/<Feature>) may use only itself and the features it requires.
  * Code under <Feature>/Integrations/<Other> may also use <Other>: that is where optional integrations live, wired through the registry.
- * A feature's resources/js/starter/<feature> tree is its session UI, so it may also import session-ui.
+ * Each generated page under resources/js/pages/<Resource>/<Action> imports only from its own folder, and no page imports a layout.
  */
 final class FeatureGraphTest extends TestCase
 {
@@ -22,10 +22,8 @@ final class FeatureGraphTest extends TestCase
         'SessionUi' => ['Workspaces', 'Access'],
     ];
 
-    /** Host classes a feature may use; everything else under App\ belongs to the host or the composition root. */
-    private const HOST = ['App\\Models\\User'];
-
-    private const JS = ['core' => 'Core', 'workspaces' => 'Workspaces', 'access' => 'Access', 'settings' => 'Settings', 'mcp' => 'Mcp', 'notes' => 'Notes', 'session-ui' => 'SessionUi'];
+    /** Library features use no host class; everything else under Tey\Kit\ belongs to the composition root or the lifecycle. */
+    private const PREFIX = 'Tey\\Kit\\';
 
     public function test_the_graph_is_acyclic_and_names_known_features(): void
     {
@@ -51,10 +49,10 @@ final class FeatureGraphTest extends TestCase
         $this->assertSame([], $violations);
     }
 
-    public function test_js_features_import_only_required_features(): void
+    public function test_pages_import_only_their_own_folder(): void
     {
         $violations = [];
-        $root = dirname(__DIR__).'/resources/js/starter';
+        $root = dirname(__DIR__).'/resources/js/pages';
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)) as $file) {
             if (in_array($file->getExtension(), ['vue', 'ts'], true)) {
                 array_push($violations, ...$this->jsViolations($root, $file->getPathname(), file_get_contents($file->getPathname())));
@@ -65,21 +63,29 @@ final class FeatureGraphTest extends TestCase
 
     public function test_the_checks_catch_violations(): void
     {
-        $app = dirname(__DIR__).'/app/Starter';
+        $app = $this->library();
         $this->assertSame(
-            ['Notes/Operations/Bad.php uses App\\Starter\\Mcp\\Context', 'Notes/Operations/Bad.php uses App\\Starter\\FeatureProvider', 'Notes/Operations/Bad.php uses App\\Support\\StarterLifecycle'],
-            $this->phpViolations($app.'/Notes/Operations/Bad.php', "<?php\nnamespace App\\Starter\\Notes\\Operations;\nuse App\\Starter\\Mcp\\Context;\nuse App\\Starter\\Access\\Access;\nuse App\\Models\\User;\nfinal class Bad { public function a() { return [\\App\\Starter\\FeatureProvider::class, \\App\\Support\\StarterLifecycle::class, Models\\Note::class]; } }"),
+            ['Notes/Operations/Bad.php uses Tey\\Kit\\Features\\Mcp\\Context', 'Notes/Operations/Bad.php uses Tey\\Kit\\Features\\FeaturesServiceProvider', 'Notes/Operations/Bad.php uses Tey\\Kit\\Lineages', 'Notes/Operations/Bad.php uses App\\Models\\User'],
+            $this->phpViolations($app.'/Notes/Operations/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Notes\\Operations;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nuse Tey\\Kit\\Features\\Access\\Access;\nfinal class Bad { public function a() { return [\\Tey\\Kit\\Features\\FeaturesServiceProvider::class, \\Tey\\Kit\\Lineages::class, \\App\\Models\\User::class, Models\\Note::class]; } }"),
         );
-        $this->assertSame([], $this->phpViolations($app.'/Notes/Integrations/Mcp/Good.php', "<?php\nnamespace App\\Starter\\Notes\\Integrations\\Mcp;\nuse App\\Starter\\Mcp\\Context;\nfinal class Good {}"));
-        $this->assertSame(['Core/Bad.php uses App\\Starter\\Workspaces\\Models\\Workspace'], $this->phpViolations($app.'/Core/Bad.php', "<?php\nnamespace App\\Starter\\Core;\nuse App\\Starter\\Workspaces\\Models\\Workspace;\nfinal class Bad {}"));
-        $js = dirname(__DIR__).'/resources/js/starter';
-        $this->assertSame(['settings/pages/Bad.vue imports ../../notes/components/NoteEditor.vue'], $this->jsViolations($js, $js.'/settings/pages/Bad.vue', "<script setup lang=\"ts\">\nimport WorkspaceLayout from '../../session-ui/layouts/WorkspaceLayout.vue';\nimport NoteEditor from '../../notes/components/NoteEditor.vue';\n</script>"));
+        $this->assertSame([], $this->phpViolations($app.'/Notes/Integrations/Mcp/Good.php', "<?php\nnamespace Tey\\Kit\\Features\\Notes\\Integrations\\Mcp;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nfinal class Good {}"));
+        $this->assertSame(['Core/Bad.php uses Tey\\Kit\\Features\\Workspaces\\Models\\Workspace'], $this->phpViolations($app.'/Core/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Core;\nuse Tey\\Kit\\Features\\Workspaces\\Models\\Workspace;\nfinal class Bad {}"));
+        $js = dirname(__DIR__).'/resources/js/pages';
+        $this->assertSame(
+            ['Workspace/Settings/Edit/Page.vue imports ../../Layout.vue', 'Workspace/Settings/Edit/Page.vue imports ../../Note/Index/Partials/NoteEditor.vue'],
+            $this->jsViolations($js, $js.'/Workspace/Settings/Edit/Page.vue', "<script setup lang=\"ts\">\nimport Layout from '../../Layout.vue';\nimport NoteEditor from '../../Note/Index/Partials/NoteEditor.vue';\nimport Field from './Partials/Field.vue';\n</script>"),
+        );
+    }
+
+    private function library(): string
+    {
+        return dirname(__DIR__).'/vendor/tey/kit/src/Features';
     }
 
     /** @return list<string> */
     private function featureDirectories(): array
     {
-        return array_values(array_filter(glob(dirname(__DIR__).'/app/Starter/*'), 'is_dir'));
+        return array_values(array_filter(glob($this->library().'/*'), 'is_dir'));
     }
 
     /** @return list<string> */
@@ -110,7 +116,7 @@ final class FeatureGraphTest extends TestCase
     /** @return list<string> */
     private function phpViolations(string $path, string $source): array
     {
-        $relative = substr($path, strlen(dirname(__DIR__).'/app/Starter/'));
+        $relative = substr($path, strlen($this->library().'/'));
         $allowed = $this->allowed($relative);
         $namespace = '';
         $inUse = false;
@@ -125,7 +131,7 @@ final class FeatureGraphTest extends TestCase
                 $inUse = false;
             } elseif ($token->is([T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED]) && ($tokens[$index - 2]->id ?? null) !== T_NAMESPACE) {
                 $name = ltrim($token->text, '\\');
-                if (! $inUse && $token->is(T_NAME_QUALIFIED) && ! str_starts_with($name, 'App\\')) {
+                if (! $inUse && $token->is(T_NAME_QUALIFIED) && ! str_starts_with($name, self::PREFIX)) {
                     $name = $namespace.'\\'.$name;
                 }
                 $names[] = $name;
@@ -133,11 +139,11 @@ final class FeatureGraphTest extends TestCase
         }
         $violations = [];
         foreach (array_unique($names) as $name) {
-            if (! str_starts_with($name, 'App\\') || in_array($name, self::HOST, true)) {
+            if (! str_starts_with($name, self::PREFIX) && ! str_starts_with($name, 'App\\')) {
                 continue;
             }
             $segments = explode('\\', $name);
-            $ok = $segments[1] === 'Starter' && isset($segments[3], self::REQUIRES[$segments[2]]) && in_array($segments[2], $allowed, true);
+            $ok = $segments[0] === 'Tey' && $segments[2] === 'Features' && isset($segments[4], self::REQUIRES[$segments[3]]) && in_array($segments[3], $allowed, true);
             if (! $ok) {
                 $violations[] = $relative.' uses '.$name;
             }
@@ -150,14 +156,13 @@ final class FeatureGraphTest extends TestCase
     private function jsViolations(string $root, string $path, string $source): array
     {
         $relative = substr($path, strlen($root) + 1);
-        $feature = self::JS[explode('/', $relative)[0]];
-        $allowed = [$feature, 'SessionUi', ...$this->closure($feature, [])];
+        // A page's folder is the one holding its Page.vue; Partials/ belong to it.
+        $folder = preg_replace('#/Partials(/.*)?$#', '', dirname($relative));
         preg_match_all("/(?:import|from)\\s*\\(?\\s*['\"](\\.{1,2}\\/[^'\"]+)['\"]/", $source, $matches);
         $violations = [];
         foreach ($matches[1] as $import) {
             $target = $this->normalise(dirname($relative).'/'.$import);
-            $targetFeature = self::JS[explode('/', $target)[0]] ?? null;
-            if ($targetFeature === null || str_starts_with($target, '..') || ! in_array($targetFeature, $allowed, true)) {
+            if (! str_starts_with($target, $folder.'/') || basename($target) === 'Layout.vue') {
                 $violations[] = $relative.' imports '.$import;
             }
         }

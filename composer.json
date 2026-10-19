@@ -10,6 +10,7 @@
         "laravel/fortify": "^1.41",
         "laravel/framework": "^13.17",
         "laravel/mcp": "^1.0",
+        "laravel/nightwatch": "^1.30",
         "laravel/passport": "^13.10",
         "laravel/pennant": "^1.0",
         "lorisleiva/laravel-actions": "^2.12",
@@ -17,9 +18,8 @@
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
-        "tey/concierge": "0.7.2",
-        "tey/mod": "^0.8",
-        "tey/starter-blueprint": "^0.1"
+        "tey/concierge": "^0.7.3",
+        "tey/kit": "^0.1.2"
     },
     "require-dev": {
         "larastan/larastan": "^3.9",
@@ -28,6 +28,7 @@
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-browser": "^5.1",
         "pestphp/pest-plugin-laravel": "^5.0",
         "spatie/laravel-typescript-transformer": "^3.3"
     },
