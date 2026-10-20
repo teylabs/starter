@@ -15,6 +15,10 @@ php artisan starter:smoke
 - **`optimize`**, and any other cache commands (`config:cache`, `route:cache`, `view:cache`, `event:cache`), come after migrations.
 - **`starter:smoke`** runs last, against the deployed, cached app. The command is tracked in #32 and does not exist yet; leave the line out until it ships.
 
+## TLS
+
+TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded scheme and host from any proxy, so URLs and secure cookies follow `https`; the app must only be reachable through that proxy. CI proves it behind a local TLS proxy (`bin/tls-proxy.mjs`).
+
 ## Environment
 
 Set these per environment (see `.env.example`):

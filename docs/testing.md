@@ -23,7 +23,7 @@ npm test
 
 Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's.
 
-Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200, then `composer test:browser` (Pest's browser plugin with Playwright Chromium) signs the owner in and sees the app shell, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
+Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) signs the owner in and sees the app shell, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
 
 Run all of these before opening a pull request. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
 
@@ -61,4 +61,4 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 
 ## Not covered
 
-These checks use the HTTP kernel with synthetic data, plus one browser smoke test (desktop Chromium, sign-in and the app shell). No responsive, keyboard, accessibility, visual-diff or cookie-policy acceptance, and no HTTPS. On PostgreSQL the released-schema comparison is skipped (the fixture is a SQLite dump); there is no concurrency check. No jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published template upgrade. Say so rather than implying coverage.
+These checks use the HTTP kernel with synthetic data, plus one browser smoke test (desktop Chromium, sign-in and the app shell). No responsive, keyboard, accessibility, visual-diff or cookie-policy acceptance; HTTPS is checked only through a local TLS proxy, not a real certificate or platform. On PostgreSQL the released-schema comparison is skipped (the fixture is a SQLite dump); there is no concurrency check. No jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published template upgrade. Say so rather than implying coverage.

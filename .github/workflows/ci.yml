@@ -126,6 +126,15 @@ jobs:
           for attempt in 1 2 3 4 5 6 7 8 9 10; do curl -s -o /dev/null http://127.0.0.1:8000/login 2>/dev/null && break; sleep 1; done
           test "$(curl -s -o login.html -w '%{http_code}' http://127.0.0.1:8000/login)" = 200
           grep -q 'SignIn' login.html
+      - name: The sign-in page loads over HTTPS behind a TLS proxy
+        working-directory: app
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -subj /CN=localhost -days 1 -keyout tls.key -out tls.crt 2>/dev/null
+          node bin/tls-proxy.mjs 8443 8000 tls.key tls.crt > proxy.log 2>&1 &
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do curl -sk -o /dev/null https://localhost:8443/login && break; sleep 1; done
+          test "$(curl -sk -o login.html -w '%{http_code}' https://localhost:8443/login)" = 200
+          grep -q 'SignIn' login.html
+          grep -q 'https://localhost:8443/build/assets/' login.html
       - name: Browser smoke test
         working-directory: app
         run: |
