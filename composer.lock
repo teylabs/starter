@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7af1a80532635c9ae684890c5aa821ad",
+    "content-hash": "51597c332bb1006e55fefae709b05a34",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -9918,17 +9918,11 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.1.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/teylabs/kit.git",
-                "reference": "61c99180a2a536f1a71fe0d116a8e25a316dc4f2"
-            },
+            "version": "dev-feat/shell-live",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/61c99180a2a536f1a71fe0d116a8e25a316dc4f2",
-                "reference": "61c99180a2a536f1a71fe0d116a8e25a316dc4f2",
-                "shasum": ""
+                "type": "path",
+                "url": "../kit-live",
+                "reference": "b1b1eb6f7198a630caaa9161f6729b772e0c2cf8"
             },
             "require": {
                 "composer/semver": "^3.4",
@@ -9963,22 +9957,49 @@
                     "Tey\\Kit\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "test:scaffold": [
+                    "@php tests/ScaffoldCheck.php vendor/autoload.php"
+                ],
+                "test:features": [
+                    "@php tests/FeatureCheck.php vendor/autoload.php"
+                ],
+                "test:catalog": [
+                    "@php tests/CatalogCheck.php vendor/autoload.php"
+                ],
+                "test:lifecycle": [
+                    "@php tests/LifecycleCheck.php vendor/autoload.php"
+                ],
+                "test:status": [
+                    "@php tests/StatusCheck.php vendor/autoload.php"
+                ],
+                "test:resources": [
+                    "@php tests/ResourceCheck.php vendor/autoload.php"
+                ],
+                "test:library": [
+                    "@php tests/LibraryCheck.php vendor/autoload.php"
+                ],
+                "test:starter-catalog": [
+                    "@php tests/StarterCatalogCheck.php vendor/autoload.php"
+                ],
+                "test:adopt": [
+                    "@php tests/AdoptCheck.php vendor/autoload.php"
+                ],
+                "test:install": [
+                    "@php tests/InstallCheck.php vendor/autoload.php"
+                ],
+                "test:fonts": [
+                    "@php tests/FontsCheck.php vendor/autoload.php"
+                ]
+            },
             "license": [
                 "MIT"
             ],
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
-            "support": {
-                "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.1.5"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/jaspertey",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-10-20T12:23:43+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "tey/mod",
@@ -16311,12 +16332,14 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "tey/kit": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
