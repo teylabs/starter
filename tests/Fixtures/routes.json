@@ -60,8 +60,10 @@
     "PUT @{workspace}/settings/general web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "PUT @{workspace}/settings/people/invitations/{invitation} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "PUT @{workspace}/settings/people/members/{membership} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
+    "PUT @{workspace}/settings/people/ownership web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace,throttle:5,1",
     "PUT settings/general web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "PUT settings/people/invitations/{invitation} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "PUT settings/people/members/{membership} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
+    "PUT settings/people/ownership web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace,throttle:5,1",
     "PUT storage/{path} "
 ]

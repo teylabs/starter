@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
-import { Avatar, Button, Field, FormActions, Input, Page, Section, Select, SettingsFrame } from '@kit/ui';
-import { ref } from 'vue';
+import { Avatar, Button, Field, FormActions, Input, Page, PasswordInput, Section, Select, SettingsFrame } from '@kit/ui';
+import { computed, ref } from 'vue';
 
 // Settings › People: the members (avatar, name, email, role, joined), the invitations still open, and invite by email with a role. The list is the server's
 // (search and sort are in the query string); every action is refused by the server too, so a hidden control is a convenience, never the gate.
@@ -16,6 +16,9 @@ function changeRole(url: string, role: string) { router.put(url, { role }, { pre
 function remove(url: string) { router.delete(url, { preserveScroll: true, onFinish: () => (confirming.value = null) }); }
 function resend(url: string) { router.put(url, {}, { preserveScroll: true }); }
 function revoke(url: string) { router.delete(url, { preserveScroll: true }); }
+const transfer = useForm({ membership: '', password: '' });
+const heirs = computed(() => props.members.filter((member) => member.transferable).map((member) => ({ value: String(member.id), label: `${member.name} (${member.email})` })));
+function passOwnership() { transfer.put(props.transfer_url, { preserveScroll: true, onSuccess: () => transfer.reset() }); }
 const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 </script>
 <template>
@@ -64,6 +67,18 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
                             </span>
                         </li>
                     </ul>
+                </Section>
+                <Section v-if="can_transfer" title="Transfer ownership" description="Pass ownership to another member. They become the owner and you become an admin. Confirm with your password.">
+                    <p v-if="!heirs.length" class="text-sm text-muted-foreground">There is no other verified member to pass ownership to yet.</p>
+                    <form v-else class="grid gap-4" @submit.prevent="passOwnership">
+                        <Field id="transfer-member" label="New owner" :error="transfer.errors.membership">
+                            <Select id="transfer-member" v-model="transfer.membership" :options="heirs" placeholder="Choose a member" />
+                        </Field>
+                        <Field id="transfer-password" label="Your password" :error="transfer.errors.password">
+                            <PasswordInput id="transfer-password" v-model="transfer.password" required autocomplete="current-password" :invalid="Boolean(transfer.errors.password)" aria-describedby="transfer-password-error" />
+                        </Field>
+                        <FormActions><Button variant="destructive" :disabled="transfer.processing || !transfer.membership || !transfer.password" data-test="transfer-ownership">{{ transfer.processing ? 'Transferring…' : 'Transfer ownership' }}</Button></FormActions>
+                    </form>
                 </Section>
                 <Section title="Pending invitations">
                     <p v-if="!invitations.length" class="text-sm text-muted-foreground">No pending invitations.</p>

@@ -133,6 +133,7 @@ is_you: boolean,
 manageable: boolean,
 update_url: string,
 destroy_url: string,
+transferable: boolean,
 }[],
 invitations: {
 id: string,
@@ -154,6 +155,8 @@ invite_url: string,
 search: string,
 sort: string,
 invite_link: string | null,
+can_transfer: boolean,
+transfer_url: string,
 };
 export type ProfileViewModel = {
 title: string,
