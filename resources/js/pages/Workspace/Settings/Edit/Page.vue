@@ -7,11 +7,11 @@ import { Field, FormCard, Input, Page, SettingsFrame, TimezoneSelect } from '@ki
 const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewModel>();
 </script>
 <template>
-    <Page lg>
+    <Page sm>
         <SettingsFrame>
             <Form :action="props.update_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
                 <fieldset :disabled="!can_write" class="contents">
-                    <FormCard title="General" description="How this workspace is named and which timezone it keeps." submit-label="Save settings" busy-label="Saving…">
+                    <FormCard title="General" description="How this workspace is named and which timezone it keeps." submit-label="Save" busy-label="Saving…">
                         <Input type="hidden" name="expected_version" :model-value="String(settings.version)" />
                         <Input type="hidden" name="intent_key" :model-value="intent_key" />
                         <Field id="display-name" name="display_name" label="Display name" :span="4">

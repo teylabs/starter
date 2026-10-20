@@ -58,13 +58,20 @@ final class SettingsFormsTest extends TestCase
             }
             $template = (string) preg_replace('#<script\b.*?</script>#s', '', $source);
             $count = preg_match_all('/<Form[\s>]/', $template);
+            // A guest card (sign-in, the invitation) is not a settings form: no sticky FormActions bar, a full-width primary button of its own.
+            if (str_contains($name, '/pages/Auth/')) {
+                $this->assertStringNotContainsString('<FormActions', $template, $name.' is a guest card: a full-width Button, not the FormActions bar');
+                $this->assertStringContainsString('class="w-full"', $template, $name.' has a full-width submit');
+
+                continue;
+            }
             if ($count > 0) {
                 $forms += $count;
                 $this->assertSame($count, preg_match_all('/<(FormCard|FormActions)\b/', $template), $name.' has a <Form> without its FormCard or FormActions');
                 $this->assertDoesNotMatchRegularExpression('/<(FormCard|FormActions)[^>]*\sv-if=/', $source, $name.' hides its form actions');
             }
         }
-        $this->assertGreaterThanOrEqual(6, $forms);
+        $this->assertGreaterThanOrEqual(4, $forms);
     }
 
     public function test_every_destructive_action_goes_through_the_confirm_dialog(): void
@@ -189,5 +196,38 @@ final class SettingsFormsTest extends TestCase
         $this->assertContains('general', $checked);
         $this->assertContains('connections', $checked);
         $this->assertContains('people', $checked);
+    }
+
+    public function test_button_labels_are_specific_verbs_never_submit_ok_or_save_changes(): void
+    {
+        $banned = ['Submit', 'OK', 'Okay', 'Save changes', 'Save settings', 'Done', 'Go'];
+        $checked = 0;
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js', FilesystemIterator::SKIP_DOTS)) as $file) {
+            if ($file->getExtension() !== 'vue') {
+                continue;
+            }
+            $template = (string) preg_replace('#<script\b.*?</script>#s', '', (string) file_get_contents($file->getPathname()));
+            $name = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
+            // Every label attribute (submit, busy, confirm) and every button's text.
+            preg_match_all('/(?:submit-label|busy-label|confirm-label|cancel-label|:submit-label)="([^"]*)"/', $template, $attributes);
+            preg_match_all('/<Button\b[^>]*>\s*([^<{]+?)\s*<\/Button>/', $template, $texts);
+            foreach ([...$attributes[1], ...$texts[1]] as $label) {
+                $checked++;
+                $this->assertNotContains(trim($label), $banned, $name.' has the button label "'.$label.'": use Save, Create <thing>, or a specific verb');
+            }
+        }
+        $this->assertGreaterThan(15, $checked);
+        // The bar's defaults are the specified ones.
+        $actions = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Form/FormActions.vue');
+        $this->assertStringContainsString("submitLabel: 'Save'", $actions);
+        $this->assertDoesNotMatchRegularExpression("/submitLabel: '(Submit|OK|Save changes)'/", $actions);
+    }
+
+    public function test_a_settings_section_is_a_small_page(): void
+    {
+        // Settings sections beside the sidebar are <Page sm>: General (Settings/Edit) and the profile. The data pages (People, Connections) are full width.
+        foreach (['Workspace/Settings/Edit/Page.vue', 'Workspace/Profile/Edit/Page.vue'] as $page) {
+            $this->assertMatchesRegularExpression('/<Page sm[\s>]/', (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/'.$page), $page.' is <Page sm>');
+        }
     }
 }

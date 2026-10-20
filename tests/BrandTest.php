@@ -146,6 +146,57 @@ final class BrandTest extends TestCase
         $this->assertStringNotContainsString('©', $text);
     }
 
+    /** @return array{0: string, 1: string} the rendered HTML and text of a notification, with this brand */
+    private function sentMail(array $brand): array
+    {
+        config(['mail.default' => 'array', 'kit.brand' => array_merge(config('kit.brand'), $brand)]);
+        Brand::applyToMail();
+        $notification = new class extends Notification
+        {
+            public function via(): array
+            {
+                return ['mail'];
+            }
+
+            public function toMail(): MailMessage
+            {
+                return (new MailMessage)->subject('Hello')->line('A line.');
+            }
+        };
+        Notifications::route('mail', 'someone@example.test')->notifyNow($notification);
+        $email = Mail::mailer('array')->getSymfonyTransport()->messages()->last()->getOriginalMessage();
+
+        return [(string) $email->getHtmlBody(), (string) $email->getTextBody()];
+    }
+
+    public function test_a_private_app_leaves_the_legal_parts_out_of_the_mail_and_web_footers(): void
+    {
+        [$html, $text] = $this->sentMail(['legal_name' => 'Acme Holdings', 'postal_address' => '5 Test Road, Testville', 'support_email' => 'help@acme.test', 'private' => true]);
+        $this->assertMatchesRegularExpression('/<p[^>]*>help@acme\.test<\/p>/', $html);
+        $this->assertStringNotContainsString('Acme Holdings', $html.$text);
+        $this->assertStringNotContainsString('5 Test Road', $html.$text);
+        $this->assertStringNotContainsString('·', $text);
+        $this->assertSame('help@acme.test', collect(explode("\n", $text))->first(fn (string $line) => str_contains($line, 'help@acme.test')));
+        $this->assertDoesNotMatchRegularExpression('/<p[^>]*>\s*<\/p>/', $html);
+        // With no contact either the line is gone, not an empty paragraph or a dangling separator.
+        [$html, $text] = $this->sentMail(['private' => true, 'support_email' => '']);
+        $this->assertDoesNotMatchRegularExpression('/<p[^>]*>\s*(·|Built by)?\s*<\/p>/', $html);
+        $this->assertStringNotContainsString('Built by', $html);
+        // The web footer has no Terms or Privacy; the credit stays.
+        $this->assertSame(['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => []], Brand::webFooter());
+        // Any one part left empty is dropped cleanly even when not private.
+        [$html] = $this->sentMail(['private' => false, 'legal_name' => '', 'postal_address' => '5 Test Road, Testville', 'support_email' => 'help@acme.test']);
+        $this->assertMatchesRegularExpression('/<p[^>]*>5 Test Road, Testville · help@acme\.test<\/p>/', $html);
+        $this->assertStringNotContainsString('Built by  ', $html);
+        // The placeholders: the legal parts are asked for unless the app is private.
+        config(['kit.brand.legal_name' => 'Example Company', 'kit.brand.postal_address' => '1 Example Street, Example City', 'kit.brand.terms_url' => '/terms', 'kit.brand.privacy_url' => '/privacy', 'kit.brand.private' => false]);
+        $this->assertContains('brand.legal_name', Brand::placeholders());
+        config(['kit.brand.private' => true]);
+        $this->assertNotContains('brand.legal_name', Brand::placeholders());
+        $this->assertNotContains('brand.terms_url', Brand::placeholders());
+        $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+    }
+
     public function test_the_web_footer_is_identity_credit_and_legal_links_without_a_copyright_sign(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
