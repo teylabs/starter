@@ -34,11 +34,17 @@ final class McpCapabilities
 
     private const NOTE_EDITOR = 'resources/js/pages/Workspace/Note/Index/Partials/NoteEditor.vue';
 
-    /** UI source file => the capabilities it reaches. */
+    private const SETTINGS_CONTROLLER = self::KIT.'Settings/Http/SettingsController.php';
+
+    private const NOTES_CONTROLLER = self::KIT.'Notes/Http/NoteController.php';
+
+    /** UI source file (each page and the kit controller that serves it) => the capabilities it reaches. */
     public const INVENTORY = [
         self::SETTINGS_PAGE => ['workspace.settings.read', 'workspace.settings.update'],
         self::NOTES_PAGE => ['workspace.notes.list', 'workspace.notes.read', 'workspace.notes.create'],
         self::NOTE_EDITOR => ['workspace.notes.update', 'workspace.notes.delete'],
+        self::SETTINGS_CONTROLLER => ['workspace.settings.read', 'workspace.settings.update'],
+        self::NOTES_CONTROLLER => ['workspace.notes.list', 'workspace.notes.read', 'workspace.notes.create', 'workspace.notes.update', 'workspace.notes.delete'],
     ];
 
     /** The parity tests: name => [path, what they cover on both transports]. */
@@ -51,13 +57,13 @@ final class McpCapabilities
 
     /** Capability id => [kind, UI references, domain operation, MCP tool class, scope, tests, effects]. */
     private const CAPABILITIES = [
-        'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::KIT.'Settings/Http/SettingsController.php', 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
-        'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'submit'], [self::KIT.'Settings/Http/SettingsController.php', 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
-        'workspace.notes.list' => ['read', [[self::NOTES_PAGE, 'props'], [self::KIT.'Notes/Http/NoteController.php', 'index']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'listing'], ListNotes::class, 'notes.read', ['session_notes', 'delegated_settings', 'inertia_pages'], ['returns the workspace notes']],
-        'workspace.notes.read' => ['read', [[self::NOTES_PAGE, 'props'], [self::KIT.'Notes/Http/NoteController.php', 'show']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'read'], ReadNote::class, 'notes.read', ['session_notes', 'delegated_settings'], ['returns one note and its version']],
-        'workspace.notes.create' => ['write', [[self::NOTES_PAGE, 'create'], [self::KIT.'Notes/Http/NoteController.php', 'store']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], CreateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['creates a note', 'audits workspace.note.create once per intent key']],
-        'workspace.notes.update' => ['write', [[self::NOTE_EDITOR, 'form'], [self::KIT.'Notes/Http/NoteController.php', 'update']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], UpdateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['updates the note at the expected version', 'audits workspace.note.update once per intent key']],
-        'workspace.notes.delete' => ['write', [[self::NOTE_EDITOR, 'deletion'], [self::KIT.'Notes/Http/NoteController.php', 'destroy']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], DeleteNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['deletes the note at the expected version', 'audits workspace.note.delete once per intent key']],
+        'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
+        'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'submit'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
+        'workspace.notes.list' => ['read', [[self::NOTES_PAGE, 'props'], [self::NOTES_CONTROLLER, 'index']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'listing'], ListNotes::class, 'notes.read', ['session_notes', 'delegated_settings', 'inertia_pages'], ['returns the workspace notes']],
+        'workspace.notes.read' => ['read', [[self::NOTES_PAGE, 'props'], [self::NOTES_CONTROLLER, 'show']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'read'], ReadNote::class, 'notes.read', ['session_notes', 'delegated_settings'], ['returns one note and its version']],
+        'workspace.notes.create' => ['write', [[self::NOTES_PAGE, 'create'], [self::NOTES_CONTROLLER, 'store']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], CreateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['creates a note', 'audits workspace.note.create once per intent key']],
+        'workspace.notes.update' => ['write', [[self::NOTE_EDITOR, 'form'], [self::NOTES_CONTROLLER, 'update']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], UpdateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['updates the note at the expected version', 'audits workspace.note.update once per intent key']],
+        'workspace.notes.delete' => ['write', [[self::NOTE_EDITOR, 'deletion'], [self::NOTES_CONTROLLER, 'destroy']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], DeleteNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['deletes the note at the expected version', 'audits workspace.note.delete once per intent key']],
     ];
 
     public static function inventory(): array

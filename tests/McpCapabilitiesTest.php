@@ -75,6 +75,14 @@ final class McpCapabilitiesTest extends TestCase
                 }
             }
         }
+        // Every UI reference is an inventory entry that lists the capability it serves.
+        $inventory = array_column($document['inventory'], 'capabilities', 'path');
+        foreach ($document['capabilities'] as $capability) {
+            foreach ($capability['ui'] as $reference) {
+                $this->assertArrayHasKey($reference['path'], $inventory, $capability['id'].' references UI that is not inventoried');
+                $this->assertContains($capability['id'], $inventory[$reference['path']], $reference['path']);
+            }
+        }
         foreach ($document['inventory'] as $entry) {
             // Variants map each capability of the entry to that capability's variant ids.
             $this->assertEqualsCanonicalizing($entry['capabilities'], array_keys($entry['variants']), $entry['path']);

@@ -49,6 +49,48 @@
                     "default"
                 ]
             }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/Settings/Http/SettingsController.php",
+            "capabilities": [
+                "workspace.settings.read",
+                "workspace.settings.update"
+            ],
+            "variants": {
+                "workspace.settings.read": [
+                    "default"
+                ],
+                "workspace.settings.update": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+            "capabilities": [
+                "workspace.notes.list",
+                "workspace.notes.read",
+                "workspace.notes.create",
+                "workspace.notes.update",
+                "workspace.notes.delete"
+            ],
+            "variants": {
+                "workspace.notes.list": [
+                    "default"
+                ],
+                "workspace.notes.read": [
+                    "default"
+                ],
+                "workspace.notes.create": [
+                    "default"
+                ],
+                "workspace.notes.update": [
+                    "default"
+                ],
+                "workspace.notes.delete": [
+                    "default"
+                ]
+            }
         }
     ],
     "capabilities": [
