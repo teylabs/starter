@@ -13,6 +13,12 @@ final class TrustedHostTest extends TestCase
         return require __DIR__.'/application.php';
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+    }
+
     public function test_only_the_app_url_host_is_trusted(): void
     {
         config(['app.url' => 'https://app.example.test']);
