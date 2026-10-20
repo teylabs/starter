@@ -64,6 +64,10 @@ final class MigrationTest extends TestCase
         // Explicit synthetic test data only; migrations/public bootstrap never run this.
         $this->assertSame(0, app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]));
         $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
+        // A fresh install configures every default role, so the sync grants each one its defaults and skips none.
+        $this->assertStringNotContainsString('skipped', app(Kernel::class)->output());
+        $this->assertSame(['admin', 'owner', 'viewer'], DB::table('roles')->orderBy('name')->pluck('name')->unique()->values()->all());
+        $this->assertTrue(DB::table('role_has_permissions')->join('roles', 'roles.id', '=', 'role_has_permissions.role_id')->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')->where('roles.name', 'admin')->where('permissions.name', 'workspace.settings.update')->exists());
         foreach ([1 => 'Schema Alpha', 2 => 'Schema Beta', 99 => 'Synthetic operator'] as $id => $name) {
             User::create(['id' => $id, 'name' => $name, 'email' => 'schema-'.$id.'@example.test', 'email_verified_at' => now()]);
         }
