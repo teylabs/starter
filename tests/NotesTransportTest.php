@@ -43,6 +43,9 @@ final class NotesTransportTest extends TestCase
         $stale = $update;
         $stale['intent_key'] = 'stale-note';
         $this->putJson('/workspaces/1/notes/'.$id, $stale)->assertConflict()->assertJsonPath('error', 'stale_note');
+        // Recovery: re-read the note and retry at its current version.
+        $current = $this->getJson('/workspaces/1/notes/'.$id)->assertOk()->json('version');
+        $this->putJson('/workspaces/1/notes/'.$id, ['body' => 'Changed note', 'expected_version' => $current, 'intent_key' => 'recover-note'])->assertOk()->assertJsonPath('record.version', $current + 1);
         $foreign = $update;
         $foreign['intent_key'] = 'foreign-note';
         $this->putJson('/workspaces/1/notes/2', $foreign)->assertNotFound();
@@ -51,14 +54,14 @@ final class NotesTransportTest extends TestCase
         $this->putJson('/workspaces/1/notes/'.$id, $changed)->assertConflict()->assertJsonPath('error', 'note_intent_conflict');
         $this->postJson('/workspaces/1/notes', ['body' => '', 'intent_key' => 'invalid'])->assertUnprocessable();
         $this->get('/workspaces/1/notes')->assertOk()->assertSee('Changed note');
-        $delete = ['expected_version' => 2, 'intent_key' => 'delete-note'];
+        $delete = ['expected_version' => 3, 'intent_key' => 'delete-note'];
         $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
         $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
         $this->getJson('/workspaces/1/notes/'.$id)->assertNotFound();
         DB::table('notes')->insert(['id' => $id, 'workspace_id' => 2, 'body' => 'Foreign replacement', 'version' => 1]);
         $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertNotFound();
         self::assertSame('Foreign replacement', DB::table('notes')->where('id', $id)->value('body'));
-        self::assertSame(3, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
+        self::assertSame(4, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
         self::assertSame('Beta private', DB::table('notes')->where('workspace_id', 2)->value('body'));
         failInserts('fail_note_audit', 'audit_events', 'synthetic_note_audit_failure');
         try {
@@ -69,6 +72,11 @@ final class NotesTransportTest extends TestCase
         self::assertSame('Alpha private', DB::table('notes')->where('id', 1)->value('body'));
         self::assertSame(1, DB::table('notes')->where('id', 1)->value('version'));
         self::assertFalse(DB::table('note_intents')->where('intent_key', 'failed-note-audit')->exists());
+        // Recovery: once the failure clears, the same intent applies exactly once.
+        $failed = ['body' => 'Must roll back', 'expected_version' => 1, 'intent_key' => 'failed-note-audit'];
+        $this->putJson('/workspaces/1/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
+        $this->putJson('/workspaces/1/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
+        self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.note.update')->where('details', 'like', '%"note_id":1%')->count());
         $this->postJson('/logout')->assertNoContent();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
