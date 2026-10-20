@@ -35,7 +35,7 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 | `config/*.php` | host | Published package config: once published, a file is the whole truth for its key. |
 | `resources/js/{app.ts,layouts,components,composables,lib}`, `resources/js/pages/Auth/SignIn` | host | The designed shells, primitives and sign-in page. |
 
-`app.ts` resolves `./pages/<name>.vue` and wraps `Auth/*` pages in `GuestLayout` and every other page in `AppLayout`, both fed by the shared `layout` props (the kit's `ShellData`). The kit's own `pages/Workspace/Layout.vue` is its unstyled starting point and is not used. The kit library's feature graph is checked in `tests/FeatureGraphTest.php`.
+`app.ts` resolves `./pages/<name>.vue` and wraps `Auth/*` pages in `GuestLayout` and every other page in `AppLayout`, both fed by the shared `layout` props (the kit's `ShellData`). `AppLayout` wraps the kit's `pages/Workspace/Layout.vue` (the header, switcher, nav, settings menu, user menu and drawer) with the app's mark, appearance choice, width and footer. The kit library's feature graph is checked in `tests/FeatureGraphTest.php`.
 
 ## Principles
 

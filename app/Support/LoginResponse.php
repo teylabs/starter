@@ -14,8 +14,8 @@ final class LoginResponse implements LoginResponseContract
         if ($request->wantsJson()) {
             return response()->json(['two_factor' => false]);
         }
-        $reachable = array_values(array_filter(app(PageShell::class)->forRequest($request)->workspaces, fn (array $workspace) => $workspace['href'] !== null));
+        $reachable = array_values(array_filter(app(PageShell::class)->forRequest($request)->switcher['choices'], fn (array $workspace) => $workspace['url'] !== null));
 
-        return redirect()->intended(count($reachable) === 1 ? $reachable[0]['href'] : Fortify::redirects('login'));
+        return redirect()->intended(count($reachable) === 1 ? $reachable[0]['url'] : Fortify::redirects('login'));
     }
 }

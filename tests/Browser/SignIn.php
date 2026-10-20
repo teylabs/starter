@@ -41,9 +41,6 @@ it('signs the first owner in with one click and reaches the app shell', function
         $page->click('[data-local-login] button')
             ->assertPathIs('/workspaces')
             ->assertPresent('[data-shell-bar]')
-            ->assertSeeIn('[data-shell-nav]', 'Workspaces')
-            ->assertSeeIn('[data-shell-nav]', 'Local workspace')
-            ->assertDontSeeIn('[data-shell-nav]', 'Local owner')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
 
@@ -54,9 +51,11 @@ it('signs the first owner in with one click and reaches the app shell', function
 
         $page->keys('[role=menu]', 'Escape')
             ->click('Local workspace')
+            ->assertPathIs("/workspaces/{$workspace}/notes")
+            ->assertSeeIn('[data-shell-nav]', 'Notes')
+            ->click('[data-shell-settings]')
+            ->click('Workspace settings')
             ->assertPathIs("/workspaces/{$workspace}/settings")
-            ->assertSee('Workspace settings')
-            ->assertSeeIn('[data-shell-nav]', 'Settings')
             ->assertSeeIn('[data-shell-nav]', 'Notes')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'workspace');

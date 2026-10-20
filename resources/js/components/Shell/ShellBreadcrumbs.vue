@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ChevronRight } from '@lucide/vue';
-import type { ShellLink } from './types';
+type ShellLink = { label: string; url: string };
 
 /* Above the title, only when the server sends two or more levels. */
 defineProps<{ breadcrumbs: ShellLink[] }>();

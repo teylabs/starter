@@ -34,27 +34,56 @@ delete_intent: string,
 export namespace SessionUi {
 export namespace Data {
 export type ShellData = {
-brand: string,
-user: {
+product: {
+name: string,
+url: string,
+},
+switcher: {
+current: {
 id: number,
 name: string,
-email: string,
 } | null,
-workspace: {
+choices: {
 id: number,
 name: string,
-} | null,
-navigation: {
-label: string,
-href: string,
+url: string | null,
 current: boolean,
 }[],
-workspaces: {
-id: number,
-name: string,
-href: string | null,
+},
+navigation: {
+label: string,
+url: string,
+current: boolean,
+group: string,
 }[],
-logout_url: string | null,
+settings: {
+label: string,
+current: boolean,
+items: {
+label: string,
+url: string,
+current: boolean,
+group: string,
+}[],
+} | null,
+user: {
+name: string,
+email: string,
+initials: string,
+items: {
+label: string,
+url: string,
+current: boolean,
+group: string,
+}[],
+} | null,
+links: {
+home: string,
+switcher: string,
+sign_in: string,
+sign_out: string | null,
+},
+env: string | null,
 };
 }
 export namespace ViewModels {

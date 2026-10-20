@@ -7,7 +7,7 @@
     "command": "composer types:generate (exports nested namespaces for the Vue SFC compiler)"
   },
   "generated": {
-    "resources/js/types.generated.d.ts": "e2ee06eb9e7c33c33349b7200d47f88ba0a4b03f69a35221362ab29d073281df",
+    "resources/js/types.generated.d.ts": "123ba6494c098df5e158e49c1baab32fcbcc0f320ec5262a7567831128136be2",
     "docs/mcp-capabilities.json": "2980ac42f5379fa6dc8292d3de62b486b1b6602c1d9b730a702cc7ff2275a2b6"
   },
   "host_owned": [
@@ -24,6 +24,7 @@
       "database/migrations/kit/",
       "resources/js/pages/Auth/Login/",
       "resources/js/pages/Workspace/Layout.vue",
+      "resources/js/pages/Workspace/Partials/",
       "resources/js/pages/Workspace/Index/",
       "resources/js/pages/Workspace/Error/",
       "resources/js/pages/Workspace/Settings/",

@@ -14,7 +14,7 @@ withDefaults(
 );
 
 const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
-const product = computed(() => page.props.layout?.brand ?? '');
+const product = computed(() => page.props.layout?.product.name ?? '');
 </script>
 
 <template>

@@ -52,7 +52,7 @@ final class FeatureSeamsTest extends TestCase
     {
         $registry = app(Registry::class);
         $this->assertSame([ReadSettings::class, UpdateSettings::class, ListNotes::class, ReadNote::class, CreateNote::class, UpdateNote::class, DeleteNote::class], $registry->mcpTools());
-        $this->assertSame([['ability' => 'settings.read', 'label' => 'Settings', 'suffix' => 'settings'], ['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes']], $registry->navigationLinks());
+        $this->assertSame([['ability' => 'settings.read', 'label' => 'Workspace settings', 'suffix' => 'settings', 'group' => 'workspace', 'order' => 0, 'active' => null, 'slot' => 'settings'], ['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']], $registry->navigationLinks());
         $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, update and delete workspace notes'];
         $this->assertSame($scopes, $registry->tokenScopes());
         $this->assertSame(array_keys($scopes), Passport::scopeIds());

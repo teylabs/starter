@@ -31,20 +31,22 @@ final class InertiaTransportTest extends TestCase
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'Auth/SignIn/Page')->assertJsonPath('props.layout.user', null)
-            ->assertJsonPath('props.layout.workspaces', [])->assertJsonPath('props.layout.navigation', []);
+            ->assertJsonPath('props.layout.switcher.choices', [])->assertJsonPath('props.layout.navigation', []);
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
         $this->get('/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
-            ->assertJsonPath('props.layout.workspace', null)->assertJsonCount(1, 'props.layout.workspaces')
-            ->assertJsonPath('props.layout.workspaces.0.id', 1)->assertJsonMissingPath('props.layout.user.password');
+            ->assertJsonPath('props.layout.switcher.current', null)->assertJsonCount(1, 'props.layout.switcher.choices')
+            ->assertJsonPath('props.layout.switcher.choices.0.id', 1)->assertJsonPath('props.layout.switcher.choices.0.url', '/workspaces/1/notes')
+            ->assertJsonPath('props.layout.settings', null)->assertJsonMissingPath('props.layout.user.password');
         $page = $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'Workspace/Note/Index/Page')->assertJsonPath('props.can_write', true)
             ->assertJsonPath('props.notes.0.body', 'Alpha private')->assertJsonCount(1, 'props.notes')
-            ->assertJsonPath('props.layout.workspace.id', 1)->assertJsonPath('props.layout.navigation.1.label', 'Notes')
-            ->assertJsonPath('props.layout.navigation.1.current', true)->json();
+            ->assertJsonPath('props.layout.switcher.current.id', 1)->assertJsonCount(1, 'props.layout.navigation')->assertJsonPath('props.layout.navigation.0.label', 'Notes')
+            ->assertJsonPath('props.layout.navigation.0.current', true)->assertJsonPath('props.layout.settings.items.0.label', 'Workspace settings')
+            ->assertJsonPath('props.layout.settings.items.0.current', false)->assertJsonPath('props.layout.settings.current', false)->json();
         $intent = $page['props']['create_intent'];
         $this->post('/workspaces/1/notes', ['body' => 'Inertia-created', 'intent_key' => $intent], $inertia)->assertRedirect('/workspaces/1/notes');
         $this->post('/workspaces/1/notes', ['body' => 'Inertia-created', 'intent_key' => $intent], $inertia)->assertRedirect('/workspaces/1/notes');
@@ -72,9 +74,10 @@ final class InertiaTransportTest extends TestCase
             ->assertJsonPath('component', 'Workspace/Error/Page')->assertJsonPath('props.status', 409)
             ->assertJsonPath('props.message', 'These settings changed since you opened the form. Reload and review the current values.');
         $this->get('/workspaces/2/notes', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page')
-            ->assertJsonPath('props.layout.workspace', null)->assertJsonCount(1, 'props.layout.workspaces');
+            ->assertJsonPath('props.layout.switcher.current', null)->assertJsonCount(1, 'props.layout.switcher.choices');
         config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
-        $this->get('/workspaces/1/settings', $inertia)->assertOk()->assertJsonCount(1, 'props.layout.navigation')->assertJsonPath('props.layout.navigation.0.label', 'Settings');
+        $this->get('/workspaces/1/settings', $inertia)->assertOk()->assertJsonCount(0, 'props.layout.navigation')->assertJsonPath('props.layout.settings.items.0.label', 'Workspace settings')
+            ->assertJsonPath('props.layout.settings.current', true)->assertJsonPath('props.layout.switcher.choices.0.url', '/workspaces/1/settings');
         $this->get('/workspaces/1/notes', $inertia)->assertForbidden()->assertJsonPath('component', 'Workspace/Error/Page');
         config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.notes' => true]]);
         $this->postJson('/logout')->assertNoContent();

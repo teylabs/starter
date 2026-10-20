@@ -42,7 +42,7 @@ final class HomeLandingTest extends TestCase
     public function test_a_user_with_one_workspace_lands_in_it(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
-        $this->assertSame(url('/workspaces/2/settings'), $this->signIn(2));
+        $this->assertSame(url('/workspaces/2/notes'), $this->signIn(2));
     }
 
     public function test_a_user_with_two_workspaces_keeps_the_chooser(): void
