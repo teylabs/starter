@@ -12,6 +12,14 @@ use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
 // Smoke: the designed sign-in page loads, the owner signs in, the app shell lists their workspace and opens it, and
 // their name is in the user menu, not the nav.
+// The web fonts have arrived (or failed) before each screenshot.
+function settled(mixed $page): mixed
+{
+    $page->script('() => document.fonts.ready.then(() => true)');
+
+    return $page;
+}
+
 it('signs the owner in to the app shell', function (): void {
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]))->toBe(0);
@@ -24,8 +32,8 @@ it('signs the owner in to the app shell', function (): void {
     $page = visit('/login')
         ->assertSee('Sign in to your account')
         ->assertPresent('[data-guest-card]')
-        ->assertNoJavaScriptErrors()
-        ->screenshot(filename: 'sign-in');
+        ->assertNoJavaScriptErrors();
+    settled($page)->screenshot(filename: 'sign-in');
 
     $page->type('email', 'owner@example.test')
         ->type('password', $password)
@@ -35,13 +43,13 @@ it('signs the owner in to the app shell', function (): void {
         ->assertSeeIn('[data-shell-nav]', 'Workspaces')
         ->assertSeeIn('[data-shell-nav]', 'Acme')
         ->assertDontSeeIn('[data-shell-nav]', 'Ada Owner')
-        ->assertNoJavaScriptErrors()
-        ->screenshot(filename: 'app-shell');
+        ->assertNoJavaScriptErrors();
+    settled($page)->screenshot(filename: 'app-shell');
 
     $page->click('[data-shell-user-menu]')
         ->assertSee('Ada Owner')
-        ->assertSee('owner@example.test')
-        ->screenshot(filename: 'user-menu');
+        ->assertSee('owner@example.test');
+    settled($page)->screenshot(filename: 'user-menu');
 
     $page->keys('[role=menu]', 'Escape')
         ->click('Acme')
@@ -49,6 +57,6 @@ it('signs the owner in to the app shell', function (): void {
         ->assertSee('Workspace settings')
         ->assertSeeIn('[data-shell-nav]', 'Settings')
         ->assertSeeIn('[data-shell-nav]', 'Notes')
-        ->assertNoJavaScriptErrors()
-        ->screenshot(filename: 'workspace');
+        ->assertNoJavaScriptErrors();
+    settled($page)->screenshot(filename: 'workspace');
 });

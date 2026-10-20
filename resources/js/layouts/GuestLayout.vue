@@ -41,7 +41,7 @@ const product = computed(() => page.props.layout?.brand ?? '');
             data-guest-card
         >
             <div v-if="showHeading && title" class="space-y-2">
-                <h1 class="text-2xl font-bold tracking-tight text-foreground">
+                <h1 class="font-serif text-4xl tracking-tight text-foreground">
                     {{ title }}
                 </h1>
                 <p v-if="description" class="text-sm text-muted-foreground">
