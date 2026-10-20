@@ -23,7 +23,7 @@ npm test
 
 Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's.
 
-Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) signs the owner in and sees the app shell, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
+Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) signs the owner in, sees their workspace listed in the shell nav and their name only in the user menu, then opens the workspace, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
 
 Run all of these before opening a pull request. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
 
@@ -44,6 +44,7 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 | `LifecycleTest.php` | `kit:add` of every feature through released tey/kit 0.1.2 and Mod 0.9 in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
 | `FeatureSeamsTest.php` | The 0.2.1 schema, routes and registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
 | `FeatureGraphTest.php` | The kit library's feature graph, and pages importing only their own folder |
+| `TrustedHostTest.php` | Only `APP_URL`'s host is trusted behind the proxy: forged and lookalike hosts get a 400 |
 | `McpCapabilitiesTest.php`, `StorageTest.php`, `NightwatchConfigTest.php`, `CacheGuardTest.php`, `TimezoneTest.php` | The committed MCP inventory, the private s3 disk and media disk, Nightwatch sampling, the cache holding only arrays and scalars, UTC |
 | `MigrationTest.php` | Migrating an empty database, ordering, no seeded data, repeat runs |
 

@@ -1,5 +1,239 @@
 {
-    "inventory": 1,
+    "version": 1,
+    "inventory": [
+        {
+            "path": "/workspaces",
+            "capabilities": [],
+            "variants": [
+                "inertia",
+                "json"
+            ]
+        },
+        {
+            "path": "/workspaces/{workspace}/settings",
+            "capabilities": [
+                "workspace.settings.read",
+                "workspace.settings.update"
+            ],
+            "variants": [
+                "inertia",
+                "json"
+            ]
+        },
+        {
+            "path": "/workspaces/{workspace}/notes",
+            "capabilities": [
+                "workspace.notes.read",
+                "workspace.notes.write"
+            ],
+            "variants": [
+                "inertia",
+                "json"
+            ]
+        },
+        {
+            "path": "/workspaces/{workspace}/connections",
+            "capabilities": [],
+            "variants": [
+                "blade"
+            ]
+        }
+    ],
+    "capabilities": [
+        {
+            "id": "workspace.settings.read",
+            "operation": "Tey\\Kit\\Features\\Settings\\Operations\\WorkspaceProfile::read",
+            "mcp": {
+                "tools": [
+                    {
+                        "name": "workspace_settings_read",
+                        "description": "Read settings and current version of the approved workspace.",
+                        "input_schema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    }
+                ],
+                "resources": []
+            },
+            "scope": "settings.read",
+            "writes": false,
+            "parity_tests": [
+                "tests/TransportTest.php",
+                "tests/McpTransportTest.php"
+            ]
+        },
+        {
+            "id": "workspace.settings.update",
+            "operation": "Tey\\Kit\\Features\\Settings\\Operations\\WorkspaceProfile::update",
+            "mcp": {
+                "tools": [
+                    {
+                        "name": "workspace_settings_update",
+                        "description": "Update settings using the current version and stable intent key.",
+                        "input_schema": {
+                            "properties": {
+                                "display_name": {
+                                    "type": "string"
+                                },
+                                "timezone": {
+                                    "type": "string"
+                                },
+                                "expected_version": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                "intent_key": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "display_name",
+                                "timezone",
+                                "expected_version",
+                                "intent_key"
+                            ]
+                        }
+                    }
+                ],
+                "resources": []
+            },
+            "scope": "settings.write",
+            "writes": true,
+            "parity_tests": [
+                "tests/TransportTest.php",
+                "tests/McpTransportTest.php"
+            ]
+        },
+        {
+            "id": "workspace.notes.read",
+            "operation": "Tey\\Kit\\Features\\Notes\\Operations\\WorkspaceNotes::listing",
+            "mcp": {
+                "tools": [
+                    {
+                        "name": "workspace_notes_list",
+                        "description": "List notes in the approved workspace.",
+                        "input_schema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
+                        "name": "workspace_note_read",
+                        "description": "Read one note in the approved workspace.",
+                        "input_schema": {
+                            "properties": {
+                                "id": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id"
+                            ]
+                        }
+                    }
+                ],
+                "resources": []
+            },
+            "scope": "notes.read",
+            "writes": false,
+            "parity_tests": [
+                "tests/NotesTransportTest.php",
+                "tests/McpTransportTest.php"
+            ]
+        },
+        {
+            "id": "workspace.notes.write",
+            "operation": "Tey\\Kit\\Features\\Notes\\Operations\\WorkspaceNotes::mutate",
+            "mcp": {
+                "tools": [
+                    {
+                        "name": "workspace_note_create",
+                        "description": "Create a note with a stable intent key.",
+                        "input_schema": {
+                            "properties": {
+                                "intent_key": {
+                                    "type": "string"
+                                },
+                                "body": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "intent_key",
+                                "body"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "workspace_note_update",
+                        "description": "Update a note using its current version and stable intent key.",
+                        "input_schema": {
+                            "properties": {
+                                "id": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                "intent_key": {
+                                    "type": "string"
+                                },
+                                "expected_version": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                "body": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "intent_key",
+                                "expected_version",
+                                "body"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "workspace_note_delete",
+                        "description": "Delete a note using its current version and stable intent key.",
+                        "input_schema": {
+                            "properties": {
+                                "id": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                "intent_key": {
+                                    "type": "string"
+                                },
+                                "expected_version": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "intent_key",
+                                "expected_version"
+                            ]
+                        }
+                    }
+                ],
+                "resources": []
+            },
+            "scope": "notes.write",
+            "writes": true,
+            "parity_tests": [
+                "tests/NotesTransportTest.php",
+                "tests/McpTransportTest.php"
+            ]
+        }
+    ],
     "server": {
         "name": "Workspace operations",
         "version": "0.1.0",
@@ -10,164 +244,13 @@
             "flow": "authorization_code_pkce",
             "dynamic_client_registration": false,
             "binding": "one approved workspace connection per token"
+        },
+        "scopes": {
+            "mcp:use": "Use workspace MCP",
+            "settings.read": "Read workspace settings",
+            "settings.write": "Update workspace settings",
+            "notes.read": "Read workspace notes",
+            "notes.write": "Create, update and delete workspace notes"
         }
-    },
-    "scopes": {
-        "mcp:use": "Use workspace MCP",
-        "settings.read": "Read workspace settings",
-        "settings.write": "Update workspace settings",
-        "notes.read": "Read workspace notes",
-        "notes.write": "Create, update and delete workspace notes"
-    },
-    "tools": [
-        {
-            "name": "workspace_settings_read",
-            "description": "Read settings and current version of the approved workspace.",
-            "scope": "settings.read",
-            "writes": false,
-            "input_schema": {
-                "type": "object",
-                "properties": {}
-            }
-        },
-        {
-            "name": "workspace_settings_update",
-            "description": "Update settings using the current version and stable intent key.",
-            "scope": "settings.write",
-            "writes": true,
-            "input_schema": {
-                "properties": {
-                    "display_name": {
-                        "type": "string"
-                    },
-                    "timezone": {
-                        "type": "string"
-                    },
-                    "expected_version": {
-                        "minimum": 1,
-                        "type": "integer"
-                    },
-                    "intent_key": {
-                        "type": "string"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "display_name",
-                    "timezone",
-                    "expected_version",
-                    "intent_key"
-                ]
-            }
-        },
-        {
-            "name": "workspace_notes_list",
-            "description": "List notes in the approved workspace.",
-            "scope": "notes.read",
-            "writes": false,
-            "input_schema": {
-                "type": "object",
-                "properties": {}
-            }
-        },
-        {
-            "name": "workspace_note_read",
-            "description": "Read one note in the approved workspace.",
-            "scope": "notes.read",
-            "writes": false,
-            "input_schema": {
-                "properties": {
-                    "id": {
-                        "minimum": 1,
-                        "type": "integer"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id"
-                ]
-            }
-        },
-        {
-            "name": "workspace_note_create",
-            "description": "Create a note with a stable intent key.",
-            "scope": "notes.write",
-            "writes": true,
-            "input_schema": {
-                "properties": {
-                    "intent_key": {
-                        "type": "string"
-                    },
-                    "body": {
-                        "type": "string"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "intent_key",
-                    "body"
-                ]
-            }
-        },
-        {
-            "name": "workspace_note_update",
-            "description": "Update a note using its current version and stable intent key.",
-            "scope": "notes.write",
-            "writes": true,
-            "input_schema": {
-                "properties": {
-                    "id": {
-                        "minimum": 1,
-                        "type": "integer"
-                    },
-                    "intent_key": {
-                        "type": "string"
-                    },
-                    "expected_version": {
-                        "minimum": 1,
-                        "type": "integer"
-                    },
-                    "body": {
-                        "type": "string"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "intent_key",
-                    "expected_version",
-                    "body"
-                ]
-            }
-        },
-        {
-            "name": "workspace_note_delete",
-            "description": "Delete a note using its current version and stable intent key.",
-            "scope": "notes.write",
-            "writes": true,
-            "input_schema": {
-                "properties": {
-                    "id": {
-                        "minimum": 1,
-                        "type": "integer"
-                    },
-                    "intent_key": {
-                        "type": "string"
-                    },
-                    "expected_version": {
-                        "minimum": 1,
-                        "type": "integer"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "intent_key",
-                    "expected_version"
-                ]
-            }
-        }
-    ],
-    "resources": [],
-    "prompts": []
+    }
 }
