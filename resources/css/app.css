@@ -7,9 +7,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* The app shell's widest measure; a host overrides it with one `--container-shell` in its own @theme. */
+/* The app shell's widest measure (2560px); a host overrides it with one `--container-2k` in its own @theme. */
 @theme {
-    --container-shell: 125rem;
+    --container-2k: 160rem;
 }
 
 @theme inline {
