@@ -29,20 +29,10 @@ update_intent: string,
 delete_intent: string,
 }[],
 };
-export type ShowNoteViewModel = {
-title: string,
-note: Tey.Kit.Features.Notes.Data.NoteRecord,
-list_url: string,
-};
 }
 }
 export namespace SessionUi {
 export namespace Data {
-export type BreadcrumbData = {
-label: string,
-url: string | null,
-current: boolean,
-};
 export type ShellData = {
 product: {
 name: string,
@@ -94,8 +84,6 @@ sign_in: string,
 sign_out: string | null,
 },
 env: string | null,
-breadcrumbs: Tey.Kit.Features.SessionUi.Data.BreadcrumbData[],
-title: string,
 };
 }
 export namespace ViewModels {

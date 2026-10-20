@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import Breadcrumbs from './Partials/Breadcrumbs.vue';
+import { Link } from '@inertiajs/vue3';
 import EnvPill from './Partials/EnvPill.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
 import SettingsMenu from './Partials/SettingsMenu.vue';
@@ -18,7 +17,6 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
 const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
 </script>
 <template>
-    <Head :title="props.layout.title" />
     <div class="flex min-h-svh flex-col bg-background text-foreground">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
         <header v-if="props.layout.user" class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur" data-shell-bar>
@@ -48,7 +46,6 @@ const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data
         </header>
         <main id="main" class="flex-1">
             <div :class="['mx-auto w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8', props.widthClass]" data-shell-content>
-                <Breadcrumbs :breadcrumbs="props.layout.breadcrumbs" />
                 <slot />
             </div>
         </main>
