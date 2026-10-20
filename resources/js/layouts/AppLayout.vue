@@ -81,7 +81,7 @@ const crumbs = computed(() =>
                 data-shell-content
             >
                 <ShellBreadcrumbs :breadcrumbs="crumbs" />
-                <h1 v-if="page.props.title" class="mb-6 font-serif text-4xl tracking-tight">{{ page.props.title }}</h1>
+                <h1 v-if="page.props.title" class="mb-6 font-serif text-4xl tracking-tight [font-weight:var(--font-display-weight)]">{{ page.props.title }}</h1>
                 <slot />
             </div>
         </main>

@@ -16,6 +16,9 @@ done
 # shellcheck disable=SC2086
 composer require $packages --no-interaction --no-progress
 php artisan kit:install
+# The workspaces feature's host step (kit 0.1.3+): the user model implements Concierge's Member through the kit's trait,
+# as the template's does. kit:add refuses until it is met, and never writes the model itself.
+php -r '$f = "app/Models/User.php"; $s = file_get_contents($f); $n = preg_replace("/^class User extends Authenticatable\n\{\n/m", "class User extends Authenticatable implements \\Tey\\Concierge\\Contracts\\Member\n{\n    use \\Tey\\Kit\\Features\\Workspaces\\Concerns\\HasWorkspaces;\n", $s, 1, $count); if ($count !== 1) { fwrite(STDERR, "parity: could not apply the user model host step\n"); exit(1); } file_put_contents($f, $n);'
 touch database/database.sqlite
 php artisan migrate --force --path=database/migrations
 features=$(php artisan kit:list --json | php -r 'echo implode(" ", array_column(json_decode(stream_get_contents(STDIN), true), "id"));')

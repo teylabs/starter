@@ -58,7 +58,7 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 | `InertiaTransportTest.php` | Inertia components and props, navigation, redirects, validation and error outcomes |
 | `NotesTransportTest.php` | Notes CRUD over session HTTP: tenant refusal, retries, stale versions, viewer and capability refusal, validation, audit rollback |
 | `McpTransportTest.php` | OAuth consent, code and token exchange, MCP JSON-RPC for settings and Notes, scope, origin, expiry and revocation limits |
-| `LifecycleTest.php` | `kit:add` of every feature through released tey/kit 0.1.2 and Mod 0.9 in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
+| `LifecycleTest.php` | `kit:add` of every feature through released tey/kit 0.1.5 and Mod 0.9 in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
 | `FeatureSeamsTest.php` | The 0.2.1 schema, routes and registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
 | `FeatureGraphTest.php` | The kit library's feature graph, and pages importing only their own folder |
 | `LocalLoginOfferTest.php` | The sign-in page offers Concierge's one-click local sign-in (and it signs in) exactly when `LocalLogin::isAvailable()` says so, and not otherwise |

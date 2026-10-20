@@ -59,6 +59,13 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-shell-nav]', 'Notes')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'workspace');
+
+        // Fonts come from the kit's set (KIT_FONTS): the text face on the body, the display face and weight on the page title.
+        $faces = fn (): array => $page->script('() => { const h1 = document.querySelector("[data-shell-bar] ~ * h1, main h1"); return [getComputedStyle(document.body).fontFamily, getComputedStyle(h1).fontFamily, getComputedStyle(h1).fontWeight]; }');
+        expect($faces())->sequence(fn ($f) => $f->toStartWith('"Instrument Sans"'), fn ($f) => $f->toStartWith('"Instrument Serif"'), fn ($f) => $f->toBe('400'));
+        config(['kit.fonts' => 'instrument-inter']);
+        $page->refresh();
+        expect($faces())->sequence(fn ($f) => $f->toStartWith('Inter'), fn ($f) => $f->toStartWith('"Instrument Sans"'), fn ($f) => $f->toBe('600'));
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
