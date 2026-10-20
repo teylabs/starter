@@ -5,7 +5,8 @@ import type { ShellNavGroup } from './types';
 
 /*
  * The header's primary nav: the groups sit together beside the mark, in the
- * server's order, with a hairline between groups. Each link carries its own
+ * server's order, with a hairline between groups; the first, the user's
+ * workspaces, is labelled so a workspace reads as a workspace. Each link carries its own
  * padding for a 44px target, and the current page has aria-current plus an
  * underline on the bar's edge, which hover and focus never draw. The nav
  * never wraps: below `lg` it moves into the menu sheet.
@@ -14,13 +15,14 @@ defineProps<{ navigation: ShellNavGroup[] }>();
 </script>
 
 <template>
-    <nav aria-label="Primary" class="flex items-center">
+    <nav aria-label="Primary" class="flex items-center" data-shell-nav>
         <template v-for="(group, index) in navigation" :key="group.label">
             <span
                 v-if="index > 0"
                 aria-hidden="true"
                 class="mx-2 h-5 w-px bg-border"
             />
+            <span v-if="index === 0" aria-hidden="true" class="px-2 text-xs font-medium whitespace-nowrap text-muted-foreground">{{ group.label }}</span>
             <ul :aria-label="group.label" class="flex items-center gap-0.5">
                 <li v-for="item in group.items" :key="item.url">
                     <Link

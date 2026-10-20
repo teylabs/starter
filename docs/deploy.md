@@ -17,7 +17,7 @@ php artisan starter:smoke
 
 ## TLS
 
-TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded scheme and host from any proxy, so URLs and secure cookies follow `https`; the app must only be reachable through that proxy. CI proves it behind a local TLS proxy (`bin/tls-proxy.mjs`).
+TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded scheme from any proxy, so URLs and secure cookies follow `https`; the app must only be reachable through that proxy. The host is pinned to `APP_URL`'s (`trustHosts`, anchored and escaped), so a forged `Host` or `X-Forwarded-Host` gets a 400 and can never become the host of a reset or invitation link. Set `APP_URL` to the domain users reach; any other domain, the platform's default one included, is refused outside the local environment. CI proves it behind a local TLS proxy (`bin/tls-proxy.mjs`).
 
 ## Environment
 

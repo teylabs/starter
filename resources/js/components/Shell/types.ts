@@ -29,9 +29,9 @@ export function shellFrom(layout: Layout | undefined): Shell | null {
     const user = layout.user as { name: string; email: string };
     const navigation = (layout.navigation as { label: string; href: string; current: boolean }[]).map((item) => ({ label: item.label, url: item.href, current: item.current, state: 'available' as const }));
     const workspaces = (layout.workspaces as { id: number; name: string; href: string | null }[]).filter((workspace) => workspace.href !== null).map((workspace) => ({ label: workspace.name, url: workspace.href as string, current: (layout.workspace as { id: number } | null)?.id === workspace.id, state: 'available' as const }));
-    const groups: ShellNavGroup[] = [];
+    // The user's workspaces always come first; inside a workspace, its own links follow under its name.
+    const groups: ShellNavGroup[] = [{ label: 'Workspaces', items: workspaces }];
     if (navigation.length) groups.push({ label: (layout.workspace as { name: string } | null)?.name ?? 'Workspace', items: navigation });
-    if (workspaces.length > 1 || !navigation.length) groups.push({ label: 'Workspaces', items: workspaces });
 
     return {
         product: layout.brand,
