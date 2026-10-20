@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import EnvPill from './Partials/EnvPill.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
 import SettingsMenu from './Partials/SettingsMenu.vue';
@@ -46,6 +47,7 @@ const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data
         </header>
         <main id="main" class="flex-1">
             <div :class="['mx-auto w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8', props.widthClass]" data-shell-content>
+                <Breadcrumbs />
                 <slot />
             </div>
         </main>

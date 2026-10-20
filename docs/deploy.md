@@ -8,6 +8,7 @@ php artisan standards:preflight --skip=install.tables
 php artisan migrate --force
 php artisan standards:preflight
 php artisan concierge:owners --workspace=<key> --no-interaction
+php artisan breadcrumbs:cache
 php artisan optimize
 php artisan starter:smoke
 ```
@@ -16,6 +17,7 @@ php artisan starter:smoke
 - **`migrate --force` comes next**, before anything caches. A cached config or route built before the schema is current can boot code that expects tables or columns that do not exist yet.
 - **`standards:preflight`, in full, follows the migration**, so `install.tables` now checks that the session, cache, queue and failed-job tables the config uses exist, and a passing run clears the skip. Warning-level checks (mail sender, favicon and the like) are reported and logged as `PREFLIGHT SUMMARY` but never block.
 - **`concierge:owners --workspace=<key>`** keeps the owner named in `CONCIERGE_OWNERS` on that workspace. It is safe on every deploy: it never removes a user or an ownership, and it refuses (non-zero) a missing or unknown workspace, several owners for one workspace, or a different existing owner. It never creates the workspace; your app does. Preview with `--dry-run`, or read `--json`. A new owner gets a set-password link through the password broker, which needs mail and a password-reset route: neither is in the template yet (#24), so until then create the owner with your own reviewed process.
+- **`breadcrumbs:cache`** comes before any route cache: glhd/gretel's breadcrumbs are declared beside the routes, and the cached routes need them cached first. `optimize` runs it too (gretel registers it), so the line is explicit only where the route cache is run on its own.
 - **`optimize`**, and any other cache commands (`config:cache`, `route:cache`, `view:cache`, `event:cache`), come after migrations.
 - **`starter:smoke`** runs last, against the deployed, cached app. The command is tracked in #32 and does not exist yet; leave the line out until it ships.
 

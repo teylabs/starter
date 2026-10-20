@@ -129,6 +129,7 @@ jobs:
       - run: php artisan standards:preflight --skip=install.tables
       - run: php artisan migrate --force
       - run: php artisan standards:preflight
+      - run: php artisan breadcrumbs:cache
       - run: php artisan optimize
 
   node:

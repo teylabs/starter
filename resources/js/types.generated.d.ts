@@ -29,6 +29,11 @@ update_intent: string,
 delete_intent: string,
 }[],
 };
+export type ShowNoteViewModel = {
+title: string,
+note: Tey.Kit.Features.Notes.Data.NoteRecord,
+list_url: string,
+};
 }
 }
 export namespace SessionUi {
