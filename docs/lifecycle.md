@@ -1,70 +1,37 @@
 # Lifecycle
 
-This page describes what exists today: a clean-schema install, and blueprint maintenance through `starter:maintain`.
+## Install
 
-## Today: clean-schema install
+`composer setup` takes a fresh clone to a working local sign-in: dependencies, `.env`, the key, `database/database.sqlite`, `migrate`, the frontend build and the first local owner and workspace (`php artisan starter:first-owner`, local environment only, through Concierge's tenant invitation and the kit's acceptance). The password is prompted for, or generated and printed once with `--no-interaction`; it is never stored in plain text and never defaulted.
 
-A fresh install starts from an empty database.
-
-```sh
-composer install --no-interaction --no-scripts
-cp .env.example .env
-php artisan key:generate
-# configure the database in .env
-php artisan migrate --no-interaction
-npm ci
-npm run build
-```
-
-Boot never migrates, seeds, creates accounts, verifies email, grants operator access or provisions workspaces. You run `php artisan migrate` yourself. Registration is closed and there are no default credentials, so a first account and workspace must be created by your own setup. Production first-operator and email-verification policy is not implemented. Do not use test principals as a bootstrap.
-
-`.env.example` holds no key or credentials. Secure session cookies default on; a local HTTP-only host must choose its cookie policy explicitly.
+Boot never migrates, seeds, creates accounts or provisions workspaces. Registration is closed. In production, `concierge:owners` keeps the owner (see [deploy.md](deploy.md)).
 
 ### Schema
 
-- Host migrations create `users` and `workspaces` first, then `notes`, `connections`, `entitlements`, `operators`, `complimentary_grants`, `settings_intents`, `note_intents` and `audit_events` after Concierge's tables.
-- Permission and Settings tables come from the locked packages' published migrations.
-- Passport's and Concierge's own migrations are loaded from the packages (`InstallProvider`) and run once. Package internals are not copied into host tables.
-- Migration ids belong to Laravel's migration repository. Re-running `migrate` is a no-op.
+- The host's own migrations create `users` and `media` (medialibrary).
+- Each kit feature's migrations live in `database/migrations/kit/<feature>` (`0001_01_02_000NXX_*`) and load because the feature is adopted. Permission and Settings tables come from the locked packages' own migrations; Passport's and Concierge's migrations load from the packages.
+- tey/kit 0.1.2 orders core's migration before the workspaces table it references. PostgreSQL refuses that, so `App\Support\KitMigrator` runs core right after the workspaces table until the kit fixes its order.
+- Re-running `migrate` is a no-op.
 
-### Generated files
+### Databases migrated by 0.2
 
-Generated files are listed in [generation-manifest.json](generation-manifest.json). `composer types:generate` rewrites `resources/js/types.generated.d.ts`; review the diff before keeping changes.
+0.2 recorded the template's own migration ids (`0001_01_01_000000_create_starter_identity_tables`, `create_starter_<feature>_tables`, or the older `create_starter_domain_tables`). The kit migrations create the same tables under new ids. Before the migrator reads what has run, `App\Support\KitMigrationRepository` records each kit migration whose tables an old id already created, in the latest batch, so `migrate` creates nothing twice and keeps the data. `tests/FeatureSeamsTest.php` migrates real 0.2.1 migrations (`tests/Fixtures/v0.2.1-migrations`) and the pre-split schema, then checks the schema, data and recorded ids. The old ids stay in the migrations table; rolling back across 0.3 is not supported.
 
-## Blueprint maintenance with `starter:maintain`
+## Kit features
 
-`tey/starter-blueprint` 0.1 runs on released `tey/mod` 0.8 and adds the `starter:maintain {plan|apply|resume}` command. Its generated files are `app/Support/Starter/BlueprintPolicy.php` (feature `foundation`) and `app/Support/Starter/Defaults/BlueprintDefaults.php` (feature `defaults`, which requires `foundation`). The whole app is both features.
-
-The starter binds the blueprint's `LifecycleHost` to `App\Support\StarterLifecycle` in `InstallProvider`:
-
-- App id and frontend binding (`inertia-vue`) come from `config/lifecycle.php`.
-- Seven named inputs are fingerprinted into every plan: `config/lifecycle.php` (policy), `app/Support/StarterLifecycle.php` (code), `composer.lock`, `config/foundation.php`, `app/Support/InstallProvider.php` (binding), `app/Support/lifecycle-operations.php` (operation check) and `config/lifecycle-executor.json` (executor provenance). Changing any of them makes a reviewed plan stale.
-- `config/lifecycle-executor.json` records the Mod release that runs maintenance. A Mod upgrade refuses every plan until this file is reviewed and updated to match.
-- The operation check in `app/Support/lifecycle-operations.php` is read-only and fails closed. It passes only when no tenant is current, the host and Concierge tables exist, `TenantBoundary` refuses an unknown workspace, every configured capability has a Pennant definition and the operator gate is defined. A false or throwing check leaves the installed version unchanged.
+`config/kit.php` adopts every feature (`features`). The kit's installed records (`.mod-maintenance/`) name the checkout's absolute path, so the template ships none and gitignores them. To let `kit:update` manage the files later, record them once in your own checkout, claiming each file after review:
 
 ```sh
-php artisan starter:maintain plan --features=foundation,defaults
-php artisan starter:maintain apply --features=foundation,defaults --intent=<stable-intent> --expected-plan=<plan identity> --exclusive-checkout
-# add features later: name exactly what is installed
-php artisan starter:maintain plan --original-features=foundation --features=foundation,defaults
-# retry an interrupted intent with the same arguments
-php artisan starter:maintain resume --features=foundation,defaults --intent=<stable-intent> --exclusive-checkout
+php artisan kit:add core workspaces access settings session-ui mcp notes --claim=<path> ...      # preview
+php artisan kit:add core workspaces access settings session-ui mcp notes --claim=<path> ... --apply --expected-plan=<plan>
 ```
 
-Mod's installed record lives in `.mod-maintenance/installed.json` and is written last. Behaviour proven by `tests/LifecycleTest.php`:
+then set `features` to `null` so the installed records decide. The preview lists every file it can claim; an edited file is a conflict and is never claimed. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
 
-- First install has no baseline; an existing file at a generated path is refused as unowned.
-- Re-running a completed intent is a no-op from the receipt, without rerunning the host check.
-- An upgrade keeps host-owned code (for example `app/Domain`, `config/branding.php`) and replaces generated files.
-- Any local edit to a generated file is a conflict: the upgrade refuses and keeps both the edit and the installed version. There is no force or merge.
-- `--original` / `--original-features` must rebuild the installed artifact exactly (features and bindings included), or the command refuses before Mod runs. Removing a feature is refused.
-
-There are no data migrations, rollback or orphan deletion. Upgrades only change the blueprint's generated files.
+Never edit a generated feature file (`database/migrations/kit/**`, the kit's pages): copy a page to your own name, or add a migration of your own. CI's parity job runs `kit:add` of every feature on a clean Laravel app and fails when the template's files differ.
 
 ## Not available yet
 
-- `laravel new --using=tey/starter`: the starter and `tey/starter-blueprint` are not yet served by Packagist. `composer.json` carries a temporary VCS repository for the blueprint until it is.
-- The A to D release fixtures in the blueprint are synthetic regression evidence, not starter versions. No published starter version has yet been upgraded to the next one.
-- v0.3: `starter:adopt` for existing apps, with a feature catalog.
-
-`tests/LifecycleTest.php` runs in disposable checkouts holding copies of the starter's lifecycle inputs against synthetic SQLite memory. It is not proof of a production install, a running server or a real consumer upgrade. See [ROADMAP.md](../ROADMAP.md).
+- `laravel new --using=tey/starter`: the template is not on Packagist yet.
+- tey/mod 0.10: tey/kit 0.1.2 requires tey/mod ^0.9, so the template stays on Mod 0.9 until the kit moves.
+- `kit:add --all`: the command takes the feature list; `kit:list --json` prints it.

@@ -4,10 +4,11 @@
   "generator": {
     "package": "spatie/laravel-typescript-transformer",
     "version": "3.3.0",
-    "command": "composer types:generate"
+    "command": "composer types:generate (exports nested namespaces for the Vue SFC compiler)"
   },
   "generated": {
-    "resources/js/types.generated.d.ts": "5f32f4814757a617aeefc331dff89a2f5f5c82d279b858db7086419206f49f62"
+    "resources/js/types.generated.d.ts": "e2ee06eb9e7c33c33349b7200d47f88ba0a4b03f69a35221362ab29d073281df",
+    "docs/mcp-capabilities.json": "0b4065036918b4c77b699e850163c8cab7e1f24c440c0211f607118315741b4d"
   },
   "host_owned": [
     "app/",
@@ -16,5 +17,17 @@
     "tests/",
     "README.md"
   ],
-  "upgrade_policy": "Update maintained dependencies through a reviewed lockfile diff. Preview regenerated types and review host changes; never copy a fresh template over host-owned files. No app/template upgrader is implemented."
+  "upgrade_policy": "Update maintained dependencies through a reviewed lockfile diff. Kit feature files change only through kit:add/kit:update, never by hand; preview regenerated types and review host changes.",
+  "kit_generated": {
+    "by": "php artisan kit:add core workspaces access settings session-ui mcp notes (tey/kit, checked by bin/kit-parity.sh in CI)",
+    "paths": [
+      "database/migrations/kit/",
+      "resources/js/pages/Auth/Login/",
+      "resources/js/pages/Workspace/Layout.vue",
+      "resources/js/pages/Workspace/Index/",
+      "resources/js/pages/Workspace/Error/",
+      "resources/js/pages/Workspace/Settings/",
+      "resources/js/pages/Workspace/Note/"
+    ]
+  }
 }

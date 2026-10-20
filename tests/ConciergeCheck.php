@@ -2,10 +2,10 @@
 
 require __DIR__.'/FoundationCheck.php';
 use App\Models\User;
-use App\Starter\Access\Operations\ComplimentaryAccess;
-use App\Starter\Core\Principal;
-use App\Starter\Workspaces\Models\Workspace;
-use App\Starter\Workspaces\Operations\AcceptWorkspaceInvitation;
+use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Composer\InstalledVersions;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Concierge\Registration\Registration;
 
 check('Concierge released native membership is the only membership engine', function (): void {
-    same('0.7.2.0', InstalledVersions::getVersion('tey/concierge'));
+    same('0.7.4.0', InstalledVersions::getVersion('tey/concierge'));
     same(false, Schema::hasTable('memberships'));
     same(2, DB::table('concierge_ownerships')->count());
     same(3, DB::table('concierge_memberships')->count());
@@ -122,7 +122,7 @@ check('host settings failure rolls back package onboarding atomically', function
     $user = User::create(['name' => 'Epsilon', 'email' => 'epsilon@example.test', 'email_verified_at' => now()]);
     $issued = InviteTenant::run(User::findOrFail(99), $user->email);
     $counts = [Workspace::count(), DB::table('settings')->count(), DB::table('concierge_memberships')->count()];
-    DB::statement("CREATE TRIGGER fail_settings BEFORE INSERT ON settings WHEN NEW.name='timezone' BEGIN SELECT RAISE(ABORT, 'synthetic_settings_failure'); END");
+    failInserts('fail_settings', 'settings', 'synthetic_settings_failure', "NEW.name = 'timezone'");
     try {
         app(AcceptWorkspaceInvitation::class)->handle(new Principal($user->id), $issued->token);
         throw new RuntimeException('Expected settings failure');
@@ -131,7 +131,7 @@ check('host settings failure rolls back package onboarding atomically', function
             throw $e;
         }
     } finally {
-        DB::statement('DROP TRIGGER fail_settings');
+        allowInserts('fail_settings', 'settings');
     }
     same($counts, [Workspace::count(), DB::table('settings')->count(), DB::table('concierge_memberships')->count()]);
     same('pending', $issued->invitation->fresh()->status->value);

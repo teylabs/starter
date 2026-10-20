@@ -2,4 +2,6 @@
 
 use App\Support\TypeScriptProvider;
 
-return [TypeScriptProvider::class];
+return [TypeScriptProvider::class,
+    App\Providers\KitHostServiceProvider::class,
+];

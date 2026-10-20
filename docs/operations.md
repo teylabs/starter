@@ -1,6 +1,6 @@
 # Operations
 
-Settings and Notes are shared operations in `app/Starter/Settings/Operations` and `app/Starter/Notes/Operations`. Session routes and MCP tools both call them, so validation, effects and refusals are the same on every transport. Each operation takes a `Principal` supplied by the transport, never by the caller's arguments.
+Settings and Notes are shared operations in tey/kit's `Tey\Kit\Features\Settings\Operations` and `Tey\Kit\Features\Notes\Operations`. Session routes and MCP tools both call them, so validation, effects and refusals are the same on every transport. Each operation takes a `Principal` supplied by the transport, never by the caller's arguments.
 
 ## Authorization
 
@@ -11,7 +11,7 @@ Every call runs `Access::authorize($principal, $ability)` inside the workspace c
 3. The workspace is admitted (`admission_required`).
 4. Write abilities require the workspace owner (`permission_denied`). Viewers can read.
 5. For an MCP connection, the connection is unrevoked and the ability is within its approved scopes (`connection_denied`).
-6. The capability is on: `workspace.settings` for settings, `workspace.notes` for Notes (`capability_unavailable`). See `config/foundation.php`.
+6. The capability is on: `workspace.settings` for settings, `workspace.notes` for Notes (`capability_unavailable`). See `kit.capabilities` in `config/kit.php`.
 7. If the caller asks for it, a paid or complimentary entitlement exists (`entitlement_required`).
 
 Capabilities, entitlements, membership and admission are separate checks.

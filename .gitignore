@@ -1,9 +1,14 @@
 /vendor/
 /.env
-/storage/*
+/storage/**
+!/storage/**/
+!/storage/**/.gitkeep
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
 
 /node_modules/
 /public/build/
 /public/hot
+/.mod-maintenance/
+/tests/Browser/Screenshots/
+/.phpunit.cache/

@@ -1,12 +1,14 @@
 <?php
 
 use App\Models\User;
-use App\Starter\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+
+require_once __DIR__.'/failures.php';
 
 final class NotesTransportTest extends TestCase
 {
@@ -18,9 +20,7 @@ final class NotesTransportTest extends TestCase
 
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     public function test_workspace_notes(): void
@@ -60,11 +60,11 @@ final class NotesTransportTest extends TestCase
         self::assertSame('Foreign replacement', DB::table('notes')->where('id', $id)->value('body'));
         self::assertSame(3, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
         self::assertSame('Beta private', DB::table('notes')->where('workspace_id', 2)->value('body'));
-        DB::statement("CREATE TRIGGER fail_note_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT, 'synthetic_note_audit_failure'); END");
+        failInserts('fail_note_audit', 'audit_events', 'synthetic_note_audit_failure');
         try {
             $this->putJson('/workspaces/1/notes/1', ['body' => 'Must roll back', 'expected_version' => 1, 'intent_key' => 'failed-note-audit'])->assertServerError();
         } finally {
-            DB::statement('DROP TRIGGER fail_note_audit');
+            allowInserts('fail_note_audit', 'audit_events');
         }
         self::assertSame('Alpha private', DB::table('notes')->where('id', 1)->value('body'));
         self::assertSame(1, DB::table('notes')->where('id', 1)->value('version'));
@@ -77,7 +77,7 @@ final class NotesTransportTest extends TestCase
         $this->withCookie(config('session.cookie'), app('session')->getId());
         $this->getJson('/workspaces/1/notes')->assertOk()->assertJsonPath('can_write', false);
         $this->postJson('/workspaces/1/notes', ['body' => 'Forbidden viewer note', 'intent_key' => 'viewer-write'])->assertForbidden();
-        config(['foundation.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
+        config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
         $this->getJson('/workspaces/1/notes')->assertForbidden();
         self::assertNull(Workspace::current());
     }

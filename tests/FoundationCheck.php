@@ -1,20 +1,20 @@
 <?php
 
-require __DIR__.'/environment.php';
-require dirname(__DIR__).'/bootstrap/app.php';
+require __DIR__.'/application.php';
+require_once __DIR__.'/failures.php';
 require dirname(__DIR__).'/database/fixture.php';
 
-use App\Starter\Access\Access;
-use App\Starter\Access\Operations\ComplimentaryAccess;
-use App\Starter\Core\Audit;
-use App\Starter\Core\Principal;
-use App\Starter\Notes\Models\Note;
-use App\Starter\Settings\Adapters\SettingsUi;
-use App\Starter\Settings\Integrations\Mcp\SettingsMcp;
-use App\Starter\Settings\WorkspaceSettings;
-use App\Starter\Workspaces\Models\Workspace;
-use App\Starter\Workspaces\TenantBoundary;
-use App\Starter\Workspaces\WorkspaceCache;
+use Tey\Kit\Features\Access\Access;
+use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
+use Tey\Kit\Features\Core\Audit;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Notes\Models\Note;
+use Tey\Kit\Features\Settings\Adapters\SettingsUi;
+use Tey\Kit\Features\Settings\Integrations\Mcp\SettingsMcp;
+use Tey\Kit\Features\Settings\WorkspaceSettings;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\TenantBoundary;
+use Tey\Kit\Features\Workspaces\WorkspaceCache;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Laravel\Pennant\Feature;
@@ -140,7 +140,7 @@ check('audit failure rolls back settings and complimentary grant', function () u
     $before = DB::table('settings')->get()->toJson();
     $grants = DB::table('complimentary_grants')->count();
     // An actual database audit failure, not a mock of the application operation.
-    DB::statement("CREATE TRIGGER fail_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT, 'synthetic_audit_failure'); END");
+    failInserts('fail_audit', 'audit_events', 'synthetic_audit_failure');
     foreach ([fn () => $ui->update($alpha, 1, ['display_name' => 'must rollback', 'timezone' => 'UTC', 'expected_version' => 3, 'intent_key' => 'rollback']), fn () => app(ComplimentaryAccess::class)->grant($operator, 1, 'must rollback', now()->addDay(), 'rollback-grant')] as $operation) {
         try {
             $operation();
@@ -151,10 +151,10 @@ check('audit failure rolls back settings and complimentary grant', function () u
             }
         }
     }
-    DB::statement('DROP TRIGGER fail_audit');
+    allowInserts('fail_audit', 'audit_events');
     same($before, DB::table('settings')->get()->toJson());
     same('Alpha MCP', $ui->show($alpha, 1)['display_name']);
     same($grants, DB::table('complimentary_grants')->count());
 });
 check('failed request leaves no workspace context', fn () => same(null, Workspace::current()));
-echo json_encode(['fixture' => 'starter-foundation', 'checks' => count($checks), 'database' => 'sqlite::memory:', 'evidence' => 'focused synthetic checks only', 'passed' => $checks], JSON_PRETTY_PRINT)."\n";
+echo json_encode(['fixture' => 'starter-foundation', 'checks' => count($checks), 'database' => DB::getDriverName() === 'pgsql' ? 'pgsql' : 'sqlite::memory:', 'evidence' => 'focused synthetic checks only', 'passed' => $checks], JSON_PRETTY_PRINT)."\n";

@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Starter\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,9 +22,7 @@ final class McpTransportTest extends TestCase
 
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     private function rpc(int $connection, string $method, array $params = [])
@@ -121,9 +119,9 @@ final class McpTransportTest extends TestCase
         $account->forceFill(['status' => AccountStatus::Deactivated])->save();
         $this->rpc($connection, 'tools/list')->assertForbidden();
         $account->forceFill(['status' => AccountStatus::Active])->save();
-        config(['foundation.capabilities' => ['workspace.settings' => false]]);
+        config(['kit.capabilities' => ['workspace.settings' => false]]);
         $this->rpc($connection, 'tools/list')->assertForbidden();
-        config(['foundation.capabilities' => ['workspace.settings' => true]]);
+        config(['kit.capabilities' => ['workspace.settings' => true]]);
         $this->withoutToken();
         Auth::forgetGuards();
         $this->get('/workspaces/1/connections')->assertOk()->assertSee('Synthetic delegated client');

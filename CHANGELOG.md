@@ -4,6 +4,11 @@
 
 #### Changed
 
+- The template is built on tey/kit 0.1 with every feature added: `app/Starter`, `routes/starter` and `resources/js/starter` give way to the kit library and the migrations and pages `kit:add` writes, which CI checks against `kit:add` on a clean Laravel app. Generated types move to `Tey.Kit.Features.*`. `tey/starter-blueprint` and `starter:maintain` are removed in favour of `kit:add` and `kit:update`; Mod 0.9 and Concierge ^0.7.4 come with it. Databases migrated by 0.2 keep their schema and data (#30)
+- `composer setup` takes a fresh clone to a working local sign-in, with the first local owner made by `starter:first-owner` (#30)
+- A designed sign-in page and app shell, from Laravel's MIT Vue starter kit and Tailwind CSS 4 (#30)
+- New apps start conformant: `docs/mcp-capabilities.json`, Nightwatch sampling, a private `s3` disk with medialibrary on it, `cache.serializable_classes` off, UTC, and the Cloud deploy order in `docs/deploy.md` (#30)
+- The suites also run on PostgreSQL in CI, and a Pest browser test signs in on a fresh clone (#30)
 - Each starter feature now plugs into the shared seams through a `StarterRegistry`: route files under `routes/starter/`, MCP tools, workspace navigation, token scopes, capabilities and error codes. Behaviour, routes and schema are unchanged (#15)
 - The single `create_starter_domain_tables` migration is split into one migration per feature. Fresh installs get the same schema; databases that already ran the old migration skip the new ones (#15)
 - `User` takes workspace membership and roles from a `HasWorkspaces` trait (#15)

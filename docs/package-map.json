@@ -63,21 +63,15 @@
     },
     {
       "package": "tey/concierge",
-      "constraint": "0.7.2",
-      "locked": "v0.7.2",
+      "constraint": "^0.7.4",
+      "locked": "v0.7.4",
       "state": "executed-focused"
     },
     {
       "package": "tey/mod",
-      "constraint": "^0.8",
-      "locked": "v0.8.0",
-      "state": "executed-focused"
-    },
-    {
-      "package": "tey/starter-blueprint",
-      "constraint": "^0.1",
-      "locked": "v0.1.0",
-      "state": "executed-focused"
+      "constraint": "via tey/kit",
+      "locked": "v0.9.1",
+      "state": "executed-focused-via-tey-kit"
     },
     {
       "package": "larastan/larastan",
@@ -138,15 +132,51 @@
       "constraint": "^13.10",
       "locked": "v13.10.0",
       "state": "executed-focused-http-kernel"
+    },
+    {
+      "package": "tey/kit",
+      "constraint": "^0.1.2",
+      "locked": "v0.1.2",
+      "state": "executed-focused-lifecycle-parity"
+    },
+    {
+      "package": "laravel/nightwatch",
+      "constraint": "^1.30",
+      "locked": "v1.30.4",
+      "state": "configured-disabled-in-tests"
+    },
+    {
+      "package": "spatie/laravel-medialibrary",
+      "constraint": "^11.13",
+      "locked": "11.23.10",
+      "state": "configured-not-feature-accepted"
+    },
+    {
+      "package": "league/flysystem-aws-s3-v3",
+      "constraint": "^3.29",
+      "locked": "3.35.3",
+      "state": "executed-focused-no-network"
+    },
+    {
+      "package": "pestphp/pest-plugin-browser",
+      "constraint": "^5.1",
+      "locked": "v5.1.2",
+      "state": "executed-browser-smoke"
+    },
+    {
+      "package": "laravel/tinker",
+      "constraint": "^3.0",
+      "locked": "v3.0.2",
+      "state": "installed-dev-tool"
     }
   ],
   "conditional": {
     "auth": "Fortify/session, Sanctum or Passport requires host protocol decision; none inferred from MCP dependency",
-    "uploads": "spatie/laravel-medialibrary plus host file isolation when uploads appear",
+    "uploads": "spatie/laravel-medialibrary on the private s3 disk by default; host file isolation per workspace is v0.6",
     "billing": "Cashier/provider SDK only after product billing requirement",
     "roles": "Concierge requires spatie/laravel-permission; native workspace teams enabled. No competing membership enum/pivot.",
-    "frontend": "Inertia/Vue3/Tailwind4/Wayfinder when a real browser surface is selected",
-    "developer_baseline": "Pint/Pest/Laravel plugin/Larastan/Boost/Pail/Pao locked; only Pint and focused synthetic scripts exercised. Frontend tooling remains unselected until host browser shell exists."
+    "frontend": "Inertia/Vue3/Tailwind4 with the cleared Laravel Vue starter kit primitives (MIT); no Wayfinder",
+    "developer_baseline": "Pint/Pest (with the browser plugin)/Laravel plugin/Larastan/Boost/Pail/Pao/Tinker locked; PHPUnit suites, focused synthetic scripts and one Pest browser smoke test exercised"
   },
   "frontend_increment": {
     "lock": "package-lock.json",
@@ -156,12 +186,13 @@
     "evidence": [
       "HTTP-kernel Inertia components/props",
       "vue-tsc",
-      "Vite client build"
+      "Vite client build",
+      "Pest browser smoke: sign-in and app shell (desktop Chromium)"
     ],
     "gaps": [
-      "browser/accessibility/visual",
-      "Mod page/module layout adoption",
-      "maintained UI modules and public frontpage"
+      "responsive/accessibility/visual-diff acceptance",
+      "password reset and branded mail (#24)",
+      "maintained UI kit (v0.8)"
     ]
   }
 }

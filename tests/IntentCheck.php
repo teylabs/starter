@@ -1,13 +1,13 @@
 <?php
 
-require __DIR__.'/environment.php';
-require dirname(__DIR__).'/bootstrap/app.php';
+require __DIR__.'/application.php';
+require_once __DIR__.'/failures.php';
 require dirname(__DIR__).'/database/fixture.php';
-use App\Starter\Access\Access;
-use App\Starter\Access\Operations\ComplimentaryAccess;
-use App\Starter\Core\Principal;
-use App\Starter\Settings\Adapters\SettingsUi;
-use App\Starter\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Access\Access;
+use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Settings\Adapters\SettingsUi;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -106,7 +106,7 @@ $tests += [
         $operator = new Principal(99);
         $id = $op->grant($operator, 1, 'audit revoke fixture', now()->addDay(), 'revoke-audit');
         $before = DB::table('complimentary_grants')->get()->toJson();
-        DB::statement("CREATE TRIGGER fail_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT, 'synthetic_audit_failure'); END");
+        failInserts('fail_audit', 'audit_events', 'synthetic_audit_failure');
         try {
             $op->revoke($operator, $id, 'must rollback');
             throw new RuntimeException('Expected audit failure');
@@ -115,7 +115,7 @@ $tests += [
                 throw $e;
             }
         } finally {
-            DB::statement('DROP TRIGGER fail_audit');
+            allowInserts('fail_audit', 'audit_events');
         }
         if ($before !== DB::table('complimentary_grants')->get()->toJson()) {
             throw new RuntimeException('Failed revoke persisted');

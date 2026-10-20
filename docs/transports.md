@@ -14,13 +14,13 @@ Fortify handles password login, throttling and logout. Registration is closed an
 | `POST /tenant-invitations/accept` | Accept a workspace invitation |
 | `GET`/`POST /workspaces/{workspace}/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
 
-Pages are Inertia/Vue (`resources/js/starter/<feature>/pages`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
+Pages are Inertia/Vue (`resources/js/pages/<Resource>/<Action>/Page.vue`, wrapped by `resources/js/layouts`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
 
 OAuth consent and connection approval are Blade views, not Inertia pages. No SSR service is enabled.
 
 ## MCP and OAuth
 
-`routes/starter/mcp.php` registers Passport OAuth routes without dynamic client registration, and the MCP server at `/mcp/connections/{connection}`.
+The mcp feature's routes (tey/kit) register Passport OAuth routes without dynamic client registration, and the MCP server at `/mcp/connections/{connection}`.
 
 ### Flow
 

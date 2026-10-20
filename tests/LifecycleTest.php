@@ -1,40 +1,34 @@
 <?php
 
-use App\Support\StarterLifecycle;
+use App\Kit\KitHost;
 use Composer\InstalledVersions;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Schema;
+use Tey\Kit\Blueprint;
+use Tey\Kit\Catalog;
+use Tey\Kit\LifecycleHost;
+use Tey\Kit\Lineages;
 use Tey\Mod\Maintenance\Maintenance;
-use Tey\StarterBlueprint\Blueprint;
-use Tey\StarterBlueprint\LifecycleHost;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-/** Install and upgrade through the released tey/mod and tey/starter-blueprint in disposable checkouts. */
+/** Adopt every tey/kit feature through the released tey/kit and tey/mod in disposable checkouts of the template's host binding. */
 final class LifecycleTest extends TestCase
 {
-    private const POLICY = 'app/Support/Starter/BlueprintPolicy.php';
-
-    private const DEFAULTS = 'app/Support/Starter/Defaults/BlueprintDefaults.php';
-
-    private const RECORD = '.mod-maintenance/installed.json';
-
     /** @var list<string> */
     private array $roots = [];
 
     public function createApplication()
     {
-        require __DIR__.'/environment.php';
-
-        return require dirname(__DIR__).'/bootstrap/app.php';
+        return require __DIR__.'/application.php';
     }
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        $this->assertContains(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql', [':memory:', 'pgsql']);
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
     }
 
@@ -48,207 +42,197 @@ final class LifecycleTest extends TestCase
 
     public function test_released_packages_and_trusted_host_binding(): void
     {
-        $this->assertSame('v0.8.0', InstalledVersions::getPrettyVersion('tey/mod'));
-        $this->assertSame('v0.7.2', InstalledVersions::getPrettyVersion('tey/concierge'));
-        $this->assertSame('v0.1.0', InstalledVersions::getPrettyVersion('tey/starter-blueprint'));
+        $this->assertSame('v0.9.1', InstalledVersions::getPrettyVersion('tey/mod'));
+        $this->assertSame('v0.7.4', InstalledVersions::getPrettyVersion('tey/concierge'));
+        $this->assertSame('v0.1.2', InstalledVersions::getPrettyVersion('tey/kit'));
         $this->assertStringEndsWith('/vendor/tey/mod/src/Maintenance/Maintenance.php', (new ReflectionClass(Maintenance::class))->getFileName());
         $host = app(LifecycleHost::class);
-        $this->assertInstanceOf(StarterLifecycle::class, $host);
-        $this->assertSame('tey-starter', $host->appId());
-        $this->assertSame(['frontend' => 'inertia-vue'], $host->bindings());
+        $this->assertInstanceOf(KitHost::class, $host);
+        $this->assertSame('workspace-starter', $host->appId());
+        $this->assertSame([], $host->bindings());
         foreach ($host->inputPaths() as $path) {
             $this->assertFileExists(base_path($path));
         }
-        $this->assertSame(json_decode(file_get_contents(base_path('config/lifecycle-executor.json')), true), $host->lifecycle()->runtime());
+        $this->assertSame(json_decode(file_get_contents(base_path('config/kit-executor.json')), true), $host->lifecycle()->runtime());
         $this->assertTrue(($host->operationCheck())());
-        $this->assertSame(Blueprint::all()->sourceReference(), Blueprint::features(['defaults', 'foundation'])->sourceReference());
+        $this->assertSame(Catalog::package()->featureIds(), config('kit.features'));
     }
 
-    public function test_plan_apply_install_then_no_op_rerun(): void
+    public function test_adding_every_feature_writes_the_template_files_then_reruns_as_a_no_op(): void
     {
-        [$root, $host] = $this->checkout();
-        $lifecycle = $host->lifecycle();
-        $all = Blueprint::all();
-        $plan = $lifecycle->plan($root, $host->appId(), null, $all, $host->bindings(), $host->inputPaths());
-        $this->assertTrue($plan->executable());
-        $this->assertNull($this->record($root));
-        $this->assertFileDoesNotExist($root.'/'.self::POLICY);
+        $root = $this->checkout();
+        $preview = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS);
+        $this->assertTrue($preview['executable']);
+        $this->assertSame($this->all(), array_column($preview['features'], 'feature'));
+        $this->assertSame([], $this->records($root));
 
-        $result = $lifecycle->apply($plan, null, $all, $host->inputPaths(), 'install', $host->operationCheck(), true);
+        $result = $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], 'install', $this->check($root));
         $this->assertSame('completed', $result['status']);
-        $this->assertSame(['installed_mod_version' => 'v0.8.0'], $result['runtime']);
-        $installed = json_decode($this->record($root), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(['foundation', 'defaults'], $installed['artifact']['metadata']['blueprint_features']);
-        $this->assertSame([], $installed['artifact']['metadata']['applied_migration_ids']);
-        $this->assertSame($all->snapshot()['files'][self::POLICY], file_get_contents($root.'/'.self::POLICY));
-        $this->assertSame($all->snapshot()['files'][self::DEFAULTS], file_get_contents($root.'/'.self::DEFAULTS));
+        $this->assertSame($this->all(), $result['done']);
+        $this->assertSame($this->all(), array_keys(Lineages::adopted($root, 'workspace-starter')));
+        $this->assertSame($this->templateFiles(), $this->files($root));
 
-        // A cold retry of the completed intent reads the receipt and never reruns the host check.
-        $record = $this->record($root);
-        $files = $this->files($root);
-        $again = $lifecycle->resume($root, $host->appId(), null, $all, $host->bindings(), $host->inputPaths(), 'install', $host->operationCheck(), true);
-        $this->assertTrue($again['no_op']);
-        $this->assertSame('completed', $again['status']);
-        $this->assertSame($record, $this->record($root));
-        $this->assertSame($files, $this->files($root));
+        // A second request adopts nothing new and writes nothing.
+        $records = $this->records($root);
+        $again = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS);
+        $this->assertSame(array_fill(0, 7, 'adopted'), array_column($again['features'], 'action'));
+        $this->refuses(fn () => $this->lineages()->resume($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, 'install', $this->check($root)), 'already adopted');
+        $this->assertSame($records, $this->records($root));
+        $this->assertSame($this->templateFiles(), $this->files($root));
     }
 
-    public function test_upgrade_preserves_local_edits(): void
+    public function test_a_checkout_of_the_template_adopts_its_own_files_by_reviewed_claim(): void
     {
-        // Mod 0.8 treats any edit to an owned generated file as a conflict; local edits live in host-owned code.
-        foreach ([[Blueprint::features(['foundation']), Blueprint::all()], [Blueprint::release('C'), Blueprint::release('D')]] as [$original, $target]) {
-            [$root, $host] = $this->checkout();
-            $this->install($root, $host, null, $original, 'install');
-            mkdir($root.'/app/Domain', 0700, true);
-            file_put_contents($root.'/app/Domain/Local.php', '<?php // host-owned');
-            file_put_contents($root.'/config/branding.php', "<?php return ['name' => 'Local'];");
-            $before = $this->record($root);
+        $root = $this->checkout(withTemplateFiles: true);
+        $paths = array_keys($this->templateFiles());
+        $preview = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS);
+        $this->assertFalse($preview['executable']);
+        $this->assertEqualsCanonicalizing($paths, $preview['claimable']);
+        $this->refuses(fn () => $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], null, $this->check($root)), 'not executable');
+        $this->assertSame([], $this->records($root));
 
-            $this->install($root, $host, $original, $target, 'upgrade');
-            $this->assertSame('<?php // host-owned', file_get_contents($root.'/app/Domain/Local.php'));
-            $this->assertSame("<?php return ['name' => 'Local'];", file_get_contents($root.'/config/branding.php'));
-            $this->assertSame($target->snapshot()['files'][self::POLICY], file_get_contents($root.'/'.self::POLICY));
-            $this->assertSame($target->snapshot()['files'][self::DEFAULTS], file_get_contents($root.'/'.self::DEFAULTS));
-            $this->assertNotSame($before, $this->record($root));
-            $this->assertSame($target->manifest['version'], json_decode($this->record($root), true)['artifact']['version']);
-        }
+        $claimed = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $paths);
+        $this->assertTrue($claimed['executable']);
+        $result = $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $claimed['plan'], 'adopt', $this->check($root), $paths);
+        $this->assertSame('completed', $result['status']);
+        $this->assertSame($this->all(), array_keys(Lineages::adopted($root, 'workspace-starter')));
+        $this->assertSame($this->templateFiles(), $this->files($root));
     }
 
-    public function test_conflicting_local_edit_refuses_upgrade(): void
+    public function test_an_edited_template_file_refuses_its_claim(): void
     {
-        [$root, $host] = $this->checkout();
-        $this->install($root, $host, null, Blueprint::release('C'), 'install');
-        file_put_contents($root.'/'.self::POLICY, '<?php // customised');
-        $record = $this->record($root);
-
-        $lifecycle = $host->lifecycle();
-        $c = Blueprint::release('C');
-        $d = Blueprint::release('D');
-        $plan = $lifecycle->plan($root, $host->appId(), $c, $d, $host->bindings(), $host->inputPaths());
-        $this->assertFalse($plan->executable());
-        $this->refuses(fn () => $lifecycle->apply($plan, $c, $d, $host->inputPaths(), 'upgrade', $host->operationCheck(), true));
-        $this->assertSame('<?php // customised', file_get_contents($root.'/'.self::POLICY));
-        $this->assertSame($c->snapshot()['files'][self::DEFAULTS], file_get_contents($root.'/'.self::DEFAULTS));
-        $this->assertSame($record, $this->record($root));
-    }
-
-    public function test_stale_or_mismatched_original_refuses(): void
-    {
-        [$root, $host] = $this->checkout();
-        $this->install($root, $host, null, Blueprint::release('C'), 'install');
-        $record = $this->record($root);
-        $files = $this->files($root);
-        $lifecycle = $host->lifecycle();
-        $d = Blueprint::release('D');
-        foreach ([Blueprint::release('A'), Blueprint::release('B')] as $original) {
-            $this->refuses(fn () => $lifecycle->plan($root, $host->appId(), $original, $d, $host->bindings(), $host->inputPaths()), 'exactly the installed artifact');
-        }
-        // Same release, other bindings: not the installed artifact either.
-        $this->refuses(fn () => $lifecycle->plan($root, $host->appId(), Blueprint::release('C'), $d, ['frontend' => 'other'], $host->inputPaths()), 'exactly the installed artifact');
-        // A reviewed plan goes stale when a bound input changes before apply.
-        $plan = $lifecycle->plan($root, $host->appId(), Blueprint::release('C'), $d, $host->bindings(), $host->inputPaths());
-        file_put_contents($root.'/composer.lock', '{}');
-        $this->refuses(fn () => $lifecycle->apply($plan, Blueprint::release('C'), $d, $host->inputPaths(), 'stale', $host->operationCheck(), true));
-        $this->assertSame($record, $this->record($root));
-        $this->assertSame($files, $this->files($root));
-
-        // A feature install names its original features exactly: a smaller selection is not what is installed.
-        [$root, $host] = $this->checkout();
-        $this->install($root, $host, null, Blueprint::all(), 'install');
-        $record = $this->record($root);
-        $this->refuses(fn () => $lifecycle->plan($root, $host->appId(), Blueprint::features(['foundation']), Blueprint::all(), $host->bindings(), $host->inputPaths()), 'exactly the installed artifact');
-        $this->refuses(fn () => $lifecycle->plan($root, $host->appId(), Blueprint::release('C'), Blueprint::all(), $host->bindings(), $host->inputPaths()), 'cannot be upgraded');
-        $this->assertSame($record, $this->record($root));
+        $root = $this->checkout(withTemplateFiles: true);
+        $paths = array_keys($this->templateFiles());
+        $edited = 'database/migrations/kit/notes/0001_01_02_000700_create_kit_notes_tables.php';
+        file_put_contents($root.'/'.$edited, "<?php // customised\n");
+        $preview = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $paths);
+        $this->assertFalse($preview['executable']);
+        $this->refuses(fn () => $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], null, $this->check($root), $paths), 'not executable');
+        $this->assertSame("<?php // customised\n", file_get_contents($root.'/'.$edited));
+        $this->assertSame([], $this->records($root));
     }
 
     public function test_operation_check_fails_closed(): void
     {
-        [$root, $host] = $this->checkout();
-        $all = Blueprint::all();
-        $lifecycle = $host->lifecycle();
-        Schema::drop('notes');
-        $this->assertFalse(($host->operationCheck())());
-        $plan = $lifecycle->plan($root, $host->appId(), null, $all, $host->bindings(), $host->inputPaths());
-        $result = $lifecycle->apply($plan, null, $all, $host->inputPaths(), 'install', $host->operationCheck(), true);
-        $this->assertSame('verification_failed', $result['status']);
-        $this->assertNull($this->record($root));
+        $root = $this->checkout();
+        $preview = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS);
 
         // A closure declared outside the bound host-operations file is rejected before effects.
-        [$root, $host] = $this->checkout();
-        $plan = $lifecycle->plan($root, $host->appId(), null, $all, $host->bindings(), $host->inputPaths());
-        $this->refuses(fn () => $lifecycle->apply($plan, null, $all, $host->inputPaths(), 'install', fn () => true, true), 'host-operations');
-        $this->assertNull($this->record($root));
-        $this->assertFileDoesNotExist($root.'/'.self::POLICY);
+        $this->refuses(fn () => $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], null, fn () => true), 'host-operations');
+        $this->assertSame([], $this->records($root));
+        $this->assertSame([], $this->files($root));
+
+        // Without the host schema the check fails, so the first feature stays pending and nothing is recorded.
+        Schema::rename('users', 'users_moved');
+        $this->assertFalse(($this->check($root))());
+        $result = $this->lineages()->add($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $preview['plan'], 'install', $this->check($root));
+        $this->assertNotSame('completed', $result['status']);
+        $this->assertSame('core', $result['failed']);
+        $this->assertSame([], array_keys(Lineages::adopted($root, 'workspace-starter')));
 
         // A Mod executor that differs from the committed provenance refuses at plan time.
-        file_put_contents($root.'/config/lifecycle-executor.json', '{"installed_mod_version":"v0.8.1"}');
-        $this->refuses(fn () => $lifecycle->plan($root, $host->appId(), null, $all, $host->bindings(), $host->inputPaths()), 'Executor provenance');
+        $root = $this->checkout();
+        file_put_contents($root.'/config/kit-executor.json', '{"installed_mod_version":"v0.9.0"}');
+        $this->refuses(fn () => $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS), 'Executor provenance');
     }
 
-    public function test_starter_maintain_command(): void
+    public function test_kit_add_command(): void
     {
-        [$root, $host] = $this->checkout();
+        $root = $this->checkout();
         $base = $this->app->basePath();
-        $previous = app(LifecycleHost::class);
         $kernel = app(Kernel::class);
+        $features = ['features' => $this->all()];
         try {
+            // KitHost reads its operation check from the checkout it runs in.
             $this->app->setBasePath($root);
-            $this->app->instance(LifecycleHost::class, $host);
-            $this->assertSame(0, $kernel->call('starter:maintain', ['action' => 'plan', '--features' => 'foundation,defaults']));
+            $this->assertSame(0, $kernel->call('kit:add', $features + ['--json' => true]));
             $preview = json_decode(trim($kernel->output()), true, flags: JSON_THROW_ON_ERROR);
-            $this->assertNotSame(0, $kernel->call('starter:maintain', ['action' => 'apply', '--features' => 'foundation,defaults', '--intent' => 'install', '--exclusive-checkout' => true, '--expected-plan' => 'sha256:wrong']));
-            $this->assertNull($this->record($root));
-            $this->assertNotSame(0, $kernel->call('starter:maintain', ['action' => 'apply', '--features' => 'foundation,defaults', '--intent' => 'install', '--expected-plan' => $preview['plan']]));
-            $this->assertNull($this->record($root));
-            $this->assertSame(0, $kernel->call('starter:maintain', ['action' => 'apply', '--features' => 'foundation,defaults', '--intent' => 'install', '--exclusive-checkout' => true, '--expected-plan' => $preview['plan']]));
-            $this->assertNotNull($this->record($root));
-            $this->assertSame(0, $kernel->call('starter:maintain', ['action' => 'resume', '--features' => 'foundation,defaults', '--intent' => 'install', '--exclusive-checkout' => true]));
-            $this->assertTrue(json_decode(trim($kernel->output()), true)['no_op']);
-            $this->assertNotSame(0, $kernel->call('starter:maintain', ['action' => 'plan', '--original-features' => 'foundation', '--features' => 'foundation,defaults']));
+            $this->assertNotSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => 'sha256:wrong']));
+            $this->assertSame([], $this->records($root));
+            $this->assertSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => $preview['plan']]));
+            $this->assertCount(7, $this->records($root));
+            $this->assertSame($this->templateFiles(), $this->files($root));
         } finally {
             $this->app->setBasePath($base);
-            $this->app->instance(LifecycleHost::class, $previous);
         }
     }
 
-    /** A disposable checkout holding copies of the starter's real lifecycle inputs. */
-    private function checkout(): array
+    /** A disposable checkout holding copies of the template's real kit host inputs, and optionally its feature files. */
+    private function checkout(bool $withTemplateFiles = false): string
     {
-        $root = sys_get_temp_dir().'/starter-lifecycle-'.bin2hex(random_bytes(8));
-        foreach (['app/Support', 'bootstrap/cache', 'storage/logs', 'config'] as $dir) {
-            mkdir($root.'/'.$dir, 0700, true);
-        }
-        foreach (StarterLifecycle::INPUTS as $path) {
+        $root = sys_get_temp_dir().'/starter-kit-'.bin2hex(random_bytes(8));
+        foreach (KitHost::INPUTS as $path) {
+            if (! is_dir(dirname($root.'/'.$path))) {
+                mkdir(dirname($root.'/'.$path), 0700, true);
+            }
             copy(base_path($path), $root.'/'.$path);
+        }
+        foreach ($withTemplateFiles ? $this->templateFiles() : [] as $path => $bytes) {
+            if (! is_dir(dirname($root.'/'.$path))) {
+                mkdir(dirname($root.'/'.$path), 0700, true);
+            }
+            file_put_contents($root.'/'.$path, $bytes);
         }
         $root = realpath($root);
         $this->roots[] = $root;
 
-        return [$root, new StarterLifecycle($root)];
+        return $root;
     }
 
-    private function install(string $root, LifecycleHost $host, ?Blueprint $original, Blueprint $target, string $intent): void
+    private function lineages(): Lineages
     {
-        $lifecycle = $host->lifecycle();
-        $plan = $lifecycle->plan($root, $host->appId(), $original, $target, $host->bindings(), $host->inputPaths());
-        $this->assertTrue($plan->executable());
-        $this->assertSame('completed', $lifecycle->apply($plan, $original, $target, $host->inputPaths(), $intent, $host->operationCheck(), true)['status']);
+        return new Lineages(app(LifecycleHost::class)->lifecycle(), Catalog::package());
     }
 
-    private function record(string $root): ?string
+    /** @return list<string> */
+    private function all(): array
     {
-        return is_file($root.'/'.self::RECORD) ? file_get_contents($root.'/'.self::RECORD) : null;
+        return Catalog::package()->featureIds();
     }
 
-    /** @return array<string, string> */
+    /** The checkout's own operation check, declared in its host-operations input. */
+    private function check(string $root): Closure
+    {
+        return require $root.'/'.KitHost::INPUTS['host-operations'];
+    }
+
+    /** @return array<string, string> path => bytes of the template's feature files, which are exactly what the catalog renders */
+    private function templateFiles(): array
+    {
+        $rendered = array_merge(...array_map(fn (string $id): array => Blueprint::lineage($id, Catalog::package())['files'], $this->all()));
+        ksort($rendered);
+        $files = $this->files(base_path());
+        $this->assertSame($rendered, $files);
+
+        return $files;
+    }
+
+    /** @return array<string, string> path => bytes under the features' owned paths */
     private function files(string $root): array
     {
         $files = [];
-        foreach ([self::POLICY, self::DEFAULTS] as $path) {
-            $files[$path] = is_file($root.'/'.$path) ? hash_file('sha256', $root.'/'.$path) : 'absent';
+        foreach (Catalog::package()->featureIds() as $id) {
+            foreach (Blueprint::lineage($id, Catalog::package())['feature']['owns'] as $owned) {
+                if (is_file($root.'/'.$owned)) {
+                    $files[$owned] = file_get_contents($root.'/'.$owned);
+                }
+                if (! is_dir($root.'/'.$owned)) {
+                    continue;
+                }
+                foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$owned, FilesystemIterator::SKIP_DOTS)) as $file) {
+                    $files[substr($file->getPathname(), strlen($root) + 1)] = file_get_contents($file->getPathname());
+                }
+            }
         }
+        ksort($files);
 
         return $files;
+    }
+
+    /** @return list<string> the installed records */
+    private function records(string $root): array
+    {
+        return glob($root.'/.mod-maintenance/installed/*.json') ?: [];
     }
 
     private function refuses(Closure $operation, string $message = ''): void
