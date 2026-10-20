@@ -272,4 +272,12 @@ final class AccountTest extends TestCase
         $this->get('/@alpha/dashboard', $this->inertia())->assertJsonMissingPath('props.events');
         $this->assertSame(0, SecurityEvent::query()->whereNull('user_id')->count());
     }
+
+    public function test_signing_in_still_works_when_the_log_table_is_missing(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        Schema::drop('kit_security_events');
+        $this->signIn(1);
+        $this->assertAuthenticated();
+    }
 }
