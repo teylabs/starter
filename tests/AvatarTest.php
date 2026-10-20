@@ -28,8 +28,9 @@ final class AvatarTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
+        Storage::fake('local');
         Storage::fake('public');
-        config(['media-library.disk_name' => 'public']);
+        config(['media-library.disk_name' => 'local']);
     }
 
     private function inertia(): array
@@ -150,5 +151,75 @@ final class AvatarTest extends TestCase
         $this->deleteJson('/me/avatar')->assertOk();
         $this->get('/me/profile', $this->inertia())->assertJsonPath('props.avatar', null);
         $this->get('/me', $this->inertia())->assertJsonPath('props.groups.0.sections.0.key', 'profile');
+    }
+
+    public function test_the_avatar_is_a_media_library_item_on_the_private_disk_and_never_under_the_public_one(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('a.png', 100, 100)])->assertCreated();
+        $media = $this->original(1);
+        $this->assertSame('avatar', $media->collection_name);
+        $this->assertSame('local', $media->disk);
+        $this->assertSame('local', $media->conversions_disk);
+        $this->assertSame('kit-user-avatar', $media->model_type);
+        $this->assertSame(40, strlen($media->getCustomProperty('token')));
+        $this->assertTrue(Storage::disk('local')->exists($media->getPathRelativeToRoot()));
+        $this->assertTrue(Storage::disk('local')->exists($media->getPathRelativeToRoot('thumb')));
+        $this->assertSame([], Storage::disk('public')->allFiles(), 'nothing is stored under the public disk');
+        $this->assertFalse(config('filesystems.disks.local.visibility') === 'public');
+    }
+
+    public function test_the_token_route_serves_the_file_with_cache_headers_and_no_ids_in_the_url(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('a.png', 100, 100)])->assertCreated();
+        $media = $this->original(1);
+        $urls = Avatars::urls(1);
+        // A random token: no user id, no media id, nothing to count up from.
+        $this->assertMatchesRegularExpression('#^/avatars/[A-Za-z0-9]{40}$#', $urls['url']);
+        $this->assertMatchesRegularExpression('#^/avatars/[A-Za-z0-9]{40}/2x$#', $urls['url_2x']);
+        $this->assertStringNotContainsString('/'.$media->id, $urls['url']);
+        // It is public (no sign-in), streamed from the private disk, cached for a year, and carries an ETag.
+        $this->postJson('/logout')->assertNoContent();
+        $this->flushSession();
+        $response = $this->get($urls['url'])->assertOk();
+        $this->assertSame('image/jpeg', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('max-age=31536000', $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString('immutable', $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString('public', $response->headers->get('Cache-Control'));
+        $etag = $response->headers->get('ETag');
+        $this->assertNotEmpty($etag);
+        $this->assertNull($response->headers->get('Set-Cookie'), 'no session or cookie on an image');
+        $this->assertSame(file_get_contents($media->getPath('thumb')), $response->streamedContent());
+        $this->assertSame(file_get_contents($media->getPath('thumb2x')), $this->get($urls['url_2x'])->assertOk()->streamedContent());
+        $this->get($urls['url'], ['If-None-Match' => $etag])->assertStatus(304);
+        // An unknown or malformed token is a 404.
+        $this->get('/avatars/'.str_repeat('a', 40))->assertNotFound();
+        $this->get('/avatars/short')->assertNotFound();
+    }
+
+    public function test_the_old_token_stops_working_after_replace_and_remove(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('a.png', 100, 100)])->assertCreated();
+        $first = Avatars::urls(1);
+        $this->get($first['url'])->assertOk();
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('b.png', 100, 100)])->assertCreated();
+        $second = Avatars::urls(1);
+        $this->assertNotSame($first['url'], $second['url']);
+        $this->get($first['url'])->assertNotFound();
+        $this->get($first['url_2x'])->assertNotFound();
+        $this->get($second['url'])->assertOk();
+        $this->deleteJson('/me/avatar')->assertOk();
+        $this->get($second['url'])->assertNotFound();
+        // Two users never share a token.
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('c.png', 100, 100)])->assertCreated();
+        $this->postJson('/logout')->assertNoContent();
+        $this->signIn(2);
+        $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('d.png', 100, 100)])->assertCreated();
+        $this->assertNotSame(Avatars::urls(1)['url'], Avatars::urls(2)['url']);
     }
 }

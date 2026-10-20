@@ -46,12 +46,12 @@ final class StorageTest extends TestCase
         $this->assertStringStartsWith('https://synthetic.r2.example.test/synthetic-bucket/media/1.txt?', $disk->temporaryUrl('media/1.txt', now()->addMinutes(5)));
     }
 
-    public function test_media_is_local_by_default_and_a_private_bucket_when_the_disk_is_s3(): void
+    public function test_media_is_on_the_private_local_disk_by_default_and_a_private_bucket_when_the_disk_is_s3(): void
     {
-        // Development stores avatars on the public disk; production sets MEDIA_DISK=s3 and the bucket's variables (see docs/deploy.md).
-        $this->assertSame('public', config('media-library.disk_name'));
-        $this->assertSame('local', config('filesystems.disks.public.driver'));
+        // Development stores avatars on the private `local` disk; production sets MEDIA_DISK=s3 and the bucket's variables (see docs/deploy.md).
+        $this->assertSame('local', config('media-library.disk_name'));
+        $this->assertSame('local', config('filesystems.disks.local.driver'));
         $this->assertSame('private', config('filesystems.disks.s3.visibility'));
-        $this->assertStringContainsString('MEDIA_DISK=public', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        $this->assertStringContainsString('MEDIA_DISK=local', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
     }
 }

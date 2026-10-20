@@ -19,6 +19,7 @@
     "GET|HEAD @{workspace}/settings/connections web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "GET|HEAD @{workspace}/settings/general web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "GET|HEAD @{workspace}/settings/people web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
+    "GET|HEAD avatars/{token}/{size?} web",
     "GET|HEAD dashboard web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "GET|HEAD login web,guest:web",
     "GET|HEAD mcp/connections/{connection} ",
