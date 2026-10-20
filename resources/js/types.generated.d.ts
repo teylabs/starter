@@ -1,6 +1,31 @@
 declare namespace Tey {
 export namespace Kit {
 export namespace Features {
+export namespace Mcp {
+export namespace ViewModels {
+export type ConnectionsViewModel = {
+title: string,
+tokens: {
+id: string,
+label: string,
+}[],
+scopes: {
+key: string,
+description: string,
+required: boolean,
+}[],
+connections: {
+id: number,
+revoked: boolean,
+expires_at: string | null,
+endpoint: string,
+revoke_url: string,
+}[],
+create_url: string,
+intent_key: string,
+};
+}
+}
 export namespace SessionUi {
 export namespace Data {
 export type ShellData = {
@@ -77,8 +102,10 @@ title: string,
 groups: {
 label: string,
 sections: {
+key: string,
 label: string,
 description: string,
+icon: string,
 url: string,
 }[],
 }[],

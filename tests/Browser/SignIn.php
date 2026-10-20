@@ -86,9 +86,16 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
             ->assertSee('Delegated access for MCP clients')
+            // The landing page is a grid of cards, each one link with an icon; the group is "Workspace".
+            ->assertCount('[data-settings-card]', 2)
+            ->assertPresent('[data-settings-card] svg')
+            ->assertPresent('section[aria-label="Workspace"]')
             ->click('main a[href="/settings/general"]')
             ->assertPathIs('/settings/general')
             ->assertTitle('General · Settings · '.config('app.name'))
+            // The section page has the sidebar, with the shown section marked.
+            ->assertPresent('[data-settings-sidebar] a[href="/settings/general"][aria-current="page"]')
+            ->assertMissing('[data-settings-sidebar] a[href="/settings/connections"][aria-current="page"]')
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->assertNoJavaScriptErrors();
         // The shell owns the vertical rhythm: the page sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.

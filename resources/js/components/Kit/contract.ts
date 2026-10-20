@@ -16,7 +16,7 @@ export interface SelectProps { id?: string; options: { value: string; label: str
 /** A timezone select (`v-model`: an IANA zone name): Select over the zones the browser knows. */
 export interface TimezoneSelectProps { id?: string; disabled?: boolean; invalid?: boolean }
 
-/** A checkbox (`v-model`: boolean) with its label in the default slot. In the shell it renders the page header (the `title` prop and an `actions` slot) above the content. */
+/** A checkbox (`v-model`: boolean) with its label in the default slot. */
 export interface CheckboxProps { id: string; disabled?: boolean }
 
 /** A button: `primary`, `secondary` or `destructive`; a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
@@ -38,3 +38,9 @@ export interface PasswordInputProps { invalid?: boolean }
 
 /** The header's light/dark switch (no props) and the appearance choice (light, dark or system, no props): both read and write the one appearance setting. `useAppearance()` and `initializeTheme()` are exported with them. */
 export type AppearanceProps = Record<string, never>;
+
+/** A settings section's icon by its lucide name (kebab case); an unknown name is the generic Settings icon. */
+export interface SectionIconProps { name?: string }
+
+/** The frame of a settings section's page: the sidebar of the sections the user may open (the server's `settings_nav`, `aria-current` on the shown one), and the content in the default slot. */
+export type SettingsFrameProps = Record<string, never>;

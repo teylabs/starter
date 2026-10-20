@@ -11,6 +11,8 @@ export { default as Page } from './Layout/Page.vue';
 export { default as FormActions } from './Form/FormActions.vue';
 export { default as Input } from './Form/Input.vue';
 export { default as PasswordInput } from './Form/PasswordInput.vue';
+export { default as SectionIcon } from './Layout/SectionIcon.vue';
+export { default as SettingsFrame } from './Layout/SettingsFrame.vue';
 export { default as Section } from './Form/Section.vue';
 export { default as Select } from './Form/Select.vue';
 export { default as Textarea } from './Form/Textarea.vue';
