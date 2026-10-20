@@ -6,12 +6,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tey\Concierge\Actions\AcceptInvitation;
+use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
 use Tey\Concierge\Enums\InvitationStatus;
 use Tey\Concierge\Enums\MembershipStatus;
 use Tey\Concierge\Models\Invitation;
 use Tey\Concierge\Models\Membership;
+use Tey\Concierge\Support\GrantSet;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
@@ -162,18 +166,50 @@ final class PeopleTest extends TestCase
         $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
         $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
         $this->assertSame(MembershipStatus::Active, $owner->fresh()->status);
-        // An admin may open the list (the permission) but Concierge's rules refuse them anything over the owner, or any other management.
+        // An admin manages people below them: Concierge's rank rules still stop them touching the owner (or another admin).
         $this->putJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id, ['role' => 'admin'])->assertOk();
         $this->signOut();
         $this->signIn(3);
         $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
-        $this->assertSame([false, false], array_column($page['members'], 'manageable'));
-        $this->assertSame([], $page['roles']);
-        $this->assertFalse($page['can_manage']);
+        $this->assertSame([false, false], array_column($page['members'], 'manageable'), 'an admin cannot manage the owner, or themselves');
+        $this->assertSame(['viewer'], array_column($page['roles'], 'value'), 'an admin grants viewer only');
+        $this->assertTrue($page['can_manage']);
         $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
         $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'z@example.test', 'role' => 'viewer'])->assertForbidden();
         $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
         $this->assertSame(MembershipStatus::Active, $owner->fresh()->status);
+    }
+
+    public function test_an_admin_can_invite_and_remove_a_viewer_but_not_change_an_owner_or_another_admin(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        foreach ([4 => 'admin', 5 => 'viewer'] as $id => $role) {
+            User::create(['id' => $id, 'name' => 'Person '.$id, 'email' => 'actor'.$id.'@example.test', 'email_verified_at' => now()]);
+            $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor'.$id.'@example.test', new GrantSet([$role]));
+            AcceptInvitation::run(User::findOrFail($id), $invite->token);
+        }
+        $this->signIn(1);
+        $this->putJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id, ['role' => 'admin'])->assertOk();
+        $this->signOut();
+        $this->signIn(3);
+        // An admin invites a viewer, and removes one.
+        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'fresh@example.test', 'role' => 'viewer'])->assertCreated();
+        $viewer = $this->membership(1, 5);
+        $this->deleteJson('/@alpha/settings/people/members/'.$viewer->id)->assertOk();
+        $this->assertSame(MembershipStatus::Removed, $viewer->fresh()->status);
+        // They cannot grant admin or owner, change the owner, or manage another admin (equal rank).
+        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'admin'])->assertForbidden();
+        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'owner'])->assertForbidden();
+        $owner = $this->membership(1, 1);
+        $otherAdmin = $this->membership(1, 4);
+        foreach ([$owner, $otherAdmin] as $target) {
+            $this->putJson('/@alpha/settings/people/members/'.$target->id, ['role' => 'viewer'])->assertForbidden();
+            $this->deleteJson('/@alpha/settings/people/members/'.$target->id)->assertForbidden();
+        }
+        $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
+        $this->assertSame(['admin'], app(Concierge::class)->roleNames($otherAdmin->fresh()));
+        // The page offers an admin what they may do: remove and re-role only the viewers.
+        $manageable = collect($this->getJson('/@alpha/settings/people')->json('members'))->where('manageable', true)->pluck('name')->all();
+        $this->assertSame([], $manageable, 'no viewer is left to manage');
     }
 }
