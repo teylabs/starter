@@ -7,6 +7,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The brand's colour scale: a neutral zinc until the brand sets an accent, which <x-kit::brand /> turns into this scale at runtime. Static, so the variables are always emitted. */
+@theme static {
+    --color-brand-50: var(--color-zinc-50);
+    --color-brand-100: var(--color-zinc-100);
+    --color-brand-200: var(--color-zinc-200);
+    --color-brand-300: var(--color-zinc-300);
+    --color-brand-400: var(--color-zinc-400);
+    --color-brand-500: var(--color-zinc-500);
+    --color-brand-600: var(--color-zinc-600);
+    --color-brand-700: var(--color-zinc-700);
+    --color-brand-800: var(--color-zinc-800);
+    --color-brand-900: var(--color-zinc-900);
+    --color-brand-950: var(--color-zinc-950);
+}
+
 /* The app shell's widest measure (2560px); a host overrides it with one `--container-2k` in its own @theme. */
 @theme {
     --container-2k: 160rem;
@@ -63,18 +78,7 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
-    /* Brand and warning are Tailwind's default indigo and amber. */
-    --color-brand-50: var(--color-indigo-50);
-    --color-brand-100: var(--color-indigo-100);
-    --color-brand-200: var(--color-indigo-200);
-    --color-brand-300: var(--color-indigo-300);
-    --color-brand-400: var(--color-indigo-400);
-    --color-brand-500: var(--color-indigo-500);
-    --color-brand-600: var(--color-indigo-600);
-    --color-brand-700: var(--color-indigo-700);
-    --color-brand-800: var(--color-indigo-800);
-    --color-brand-900: var(--color-indigo-900);
-    --color-brand-950: var(--color-indigo-950);
+    /* Warning is Tailwind's default amber. */
     --color-warning-50: var(--color-amber-50);
     --color-warning-100: var(--color-amber-100);
     --color-warning-200: var(--color-amber-200);

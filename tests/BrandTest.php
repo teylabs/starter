@@ -127,9 +127,9 @@ final class BrandTest extends TestCase
         $this->assertSame('hello@example.com', $email->getReplyTo()[0]->getAddress());
         $html = (string) $email->getHtmlBody();
         // The accent is a literal colour on the button and on a thin rule on the 570px header content, not the full-width header.
-        $this->assertSame('#4f46e5', Brand::accent());
-        $this->assertMatchesRegularExpression('/class="button button-primary"[^>]*background-color: #4f46e5/', $html);
-        $this->assertMatchesRegularExpression('/<table class="header-inner"[^>]*width="570"[^>]*border-bottom: 2px solid #4f46e5/', $html);
+        $this->assertSame('#52525b', Brand::accent());
+        $this->assertMatchesRegularExpression('/class="button button-primary"[^>]*background-color: #52525b/', $html);
+        $this->assertMatchesRegularExpression('/<table class="header-inner"[^>]*width="570"[^>]*border-bottom: 2px solid #52525b/', $html);
         $this->assertDoesNotMatchRegularExpression('/<td class="header"[^>]*border-bottom/', $html);
         // The mark is an inline CID image with a matching PNG part; never a remote or data image.
         $this->assertMatchesRegularExpression('/<img src="cid:kit-mark" width="40" height="40" alt="Product name"/', $html);
@@ -162,13 +162,30 @@ final class BrandTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/<(p|span|a)[^>]*>[^<]*©/u', (string) file_get_contents(resource_path('js/components/Shell/ShellFooter.vue')));
     }
 
+    public function test_the_default_accent_is_neutral_and_a_configured_accent_overrides_it(): void
+    {
+        // The default has no hue (zinc), is listed as a placeholder, and leaves the theme's own scale alone.
+        $this->assertSame('#52525b', Brand::accent());
+        $this->assertTrue(Brand::accentIsNeutral());
+        $this->assertContains('brand.accent', Brand::placeholders());
+        $this->assertStringNotContainsString('--color-brand-600', $this->get('/login')->getContent());
+        [$red, $green, $blue] = sscanf(Brand::accent(), '#%02x%02x%02x');
+        $this->assertLessThan(20, max($red, $green, $blue) - min($red, $green, $blue), 'the neutral accent has no hue');
+        // A configured accent overrides the brand scale, and is no longer a placeholder.
+        config(['kit.brand.accent' => '#0f766e']);
+        $this->assertFalse(Brand::accentIsNeutral());
+        $this->assertNotContains('brand.accent', Brand::placeholders());
+        $this->assertStringContainsString('--color-brand-600:#0f766e', $this->get('/login')->getContent());
+        $this->assertStringContainsString('#0f766e', BrandAssets::fromConfig()->render()['favicon.svg']);
+    }
+
     public function test_placeholders_lists_the_defaults_and_is_empty_once_configured(): void
     {
         $this->assertEqualsCanonicalizing(['brand.name', 'brand.logomark', 'brand.accent', 'brand.hello_email', 'brand.support_email', 'brand.mail_from_address', 'brand.legal_name', 'brand.postal_address', 'brand.terms_url', 'brand.privacy_url'], Brand::placeholders());
         config(['app.name' => 'Real Product', 'kit.brand' => [...config('kit.brand'), 'logomark' => '/real-mark.svg', 'accent' => '#0f766e', 'hello_email' => 'hello@real.test', 'support_email' => 'support@real.test', 'mail_from_address' => 'updates@real.test', 'legal_name' => 'Real Ltd', 'postal_address' => '9 Real Street, Realtown', 'terms_url' => '/legal/terms', 'privacy_url' => '/legal/privacy']]);
         $this->assertSame([], Brand::placeholders());
         // Only keys are named, never values.
-        config(['kit.brand.accent' => '#4f46e5']);
+        config(['kit.brand.accent' => '#52525b']);
         $this->assertSame(['brand.accent'], Brand::placeholders());
     }
 }
