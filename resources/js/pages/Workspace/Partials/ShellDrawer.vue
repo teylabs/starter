@@ -40,7 +40,7 @@ onBeforeUnmount(stop);
             </nav>
             <div class="mt-auto border-t border-border px-2 py-4">
                 <div class="flex items-center gap-3 px-3 pb-3">
-                    <UserAvatar :initials="layout.user.initials" />
+                    <UserAvatar :initials="layout.user.initials" :src="layout.user.avatar_url" :src2x="layout.user.avatar_url_2x" />
                     <span class="flex min-w-0 flex-col">
                         <span class="truncate text-sm font-medium">{{ layout.user.name }}</span>
                         <span class="truncate text-xs text-muted-foreground">{{ layout.user.email }}</span>

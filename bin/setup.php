@@ -28,6 +28,10 @@ if (preg_match('/^DB_CONNECTION=sqlite\s*$/m', $env) === 1 && preg_match('/^DB_D
     echo "Created database/database.sqlite\n";
 }
 $run($php.' artisan migrate --force');
+// Avatars are on the public disk by default: serve it from /storage.
+if (! is_link($root.'/public/storage')) {
+    $run($php.' artisan storage:link');
+}
 $run('npm ci && npm run build');
 $run($php.' artisan starter:first-owner'.$interaction);
 echo "Ready: php artisan serve, then sign in at /login\n";

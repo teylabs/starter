@@ -91,6 +91,8 @@ Schema::create('audit_events', function (Blueprint $t): void {
     $t->timestamp('created_at');
 });
 
+// Avatars are media on the user row.
+(require base_path('database/migrations/0001_01_01_000001_create_media_table.php'))->up();
 (require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();

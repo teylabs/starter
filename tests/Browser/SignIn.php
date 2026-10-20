@@ -98,6 +98,18 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertMissing('[data-settings-sidebar] a[href="/settings/connections"][aria-current="page"]')
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->assertNoJavaScriptErrors();
+        // The profile page: the file chooser and the upload, disabled until a photo is chosen; initials stand in for the photo. The upload itself is
+        // covered over HTTP (tests/AvatarTest.php): the browser harness re-encodes a multipart body as text, which corrupts a binary file.
+        $png = sys_get_temp_dir().'/kit-browser-avatar.png';
+        imagepng(imagecreatetruecolor(240, 160), $png);
+        $page->navigate('/me/profile')
+            ->assertSee('Choose a photo')
+            ->assertPresent('[data-slot="avatar"]')
+            ->assertMissing('[data-slot="avatar"] img')
+            ->attach('#avatar', $png)
+            ->assertPresent('[data-slot="avatar"] img')
+            ->assertNoJavaScriptErrors();
+        @unlink($png);
         // The shell owns the vertical rhythm: the page sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
         $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] [data-slot=\"page\"]").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);

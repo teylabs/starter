@@ -1,6 +1,7 @@
 [
     "DELETE @{workspace}/settings/connections/{connection} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "DELETE mcp/connections/{connection} ",
+    "DELETE me/avatar web,auth:web,concierge.active",
     "DELETE oauth/authorize web,auth:web,concierge.active",
     "DELETE oauth/device/authorize web,auth:web",
     "DELETE settings/connections/{connection} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
@@ -17,6 +18,7 @@
     "GET|HEAD login web,guest:web",
     "GET|HEAD mcp/connections/{connection} ",
     "GET|HEAD me web,auth:web,concierge.active",
+    "GET|HEAD me/profile web,auth:web,concierge.active",
     "GET|HEAD me/workspaces web,auth:web,concierge.active",
     "GET|HEAD oauth/authorize web,auth:web,concierge.active",
     "GET|HEAD oauth/device web",
@@ -34,6 +36,7 @@
     "POST login web,guest:web",
     "POST logout web,auth:web",
     "POST mcp/connections/{connection} Laravel\\Mcp\\Server\\Middleware\\ReorderJsonAccept,Laravel\\Mcp\\Server\\Middleware\\ValidateMcpHeaders,Laravel\\Mcp\\Server\\Middleware\\AddWwwAuthenticateHeader,auth:api,concierge.active,Tey\\Kit\\Features\\Mcp\\Http\\Middleware\\BindMcpConnection",
+    "POST me/avatar web,auth:web,concierge.active",
     "POST me/invitations web,auth:web,concierge.active",
     "POST oauth/authorize web,auth:web,concierge.active",
     "POST oauth/device/authorize web,auth:web",

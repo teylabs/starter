@@ -4,10 +4,12 @@
 export { default as AppearanceChoice } from './Appearance/AppearanceChoice.vue';
 export { default as AppearanceToggle } from './Appearance/AppearanceToggle.vue';
 export { initializeTheme, useAppearance } from './Appearance/useAppearance';
+export { default as Avatar } from './Layout/Avatar.vue';
 export { default as Button } from './Form/Button.vue';
 export { default as Checkbox } from './Form/Checkbox.vue';
 export { default as Field } from './Form/Field.vue';
 export { default as Page } from './Layout/Page.vue';
+export { default as FileInput } from './Form/FileInput.vue';
 export { default as FormActions } from './Form/FormActions.vue';
 export { default as Input } from './Form/Input.vue';
 export { default as PasswordInput } from './Form/PasswordInput.vue';

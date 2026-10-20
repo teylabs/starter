@@ -44,3 +44,9 @@ export interface SectionIconProps { name?: string }
 
 /** The frame of a settings section's page: the sidebar of the sections the user may open (the server's `settings_nav`, `aria-current` on the shown one), and the content in the default slot. */
 export type SettingsFrameProps = Record<string, never>;
+
+/** A person's photo (`src`, `src2x`) or their initials when there is none; `large` is the profile size. */
+export interface AvatarProps { initials: string; src?: string | null; src2x?: string | null; large?: boolean }
+
+/** A file chooser (`v-model`: File or null); `accept` filters the picker. */
+export interface FileInputProps { id: string; accept?: string; disabled?: boolean }

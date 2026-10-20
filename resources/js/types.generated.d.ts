@@ -56,6 +56,8 @@ user: {
 name: string,
 email: string,
 initials: string,
+avatar_url: string | null,
+avatar_url_2x: string | null,
 items: {
 label: string,
 url: string,
@@ -96,6 +98,17 @@ recovery_label: string,
 };
 export type LoginViewModel = {
 title: string,
+};
+export type ProfileViewModel = {
+title: string,
+name: string,
+initials: string,
+avatar: {
+url: string,
+url_2x: string,
+} | null,
+store_url: string,
+max_kb: number,
 };
 export type SectionsViewModel = {
 title: string,

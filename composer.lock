@@ -9922,12 +9922,17 @@
             "dist": {
                 "type": "path",
                 "url": "../kit-live",
-                "reference": "b1b1eb6f7198a630caaa9161f6729b772e0c2cf8"
+                "reference": "8d4f73576f3342662305d0796432992ca23742b9"
             },
             "require": {
                 "composer/semver": "^3.4",
+                "glhd/gretel": "^1.10",
                 "illuminate/support": "^13.0",
+                "lorisleiva/laravel-actions": "^2.12",
                 "php": "~8.4.0 || ~8.5.0",
+                "spatie/laravel-data": "^4.23",
+                "spatie/laravel-medialibrary": "^11.13",
+                "spatie/laravel-query-builder": "^7.3",
                 "tey/mod": "^0.9"
             },
             "require-dev": {
@@ -9937,8 +9942,6 @@
                 "laravel/mcp": "^1.0",
                 "laravel/passport": "^13.10",
                 "laravel/pennant": "^1.0",
-                "lorisleiva/laravel-actions": "^2.12",
-                "spatie/laravel-data": "^4.23",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
                 "tey/concierge": "^0.7.3"
@@ -9984,6 +9987,12 @@
                 ],
                 "test:adopt": [
                     "@php tests/AdoptCheck.php vendor/autoload.php"
+                ],
+                "test:permissions": [
+                    "@php tests/PermissionsCheck.php vendor/autoload.php"
+                ],
+                "test:permissions-http": [
+                    "@php tests/PermissionsHttpCheck.php vendor/autoload.php"
                 ],
                 "test:install": [
                     "@php tests/InstallCheck.php vendor/autoload.php"

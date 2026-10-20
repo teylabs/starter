@@ -31,6 +31,10 @@ TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded schem
 
 The **Deploy order (PostgreSQL)** job runs this order on every pull request: a `--no-dev` install in production mode with throwaway secrets, the asset build, the gate preflight, `migrate --force` against a fresh PostgreSQL 17, the full preflight and `optimize`. It leaves out `concierge:owners`, which needs an existing workspace, and `starter:smoke`, which doesn't exist yet.
 
+## Avatars and media
+
+Profile photos use spatie/laravel-medialibrary, wired by the kit with no app code. `MEDIA_DISK` picks the disk: `public` (the default, served from `/storage`; `composer setup` runs `storage:link`) in development, and in production a **private bucket** (`MEDIA_DISK=s3` plus the bucket's `AWS_*` variables; with Laravel Cloud, attach a bucket to the environment). The upload is validated (JPEG, PNG or WebP by content, 2048 KB by default, 16 megapixels at most), centre-cropped to a square, re-encoded without EXIF or GPS, and the 96px and 192px thumbnails are made at upload, not queued. On a private bucket the URLs are signed for 30 minutes.
+
 ## Environment
 
 Set these per environment (see `.env.example`):
