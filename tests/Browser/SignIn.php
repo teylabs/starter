@@ -3,8 +3,8 @@
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Console\Kernel;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
-use Tey\Kit\Fonts;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Fonts;
 
 // Smoke, from zero: a local boot with .env.example's local sign-in settings and `starter:first-owner`'s defaults. The
 // sign-in page offers one-click sign-in as the owner; the click reaches the app shell, which lists their workspace and
