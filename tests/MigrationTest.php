@@ -36,6 +36,8 @@ final class MigrationTest extends TestCase
         $this->assertSame([
             '0001_01_01_000000_create_users_table',
             '0001_01_01_000001_create_media_table',
+            '0001_01_01_000002_add_two_factor_columns_to_users_table',
+            '0001_01_01_000003_create_password_reset_tokens_table',
             '0001_01_02_000200_create_kit_workspaces_table',
             '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000201_create_permission_tables',
@@ -45,6 +47,7 @@ final class MigrationTest extends TestCase
             '0001_01_02_000301_create_kit_permission_defaults_table',
             '0001_01_02_000400_create_settings_table',
             '0001_01_02_000401_create_kit_settings_tables',
+            '0001_01_02_000500_create_kit_security_events_table',
             '0001_01_02_000600_create_kit_mcp_tables',
             '2016_06_01_000001_create_oauth_auth_codes_table',
             '2016_06_01_000002_create_oauth_access_tokens_table',

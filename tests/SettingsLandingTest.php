@@ -87,9 +87,9 @@ final class SettingsLandingTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         $this->get('/me', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
-            ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name and photo.', 'icon' => 'user', 'url' => '/me/profile'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'url' => '/me/workspaces']]]])
+            ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'url' => '/me/workspaces']]]])
             ->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Account', 'url' => '/me', 'is_current_page' => true]]);
-        $this->getJson('/me')->assertOk()->assertJsonPath('sections.1.key', 'workspaces');
+        $this->getJson('/me')->assertOk()->assertJsonPath('sections.3.key', 'workspaces');
         $this->postJson('/logout')->assertNoContent();
         $this->get('/me')->assertRedirect('/login');
     }

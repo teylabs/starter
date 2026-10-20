@@ -10,6 +10,7 @@
             <file>SignIn.php</file>
             <file>FormActions.php</file>
             <file>AuthCards.php</file>
+            <file>Account.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

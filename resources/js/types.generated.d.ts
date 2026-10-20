@@ -83,6 +83,11 @@ url: string,
 };
 }
 export namespace ViewModels {
+export type ChallengeViewModel = {
+title: string,
+status: string | null,
+email: string | null,
+};
 export type DashboardViewModel = {
 title: string,
 workspace: string,
@@ -114,6 +119,11 @@ workspace_url: string | null,
 };
 export type LoginViewModel = {
 title: string,
+};
+export type PasswordViewModel = {
+title: string,
+update_url: string,
+notice: string | null,
 };
 export type PeopleViewModel = {
 title: string,
@@ -168,6 +178,11 @@ url_2x: string,
 } | null,
 store_url: string,
 max_kb: number,
+email: string,
+email_verified: boolean,
+profile_url: string,
+notice: string | null,
+verify_url: string,
 };
 export type SectionsViewModel = {
 title: string,
@@ -181,6 +196,36 @@ icon: string,
 url: string,
 }[],
 }[],
+};
+export type SecurityViewModel = {
+title: string,
+two_factor: {
+state: string,
+qr_svg: string | null,
+secret_key: string | null,
+codes_left: number,
+recovery_codes: string[],
+},
+sessions: {
+supported: boolean,
+items: {
+agent: string,
+ip: string | null,
+last_active: string,
+current: boolean,
+}[],
+},
+events: {
+type: string,
+label: string,
+ip: string | null,
+agent: string,
+at: string,
+}[],
+two_factor_url: string,
+recovery_codes_url: string,
+sessions_url: string,
+notice: string | null,
 };
 }
 }

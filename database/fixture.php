@@ -27,6 +27,9 @@ Schema::create('users', function (Blueprint $t): void {
     $t->string('email')->unique();
     $t->timestamp('email_verified_at')->nullable();
     $t->string('password')->nullable();
+    $t->text('two_factor_secret')->nullable();
+    $t->text('two_factor_recovery_codes')->nullable();
+    $t->timestamp('two_factor_confirmed_at')->nullable();
     $t->rememberToken();
     $t->timestamps();
 });
@@ -91,8 +94,14 @@ Schema::create('audit_events', function (Blueprint $t): void {
     $t->timestamp('created_at');
 });
 
+Schema::create('password_reset_tokens', function (Blueprint $t): void {
+    $t->string('email')->primary();
+    $t->string('token');
+    $t->timestamp('created_at')->nullable();
+});
 // Avatars are media on the user row.
 (require base_path('database/migrations/0001_01_01_000001_create_media_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000500_create_kit_security_events_table.php'))->up();
 (require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
