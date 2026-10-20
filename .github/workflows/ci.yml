@@ -83,6 +83,54 @@ jobs:
       - run: vendor/bin/phpunit --bootstrap vendor/autoload.php tests
       - run: composer fixture:check
 
+  deploy:
+    name: Deploy order (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: starter
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_URL: https://app.example.test
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: starter
+      DB_USERNAME: starter
+      DB_PASSWORD: starter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: composer install --no-interaction --no-dev
+      - name: Throwaway secrets, as the platform injects them
+        run: |
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+          openssl genrsa -out oauth-private.pem 4096 2>/dev/null
+          openssl rsa -in oauth-private.pem -pubout -out oauth-public.pem 2>/dev/null
+          { echo 'PASSPORT_PRIVATE_KEY<<PEM'; cat oauth-private.pem; echo PEM; echo 'PASSPORT_PUBLIC_KEY<<PEM'; cat oauth-public.pem; echo PEM; } >> "$GITHUB_ENV"
+          rm oauth-private.pem oauth-public.pem
+      # docs/deploy.md's order. concierge:owners needs an existing workspace and starter:smoke doesn't exist yet (#32).
+      - run: npm ci && npm run build
+      - run: php artisan standards:preflight --skip=install.tables
+      - run: php artisan migrate --force
+      - run: php artisan standards:preflight
+      - run: php artisan optimize
+
   node:
     name: Node
     runs-on: ubuntu-latest
