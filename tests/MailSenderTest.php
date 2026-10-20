@@ -16,14 +16,14 @@ final class MailSenderTest extends TestCase
         $this->assertMatchesRegularExpression('/^MAIL_FROM_NAME="\$\{APP_NAME\}"$/m', $contents);
         $renamed = Dotenv::parse(preg_replace('/^APP_NAME=.*$/m', 'APP_NAME="Renamed App"', $contents)."\n");
         $this->assertArrayHasKey('MAIL_FROM_NAME', $renamed);
-        $this->assertArrayHasKey('MAIL_FROM_ADDRESS', $renamed);
-        $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'MAIL_FROM_ADDRESS' => $renamed['MAIL_FROM_ADDRESS']];
+        $this->assertArrayHasKey('KIT_BRAND_MAIL_FROM_ADDRESS', $renamed);
+        $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'KIT_BRAND_MAIL_FROM_ADDRESS' => $renamed['KIT_BRAND_MAIL_FROM_ADDRESS']];
         $script = '$app = require "'.__DIR__.'/application.php"; echo json_encode([config("app.name"), config("mail.from.name"), config("mail.from.address")]);';
         $process = proc_open([PHP_BINARY, '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, dirname(__DIR__), [...getenv(), ...$env]);
         $out = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
         fclose($pipes[2]);
         proc_close($process);
-        $this->assertSame(['Renamed App', 'Renamed App', 'hello@example.com'], json_decode(substr($out, (int) strrpos($out, '[')), true), $out);
+        $this->assertSame(['Renamed App', 'Renamed App', 'updates@example.com'], json_decode(substr($out, (int) strrpos($out, '[')), true), $out);
     }
 }

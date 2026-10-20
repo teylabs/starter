@@ -80,6 +80,14 @@ sign_in: string,
 sign_out: string | null,
 },
 env: string | null,
+footer: {
+identity: string,
+credit: string,
+links: {
+label: string,
+url: string,
+}[],
+},
 };
 }
 export namespace ViewModels {
