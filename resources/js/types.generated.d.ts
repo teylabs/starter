@@ -99,6 +99,45 @@ recovery_label: string,
 export type LoginViewModel = {
 title: string,
 };
+export type PeopleViewModel = {
+title: string,
+members: {
+id: number,
+name: string,
+email: string,
+initials: string,
+avatar: {
+url: string,
+url_2x: string,
+} | null,
+role: string,
+role_label: string,
+joined_at: string | null,
+is_you: boolean,
+manageable: boolean,
+update_url: string,
+destroy_url: string,
+}[],
+invitations: {
+id: string,
+email: string,
+role: string,
+role_label: string,
+expires_at: string,
+expired: boolean,
+invited_by: string | null,
+resend_url: string,
+revoke_url: string,
+}[],
+roles: {
+value: string,
+label: string,
+}[],
+can_manage: boolean,
+invite_url: string,
+search: string,
+sort: string,
+};
 export type ProfileViewModel = {
 title: string,
 name: string,

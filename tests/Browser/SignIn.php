@@ -87,7 +87,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertPathIs('/settings')
             ->assertSee('Delegated access for MCP clients')
             // The landing page is a grid of cards, each one link with an icon; the group is "Workspace".
-            ->assertCount('[data-settings-card]', 2)
+            ->assertCount('[data-settings-card]', 3)
             ->assertPresent('[data-settings-card] svg')
             ->assertPresent('section[aria-label="Workspace"]')
             ->click('main a[href="/settings/general"]')

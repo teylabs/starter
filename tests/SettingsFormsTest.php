@@ -96,5 +96,6 @@ final class SettingsFormsTest extends TestCase
         }
         $this->assertContains('general', $checked);
         $this->assertContains('connections', $checked);
+        $this->assertContains('people', $checked);
     }
 }
