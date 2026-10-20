@@ -7,8 +7,8 @@ import { Toaster } from '@/components/ui/sonner';
 import WorkspaceShell from '@/pages/Workspace/Layout.vue';
 
 /*
- * The signed-in shell is tey/kit's (pages/Workspace/Layout.vue), built on the server's `layout` prop (ShellData).
- * This wrapper is the app's part: its mark, the appearance choice in the account menu, the content width, the
+ * The signed-in shell is tey/kit's (pages/Workspace/Layout.vue), built on the server's `layout` prop (ShellData); its mark is the platform's logomark and APP_NAME.
+ * This wrapper is the app's part: the appearance choice in the account menu, the content width, the
  * page title, and a quiet footer. The breadcrumbs are the shell's, shared by gretel from each route's declaration. The shell owns the gutters and the measure, so pages add no outer padding.
  */
 defineOptions({ inheritAttrs: false });
@@ -19,7 +19,6 @@ const layout = computed(() => page.props.layout);
 
 <template>
     <WorkspaceShell v-if="layout" :layout="layout" width-class="max-w-2k">
-        <template #mark>{{ layout.product.name }}</template>
         <template #extra>
             <div class="flex min-h-11 items-center justify-between gap-2 px-3 text-sm font-medium text-muted-foreground">
                 Appearance

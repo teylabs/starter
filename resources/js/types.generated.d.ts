@@ -42,6 +42,7 @@ export type ShellData = {
 product: {
 name: string,
 url: string,
+logomark: string | null,
 },
 switcher: {
 current: {
