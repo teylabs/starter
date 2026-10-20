@@ -96,7 +96,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(9, $kit);
+        $this->assertCount(10, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -116,6 +116,8 @@ final class FeatureSeamsTest extends TestCase
         if (! $withNotes) {
             unset($schema['notes'], $schema['note_intents']);
         }
+        // The kit's permission-defaults table, which the sync records its applied grants in.
+        $schema['kit_permission_defaults'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-permission-defaults.json'), true);
         // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.
         $schema['workspaces']['columns'][] = ['slug', 'varchar', 0, null, 0];
         $schema['workspaces']['indexes'][] = [1, 'c', ['slug']];

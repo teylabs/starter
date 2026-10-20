@@ -1,0 +1,43 @@
+{
+    "columns": [
+        [
+            "id",
+            "integer",
+            1,
+            null,
+            1
+        ],
+        [
+            "permission",
+            "varchar",
+            1,
+            null,
+            0
+        ],
+        [
+            "role",
+            "varchar",
+            1,
+            null,
+            0
+        ],
+        [
+            "applied_at",
+            "datetime",
+            1,
+            null,
+            0
+        ]
+    ],
+    "indexes": [
+        [
+            1,
+            "c",
+            [
+                "permission",
+                "role"
+            ]
+        ]
+    ],
+    "foreign_keys": []
+}

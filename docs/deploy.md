@@ -6,6 +6,7 @@ Laravel Cloud builds the app (`composer install --no-dev`, then `npm ci && npm r
 set -e
 php artisan standards:preflight --skip=install.tables
 php artisan migrate --force
+php artisan kit:permissions:sync
 php artisan standards:preflight
 php artisan concierge:owners --workspace=<key> --no-interaction
 php artisan breadcrumbs:cache
@@ -15,6 +16,7 @@ php artisan starter:smoke
 
 - **`standards:preflight --skip=install.tables` gates the deploy**, after the asset build and with the database reachable, before anything migrates. tey/standards' blocking checks (the app key, debug off in production, the database config and the `install.*` group: every configured mail transport, disk, queue, cache and session driver, PHP extension and secret is actually installed, and the Vite manifest exists) exit 1 and stop the deploy. `install.tables` is skipped here because the tables it checks don't exist before the first migrate; the skip is printed and logged.
 - **`migrate --force` comes next**, before anything caches. A cached config or route built before the schema is current can boot code that expects tables or columns that do not exist yet.
+- **`kit:permissions:sync` follows the migration.** It creates the permissions the kit's features declare and grants each its default roles, once: a default someone removed is not granted again. It is safe on every deploy and exits non-zero only when a default role is missing (`concierge:sync-roles` creates the roles; `starter:first-owner` runs both).
 - **`standards:preflight`, in full, follows the migration**, so `install.tables` now checks that the session, cache, queue and failed-job tables the config uses exist, and a passing run clears the skip. Warning-level checks (mail sender, favicon and the like) are reported and logged as `PREFLIGHT SUMMARY` but never block.
 - **`concierge:owners --workspace=<key>`** keeps the owner named in `CONCIERGE_OWNERS` on that workspace. It is safe on every deploy: it never removes a user or an ownership, and it refuses (non-zero) a missing or unknown workspace, several owners for one workspace, or a different existing owner. It never creates the workspace; your app does. Preview with `--dry-run`, or read `--json`. A new owner gets a set-password link through the password broker, which needs mail and a password-reset route: neither is in the template yet (#24), so until then create the owner with your own reviewed process.
 - **`breadcrumbs:cache`** comes before any route cache: glhd/gretel's breadcrumbs are declared beside the routes, and the cached routes need them cached first. `optimize` runs it too (gretel registers it), so the line is explicit only where the route cache is run on its own.

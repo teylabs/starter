@@ -45,7 +45,7 @@ final class FirstOwnerCommand extends Command
         $generated = $interactive ? null : Str::password(24);
         $secret = $generated ?? password('Owner password', required: true, validate: fn (string $value): ?string => strlen($value) < 12 ? 'Use at least 12 characters.' : null);
 
-        if ($this->call('concierge:sync-roles', ['--no-interaction' => true]) !== self::SUCCESS) {
+        if ($this->call('concierge:sync-roles', ['--no-interaction' => true]) !== self::SUCCESS || $this->call('kit:permissions:sync', ['--no-interaction' => true]) !== self::SUCCESS) {
             return self::FAILURE;
         }
         $workspace = DB::transaction(function () use ($name, $email, $secret, $workspaceName): int {

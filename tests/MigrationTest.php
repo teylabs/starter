@@ -42,6 +42,7 @@ final class MigrationTest extends TestCase
             '0001_01_02_000202_create_kit_operators_table',
             '0001_01_02_000203_add_slug_to_kit_workspaces_table',
             '0001_01_02_000300_create_kit_access_tables',
+            '0001_01_02_000301_create_kit_permission_defaults_table',
             '0001_01_02_000400_create_settings_table',
             '0001_01_02_000401_create_kit_settings_tables',
             '0001_01_02_000600_create_kit_mcp_tables',
@@ -62,6 +63,7 @@ final class MigrationTest extends TestCase
 
         // Explicit synthetic test data only; migrations/public bootstrap never run this.
         $this->assertSame(0, app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]));
+        $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
         foreach ([1 => 'Schema Alpha', 2 => 'Schema Beta', 99 => 'Synthetic operator'] as $id => $name) {
             User::create(['id' => $id, 'name' => $name, 'email' => 'schema-'.$id.'@example.test', 'email_verified_at' => now()]);
         }

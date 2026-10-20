@@ -91,12 +91,14 @@ Schema::create('audit_events', function (Blueprint $t): void {
     $t->timestamp('created_at');
 });
 
+(require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
 foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php'] as $migration) {
     (require base_path('vendor/tey/concierge/database/migrations/'.$migration))->up();
 }
 app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]);
+app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]);
 foreach ([1 => 'Alpha', 2 => 'Beta', 3 => 'Viewer', 99 => 'Platform operator'] as $id => $name) {
     User::create(['id' => $id, 'name' => $name, 'email' => 'actor'.$id.'@example.test', 'email_verified_at' => now()]);
 }
