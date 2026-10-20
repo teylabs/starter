@@ -39,9 +39,6 @@ final class McpCapabilitiesTest extends TestCase
         foreach ($document['inventory'] as $entry) {
             $this->assertFileExists(base_path($entry['path']));
             $this->assertSame([], array_diff($entry['capabilities'], $ids), $entry['path']);
-            foreach ($entry['variants'] as $variant => $members) {
-                $this->assertSame([], array_diff($members, $entry['capabilities']), $entry['path'].' '.$variant);
-            }
         }
         $served = array_map(fn (string $class): string => app($class)->name(), app(Registry::class)->mcpTools());
         foreach ($document['capabilities'] as $capability) {
@@ -59,6 +56,44 @@ final class McpCapabilitiesTest extends TestCase
         $this->assertEqualsCanonicalizing($served, array_column(array_column($document['capabilities'], 'mcp'), 'name'));
         $this->assertSame([], array_diff($ids, array_merge(...array_column($document['inventory'], 'capabilities'))), 'Every capability is reachable from a UI file');
         $this->assertDeclares($document['server']['entrypoint']['path'], $document['server']['entrypoint']['symbol']);
+    }
+
+    public function test_the_declaration_is_semantically_consistent(): void
+    {
+        $document = json_decode(file_get_contents(base_path(McpCapabilities::PATH)), true, flags: JSON_THROW_ON_ERROR);
+        $variants = [];
+        foreach ($document['capabilities'] as $capability) {
+            $variants[$capability['id']] = array_column($capability['variants'], 'id');
+            foreach ($capability['variants'] as $variant) {
+                // The UI and MCP take the same canonical inputs, with the same defaults and effects.
+                foreach (['options', 'defaults', 'effects'] as $key) {
+                    $this->assertSame($this->normalize($variant['ui'][$key]), $this->normalize($variant['mcp'][$key]), $capability['id'].' '.$variant['id'].' '.$key);
+                }
+                $covers = array_merge(...array_column($variant['tests'], 'covers'));
+                foreach (['success', 'error', 'recovery'] as $required) {
+                    $this->assertContains($required, $covers, $capability['id'].' '.$variant['id'].' covers '.$required);
+                }
+            }
+        }
+        foreach ($document['inventory'] as $entry) {
+            // Variants map each capability of the entry to that capability's variant ids.
+            $this->assertEqualsCanonicalizing($entry['capabilities'], array_keys($entry['variants']), $entry['path']);
+            foreach ($entry['variants'] as $id => $ids) {
+                $this->assertSame([], array_diff($ids, $variants[$id] ?? []), $entry['path'].' '.$id);
+            }
+        }
+    }
+
+    private function normalize(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+        if (! array_is_list($value)) {
+            ksort($value);
+        }
+
+        return array_map($this->normalize(...), $value);
     }
 
     /** @return array<string, mixed> */

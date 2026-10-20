@@ -59,6 +59,9 @@ final class TransportTest extends TestCase
         $data['intent_key'] = 'stale-http';
         $h->putJson('/workspaces/1/settings', $data)->assertConflict()->assertJsonPath('error', 'stale_settings');
         transportCheck(true, 'HTTP stale prepared settings refuse');
+        $current = $h->getJson('/workspaces/1/settings')->assertOk()->json('version');
+        $h->putJson('/workspaces/1/settings', ['display_name' => 'HTTP Alpha', 'timezone' => 'UTC', 'expected_version' => $current, 'intent_key' => 'recover-http'])->assertOk()->assertJsonPath('version', $current + 1)->assertJsonPath('timezone', 'UTC');
+        transportCheck(true, 'HTTP recovers from a stale refusal by re-reading the current version');
         $h->get('/workspaces/1/settings')->assertOk()->assertSee('HTTP Alpha');
         transportCheck(true, 'settings page renders persisted shared-operation result');
         $h->get('/register')->assertNotFound();

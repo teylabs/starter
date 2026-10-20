@@ -43,9 +43,9 @@ final class McpCapabilities
 
     /** The parity tests: name => [path, what they cover on both transports]. */
     private const TESTS = [
-        'session_settings' => ['tests/TransportTest.php', 'test_session_settings', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass']],
-        'delegated_settings' => ['tests/McpTransportTest.php', 'test_delegated_settings', ['success', 'authorization', 'validation', 'retry', 'stale', 'audit', 'privacy', 'no_bypass', 'error']],
-        'session_notes' => ['tests/NotesTransportTest.php', 'test_workspace_notes', ['success', 'authorization', 'validation', 'privacy', 'retry', 'stale', 'audit', 'recovery']],
+        'session_settings' => ['tests/TransportTest.php', 'test_session_settings', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass', 'error', 'recovery']],
+        'delegated_settings' => ['tests/McpTransportTest.php', 'test_delegated_settings', ['success', 'authorization', 'validation', 'retry', 'stale', 'audit', 'privacy', 'no_bypass', 'error', 'recovery']],
+        'session_notes' => ['tests/NotesTransportTest.php', 'test_workspace_notes', ['success', 'authorization', 'validation', 'privacy', 'retry', 'stale', 'audit', 'error', 'recovery']],
         'inertia_pages' => ['tests/InertiaTransportTest.php', 'test_inertia_session_pages_share_real_operations_and_fresh_navigation', ['success', 'authorization', 'validation', 'retry', 'stale', 'error']],
     ];
 
@@ -72,7 +72,7 @@ final class McpCapabilities
             $tool = $served[$class] ?? throw new RuntimeException('Capability '.$id.' names a tool the server does not serve: '.$class.'.');
             $definition = $tool->toArray();
             $evidence = array_map(fn (string $test): array => ['path' => self::TESTS[$test][0], 'name' => self::TESTS[$test][1], 'covers' => self::TESTS[$test][2]], $tests);
-            $options = array_keys((array) ($definition['inputSchema']['properties'] ?? []));
+            $inputs = self::inputs($definition['inputSchema']);
             $capabilities[] = [
                 'id' => $id,
                 'kind' => $kind,
@@ -90,8 +90,9 @@ final class McpCapabilities
                 'tests' => $evidence,
                 'variants' => [[
                     'id' => 'default',
-                    'ui' => ['options' => (object) array_fill_keys($options, 'form field'), 'defaults' => (object) [], 'effects' => $effects],
-                    'mcp' => ['options' => (object) array_fill_keys($options, 'tool argument'), 'defaults' => (object) [], 'effects' => $effects, 'status' => 'implemented'],
+                    // The UI and MCP take the same canonical inputs, defaults and effects: they call one operation.
+                    'ui' => ['options' => $inputs, 'defaults' => (object) [], 'effects' => $effects],
+                    'mcp' => ['options' => $inputs, 'defaults' => (object) [], 'effects' => $effects, 'status' => 'implemented'],
                     'tests' => $evidence,
                 ]],
             ];
@@ -104,7 +105,7 @@ final class McpCapabilities
 
         return [
             'version' => 1,
-            'inventory' => array_map(fn (string $path, array $ids): array => ['path' => $path, 'capabilities' => $ids, 'variants' => ['default' => $ids]], array_keys(self::INVENTORY), self::INVENTORY),
+            'inventory' => array_map(fn (string $path, array $ids): array => ['path' => $path, 'capabilities' => $ids, 'variants' => array_fill_keys($ids, ['default'])], array_keys(self::INVENTORY), self::INVENTORY),
             'capabilities' => $capabilities,
             'server' => [
                 'name' => $server['name'],
@@ -121,6 +122,18 @@ final class McpCapabilities
     public static function json(): string
     {
         return json_encode(self::inventory(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
+    }
+
+    /** The canonical inputs of an operation, from its tool's input schema: name => "type, required|optional". */
+    private static function inputs(array $schema): object
+    {
+        $required = $schema['required'] ?? [];
+        $inputs = [];
+        foreach ((array) ($schema['properties'] ?? []) as $name => $property) {
+            $inputs[$name] = ((array) $property)['type'].', '.(in_array($name, $required, true) ? 'required' : 'optional');
+        }
+
+        return (object) $inputs;
     }
 
     /** A class's file, relative to the checkout. */

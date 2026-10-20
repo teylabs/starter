@@ -84,6 +84,9 @@ final class McpTransportTest extends TestCase
         self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.settings.updated')->count());
         $data['intent_key'] = 'stale-mcp';
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'stale_settings');
+        // Recovery: re-read and retry at the current version.
+        $current = $this->rpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->json('result.structuredContent.version');
+        $this->rpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => [...$data, 'expected_version' => $current, 'intent_key' => 'recover-mcp']])->assertOk()->assertJsonPath('result.structuredContent.version', $current + 1);
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => ['actor_id' => 2, 'workspace_id' => 2]])->assertOk()->assertJsonPath('result.isError', true);
         self::assertNull(Workspace::current());
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_notes_list', 'arguments' => new stdClass])->assertOk()->assertJsonCount(1, 'result.structuredContent.notes')->assertJsonPath('result.structuredContent.notes.0.body', 'Alpha private');
@@ -97,13 +100,15 @@ final class McpTransportTest extends TestCase
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_read', 'arguments' => ['id' => $note]])->assertOk()->assertJsonPath('result.structuredContent.body', 'MCP changed');
         $noteUpdate['intent_key'] = 'stale-mcp-note';
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_update', 'arguments' => $noteUpdate])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'stale_note');
+        $current = $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_read', 'arguments' => ['id' => $note]])->assertOk()->json('result.structuredContent.version');
+        $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_update', 'arguments' => [...$noteUpdate, 'expected_version' => $current, 'intent_key' => 'recover-mcp-note']])->assertOk()->assertJsonPath('result.structuredContent.record.version', $current + 1);
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_create', 'arguments' => ['body' => '', 'intent_key' => 'invalid-note']])->assertOk()->assertJsonPath('result.isError', true);
-        $noteDelete = ['id' => $note, 'expected_version' => 2, 'intent_key' => 'mcp-note-delete'];
+        $noteDelete = ['id' => $note, 'expected_version' => 3, 'intent_key' => 'mcp-note-delete'];
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_delete', 'arguments' => $noteDelete])->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_delete', 'arguments' => $noteDelete])->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_note_delete', 'arguments' => ['id' => 2, 'expected_version' => 1, 'intent_key' => 'foreign-note-delete']])->assertOk()->assertJsonPath('result.content.0.text', 'note_not_found');
         self::assertSame('Beta private', DB::table('notes')->where('id', 2)->value('body'));
-        self::assertSame(3, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
+        self::assertSame(4, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
         $token->update(['scopes' => ['mcp:use', 'settings.read']]);
         $data['expected_version'] = 2;
         $this->rpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
