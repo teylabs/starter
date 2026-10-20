@@ -7,6 +7,11 @@
 - Deploys run the tey/standards 0.7 preflight: `standards:preflight --skip=install.tables` after the build and before `migrate --force`, then the full preflight after it. CI runs the same order on a `--no-dev` production install against PostgreSQL (#47)
 - One-click local sign-in: `.env.example` turns on Concierge's `local_login` (`CONCIERGE_LOCAL_LOGIN=true`, signing in as `CONCIERGE_LOCAL_LOGIN_EMAIL`, by default `owner@example.com`), and the sign-in page shows "Sign in as …" whenever Concierge's `LocalLogin::isAvailable()` says so. Concierge keeps it to the local environment (#49)
 
+### Changed
+
+- Fonts come from tey/kit 0.1.5's font sets: `<x-kit::fonts />` loads the set `KIT_FONTS` names (`instrument` by default, `instrument-inter` or `hanken`), and the Tailwind theme no longer overrides the kit's `--font-*` variables. The page title takes the set's display weight (#51)
+- The sign-in card heading is Laravel's Vue starter kit's: `text-xl font-medium` in the text face, over a small muted description. `npm test` guards the class (#51)
+
 ### Fixed
 
 - A `--no-dev` install boots: the dev-only TypeScript transformer's provider is registered only when it is installed (#47)

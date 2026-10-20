@@ -8,17 +8,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    /* Loaded from fonts.bunny.net in resources/views/app.blade.php; the system stacks stand in until they arrive. */
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
-    --font-serif:
-        'Instrument Serif', ui-serif, Georgia, Cambria, 'Times New Roman',
-        Times, serif;
-    --font-mono:
-        'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
-        Consolas, 'Liberation Mono', 'Courier New', monospace;
+    /* --font-sans, --font-serif, --font-mono and --font-display-weight come from <x-kit::fonts /> (KIT_FONTS) in
+       resources/views/app.blade.php. Its unlayered :root block wins over Tailwind's theme layer. */
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);

@@ -21,7 +21,7 @@ defineProps<{
     <Head :title="title" />
 
     <div class="space-y-2 text-center">
-        <h1 class="font-serif text-4xl tracking-tight text-foreground">Sign in to your account</h1>
+        <h1 class="text-xl font-medium">Sign in to your account</h1>
         <p class="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
     </div>
 

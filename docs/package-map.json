@@ -135,8 +135,8 @@
     },
     {
       "package": "tey/kit",
-      "constraint": "^0.1.2",
-      "locked": "v0.1.2",
+      "constraint": "^0.1.5",
+      "locked": "v0.1.5",
       "state": "executed-focused-lifecycle-parity"
     },
     {

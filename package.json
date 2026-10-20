@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
-    "test": "node --test --experimental-strip-types resources/js/lib/*.test.mjs"
+    "test": "node --test --experimental-strip-types resources/js/lib/*.test.mjs resources/js/layouts/*.test.mjs"
   },
   "dependencies": {
     "@inertiajs/vue3": "3.9.1",

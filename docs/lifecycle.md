@@ -10,7 +10,7 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 
 - The host's own migrations create `users` and `media` (medialibrary).
 - Each kit feature's migrations live in `database/migrations/kit/<feature>` (`0001_01_02_000NXX_*`) and load because the feature is adopted. Permission and Settings tables come from the locked packages' own migrations; Passport's and Concierge's migrations load from the packages.
-- tey/kit 0.1.2 orders core's migration before the workspaces table it references. PostgreSQL refuses that, so `App\Support\KitMigrator` runs core right after the workspaces table until the kit fixes its order.
+- tey/kit 0.1.5 still orders core's migration before the workspaces table it references. PostgreSQL refuses that, so `App\Support\KitMigrator` runs core right after the workspaces table until the kit fixes its order.
 - Re-running `migrate` is a no-op.
 
 ### Databases migrated by 0.2
@@ -33,5 +33,5 @@ Never edit a generated feature file (`database/migrations/kit/**`, the kit's pag
 ## Not available yet
 
 - `laravel new --using=tey/starter`: the template is not on Packagist yet.
-- tey/mod 0.10: tey/kit 0.1.2 requires tey/mod ^0.9, so the template stays on Mod 0.9 until the kit moves.
+- tey/mod 0.10: tey/kit 0.1.5 requires tey/mod ^0.9, so the template stays on Mod 0.9 until the kit moves.
 - `kit:add --all`: the command takes the feature list; `kit:list --json` prints it.
