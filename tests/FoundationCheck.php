@@ -4,7 +4,6 @@ require __DIR__.'/application.php';
 require_once __DIR__.'/failures.php';
 require dirname(__DIR__).'/database/fixture.php';
 require_once __DIR__.'/Fixtures/RecordsFixture.php';
-RecordsFixtureProvider::install();
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +20,8 @@ use Tey\Kit\Features\Settings\WorkspaceSettings;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Tey\Kit\Features\Workspaces\WorkspaceCache;
+
+RecordsFixtureProvider::install();
 
 $checks = [];
 function check(string $name, callable $test): void

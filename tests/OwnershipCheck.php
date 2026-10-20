@@ -3,12 +3,13 @@
 require __DIR__.'/application.php';
 require dirname(__DIR__).'/database/fixture.php';
 require_once __DIR__.'/Fixtures/RecordsFixture.php';
-RecordsFixtureProvider::install();
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Record;
 use Tests\Fixtures\RecordsFixtureProvider;
 use Tey\Kit\Features\Settings\WorkspaceSettings;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
+
+RecordsFixtureProvider::install();
 
 $boundary = app(TenantBoundary::class);
 $held = $boundary->run(1, fn () => Record::query()->firstOrFail());
@@ -83,7 +84,8 @@ $boundary->run(1, function () use ($heldSettings): void {
     $heldSettings->display_name = 'Alpha after tenant switch';
     $heldSettings->save();
 });
-if ($boundary->run(2, fn () => WorkspaceSettings::current()->display_name) !== 'Beta') {
+// Workspace 2's display name is unset (it shows the workspace's own name); the held mapper must not have written Alpha's.
+if ($boundary->run(2, fn () => WorkspaceSettings::current()->display_name) !== '') {
     throw new RuntimeException('Held mapper wrote foreign settings');
 }
 echo "PASS held settings save restores mapper owner after an intervening tenant\n";
