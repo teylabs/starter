@@ -190,4 +190,29 @@ final class UrlConventionTest extends TestCase
         $this->get('/workspaces/1/settings/general')->assertStatus(301)->assertRedirect('/@alpha/settings/general');
         $this->get('/workspaces/99/records')->assertNotFound();
     }
+
+    public function test_invitations_live_under_me_and_the_old_accept_url_is_moved_permanently(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
+        $this->signIn(1);
+        // The accept URL has no verb: a user's invitations are at /me/invitations. The old URL moves, keeping a POST's method and body (308) and a GET's 301.
+        $this->post('/tenant-invitations/accept', ['token' => 'x'])->assertStatus(308)->assertRedirect('/me/invitations');
+        $this->get('/tenant-invitations/accept')->assertStatus(301)->assertRedirect('/me/invitations');
+        $this->postJson('/me/invitations', ['token' => ''])->assertUnprocessable();
+        $this->get('/me/invitations')->assertStatus(405);
+    }
+
+    public function test_the_workspace_list_is_a_query_builder_listing(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
+        $invite = InviteMember::run(User::findOrFail(2), Workspace::findOrFail(2), 'actor1@example.test', new GrantSet(['viewer']));
+        AcceptInvitation::run(User::findOrFail(1), $invite->token);
+        $this->signIn(1);
+        // Sorted by name by default, and by `sort` where the listing allows it; only workspaces the user belongs to.
+        $this->getJson('/me/workspaces')->assertOk()->assertJsonPath('workspaces.0.name', 'Alpha')->assertJsonPath('workspaces.1.name', 'Beta')->assertJsonCount(2, 'workspaces');
+        $this->getJson('/me/workspaces?sort=-name')->assertOk()->assertJsonPath('workspaces.0.name', 'Beta');
+        $this->getJson('/me/workspaces?sort=slug')->assertStatus(400);
+    }
 }

@@ -13,7 +13,7 @@ A workspace's pages live under `/@{workspace}/...`: the `@` is the only tenant m
 | `GET /me`, `GET /me/workspaces` | The personal landing page, listing the personal sections; the workspaces with an active membership (a user with one is sent into it) |
 | `GET /@{workspace}/settings` | The settings landing page, listing the registered sections the user may open |
 | `GET`/`PUT /@{workspace}/settings/general` | Read and update the workspace settings |
-| `POST /tenant-invitations/accept` | Accept a workspace invitation |
+| `POST /me/invitations` | Accept a workspace invitation (the old `/tenant-invitations/accept` moves here, 308) |
 | `GET`/`POST /@{workspace}/settings/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
 
 Pages are Inertia/Vue (`resources/js/pages/<Resource>/<Action>/Page.vue`, wrapped by `resources/js/layouts`): sign-in, the dashboard, workspaces and settings. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
