@@ -29,7 +29,7 @@ final class BrandTest extends TestCase
         parent::setUp();
         $this->withoutVite();
         // Deterministic whatever the developer's .env says.
-        config(['app.name' => 'Product name']);
+        config(['app.name' => 'Product name', 'kit.brand.private' => false]);
     }
 
     private function directory(): string
