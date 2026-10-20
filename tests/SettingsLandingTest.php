@@ -24,6 +24,7 @@ final class SettingsLandingTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
+        config(['app.name' => 'Product name']);
     }
 
     private function inertia(): array
@@ -72,8 +73,8 @@ final class SettingsLandingTest extends TestCase
         $this->assertStringEndsWith('/@alpha/settings/connections', route('workspaces.connections.index', ['workspace' => 'alpha']));
         // Settings is one link in the nav, to the landing page; the sections are not.
         $this->get('/settings/general', $this->inertia())->assertJsonPath('props.layout.navigation.1', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
-            ->assertJsonPath('props.breadcrumbs', [['title' => 'Settings', 'url' => '/settings', 'is_current_page' => false], ['title' => 'General', 'url' => '/settings/general', 'is_current_page' => true]]);
-        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.layout.navigation.1.current', true)->assertJsonPath('props.breadcrumbs', [['title' => 'Settings', 'url' => '/settings', 'is_current_page' => true]]);
+            ->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => false], ['title' => 'General', 'url' => '/settings/general', 'is_current_page' => true]]);
+        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.layout.navigation.1.current', true)->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => true]]);
     }
 
     public function test_the_personal_landing_page_lists_the_personal_sections(): void
@@ -82,7 +83,7 @@ final class SettingsLandingTest extends TestCase
         $this->signIn(1);
         $this->get('/me', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
             ->assertJsonPath('props.groups', [['label' => 'Workspaces', 'sections' => [['label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'url' => '/me/workspaces']]]])
-            ->assertJsonPath('props.breadcrumbs', [['title' => 'Account', 'url' => '/me', 'is_current_page' => true]]);
+            ->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Account', 'url' => '/me', 'is_current_page' => true]]);
         $this->getJson('/me')->assertOk()->assertJsonPath('sections.0.key', 'workspaces');
         $this->postJson('/logout')->assertNoContent();
         $this->get('/me')->assertRedirect('/login');
@@ -93,7 +94,7 @@ final class SettingsLandingTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         // The shell carries no settings menu and the nav no settings slot.
-        $this->get('/notes', $this->inertia())->assertOk()->assertJsonMissingPath('props.layout.settings');
+        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonMissingPath('props.layout.settings');
         $this->assertFileDoesNotExist(base_path('resources/js/pages/Workspace/Partials/SettingsMenu.vue'));
         foreach (['Layout.vue', 'Partials/ShellDrawer.vue', 'Partials/PrimaryNav.vue'] as $file) {
             $this->assertStringNotContainsString('SettingsMenu', file_get_contents(base_path('resources/js/pages/Workspace/'.$file)), $file);

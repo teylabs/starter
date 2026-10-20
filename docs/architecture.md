@@ -6,7 +6,7 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 
 | Package | Job |
 | --- | --- |
-| `tey/kit` (0.1) | The features (core, workspaces, access, settings, session-ui, mcp, notes), `kit:install`, `kit:add` and `kit:update`. Brings `tey/mod` 0.9. |
+| `tey/kit` (0.1) | The features (core, workspaces, access, settings, session-ui, mcp), `kit:install`, `kit:add` and `kit:update`. Brings `tey/mod` 0.9. |
 | `tey/concierge` (^0.7.4) | Workspace membership, ownership, account state and tenant/member invitations, with its own migrations, and `concierge:owners`. |
 | `spatie/laravel-multitenancy` | The current workspace (tenant) context. |
 | `spatie/laravel-permission` (via Concierge) | Roles within a workspace. |
@@ -14,7 +14,7 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 | `spatie/laravel-data` and `spatie/laravel-typescript-transformer` | Data objects, ViewModels and the generated TypeScript types in `resources/js/types.generated.d.ts`. |
 | `spatie/laravel-medialibrary` | Media, stored on the private `s3` disk. |
 | `league/flysystem-aws-s3-v3` | The private `s3` disk on Laravel Cloud's bucket variables (R2, path-style). |
-| `laravel/pennant` | Workspace capabilities (`workspace.settings`, `workspace.notes`). |
+| `laravel/pennant` | Workspace capabilities (`workspace.dashboard`, `workspace.settings`). |
 | `laravel/fortify` | Password login, throttling and logout. Registration is closed. |
 | `inertiajs/inertia-laravel`, `@inertiajs/vue3`, Vue 3, Vite, Tailwind CSS 4 | Session pages. |
 | `laravel/passport` | OAuth authorization code with PKCE and explicit consent. |

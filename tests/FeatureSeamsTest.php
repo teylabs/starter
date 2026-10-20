@@ -8,11 +8,6 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
 use Tey\Kit\Features\Core\Registry;
-use Tey\Kit\Features\Notes\Integrations\Mcp\CreateNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
-use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\UpdateNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
 
@@ -32,7 +27,8 @@ final class FeatureSeamsTest extends TestCase
         if (DB::getDriverName() !== 'sqlite') {
             $this->markTestSkipped('The released schema fixture is a SQLite dump; on PostgreSQL only the migrations are checked.');
         }
-        $this->assertSame($this->released(), $this->schema());
+        // Notes is an opt-in kit example: a fresh starter has no notes tables.
+        $this->assertSame($this->released(withNotes: false), $this->schema());
     }
 
     public function test_databases_migrated_by_0_2_move_onto_the_kit_migrations_with_their_schema_and_data(): void
@@ -51,17 +47,17 @@ final class FeatureSeamsTest extends TestCase
     public function test_registry_contributions_match_the_released_wiring(): void
     {
         $registry = app(Registry::class);
-        $this->assertSame([ReadSettings::class, UpdateSettings::class, ListNotes::class, ReadNote::class, CreateNote::class, UpdateNote::class, DeleteNote::class], $registry->mcpTools());
-        $this->assertSame([['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']], $registry->navigationLinks());
-        $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, update and delete workspace notes'];
+        $this->assertSame([ReadSettings::class, UpdateSettings::class], $registry->mcpTools());
+        $this->assertSame([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => 'dashboard', 'group' => 'workspace', 'order' => -10, 'active' => null, 'slot' => 'primary']], $registry->navigationLinks());
+        $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings'];
         $this->assertSame($scopes, $registry->tokenScopes());
         $this->assertSame(array_keys($scopes), Passport::scopeIds());
-        $this->assertSame(['workspace.settings', 'workspace.notes'], $registry->workspaceCapabilities());
-        $this->assertEqualsCanonicalizing(['workspace.settings', 'workspace.notes'], Feature::defined());
+        $this->assertSame(['workspace.settings', 'workspace.dashboard'], $registry->workspaceCapabilities());
+        $this->assertEqualsCanonicalizing(['workspace.settings', 'workspace.dashboard'], Feature::defined());
         $statuses = [
-            404 => ['workspace_not_found', 'workspace_mismatch', 'note_not_found'],
+            404 => ['workspace_not_found', 'workspace_mismatch'],
             403 => ['account_inactive', 'verification_required', 'admission_required', 'permission_denied', 'connection_denied', 'capability_unavailable', 'entitlement_required'],
-            409 => ['stale_settings', 'intent_conflict', 'stale_note', 'note_intent_conflict', 'connection_intent_conflict', 'connection_revoked', 'connection_active'],
+            409 => ['stale_settings', 'intent_conflict', 'connection_intent_conflict', 'connection_revoked', 'connection_active'],
             422 => ['unknown_arguments'],
         ];
         foreach ($statuses as $status => $codes) {
@@ -88,7 +84,8 @@ final class FeatureSeamsTest extends TestCase
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         // The released schema fixture is a SQLite dump; on PostgreSQL the migrations and data are checked.
         if (DB::getDriverName() === 'sqlite') {
-            $this->assertSame($this->released(), $this->schema());
+            // An upgraded database keeps the notes tables it had, unused.
+            $this->assertSame($this->released(withNotes: true), $this->schema());
         }
         $this->assertSame(['Kept'], DB::table('notes')->pluck('body')->all());
         $ran = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
@@ -99,7 +96,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(10, $kit);
+        $this->assertCount(9, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -111,11 +108,14 @@ final class FeatureSeamsTest extends TestCase
     }
 
     /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary, and the slug the kit adds to workspaces. */
-    private function released(): array
+    private function released(bool $withNotes): array
     {
         $schema = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-v0.2.1.json'), true);
         $this->assertArrayNotHasKey('media', $schema);
         $schema['media'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-media.json'), true);
+        if (! $withNotes) {
+            unset($schema['notes'], $schema['note_intents']);
+        }
         // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.
         $schema['workspaces']['columns'][] = ['slug', 'varchar', 0, null, 0];
         $schema['workspaces']['indexes'][] = [1, 'c', ['slug']];

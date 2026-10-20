@@ -3,15 +3,18 @@
 require __DIR__.'/application.php';
 require_once __DIR__.'/failures.php';
 require dirname(__DIR__).'/database/fixture.php';
+require_once __DIR__.'/Fixtures/RecordsFixture.php';
+RecordsFixtureProvider::install();
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Laravel\Pennant\Feature;
+use Tests\Fixtures\Record;
+use Tests\Fixtures\RecordsFixtureProvider;
 use Tey\Kit\Features\Access\Access;
 use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
 use Tey\Kit\Features\Core\Audit;
 use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Models\Note;
 use Tey\Kit\Features\Settings\Adapters\SettingsUi;
 use Tey\Kit\Features\Settings\Integrations\Mcp\SettingsMcp;
 use Tey\Kit\Features\Settings\WorkspaceSettings;
@@ -76,24 +79,24 @@ check('revocation is rechecked at execution', function () use ($mcp, $connection
     DB::table('connections')->where('id', 1)->update(['revoked_at' => null]);
 });
 check('MCP has no SQL or arbitrary execute escape', function () use ($mcp, $connection): void {
-    refused('unknown_tool', fn () => $mcp->call($connection, 1, 'execute', ['sql' => 'select * from notes']));
+    refused('unknown_tool', fn () => $mcp->call($connection, 1, 'execute', ['sql' => 'select * from fixture_records']));
     refused('unknown_arguments', fn () => $mcp->call($connection, 1, 'workspace_settings_update', ['display_name' => 'x', 'timezone' => 'UTC', 'actor_id' => 99]));
 });
 check('no-context reads and writes fail closed', function (): void {
     same(null, Workspace::current());
-    refused('workspace_required', fn () => Note::query()->get());
-    refused('workspace_required', fn () => Note::create(['body' => 'orphan']));
+    refused('workspace_required', fn () => Record::query()->get());
+    refused('workspace_required', fn () => Record::create(['title' => 'orphan']));
     refused('workspace_required', fn () => WorkspaceSettings::current());
 });
 check('rows and route binding are scoped to current workspace', function () use ($boundary): void {
     $boundary->run(1, function (): void {
-        same(['Alpha private'], Note::query()->pluck('body')->all());
-        same(null, (new Note)->resolveRouteBinding(2));
+        same(['Alpha private'], Record::query()->pluck('title')->all());
+        same(null, (new Record)->resolveRouteBinding(2));
     });
 });
 check('held model cannot save into a different tenant', function () use ($boundary): void {
-    $note = $boundary->run(1, fn () => Note::query()->firstOrFail());
-    $boundary->run(2, fn () => refused('workspace_mismatch', fn () => $note->save()));
+    $record = $boundary->run(1, fn () => Record::query()->firstOrFail());
+    $boundary->run(2, fn () => refused('workspace_mismatch', fn () => $record->save()));
 });
 check('tenant context restores across nested failure', function () use ($boundary): void {
     $boundary->run(1, function () use ($boundary): void {

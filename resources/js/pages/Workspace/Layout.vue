@@ -45,7 +45,7 @@ const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data
             </div>
         </header>
         <main id="main" class="flex-1">
-            <div :class="['mx-auto w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8', props.widthClass]" data-shell-content>
+            <div :class="['mx-auto w-full px-4 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-10 lg:px-8', props.widthClass]" data-shell-content>
                 <Breadcrumbs />
                 <slot />
             </div>

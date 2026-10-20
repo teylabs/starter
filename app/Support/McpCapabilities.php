@@ -7,11 +7,6 @@ use ReflectionClass;
 use RuntimeException;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Mcp\WorkspaceServer;
-use Tey\Kit\Features\Notes\Integrations\Mcp\CreateNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
-use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
-use Tey\Kit\Features\Notes\Integrations\Mcp\UpdateNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
 
@@ -30,28 +25,18 @@ final class McpCapabilities
 
     private const SETTINGS_PAGE = 'resources/js/pages/Workspace/Settings/Edit/Page.vue';
 
-    private const NOTES_PAGE = 'resources/js/pages/Workspace/Note/Index/Page.vue';
-
-    private const NOTE_EDITOR = 'resources/js/pages/Workspace/Note/Index/Partials/NoteEditor.vue';
-
     private const SETTINGS_CONTROLLER = self::KIT.'Settings/Http/SettingsController.php';
-
-    private const NOTES_CONTROLLER = self::KIT.'Notes/Http/NoteController.php';
 
     /** UI source file (each page and the kit controller that serves it) => the capabilities it reaches. */
     public const INVENTORY = [
         self::SETTINGS_PAGE => ['workspace.settings.read', 'workspace.settings.update'],
-        self::NOTES_PAGE => ['workspace.notes.list', 'workspace.notes.read', 'workspace.notes.create'],
-        self::NOTE_EDITOR => ['workspace.notes.update', 'workspace.notes.delete'],
         self::SETTINGS_CONTROLLER => ['workspace.settings.read', 'workspace.settings.update'],
-        self::NOTES_CONTROLLER => ['workspace.notes.list', 'workspace.notes.read', 'workspace.notes.create', 'workspace.notes.update', 'workspace.notes.delete'],
     ];
 
     /** The parity tests: name => [path, what they cover on both transports]. */
     private const TESTS = [
         'session_settings' => ['tests/TransportTest.php', 'test_session_settings', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass', 'error', 'recovery']],
         'delegated_settings' => ['tests/McpTransportTest.php', 'test_delegated_settings', ['success', 'authorization', 'validation', 'retry', 'stale', 'audit', 'privacy', 'no_bypass', 'error', 'recovery']],
-        'session_notes' => ['tests/NotesTransportTest.php', 'test_workspace_notes', ['success', 'authorization', 'validation', 'privacy', 'retry', 'stale', 'audit', 'error', 'recovery']],
         'inertia_pages' => ['tests/InertiaTransportTest.php', 'test_inertia_session_pages_share_real_operations_and_fresh_navigation', ['success', 'authorization', 'validation', 'retry', 'stale', 'error']],
     ];
 
@@ -59,11 +44,6 @@ final class McpCapabilities
     private const CAPABILITIES = [
         'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
         'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'submit'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
-        'workspace.notes.list' => ['read', [[self::NOTES_PAGE, 'props'], [self::NOTES_CONTROLLER, 'index']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'listing'], ListNotes::class, 'notes.read', ['session_notes', 'delegated_settings', 'inertia_pages'], ['returns the workspace notes']],
-        'workspace.notes.read' => ['read', [[self::NOTES_PAGE, 'props'], [self::NOTES_CONTROLLER, 'show']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'read'], ReadNote::class, 'notes.read', ['session_notes', 'delegated_settings'], ['returns one note and its version']],
-        'workspace.notes.create' => ['write', [[self::NOTES_PAGE, 'create'], [self::NOTES_CONTROLLER, 'store']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], CreateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['creates a note', 'audits workspace.note.create once per intent key']],
-        'workspace.notes.update' => ['write', [[self::NOTE_EDITOR, 'form'], [self::NOTES_CONTROLLER, 'update']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], UpdateNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['updates the note at the expected version', 'audits workspace.note.update once per intent key']],
-        'workspace.notes.delete' => ['write', [[self::NOTE_EDITOR, 'deletion'], [self::NOTES_CONTROLLER, 'destroy']], [self::KIT.'Notes/Operations/WorkspaceNotes.php', 'mutate'], DeleteNote::class, 'notes.write', ['session_notes', 'delegated_settings', 'inertia_pages'], ['deletes the note at the expected version', 'audits workspace.note.delete once per intent key']],
     ];
 
     public static function inventory(): array

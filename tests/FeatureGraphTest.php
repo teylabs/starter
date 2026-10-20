@@ -18,7 +18,6 @@ final class FeatureGraphTest extends TestCase
         'Access' => ['Workspaces'],
         'Settings' => ['Workspaces', 'Access'],
         'Mcp' => ['Workspaces', 'Access'],
-        'Notes' => ['Workspaces', 'Access'],
         'SessionUi' => ['Workspaces', 'Access'],
     ];
 
@@ -65,10 +64,10 @@ final class FeatureGraphTest extends TestCase
     {
         $app = $this->library();
         $this->assertSame(
-            ['Notes/Operations/Bad.php uses Tey\\Kit\\Features\\Mcp\\Context', 'Notes/Operations/Bad.php uses Tey\\Kit\\Features\\FeaturesServiceProvider', 'Notes/Operations/Bad.php uses Tey\\Kit\\Lineages', 'Notes/Operations/Bad.php uses App\\Models\\User'],
-            $this->phpViolations($app.'/Notes/Operations/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Notes\\Operations;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nuse Tey\\Kit\\Features\\Access\\Access;\nfinal class Bad { public function a() { return [\\Tey\\Kit\\Features\\FeaturesServiceProvider::class, \\Tey\\Kit\\Lineages::class, \\App\\Models\\User::class, Models\\Note::class]; } }"),
+            ['SessionUi/Operations/Bad.php uses Tey\\Kit\\Features\\Mcp\\Context', 'SessionUi/Operations/Bad.php uses Tey\\Kit\\Features\\FeaturesServiceProvider', 'SessionUi/Operations/Bad.php uses Tey\\Kit\\Lineages', 'SessionUi/Operations/Bad.php uses App\\Models\\User'],
+            $this->phpViolations($app.'/SessionUi/Operations/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\SessionUi\\Operations;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nuse Tey\\Kit\\Features\\Access\\Access;\nfinal class Bad { public function a() { return [\\Tey\\Kit\\Features\\FeaturesServiceProvider::class, \\Tey\\Kit\\Lineages::class, \\App\\Models\\User::class, Models\\Note::class]; } }"),
         );
-        $this->assertSame([], $this->phpViolations($app.'/Notes/Integrations/Mcp/Good.php', "<?php\nnamespace Tey\\Kit\\Features\\Notes\\Integrations\\Mcp;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nfinal class Good {}"));
+        $this->assertSame([], $this->phpViolations($app.'/SessionUi/Integrations/Mcp/Good.php', "<?php\nnamespace Tey\\Kit\\Features\\SessionUi\\Integrations\\Mcp;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nfinal class Good {}"));
         $this->assertSame(['Core/Bad.php uses Tey\\Kit\\Features\\Workspaces\\Models\\Workspace'], $this->phpViolations($app.'/Core/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Core;\nuse Tey\\Kit\\Features\\Workspaces\\Models\\Workspace;\nfinal class Bad {}"));
         $js = dirname(__DIR__).'/resources/js/pages';
         $this->assertSame(

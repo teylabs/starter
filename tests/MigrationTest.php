@@ -9,7 +9,6 @@ use Spatie\Permission\PermissionRegistrar;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Concierge;
 use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Operations\WorkspaceNotes;
 use Tey\Kit\Features\Settings\Operations\WorkspaceProfile;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
@@ -29,7 +28,7 @@ final class MigrationTest extends TestCase
         $this->assertContains(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql', [':memory:', 'pgsql']);
         $this->assertFalse(Schema::hasTable('users'));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
-        foreach (['users', 'media', 'workspaces', 'settings', 'notes', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'note_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
+        foreach (['users', 'media', 'workspaces', 'settings', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
             $this->assertTrue(Schema::hasTable($table), $table);
             $this->assertSame(0, DB::table($table)->count(), 'Migrate must not seed '.$table);
         }
@@ -46,7 +45,6 @@ final class MigrationTest extends TestCase
             '0001_01_02_000400_create_settings_table',
             '0001_01_02_000401_create_kit_settings_tables',
             '0001_01_02_000600_create_kit_mcp_tables',
-            '0001_01_02_000700_create_kit_notes_tables',
             '2016_06_01_000001_create_oauth_auth_codes_table',
             '2016_06_01_000002_create_oauth_access_tokens_table',
             '2016_06_01_000003_create_oauth_refresh_tokens_table',
@@ -89,9 +87,6 @@ final class MigrationTest extends TestCase
                 $updated = $profile->update($principal, ['display_name' => 'Migrated '.$id, 'timezone' => 'America/Toronto', 'expected_version' => $original->version, 'intent_key' => 'schema-profile-'.$id]);
                 $this->assertSame('Migrated '.$id, $updated->display_name);
                 $this->assertSame(2, $updated->version);
-                $notes = app(WorkspaceNotes::class);
-                $notes->mutate($principal, 'create', ['body' => 'Private schema '.$id, 'intent_key' => 'schema-note-'.$id]);
-                $this->assertCount(1, $notes->listing($principal));
                 try {
                     $profile->read(new Principal($id === 1 ? 2 : 1));
                     $this->fail('Foreign owner was accepted');
@@ -104,7 +99,7 @@ final class MigrationTest extends TestCase
             $this->assertNull(app(PermissionRegistrar::class)->getPermissionsTeamId());
         }
         $before = [];
-        foreach (['users', 'workspaces', 'notes', 'settings', 'audit_events', 'concierge_memberships', 'concierge_ownerships'] as $table) {
+        foreach (['users', 'workspaces', 'settings', 'audit_events', 'concierge_memberships', 'concierge_ownerships'] as $table) {
             $before[$table] = DB::table($table)->get()->toJson();
         }
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));

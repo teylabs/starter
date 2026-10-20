@@ -1,10 +1,10 @@
 # tey/starter
 
-> The new-app template for tenant-aware Laravel apps, built on tey/kit with every feature added: workspaces and invitations, versioned settings and Notes shared by session pages and MCP tools, with Fortify sessions, Inertia/Vue pages and Passport OAuth. Public but unsupported; use at your own risk.
+> The new-app template for tenant-aware Laravel apps, built on tey/kit with every feature added: workspaces and invitations, versioned settings shared by session pages and MCP tools, with Fortify sessions, Inertia/Vue pages and Passport OAuth. Public but unsupported; use at your own risk.
 
 - [README](README.md): overview, `composer setup` and check commands
 - [Architecture](docs/architecture.md): tey/kit, the packages and the job each one owns
-- [Operations](docs/operations.md): settings and Notes shared operations, versions, intent keys, audit
+- [Operations](docs/operations.md): settings shared operations, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
 - [Lifecycle](docs/lifecycle.md): install, kit features, migrations from 0.2 and kit updates
 - [Deploy](docs/deploy.md): the Laravel Cloud deploy command order

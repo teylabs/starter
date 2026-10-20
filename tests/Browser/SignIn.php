@@ -41,7 +41,7 @@ it('signs the first owner in with one click and reaches the app shell', function
         settled($page)->screenshot(filename: 'sign-in');
 
         $page->click('[data-local-login] button')
-            ->assertPathIs('/notes')
+            ->assertPathIs('/dashboard')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
@@ -78,14 +78,23 @@ it('signs the first owner in with one click and reaches the app shell', function
         settled($page)->screenshot(filename: 'user-menu');
 
         $page->keys('[role=menu]', 'Escape')
-            ->assertSeeIn('[data-shell-nav]', 'Notes')
+            ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
             ->assertSee('Delegated access for MCP clients')
             ->click('main a[href="/settings/general"]')
             ->assertPathIs('/settings/general')
-            ->assertSeeIn('[data-shell-nav]', 'Notes')
+            ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->assertNoJavaScriptErrors();
+        // The shell owns the vertical rhythm: the breadcrumb row sits about 16 to 24px below the header's border, in light and dark and on a phone.
+        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-breadcrumbs]").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
+        expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
+        $page->script('() => document.documentElement.classList.add("dark")');
+        expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
+        $page->script('() => document.documentElement.classList.remove("dark")');
+        $page->resize(390, 844);
+        expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
+        $page->resize(1440, 900);
         settled($page)->screenshot(filename: 'workspace');
 
         // Fonts come from the kit's set (KIT_FONTS): the text face on the body, the display face and weight on the page title.

@@ -5,13 +5,13 @@
 return [
     // The adopted features. The template ships every feature's files, but no installed record, which is bound to a
     // checkout's own path. Null reads them from that record once `kit:add` has claimed the files (docs/lifecycle.md).
-    'features' => ['core', 'workspaces', 'access', 'settings', 'session-ui', 'mcp', 'notes'],
+    'features' => ['core', 'workspaces', 'access', 'settings', 'session-ui', 'mcp'],
 
     // The host's user model. Null uses the `users` auth provider's model.
     'models' => ['user' => null],
 
     // Workspace capabilities that are switched on.
-    'capabilities' => ['workspace.settings' => true, 'workspace.notes' => true],
+    'capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true],
 
     // Per-feature route options: enabled, prefix, middleware, name (a route-name prefix).
     'routes' => [],

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Tests\Fixtures\RecordsFixtureProvider;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Support\GrantSet;
@@ -26,7 +27,10 @@ final class BreadcrumbsTest extends TestCase
 
     public function createApplication()
     {
-        return require __DIR__.'/application.php';
+        // The kit ships no sample resource: this test adopts the test-only Records fixture.
+        require_once __DIR__.'/records_fixture.php';
+
+        return starterAppWithRecords();
     }
 
     protected function setUp(): void
@@ -37,6 +41,7 @@ final class BreadcrumbsTest extends TestCase
         $_ENV['APP_ROUTES_CACHE'] = $this->routeCache;
         parent::setUp();
         $this->withoutVite();
+        config(['app.name' => 'Product name']);
     }
 
     protected function tearDown(): void
@@ -72,41 +77,91 @@ final class BreadcrumbsTest extends TestCase
     public function test_the_trail_to_a_record_page_in_both_url_forms(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
         $this->signIn(1);
-        $note = ['Notes', 'Alpha private'];
+        $home = ['title' => 'Product name', 'url' => '/', 'is_current_page' => false];
         // One workspace: the crumbs link in the short form, whichever form the page was reached by.
-        foreach (['/notes/1', '/@alpha/notes/1'] as $path) {
-            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Note/Show/Page')
-                ->assertJsonPath('props.breadcrumbs', [['title' => 'Notes', 'url' => '/notes', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/notes/1', 'is_current_page' => true]]);
+        foreach (['/records/1', '/@alpha/records/1'] as $path) {
+            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Record/Show/Page')
+                ->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Records', 'url' => '/records', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/records/1', 'is_current_page' => true]]);
         }
-        // A list page is its own, single crumb.
-        $this->get('/notes', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [['title' => 'Notes', 'url' => '/notes', 'is_current_page' => true]]);
-        // Two workspaces: the same trail, in the full form.
+        // A list page is the home icon and itself.
+        $this->get('/records', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Records', 'url' => '/records', 'is_current_page' => true]]);
+        // The dashboard and settings are siblings under home, not nested.
+        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Dashboard', 'url' => '/dashboard', 'is_current_page' => true]]);
+        $this->get('/settings', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => true]]);
+        // Two workspaces: the same trail, in the full form; home is "/" and is named by the workspace.
         $this->addSecondWorkspace();
-        $this->get('/@alpha/notes/1', $this->inertia())->assertOk()
-            ->assertJsonPath('props.breadcrumbs', [['title' => 'Notes', 'url' => '/@alpha/notes', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/@alpha/notes/1', 'is_current_page' => true]]);
-        $this->get('/notes/1', $this->inertia())->assertOk()
-            ->assertJsonPath('props.breadcrumbs.0.url', '/@alpha/notes');
-        // The personal page is a trail of its own, with no workspace in it.
-        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [['title' => 'Account', 'url' => '/me', 'is_current_page' => false], ['title' => 'Workspaces', 'url' => '/me/workspaces', 'is_current_page' => true]]);
+        $alpha = ['title' => 'Alpha', 'url' => '/', 'is_current_page' => false];
+        $this->get('/@alpha/records/1', $this->inertia())->assertOk()
+            ->assertJsonPath('props.breadcrumbs', [$alpha, ['title' => 'Records', 'url' => '/@alpha/records', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/@alpha/records/1', 'is_current_page' => true]]);
+        $this->get('/records/1', $this->inertia())->assertOk()
+            ->assertJsonPath('props.breadcrumbs.0.url', '/')->assertJsonPath('props.breadcrumbs.1.url', '/@alpha/records');
+        // The personal page is rooted at home too, with no workspace in its own links.
+        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$alpha, ['title' => 'Account', 'url' => '/me', 'is_current_page' => false], ['title' => 'Workspaces', 'url' => '/me/workspaces', 'is_current_page' => true]]);
     }
 
     public function test_every_page_route_has_a_breadcrumb(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
         $registry = app(Registry::class);
         $checked = [];
         foreach (Route::getRoutes() as $route) {
             $action = $route->getActionName();
-            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\')) && ! str_contains($action, '@moved')) {
+            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, '@moved')) {
                 $this->assertNotNull($registry->get($route), $route->uri().' declares no breadcrumb');
                 $checked[] = $route->uri();
             }
         }
         // Every kit page, in both URL forms, and the personal one.
-        foreach (['@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
+        foreach (['@{workspace}/dashboard', 'dashboard', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
             $this->assertContains($uri, $checked);
         }
+    }
+
+    public function test_the_current_crumb_is_a_real_link_to_its_own_url(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
+        $this->signIn(1);
+        // The last crumb carries its own URL (a link, not plain text) and is marked current; the ancestors are not.
+        foreach (['/dashboard', '/settings', '/settings/general', '/records', '/records/1', '/me'] as $path) {
+            $crumbs = $this->get($path, $this->inertia())->assertOk()->json('props.breadcrumbs');
+            $last = end($crumbs);
+            $this->assertTrue($last['is_current_page'], $path);
+            $this->assertSame($path, $last['url'], $path.' links to itself');
+            $this->assertSame([], array_filter(array_slice($crumbs, 0, -1), fn (array $crumb): bool => $crumb['is_current_page']), $path.' marks only the last crumb current');
+        }
+        // The component renders every crumb as a link, marks the current one with aria-current and the foreground colour, and ancestors stay muted.
+        $vue = (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/Workspace/Partials/Breadcrumbs.vue');
+        $this->assertStringContainsString(":aria-current=\"crumb.is_current_page ? 'page' : undefined\"", $vue);
+        $this->assertStringContainsString("crumb.is_current_page ? 'text-foreground' : ''", $vue);
+        $this->assertSame(2, substr_count($vue, '<Link '), 'the home icon and the titled crumbs are both links');
+        $this->assertStringNotContainsString('<span aria-current', $vue, 'the current crumb is not plain text');
+    }
+
+    public function test_every_trail_starts_at_home(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        RecordsFixtureProvider::install();
+        $registry = app(Registry::class);
+        $params = ['workspace' => '1', 'record' => '1', 'connection' => '1'];
+        $checked = 0;
+        foreach (Route::getRoutes() as $route) {
+            $action = $route->getActionName();
+            if (! in_array('GET', $route->methods(), true) || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, '@moved')) {
+                continue;
+            }
+            $crumb = $registry->get($route);
+            $this->assertNotNull($crumb, $route->uri().' declares no breadcrumb');
+            for ($guard = 0; $crumb->parent !== null && ($parent = $crumb->parent->resolve($params, $registry)) !== null && $guard < 8; $guard++) {
+                $crumb = $parent;
+            }
+            $this->assertSame('home', $crumb->name, $route->uri().' has a trail rooted at '.$crumb->name);
+            $checked++;
+        }
+        $this->assertGreaterThanOrEqual(11, $checked);
     }
 
     public function test_breadcrumbs_and_routes_cache(): void
@@ -119,7 +174,7 @@ final class BreadcrumbsTest extends TestCase
             $this->assertFileExists($crumbs);
             $this->assertSame(0, app(Kernel::class)->call('route:cache'));
             $this->assertFileExists($this->routeCache);
-            $this->assertStringContainsString('@{workspace}/notes', (string) file_get_contents($this->routeCache));
+            $this->assertStringContainsString('@{workspace}/dashboard', (string) file_get_contents($this->routeCache));
         } finally {
             @unlink($crumbs);
         }

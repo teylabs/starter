@@ -2,7 +2,7 @@
 
 > Built for the Tey Labs fleet. Public but unsupported: no support, no stability promise, use at your own risk.
 
-The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with every kit feature added: workspace membership and invitations, versioned settings and Notes shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Maintained packages own their jobs; no production application or database is copied.
+The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with every kit feature added: workspace membership and invitations, versioned settings shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Maintained packages own their jobs; no production application or database is copied.
 
 PHP 8.4 or 8.5 and Node 22 are required.
 
@@ -51,7 +51,7 @@ MIT, see [LICENSE](LICENSE). The UI primitives and sign-in page come from Larave
 ## Docs
 
 - [Architecture](docs/architecture.md): tey/kit, the packages and the job each owns
-- [Operations](docs/operations.md): settings and Notes, versions, intent keys, audit
+- [Operations](docs/operations.md): settings, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
 - [Lifecycle](docs/lifecycle.md): install, kit features, migrations from 0.2 and updates
 - [Deploy](docs/deploy.md): the Laravel Cloud deploy commands, in order

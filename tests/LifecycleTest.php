@@ -75,7 +75,7 @@ final class LifecycleTest extends TestCase
         // A second request adopts nothing new and writes nothing.
         $records = $this->records($root);
         $again = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS);
-        $this->assertSame(array_fill(0, 7, 'adopted'), array_column($again['features'], 'action'));
+        $this->assertSame(array_fill(0, 6, 'adopted'), array_column($again['features'], 'action'));
         $this->refuses(fn () => $this->lineages()->resume($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, 'install', $this->check($root)), 'already adopted');
         $this->assertSame($records, $this->records($root));
         $this->assertSame($this->templateFiles(), $this->files($root));
@@ -103,7 +103,7 @@ final class LifecycleTest extends TestCase
     {
         $root = $this->checkout(withTemplateFiles: true);
         $paths = array_keys($this->templateFiles());
-        $edited = 'database/migrations/kit/notes/0001_01_02_000700_create_kit_notes_tables.php';
+        $edited = 'database/migrations/kit/mcp/0001_01_02_000600_create_kit_mcp_tables.php';
         file_put_contents($root.'/'.$edited, "<?php // customised\n");
         $preview = $this->lineages()->preview($root, 'workspace-starter', $this->all(), [], KitHost::INPUTS, $paths);
         $this->assertFalse($preview['executable']);
@@ -150,7 +150,7 @@ final class LifecycleTest extends TestCase
             $this->assertNotSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => 'sha256:wrong']));
             $this->assertSame([], $this->records($root));
             $this->assertSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => $preview['plan']]));
-            $this->assertCount(7, $this->records($root));
+            $this->assertCount(6, $this->records($root));
             $this->assertSame($this->templateFiles(), $this->files($root));
         } finally {
             $this->app->setBasePath($base);

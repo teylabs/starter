@@ -46,13 +46,13 @@ final class MarkTest extends TestCase
         $inertia = $this->signIn(1);
         $workspace = Workspace::findOrFail(1)->name;
         $this->assertNotSame('Platform Name', $workspace);
-        $this->get('/notes', $inertia)->assertOk()
+        $this->get('/dashboard', $inertia)->assertOk()
             ->assertJsonPath('props.layout.product.name', 'Platform Name')->assertJsonPath('props.layout.product.logomark', '/logomark.svg')
             ->assertJsonPath('props.layout.switcher.current.name', $workspace);
         // With two workspaces the workspace is in the switcher; the mark is unchanged.
         $invite = InviteMember::run(User::findOrFail(2), Workspace::findOrFail(2), 'actor1@example.test', new GrantSet(['viewer']));
         AcceptInvitation::run(User::findOrFail(1), $invite->token);
-        $page = $this->get('/@alpha/notes', $inertia)->assertOk()->assertJsonPath('props.layout.product.name', 'Platform Name')->json('props.layout');
+        $page = $this->get('/@alpha/dashboard', $inertia)->assertOk()->assertJsonPath('props.layout.product.name', 'Platform Name')->json('props.layout');
         $this->assertSame($workspace, $page['switcher']['current']['name']);
         $this->assertNotContains($workspace, [$page['product']['name']]);
         // The kit points at a logomark that the starter ships.

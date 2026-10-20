@@ -10,7 +10,6 @@ use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Support\GrantSet;
 use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Models\Note;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
@@ -30,12 +29,6 @@ Schema::create('users', function (Blueprint $t): void {
     $t->string('password')->nullable();
     $t->rememberToken();
     $t->timestamps();
-});
-Schema::create('notes', function (Blueprint $t): void {
-    $t->id();
-    $t->foreignId('workspace_id')->constrained();
-    $t->string('body', 2000);
-    $t->unsignedInteger('version')->default(1);
 });
 Schema::create('settings', function (Blueprint $t): void {
     $t->id();
@@ -89,15 +82,6 @@ Schema::create('settings_intents', function (Blueprint $t): void {
     $t->json('result');
     $t->unique(['workspace_id', 'actor_id', 'intent_key']);
 });
-Schema::create('note_intents', function (Blueprint $t): void {
-    $t->id();
-    $t->foreignId('workspace_id')->constrained();
-    $t->unsignedBigInteger('actor_id');
-    $t->string('intent_key');
-    $t->string('fingerprint');
-    $t->json('result');
-    $t->unique(['workspace_id', 'actor_id', 'intent_key']);
-});
 Schema::create('audit_events', function (Blueprint $t): void {
     $t->id();
     $t->unsignedBigInteger('actor_id');
@@ -122,7 +106,6 @@ foreach ([1, 2] as $id) {
     $owner = User::findOrFail($id);
     $issued = InviteTenant::run($platform, $owner->email);
     $accepted = app(AcceptWorkspaceInvitation::class)->handle(new Principal($id), $issued->token);
-    Workspace::findOrFail($accepted['workspace_id'])->execute(fn () => Note::create(['body' => $owner->name.' private']));
 }
 $viewer = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor3@example.test', new GrantSet(['viewer']));
 AcceptInvitation::run(User::findOrFail(3), $viewer->token);
