@@ -3,6 +3,7 @@
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Console\Kernel;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
+use Tey\Kit\Fonts;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 // Smoke, from zero: a local boot with .env.example's local sign-in settings and `starter:first-owner`'s defaults. The
@@ -61,11 +62,20 @@ it('signs the first owner in with one click and reaches the app shell', function
         settled($page)->screenshot(filename: 'workspace');
 
         // Fonts come from the kit's set (KIT_FONTS): the text face on the body, the display face and weight on the page title.
-        $faces = fn (): array => $page->script('() => { const h1 = document.querySelector("[data-shell-bar] ~ * h1, main h1"); return [getComputedStyle(document.body).fontFamily, getComputedStyle(h1).fontFamily, getComputedStyle(h1).fontWeight]; }');
-        expect($faces())->sequence(fn ($f) => $f->toStartWith('"Instrument Sans"'), fn ($f) => $f->toStartWith('"Instrument Serif"'), fn ($f) => $f->toBe('400'));
-        config(['kit.fonts' => 'instrument-inter']);
+        // Checked for the active set, then for another, so the test holds whichever set the app uses.
+        $family = fn (string $stack): string => trim(explode(',', $stack)[0], " '\"");
+        $faces = function () use ($page, $family): array {
+            [$body, $title, $weight] = $page->script('() => { const h1 = document.querySelector("[data-shell-bar] ~ * h1, main h1"); return [getComputedStyle(document.body).fontFamily, getComputedStyle(h1).fontFamily, getComputedStyle(h1).fontWeight]; }');
+
+            return [$family($body), $family($title), $weight];
+        };
+        $expected = fn (string $name): array => [$family(Fonts::set($name)['sans']), $family(Fonts::set($name)['serif']), (string) Fonts::set($name)['display_weight']];
+        $active = config('kit.fonts');
+        expect($faces())->toBe($expected($active));
+        $other = $active === 'instrument' ? 'instrument-inter' : 'instrument';
+        config(['kit.fonts' => $other]);
         $page->refresh();
-        expect($faces())->sequence(fn ($f) => $f->toStartWith('Inter'), fn ($f) => $f->toStartWith('"Instrument Sans"'), fn ($f) => $f->toBe('600'));
+        expect($faces())->toBe($expected($other));
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

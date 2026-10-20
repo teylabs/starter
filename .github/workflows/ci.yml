@@ -201,6 +201,9 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           composer test:browser
+      - name: Browser smoke test with another font set
+        working-directory: app
+        run: KIT_FONTS=instrument-inter composer test:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:

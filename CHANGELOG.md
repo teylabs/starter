@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- The browser test reads the expected fonts from the active kit set, so `composer test:browser` passes whichever `KIT_FONTS` an app uses. CI also runs it with `instrument-inter` (#54)
+
+## v0.3.2
+
 ### Added
 
 - Deploys run the tey/standards 0.7 preflight: `standards:preflight --skip=install.tables` after the build and before `migrate --force`, then the full preflight after it. CI runs the same order on a `--no-dev` production install against PostgreSQL (#47)
@@ -16,6 +22,11 @@
 
 - A `--no-dev` install boots: the dev-only TypeScript transformer's provider is registered only when it is installed (#47)
 - The sync queue keeps no failed-job table, so `failed` is now the `null` driver instead of a `failed_jobs` table that never existed (#47)
+
+## v0.3.1
+
+### Fixed
+
 - The template is Pint-clean, and CI runs `pint --test`. `pint.json` leaves the kit's generated migrations alone (#45)
 - Apps can run `phpunit` and `composer fixture:check` on PostgreSQL: `TEST_DB_CONNECTION=pgsql` with the `DB_*` variables, documented with a local Herd example. Each run prints the database in use, and refuses `pgsql` without `DB_DATABASE` set for the run (#46)
 
