@@ -7,6 +7,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The app shell's widest measure; a host overrides it with one `--container-shell` in its own @theme. */
+@theme {
+    --container-shell: 125rem;
+}
+
 @theme inline {
     /* --font-sans, --font-serif, --font-mono and --font-display-weight come from <x-kit::fonts /> (KIT_FONTS) in
        resources/views/app.blade.php. Its unlayered :root block wins over Tailwind's theme layer. */

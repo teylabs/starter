@@ -44,7 +44,7 @@ const crumbs = computed(() =>
             data-shell-bar
         >
             <div
-                class="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4 sm:px-6 lg:px-8"
+                class="mx-auto flex h-16 max-w-shell items-center gap-2 px-4 sm:px-6 lg:px-8"
             >
                 <Wordmark
                     :href="shell.homeUrl"
@@ -77,7 +77,7 @@ const crumbs = computed(() =>
 
         <main id="main" class="flex-1">
             <div
-                class="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8"
+                class="mx-auto w-full max-w-shell px-4 py-8 sm:px-6 sm:py-10 lg:px-8"
                 data-shell-content
             >
                 <ShellBreadcrumbs :breadcrumbs="crumbs" />

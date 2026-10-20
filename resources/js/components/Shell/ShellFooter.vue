@@ -15,7 +15,7 @@ defineProps<{
 <template>
     <footer class="border-t border-border">
         <div
-            class="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-6 text-xs text-muted-foreground sm:px-6 lg:px-8"
+            class="mx-auto flex max-w-shell flex-wrap items-center gap-x-4 gap-y-2 px-4 py-6 text-xs text-muted-foreground sm:px-6 lg:px-8"
         >
             <span>© 2026 {{ product }}</span>
             <a
