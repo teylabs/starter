@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 defineProps<Tey.Kit.Features.Workspaces.ViewModels.IndexWorkspaceViewModel>();
 // Each workspace opens at its first page; the shell's choices already carry the link and what the user may reach.
-const choices = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>().props.layout?.switcher.choices ?? [];
+const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
+const choices = computed(() => page.props.layout?.switcher.choices ?? []);
 </script>
 <template>
     <p v-if="!choices.length">You have no active workspaces.</p>

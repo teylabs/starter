@@ -37,10 +37,9 @@ final class InertiaTransportTest extends TestCase
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
-        $this->get('/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
-            ->assertJsonPath('props.layout.switcher.current', null)->assertJsonCount(1, 'props.layout.switcher.choices')
-            ->assertJsonPath('props.layout.switcher.choices.0.id', 1)->assertJsonPath('props.layout.switcher.choices.0.url', '/workspaces/1/notes')
-            ->assertJsonPath('props.layout.settings', null)->assertJsonMissingPath('props.layout.user.password');
+        // One workspace: the list has nothing to choose, so it opens the workspace at its first page.
+        $this->get('/workspaces', $inertia)->assertRedirect('/workspaces/1/notes');
+        $this->get('/', $inertia)->assertRedirect('/workspaces');
         $page = $this->get('/workspaces/1/notes', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'Workspace/Note/Index/Page')->assertJsonPath('props.can_write', true)
             ->assertJsonPath('props.notes.0.body', 'Alpha private')->assertJsonCount(1, 'props.notes')

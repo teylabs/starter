@@ -37,7 +37,7 @@ final class CacheGuardTest extends TestCase
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
-        $this->get('/workspaces')->assertOk();
+        $this->get('/workspaces')->assertRedirect('/workspaces/1/notes');
         $this->getJson('/workspaces/1/settings')->assertOk();
         $this->putJson('/workspaces/1/settings', ['display_name' => 'Cached Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'cache-guard'])->assertOk();
         $this->getJson('/workspaces/1/settings')->assertOk()->assertJsonPath('display_name', 'Cached Alpha');
