@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Check, ChevronsUpDown } from '@lucide/vue';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@kit/ui';
 
 // Sits beside the product mark, so a workspace reads as part of where you are. The shell hides it for a single workspace.
 defineProps<{ switcher: Tey.Kit.Features.SessionUi.Data.ShellData['switcher']; allUrl: string }>();

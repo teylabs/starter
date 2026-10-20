@@ -2,8 +2,8 @@
 import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Menu } from '@lucide/vue';
 import { onBeforeUnmount, ref } from 'vue';
-import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import UserAvatar from './UserAvatar.vue';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
 
 // Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
 defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData }>();

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { LogOut } from '@lucide/vue';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import UserAvatar from './UserAvatar.vue';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@kit/ui';
 
 // Who is signed in, the account pages, whatever the app adds in the `extra` slot, then Sign out last as a POST.
 defineProps<{ user: NonNullable<Tey.Kit.Features.SessionUi.Data.ShellData['user']>; signOutUrl: string }>();

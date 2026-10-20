@@ -21,6 +21,7 @@
   "kit_generated": {
     "by": "php artisan kit:add core workspaces access settings session-ui mcp notes (tey/kit, checked by bin/kit-parity.sh in CI)",
     "paths": [
+      "resources/js/components/Kit/",
       "database/migrations/kit/",
       "resources/js/pages/Auth/Login/",
       "resources/js/pages/Workspace/Layout.vue",
