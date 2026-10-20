@@ -1,17 +1,13 @@
 <?php
 
-use App\Models\User;
+use Dotenv\Dotenv;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Tey\Concierge\Actions\InviteTenant;
-use Tey\Kit\Features\Core\Principal;
+use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
-use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
-// Smoke: the designed sign-in page loads, the owner signs in, the app shell lists their workspace and opens it, and
-// their name is in the user menu, not the nav.
+// Smoke, from zero: a local boot with .env.example's local sign-in settings and `starter:first-owner`'s defaults. The
+// sign-in page offers one-click sign-in as the owner; the click reaches the app shell, which lists their workspace and
+// opens it, and their name is in the user menu, not the nav.
 // The web fonts have arrived (or failed) before each screenshot.
 function settled(mixed $page): mixed
 {
@@ -20,43 +16,51 @@ function settled(mixed $page): mixed
     return $page;
 }
 
-it('signs the owner in to the app shell', function (): void {
-    expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
-    expect(app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]))->toBe(0);
-    $password = Str::random(32);
-    $owner = User::create(['name' => 'Ada Owner', 'email' => 'owner@example.test', 'email_verified_at' => now(), 'password' => Hash::make($password)]);
-    DB::table('operators')->insert(['actor_id' => $owner->id]);
-    $workspace = app(AcceptWorkspaceInvitation::class)->handle(new Principal((int) $owner->id), InviteTenant::run($owner, $owner->email)->token)['workspace_id'];
-    Workspace::query()->whereKey($workspace)->update(['name' => 'Acme']);
+it('signs the first owner in with one click and reaches the app shell', function (): void {
+    $environment = getenv('APP_ENV');
+    try {
+        // A local boot, the way Concierge's provider registers its route for one; Concierge decides the rest.
+        putenv('APP_ENV=local');
+        app()['env'] = 'local';
+        $example = Dotenv::parse((string) file_get_contents(base_path('.env.example')));
+        config(['concierge.local_login.enabled' => ($example['CONCIERGE_LOCAL_LOGIN'] ?? null) === 'true', 'concierge.local_login.account.email' => $example['CONCIERGE_LOCAL_LOGIN_EMAIL'] ?? null]);
+        app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
+        app('router')->getRoutes()->refreshNameLookups();
+        expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
+        expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
+        $workspace = Workspace::query()->sole()->id;
 
-    $page = visit('/login')
-        ->assertSee('Sign in to your account')
-        ->assertPresent('[data-guest-card]')
-        ->assertNoJavaScriptErrors();
-    settled($page)->screenshot(filename: 'sign-in');
+        $page = visit('/login')
+            ->assertSee('Sign in to your account')
+            ->assertPresent('[data-guest-card]')
+            ->assertSeeIn('[data-local-login]', 'Sign in as owner@example.com')
+            ->assertNoJavaScriptErrors();
+        settled($page)->screenshot(filename: 'sign-in');
 
-    $page->type('email', 'owner@example.test')
-        ->type('password', $password)
-        ->press('Sign in')
-        ->assertPathIs('/workspaces')
-        ->assertPresent('[data-shell-bar]')
-        ->assertSeeIn('[data-shell-nav]', 'Workspaces')
-        ->assertSeeIn('[data-shell-nav]', 'Acme')
-        ->assertDontSeeIn('[data-shell-nav]', 'Ada Owner')
-        ->assertNoJavaScriptErrors();
-    settled($page)->screenshot(filename: 'app-shell');
+        $page->click('[data-local-login] button')
+            ->assertPathIs('/workspaces')
+            ->assertPresent('[data-shell-bar]')
+            ->assertSeeIn('[data-shell-nav]', 'Workspaces')
+            ->assertSeeIn('[data-shell-nav]', 'Local workspace')
+            ->assertDontSeeIn('[data-shell-nav]', 'Local owner')
+            ->assertNoJavaScriptErrors();
+        settled($page)->screenshot(filename: 'app-shell');
 
-    $page->click('[data-shell-user-menu]')
-        ->assertSee('Ada Owner')
-        ->assertSee('owner@example.test');
-    settled($page)->screenshot(filename: 'user-menu');
+        $page->click('[data-shell-user-menu]')
+            ->assertSee('Local owner')
+            ->assertSee('owner@example.com');
+        settled($page)->screenshot(filename: 'user-menu');
 
-    $page->keys('[role=menu]', 'Escape')
-        ->click('Acme')
-        ->assertPathIs("/workspaces/{$workspace}/settings")
-        ->assertSee('Workspace settings')
-        ->assertSeeIn('[data-shell-nav]', 'Settings')
-        ->assertSeeIn('[data-shell-nav]', 'Notes')
-        ->assertNoJavaScriptErrors();
-    settled($page)->screenshot(filename: 'workspace');
+        $page->keys('[role=menu]', 'Escape')
+            ->click('Local workspace')
+            ->assertPathIs("/workspaces/{$workspace}/settings")
+            ->assertSee('Workspace settings')
+            ->assertSeeIn('[data-shell-nav]', 'Settings')
+            ->assertSeeIn('[data-shell-nav]', 'Notes')
+            ->assertNoJavaScriptErrors();
+        settled($page)->screenshot(filename: 'workspace');
+    } finally {
+        putenv('APP_ENV='.$environment);
+        app()['env'] = $environment;
+    }
 });

@@ -5,12 +5,12 @@
 ### Added
 
 - Deploys run the tey/standards 0.7 preflight: `standards:preflight --skip=install.tables` after the build and before `migrate --force`, then the full preflight after it. CI runs the same order on a `--no-dev` production install against PostgreSQL (#47)
+- One-click local sign-in: `.env.example` turns on Concierge's `local_login` (`CONCIERGE_LOCAL_LOGIN=true`, signing in as `CONCIERGE_LOCAL_LOGIN_EMAIL`, by default `owner@example.com`), and the sign-in page shows "Sign in as …" whenever Concierge's `LocalLogin::isAvailable()` says so. Concierge keeps it to the local environment (#49)
 
 ### Fixed
 
 - A `--no-dev` install boots: the dev-only TypeScript transformer's provider is registered only when it is installed (#47)
 - The sync queue keeps no failed-job table, so `failed` is now the `null` driver instead of a `failed_jobs` table that never existed (#47)
-
 - The template is Pint-clean, and CI runs `pint --test`. `pint.json` leaves the kit's generated migrations alone (#45)
 - Apps can run `phpunit` and `composer fixture:check` on PostgreSQL: `TEST_DB_CONNECTION=pgsql` with the `DB_*` variables, documented with a local Herd example. Each run prints the database in use, and refuses `pgsql` without `DB_DATABASE` set for the run (#46)
 
