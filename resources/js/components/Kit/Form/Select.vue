@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { Check, ChevronDown } from '@lucide/vue';
+import { nextTick, ref, watch } from 'vue';
 import { SelectContent, SelectItem, SelectItemIndicator, SelectItemText, SelectPortal, SelectRoot, SelectTrigger, SelectValue, SelectViewport } from 'reka-ui';
 
-// A select on Reka UI: `options` are values with labels; `id` goes on the trigger, so a Field's label points at it.
-defineProps<{ id?: string; options: { value: string; label: string }[]; placeholder?: string; disabled?: boolean; invalid?: boolean }>();
+// A select on Reka UI: `options` are values with labels; `id` goes on the trigger and `name` makes it submit a native named value, through a hidden input (so it works inside an uncontrolled <Form>), so a Field's label points at it.
+defineProps<{ id?: string; name?: string; options: { value: string; label: string }[]; placeholder?: string; disabled?: boolean; invalid?: boolean }>();
 const model = defineModel<string>();
+// Reka's own native select (made from `name`) is only filled once the options have mounted, so inside an uncontrolled <Form> a control that was never opened
+// submits nothing. A hidden input mirrors the value instead, and tells the form it changed.
+const native = ref<HTMLInputElement | null>(null);
+watch(model, async () => {
+    await nextTick();
+    native.value?.dispatchEvent(new Event('input', { bubbles: true }));
+});
 </script>
 <template>
     <SelectRoot v-model="model" :disabled="disabled">
+        <input v-if="name" ref="native" type="hidden" :name="name" :value="model ?? ''" :disabled="disabled" />
         <SelectTrigger
             :id="id"
             :aria-invalid="invalid || undefined"

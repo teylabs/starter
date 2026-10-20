@@ -183,7 +183,7 @@
             "ui": [
                 {
                     "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
-                    "symbol": "submit"
+                    "symbol": "props"
                 },
                 {
                     "path": "vendor/tey/kit/src/Features/Settings/Http/SettingsController.php",

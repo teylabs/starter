@@ -43,7 +43,7 @@ final class McpCapabilities
     /** Capability id => [kind, UI references, domain operation, MCP tool class, scope, tests, effects]. */
     private const CAPABILITIES = [
         'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
-        'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'submit'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
+        'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
     ];
 
     public static function inventory(): array
