@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppearanceChoice from '@/components/Shell/AppearanceChoice.vue';
+import AppearanceToggle from '@/components/Shell/AppearanceToggle.vue';
 import ShellFooter from '@/components/Shell/ShellFooter.vue';
 import { Toaster } from '@/components/ui/sonner';
 import WorkspaceShell from '@/pages/Workspace/Layout.vue';
@@ -19,6 +20,7 @@ const layout = computed(() => page.props.layout);
 
 <template>
     <WorkspaceShell v-if="layout" :layout="layout" width-class="max-w-2k">
+        <template #actions><AppearanceToggle /></template>
         <template #extra>
             <div class="flex min-h-11 items-center justify-between gap-2 px-3 text-sm font-medium text-muted-foreground">
                 Appearance

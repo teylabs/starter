@@ -41,6 +41,22 @@ final class KitUiTest extends TestCase
         $this->assertFileExists(dirname(__DIR__).'/resources/js/components/Kit/contract.ts');
     }
 
+    public function test_the_saved_appearance_is_applied_before_first_paint(): void
+    {
+        $html = $this->get('/login')->assertOk()->getContent();
+        $script = strpos($html, "localStorage.getItem('appearance')");
+        $this->assertNotFalse($script, 'a head script applies the saved appearance');
+        $this->assertLessThan(strpos($html, 'rel="icon"'), $script, 'the script runs before the rest of the head, so before first paint');
+        $this->assertStringContainsString("classList.toggle('dark'", $html);
+        // The toggle is in the header and the drawer through the shell's `actions` slot, and names itself.
+        $layout = (string) file_get_contents(dirname(__DIR__).'/resources/js/layouts/AppLayout.vue');
+        $this->assertStringContainsString('<template #actions><AppearanceToggle />', $layout);
+        $toggle = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Shell/AppearanceToggle.vue');
+        $this->assertStringContainsString('aria-label="Dark mode"', $toggle);
+        $this->assertStringContainsString(':aria-pressed=', $toggle);
+        $this->assertStringContainsString('<slot name="actions" />', (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/Workspace/Partials/ShellDrawer.vue'));
+    }
+
     public function test_the_settings_display_name_is_the_workspace_name_until_it_is_set(): void
     {
         require dirname(__DIR__).'/database/fixture.php';

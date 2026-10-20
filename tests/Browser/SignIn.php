@@ -46,6 +46,32 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
 
+        // The light/dark toggle: named, pressed when dark, moves off System on a click, and the keyboard works. A reload keeps it
+        // (the head script sets the class before paint).
+        $dark = fn (): bool => (bool) $page->script('() => document.documentElement.classList.contains("dark")');
+        $attribute = fn (string $name): ?string => $page->script('() => document.querySelector("[data-appearance-toggle]").getAttribute("'.$name.'")');
+        $page->script('() => localStorage.removeItem("appearance")');
+        $page->refresh()->assertPresent('[data-appearance-toggle]');
+        expect($attribute('aria-label'))->toBe('Dark mode');
+        expect($dark())->toBeFalse();
+        expect($attribute('aria-pressed'))->toBe('false');
+        $page->click('[data-appearance-toggle]');
+        expect($dark())->toBeTrue();
+        expect($attribute('aria-pressed'))->toBe('true');
+        expect($page->script('() => localStorage.getItem("appearance")'))->toBe('dark');
+        $page->refresh()->assertPresent('[data-appearance-toggle]');
+        expect($dark())->toBeTrue();
+        expect($attribute('aria-pressed'))->toBe('true');
+        $page->keys('[data-appearance-toggle]', 'Enter');
+        expect($dark())->toBeFalse();
+        expect($attribute('aria-pressed'))->toBe('false');
+        expect($page->script('() => localStorage.getItem("appearance")'))->toBe('light');
+        $page->script('() => localStorage.removeItem("appearance")');
+        $page->refresh()->assertPresent('[data-shell-bar]');
+        // On a phone the same control is in the drawer.
+        $page->resize(390, 844)->click('[data-shell-menu-button]')->assertPresent('[data-shell-sheet] [data-appearance-toggle]');
+        $page->keys('[data-shell-sheet]', 'Escape')->resize(1440, 900);
+
         $page->click('[data-shell-user-menu]')
             ->assertSee('Local owner')
             ->assertSee('owner@example.com');

@@ -10,7 +10,7 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
 /*
  * The shell for pages under pages/Workspace: a header, never a sidebar. The product mark (the platform's logomark and name, never a workspace's) and a workspace switcher
  * (hidden for one workspace) sit at the left, then the workspace's pages with one active mark (Settings is one of them, a landing page), then the environment and the user menu on the right. Below `lg` a drawer holds the same items. The app
- * owns its mark (`mark` slot), what the account menu adds (`extra`), the footer and the width (`widthClass`); the
+ * owns its mark (`mark` slot), what the account menu adds (`extra`), header controls (`actions`, in the header and the drawer), the footer and the width (`widthClass`); the
  * chrome comes from the server's `layout` props.
  */
 const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
@@ -29,13 +29,15 @@ const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data
                 </div>
                 <div class="ml-auto flex shrink-0 items-center gap-2">
                     <EnvPill v-if="props.layout.env" :env="props.layout.env" />
-                    <div class="hidden lg:block">
+                    <div class="hidden items-center gap-2 lg:flex">
+                        <slot name="actions" />
                         <UserMenu v-if="props.layout.user && props.layout.links.sign_out" :user="props.layout.user" :sign-out-url="props.layout.links.sign_out">
                             <template #extra><slot name="extra" /></template>
                         </UserMenu>
                     </div>
                     <div class="lg:hidden">
                         <ShellDrawer :layout="props.layout">
+                            <template #actions><slot name="actions" /></template>
                             <template #extra><slot name="extra" /></template>
                         </ShellDrawer>
                     </div>

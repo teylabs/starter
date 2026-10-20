@@ -47,6 +47,7 @@ onBeforeUnmount(stop);
                     </span>
                 </div>
                 <Link v-for="item in layout.user.items" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" class="flex min-h-11 items-center rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">{{ item.label }}</Link>
+                <div class="flex min-h-11 items-center justify-between gap-2 px-3 text-sm font-medium text-muted-foreground"><slot name="actions" /></div>
                 <slot name="extra" />
                 <Link v-if="layout.links.sign_out" :href="layout.links.sign_out" method="post" as="button" class="flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-shell-sign-out>
                     <LogOut class="size-4" aria-hidden="true" />
