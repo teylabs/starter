@@ -1,46 +1,29 @@
 <?php
 
 use Dotenv\Dotenv;
-use Illuminate\Foundation\Testing\TestCase;
+use PHPUnit\Framework\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
 /** The template's .env.example names the mail sender after the app, so a renamed app does not send as "Example". */
 final class MailSenderTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        // The example's own values, with the app renamed, as the environment the app boots in.
-        $example = Dotenv::parse((string) file_get_contents(dirname(__DIR__).'/.env.example').PHP_EOL);
-        $this->assertArrayHasKey('MAIL_FROM_NAME', $example);
-        $this->assertArrayHasKey('MAIL_FROM_ADDRESS', $example);
-        $renamed = Dotenv::parse(preg_replace('/^APP_NAME=.*$/m', 'APP_NAME="Renamed App"', (string) file_get_contents(dirname(__DIR__).'/.env.example')));
-        foreach (['APP_NAME', 'MAIL_FROM_NAME', 'MAIL_FROM_ADDRESS'] as $key) {
-            putenv($key.'='.$renamed[$key]);
-            $_ENV[$key] = $_SERVER[$key] = $renamed[$key];
-        }
-        parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        foreach (['APP_NAME', 'MAIL_FROM_NAME', 'MAIL_FROM_ADDRESS'] as $key) {
-            putenv($key);
-            unset($_ENV[$key], $_SERVER[$key]);
-        }
-    }
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_the_mail_sender_follows_the_app_name(): void
     {
-        $this->assertSame('Renamed App', config('app.name'));
-        $this->assertSame('Renamed App', config('mail.from.name'));
-        $this->assertNotSame('Example', config('mail.from.name'));
-        $this->assertSame('hello@example.com', config('mail.from.address'));
+        // The example's own values, with the app renamed, in a fresh process: the environment the app boots in. (This process has
+        // already loaded the developer's own .env, which would win over anything set here.)
+        $contents = (string) file_get_contents(dirname(__DIR__).'/.env.example');
+        $this->assertMatchesRegularExpression('/^MAIL_FROM_NAME="\$\{APP_NAME\}"$/m', $contents);
+        $renamed = Dotenv::parse(preg_replace('/^APP_NAME=.*$/m', 'APP_NAME="Renamed App"', $contents)."\n");
+        $this->assertArrayHasKey('MAIL_FROM_NAME', $renamed);
+        $this->assertArrayHasKey('MAIL_FROM_ADDRESS', $renamed);
+        $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'MAIL_FROM_ADDRESS' => $renamed['MAIL_FROM_ADDRESS']];
+        $script = '$app = require "'.__DIR__.'/application.php"; echo json_encode([config("app.name"), config("mail.from.name"), config("mail.from.address")]);';
+        $process = proc_open([PHP_BINARY, '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, dirname(__DIR__), [...getenv(), ...$env]);
+        $out = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+        $this->assertSame(['Renamed App', 'Renamed App', 'hello@example.com'], json_decode(substr($out, (int) strrpos($out, '[')), true), $out);
     }
 }
