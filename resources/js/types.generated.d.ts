@@ -96,6 +96,22 @@ message: string,
 recovery_url: string,
 recovery_label: string,
 };
+export type InvitationViewModel = {
+title: string,
+state: string,
+message: string,
+invitation: {
+workspace: string,
+inviter: string | null,
+role: string,
+email: string,
+} | null,
+signed_in_as: string | null,
+accept_url: string,
+register_url: string,
+login_url: string,
+workspace_url: string | null,
+};
 export type LoginViewModel = {
 title: string,
 };
@@ -137,6 +153,7 @@ can_manage: boolean,
 invite_url: string,
 search: string,
 sort: string,
+invite_link: string | null,
 };
 export type ProfileViewModel = {
 title: string,

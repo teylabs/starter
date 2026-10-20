@@ -24,6 +24,7 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
             <div class="grid gap-6">
                 <Section title="Invite someone" description="They get a link to join this workspace with the role you choose.">
                     <p v-if="!can_manage" class="text-sm text-muted-foreground">You don't have permission to invite people.</p>
+                    <p v-if="invite_link" class="text-sm" role="status" data-invite-link>Invitation link (send it to them; it is shown once): <code class="break-all">{{ invite_link }}</code></p>
                     <form class="grid gap-4 sm:grid-cols-[1fr_12rem]" @submit.prevent="sendInvite">
                         <Field id="invite-email" label="Email address" :error="invite.errors.email">
                             <Input id="invite-email" v-model="invite.email" type="email" required :disabled="!can_manage" :invalid="Boolean(invite.errors.email)" aria-describedby="invite-email-error" />
