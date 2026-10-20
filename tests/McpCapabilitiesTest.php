@@ -7,7 +7,7 @@ use Tey\Kit\Features\Core\Registry;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-/** docs/mcp-capabilities.json follows the cookbook's version 1 schema and is the served MCP surface exactly. */
+/** docs/mcp-capabilities.json follows the shared capability schema (version 1) and is the served MCP surface exactly. */
 final class McpCapabilitiesTest extends TestCase
 {
     public function createApplication()

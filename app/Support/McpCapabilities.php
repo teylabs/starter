@@ -9,7 +9,7 @@ use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Mcp\WorkspaceServer;
 
 /**
- * The MCP capability inventory (version 1, the cookbook's schema) committed as docs/mcp-capabilities.json: each UI
+ * The MCP capability inventory (the shared capability schema, version 1) committed as docs/mcp-capabilities.json: each UI
  * entry point with the shared operations it reaches, and each operation with its MCP tools and parity tests.
  */
 final class McpCapabilities
