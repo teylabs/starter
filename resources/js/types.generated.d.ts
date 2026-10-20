@@ -61,16 +61,6 @@ url: string,
 current: boolean,
 group: string,
 }[],
-settings: {
-label: string,
-current: boolean,
-items: {
-label: string,
-url: string,
-current: boolean,
-group: string,
-}[],
-} | null,
 user: {
 name: string,
 email: string,
@@ -101,6 +91,17 @@ recovery_label: string,
 };
 export type LoginViewModel = {
 title: string,
+};
+export type SectionsViewModel = {
+title: string,
+groups: {
+label: string,
+sections: {
+label: string,
+description: string,
+url: string,
+}[],
+}[],
 };
 }
 }

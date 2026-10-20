@@ -5,7 +5,7 @@ import { onBeforeUnmount, ref } from 'vue';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import UserAvatar from './UserAvatar.vue';
 
-// Below `lg` the same items, in the same order: workspaces, pages, settings, the account, then Sign out. Any navigation closes it.
+// Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
 defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData }>();
 
 const open = ref(false);
@@ -38,10 +38,6 @@ onBeforeUnmount(stop);
             <nav v-if="layout.navigation.length" :aria-label="layout.switcher.current?.name ?? layout.product.name" class="grid gap-1 px-2 pt-4">
                 <Link v-for="item in layout.navigation" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
             </nav>
-            <div v-if="layout.settings" role="group" :aria-label="layout.settings.label" class="mt-4 grid gap-1 border-t border-border px-2 pt-4">
-                <p class="px-3 text-xs font-medium text-muted-foreground">{{ layout.settings.label }}</p>
-                <Link v-for="item in layout.settings.items" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
-            </div>
             <div class="mt-auto border-t border-border px-2 py-4">
                 <div class="flex items-center gap-3 px-3 pb-3">
                     <UserAvatar :initials="layout.user.initials" />

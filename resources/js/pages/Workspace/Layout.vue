@@ -3,15 +3,13 @@ import { Link } from '@inertiajs/vue3';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import EnvPill from './Partials/EnvPill.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
-import SettingsMenu from './Partials/SettingsMenu.vue';
 import ShellDrawer from './Partials/ShellDrawer.vue';
 import UserMenu from './Partials/UserMenu.vue';
 import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
 
 /*
  * The shell for pages under pages/Workspace: a header, never a sidebar. The product mark and a workspace switcher
- * (hidden for one workspace) sit at the left, then the workspace's pages with one active mark, then Settings as its
- * own menu, then the environment and the user menu on the right. Below `lg` a drawer holds the same items. The app
+ * (hidden for one workspace) sit at the left, then the workspace's pages with one active mark (Settings is one of them, a landing page), then the environment and the user menu on the right. Below `lg` a drawer holds the same items. The app
  * owns its mark (`mark` slot), what the account menu adds (`extra`), the footer and the width (`widthClass`); the
  * chrome comes from the server's `layout` props.
  */
@@ -28,7 +26,6 @@ const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data
                 <WorkspaceSwitcher v-if="props.layout.switcher.choices.length > 1" :switcher="props.layout.switcher" :all-url="props.layout.links.switcher" class="hidden lg:flex" />
                 <div class="ml-3 hidden items-center gap-0.5 lg:flex">
                     <PrimaryNav :navigation="props.layout.navigation" :label="props.layout.switcher.current?.name ?? props.layout.product.name" />
-                    <SettingsMenu v-if="props.layout.settings" :settings="props.layout.settings" />
                 </div>
                 <div class="ml-auto flex shrink-0 items-center gap-2">
                     <EnvPill v-if="props.layout.env" :env="props.layout.env" />

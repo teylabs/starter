@@ -109,7 +109,7 @@ final class UrlConventionTest extends TestCase
         // One workspace: the short path is the only one's.
         $this->getJson('/notes')->assertOk()->assertJsonPath('notes.0.body', 'Alpha private');
         $this->getJson('/@alpha/notes')->assertOk()->assertJsonPath('notes.0.body', 'Alpha private');
-        $this->getJson('/settings')->assertOk()->assertJsonPath('workspace_id', 1);
+        $this->getJson('/settings/general')->assertOk()->assertJsonPath('workspace_id', 1);
         $this->getJson('/@nobody/notes')->assertNotFound();
     }
 
@@ -133,7 +133,7 @@ final class UrlConventionTest extends TestCase
         $this->signIn(1);
         // One workspace: the shell's links, the page's own URLs and the redirects after a write are short; nothing is switchable.
         $page = $this->get('/notes', $inertia)->assertOk()
-            ->assertJsonPath('props.layout.navigation.0.url', '/notes')->assertJsonPath('props.layout.settings.items.0.url', '/settings')
+            ->assertJsonPath('props.layout.navigation.0.url', '/notes')->assertJsonPath('props.layout.navigation.1.label', 'Settings')->assertJsonPath('props.layout.navigation.1.url', '/settings')
             ->assertJsonPath('props.layout.switcher.choices.0.url', '/notes')->assertJsonCount(1, 'props.layout.switcher.choices')
             ->assertJsonPath('props.create_url', '/notes')->json('props');
         $this->assertStringStartsWith('/notes/', array_values($page['actions'])[0]['url']);
@@ -143,7 +143,7 @@ final class UrlConventionTest extends TestCase
         // A second workspace appears mid-session: nothing else changes, but the switcher has choices and every link is the full form.
         $this->addSecondWorkspace();
         $page = $this->get('/@alpha/notes', $inertia)->assertOk()
-            ->assertJsonPath('props.layout.navigation.0.url', '/@alpha/notes')->assertJsonPath('props.layout.settings.items.0.url', '/@alpha/settings')
+            ->assertJsonPath('props.layout.navigation.0.url', '/@alpha/notes')->assertJsonPath('props.layout.navigation.1.url', '/@alpha/settings')
             ->assertJsonCount(2, 'props.layout.switcher.choices')->assertJsonPath('props.layout.switcher.choices.0.url', '/@alpha/notes')
             ->assertJsonPath('props.layout.switcher.choices.1.url', '/@beta/notes')->assertJsonPath('props.create_url', '/@alpha/notes')->json('props');
         $this->assertStringStartsWith('/@alpha/notes/', array_values($page['actions'])[0]['url']);
@@ -175,6 +175,7 @@ final class UrlConventionTest extends TestCase
         $this->get('/workspaces/1/notes')->assertStatus(301)->assertRedirect('/@alpha/notes');
         $this->get('/workspaces/alpha/notes/3?x=1')->assertStatus(301)->assertRedirect('/@alpha/notes/3?x=1');
         $this->get('/workspaces/1/settings')->assertStatus(301)->assertRedirect('/@alpha/settings');
+        $this->get('/workspaces/1/settings/general')->assertStatus(301)->assertRedirect('/@alpha/settings/general');
         $this->get('/workspaces/99/notes')->assertNotFound();
     }
 }

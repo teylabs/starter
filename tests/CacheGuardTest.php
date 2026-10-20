@@ -38,9 +38,9 @@ final class CacheGuardTest extends TestCase
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
         $this->get('/me/workspaces')->assertRedirect('/notes');
-        $this->getJson('/@alpha/settings')->assertOk();
-        $this->putJson('/@alpha/settings', ['display_name' => 'Cached Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'cache-guard'])->assertOk();
-        $this->getJson('/@alpha/settings')->assertOk()->assertJsonPath('display_name', 'Cached Alpha');
+        $this->getJson('/@alpha/settings/general')->assertOk();
+        $this->putJson('/@alpha/settings/general', ['display_name' => 'Cached Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'cache-guard'])->assertOk();
+        $this->getJson('/@alpha/settings/general')->assertOk()->assertJsonPath('display_name', 'Cached Alpha');
         $this->get('/@alpha/notes')->assertOk();
         $this->assertNotSame([], $written, 'The flow writes to the cache');
         foreach ($written as $key => $value) {

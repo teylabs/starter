@@ -9,6 +9,8 @@ use Tey\Kit\Fonts;
 // Smoke, from zero: a local boot with .env.example's local sign-in settings and `starter:first-owner`'s defaults. The
 // sign-in page offers one-click sign-in as the owner; the click reaches the app shell, which lists their workspace and
 // opens it, and their name is in the user menu, not the nav.
+// Breadcrumbs are not asserted here: gretel shares them when the app boots, and the browser plugin flushes Inertia's shared props between
+// requests, so they never reach this harness's pages. tests/BreadcrumbsTest.php covers the trails over HTTP.
 // The web fonts have arrived (or failed) before each screenshot.
 function settled(mixed $page): mixed
 {
@@ -51,9 +53,11 @@ it('signs the first owner in with one click and reaches the app shell', function
 
         $page->keys('[role=menu]', 'Escape')
             ->assertSeeIn('[data-shell-nav]', 'Notes')
-            ->click('[data-shell-settings]')
-            ->click('Workspace settings')
+            ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
+            ->assertSee('Delegated access for MCP clients')
+            ->click('main a[href="/settings/general"]')
+            ->assertPathIs('/settings/general')
             ->assertSeeIn('[data-shell-nav]', 'Notes')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'workspace');

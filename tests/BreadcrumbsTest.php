@@ -88,7 +88,7 @@ final class BreadcrumbsTest extends TestCase
         $this->get('/notes/1', $this->inertia())->assertOk()
             ->assertJsonPath('props.breadcrumbs.0.url', '/@alpha/notes');
         // The personal page is a trail of its own, with no workspace in it.
-        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [['title' => 'Workspaces', 'url' => '/me/workspaces', 'is_current_page' => true]]);
+        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [['title' => 'Account', 'url' => '/me', 'is_current_page' => false], ['title' => 'Workspaces', 'url' => '/me/workspaces', 'is_current_page' => true]]);
     }
 
     public function test_every_page_route_has_a_breadcrumb(): void
@@ -104,7 +104,7 @@ final class BreadcrumbsTest extends TestCase
             }
         }
         // Every kit page, in both URL forms, and the personal one.
-        foreach (['@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}', '@{workspace}/settings', 'settings', '@{workspace}/connections', 'connections', 'me/workspaces'] as $uri) {
+        foreach (['@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
             $this->assertContains($uri, $checked);
         }
     }

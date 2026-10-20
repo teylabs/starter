@@ -10,11 +10,12 @@ A workspace's pages live under `/@{workspace}/...`: the `@` is the only tenant m
 
 | Route | Purpose |
 | --- | --- |
-| `GET /me/workspaces` | Workspaces with an active membership; a user with one is sent into it |
-| `GET`/`PUT /@{workspace}/settings` | Read and update settings |
+| `GET /me`, `GET /me/workspaces` | The personal landing page, listing the personal sections; the workspaces with an active membership (a user with one is sent into it) |
+| `GET /@{workspace}/settings` | The settings landing page, listing the registered sections the user may open |
+| `GET`/`PUT /@{workspace}/settings/general` | Read and update the workspace settings |
 | `GET`/`POST /@{workspace}/notes`, `GET`/`PUT`/`DELETE .../notes/{note}` | Notes |
 | `POST /tenant-invitations/accept` | Accept a workspace invitation |
-| `GET`/`POST /@{workspace}/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
+| `GET`/`POST /@{workspace}/settings/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
 
 Pages are Inertia/Vue (`resources/js/pages/<Resource>/<Action>/Page.vue`, wrapped by `resources/js/layouts`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
 
@@ -27,7 +28,7 @@ The mcp feature's routes (tey/kit) register Passport OAuth routes without dynami
 ### Flow
 
 1. The client runs authorization code with PKCE. The signed-in user sees a consent page naming the requested scopes. Consent alone grants no workspace access.
-2. The user then approves a connection for one workspace: a token id plus a subset of scopes (`POST /@{workspace}/connections`). `settings.read` is required.
+2. The user then approves a connection for one workspace: a token id plus a subset of scopes (`POST /@{workspace}/settings/connections`). `settings.read` is required.
 3. The client calls `/mcp/connections/{connection}` with the bearer token.
 
 Tokens expire after one hour. A connection is bound to one token, so refreshing or replacing the token needs a new workspace approval; revoke the old connection separately.

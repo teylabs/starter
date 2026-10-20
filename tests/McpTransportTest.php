@@ -65,13 +65,13 @@ final class McpTransportTest extends TestCase
         self::assertIsString($bearer);
         $token = Token::query()->where('user_id', 1)->where('client_id', $client->id)->firstOrFail();
         $grant = ['token_id' => $token->id, 'scopes' => ['settings.read', 'settings.write', 'notes.read', 'notes.write'], 'intent_key' => 'approve-one'];
-        $connection = $this->postJson('/@alpha/connections', $grant)->assertCreated()->json('id');
-        $this->postJson('/@alpha/connections', $grant)->assertOk()->assertJsonPath('id', $connection);
+        $connection = $this->postJson('/@alpha/settings/connections', $grant)->assertCreated()->json('id');
+        $this->postJson('/@alpha/settings/connections', $grant)->assertOk()->assertJsonPath('id', $connection);
         $duplicate = $grant;
         $duplicate['intent_key'] = 'duplicate-approval';
-        $this->postJson('/@alpha/connections', $duplicate)->assertConflict()->assertJsonPath('error', 'connection_active');
+        $this->postJson('/@alpha/settings/connections', $duplicate)->assertConflict()->assertJsonPath('error', 'connection_active');
         self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.connection.approved')->count());
-        $this->postJson('/@beta/connections', $grant)->assertNotFound();
+        $this->postJson('/@beta/settings/connections', $grant)->assertNotFound();
         $this->withToken('invalid');
         $this->rpc($connection, 'tools/list')->assertUnauthorized();
         $this->withToken($bearer);
@@ -129,9 +129,9 @@ final class McpTransportTest extends TestCase
         config(['kit.capabilities' => ['workspace.settings' => true]]);
         $this->withoutToken();
         Auth::forgetGuards();
-        $this->get('/@alpha/connections')->assertOk()->assertSee('Synthetic delegated client');
-        $this->deleteJson('/@alpha/connections/'.$connection)->assertOk()->assertJsonPath('revoked', true);
-        $this->deleteJson('/@alpha/connections/'.$connection)->assertOk();
+        $this->get('/@alpha/settings/connections')->assertOk()->assertSee('Synthetic delegated client');
+        $this->deleteJson('/@alpha/settings/connections/'.$connection)->assertOk()->assertJsonPath('revoked', true);
+        $this->deleteJson('/@alpha/settings/connections/'.$connection)->assertOk();
         self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.connection.revoked')->count());
         $this->withToken($bearer);
 
@@ -149,7 +149,7 @@ final class McpTransportTest extends TestCase
         $newBearer = $this->postJson('/oauth/token', $exchange)->assertOk()->json('access_token');
         $newToken = Token::query()->where('user_id', 1)->where('client_id', $client->id)->where('id', '!=', $token->id)->firstOrFail();
         $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read'], 'intent_key' => 'approve-reconnected'];
-        $newConnection = $this->postJson('/@alpha/connections', $newGrant)->assertCreated()->json('id');
+        $newConnection = $this->postJson('/@alpha/settings/connections', $newGrant)->assertCreated()->json('id');
         $this->withToken($bearer);
         $this->rpc($newConnection, 'tools/list')->assertForbidden();
         $this->withToken($newBearer);
