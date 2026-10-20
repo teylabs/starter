@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +10,7 @@ use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Token;
 use Tey\Concierge\Concierge;
 use Tey\Concierge\Enums\AccountStatus;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 final class McpTransportTest extends TestCase
 {

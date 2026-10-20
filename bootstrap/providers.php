@@ -1,7 +1,8 @@
 <?php
 
+use App\Providers\KitHostServiceProvider;
 use App\Support\TypeScriptProvider;
 
 return [TypeScriptProvider::class,
-    App\Providers\KitHostServiceProvider::class,
+    KitHostServiceProvider::class,
 ];

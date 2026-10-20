@@ -4,6 +4,12 @@
 
 CI (`.github/workflows/ci.yml`) runs on pull requests and on pushes to `main`.
 
+Pint (`pint.json` excludes `database/migrations/kit`, which must stay byte-identical to `kit:add`):
+
+```sh
+vendor/bin/pint --test
+```
+
 PHP, on 8.4 and 8.5 (SQLite memory), and on 8.4 against a PostgreSQL 17 service (`TEST_DB_CONNECTION=pgsql` with the job's `DB_*`):
 
 ```sh
@@ -19,6 +25,17 @@ npm ci
 npm run typecheck
 npm run build
 npm test
+```
+
+### PostgreSQL locally
+
+`TEST_DB_CONNECTION` selects the test database for both `phpunit` and `composer fixture:check`: `sqlite` (the default, in memory) or `pgsql`. With `pgsql`, the connection comes from `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`. `DB_DATABASE` must be set for the run, never taken from `.env`, because each app boot wipes it. Each run prints the database in use (`Test database: ...` on stderr, and `database` in the focused checks' JSON). `DB_CONNECTION` alone does not switch the tests. With Herd's PostgreSQL:
+
+```sh
+createdb starter_test
+export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
+vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+composer fixture:check
 ```
 
 Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's.
@@ -52,7 +69,7 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 
 ## Rules for tests
 
-- Focused checks opt into synthetic SQLite memory (or the CI PostgreSQL service) by loading `tests/application.php`, which sets a synthetic key and wipes a PostgreSQL database as each app boots. Public requests never load it.
+- Focused checks opt into synthetic SQLite memory (or PostgreSQL through `TEST_DB_CONNECTION=pgsql`) by loading `tests/application.php`, which sets a synthetic key and wipes a PostgreSQL database as each app boots. Public requests never load it.
 - Public requests must not seed fixtures, bypass auth or use default credentials or keys.
 - No external services, production data or provider side effects.
 - Keep the tenant, ownership, grant and stale-write regression tests.
