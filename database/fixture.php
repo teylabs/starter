@@ -17,6 +17,7 @@ use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 Schema::create('workspaces', function (Blueprint $t): void {
     $t->id();
     $t->string('name');
+    $t->string('slug', 63)->nullable()->unique();
     $t->unsignedBigInteger('provisioning_invitation_id')->nullable()->unique();
     $t->unsignedInteger('settings_version')->default(1);
     $t->boolean('admitted')->default(true);

@@ -5,7 +5,7 @@
   "features": [
     {
       "id": "notes.list",
-      "session": "GET /workspaces/{workspace}/notes",
+      "session": "GET /@{workspace}/notes",
       "mcp": "workspace_notes_list",
       "operation": "WorkspaceNotes::listing",
       "scope": "notes.read",
@@ -22,7 +22,7 @@
     },
     {
       "id": "notes.read",
-      "session": "GET /workspaces/{workspace}/notes/{note}",
+      "session": "GET /@{workspace}/notes/{note}",
       "mcp": "workspace_note_read",
       "operation": "WorkspaceNotes::read",
       "scope": "notes.read",
@@ -39,7 +39,7 @@
     },
     {
       "id": "notes.create",
-      "session": "POST /workspaces/{workspace}/notes",
+      "session": "POST /@{workspace}/notes",
       "mcp": "workspace_note_create",
       "operation": "WorkspaceNotes::mutate:create",
       "scope": "notes.write",
@@ -56,7 +56,7 @@
     },
     {
       "id": "notes.update",
-      "session": "PUT /workspaces/{workspace}/notes/{note}",
+      "session": "PUT /@{workspace}/notes/{note}",
       "mcp": "workspace_note_update",
       "operation": "WorkspaceNotes::mutate:update",
       "scope": "notes.write",
@@ -73,7 +73,7 @@
     },
     {
       "id": "notes.delete",
-      "session": "DELETE /workspaces/{workspace}/notes/{note}",
+      "session": "DELETE /@{workspace}/notes/{note}",
       "mcp": "workspace_note_delete",
       "operation": "WorkspaceNotes::mutate:delete",
       "scope": "notes.write",

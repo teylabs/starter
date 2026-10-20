@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 
 require dirname(__DIR__).'/vendor/autoload.php';
@@ -17,6 +18,13 @@ final class TrustedHostTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
+    }
+
+    protected function tearDown(): void
+    {
+        // The trusted hosts are process-wide: leave none behind for the next test.
+        Request::setTrustedHosts([]);
+        parent::tearDown();
     }
 
     public function test_only_the_app_url_host_is_trusted(): void

@@ -76,9 +76,8 @@ final class FeatureSeamsTest extends TestCase
             $routes[] = implode('|', $route->methods()).' '.$route->uri().' '.implode(',', $route->gatherMiddleware());
         }
         sort($routes);
-        // 0.3 moved the starter's classes into tey/kit; nothing else about the routes changed.
-        $released = str_replace('App\\\\Starter\\\\', 'Tey\\\\Kit\\\\Features\\\\', file_get_contents(__DIR__.'/Fixtures/routes-v0.2.1.json'));
-        $this->assertSame(json_decode($released, true), $routes);
+        // The route table, with the workspace pages under `/@{workspace}` (and short, without it), the chooser at /me/workspaces and the old /workspaces URLs redirecting.
+        $this->assertSame(json_decode(file_get_contents(__DIR__.'/Fixtures/routes.json'), true), $routes);
     }
 
     /** @param list<string> $legacy the template ids the database recorded */
@@ -100,7 +99,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(9, $kit);
+        $this->assertCount(10, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -111,12 +110,16 @@ final class FeatureSeamsTest extends TestCase
         return json_decode(json_encode((require __DIR__.'/schema.php')()), true);
     }
 
-    /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary. */
+    /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary, and the slug the kit adds to workspaces. */
     private function released(): array
     {
         $schema = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-v0.2.1.json'), true);
         $this->assertArrayNotHasKey('media', $schema);
         $schema['media'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-media.json'), true);
+        // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.
+        $schema['workspaces']['columns'][] = ['slug', 'varchar', 0, null, 0];
+        $schema['workspaces']['indexes'][] = [1, 'c', ['slug']];
+        sort($schema['workspaces']['indexes']);
         ksort($schema);
 
         return $schema;

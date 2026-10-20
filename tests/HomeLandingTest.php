@@ -38,13 +38,13 @@ final class HomeLandingTest extends TestCase
     public function test_a_user_with_no_workspace_sees_the_chooser(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
-        $this->assertSame(url('/workspaces'), $this->signIn(99));
+        $this->assertSame(url('/me/workspaces'), $this->signIn(99));
     }
 
     public function test_a_user_with_one_workspace_lands_in_it(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
-        $this->assertSame(url('/workspaces/2/notes'), $this->signIn(2));
+        $this->assertSame(url('/notes'), $this->signIn(2));
     }
 
     public function test_a_user_with_two_workspaces_keeps_the_chooser(): void
@@ -52,7 +52,7 @@ final class HomeLandingTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor2@example.test', new GrantSet(['viewer']));
         AcceptInvitation::run(User::findOrFail(2), $invite->token);
-        $this->assertSame(url('/workspaces'), $this->signIn(2));
+        $this->assertSame(url('/me/workspaces'), $this->signIn(2));
     }
 
     public function test_the_workspace_list_opens_a_single_workspace_and_lists_several_in_the_full_shell(): void
@@ -61,11 +61,11 @@ final class HomeLandingTest extends TestCase
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->signIn(2);
         $this->withCookie(config('session.cookie'), app('session')->getId());
-        $this->get('/workspaces', $inertia)->assertRedirect('/workspaces/2/notes');
+        $this->get('/me/workspaces', $inertia)->assertRedirect('/notes');
         $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor2@example.test', new GrantSet(['viewer']));
         AcceptInvitation::run(User::findOrFail(2), $invite->token);
-        $this->get('/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
+        $this->get('/me/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
             ->assertJsonPath('props.layout.user.name', 'Beta')->assertJsonPath('props.layout.product.name', config('app.name'))
-            ->assertJsonCount(2, 'props.layout.switcher.choices')->assertJsonPath('props.layout.switcher.choices.0.url', '/workspaces/1/notes');
+            ->assertJsonCount(2, 'props.layout.switcher.choices')->assertJsonPath('props.layout.switcher.choices.0.url', '/@alpha/notes');
     }
 }

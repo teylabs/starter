@@ -6,13 +6,15 @@ Two transports reach the same operations ([operations.md](operations.md)): authe
 
 Fortify handles password login, throttling and logout. Registration is closed and there are no default credentials. Session routes require `auth:web` and the `concierge.active` middleware.
 
+A workspace's pages live under `/@{workspace}/...`: the `@` is the only tenant marker, so the rest of the root belongs to the app. Personal, cross-workspace pages live under `/me`. Every workspace page also answers at a short path without `/@{workspace}` (`/notes`), which means the session's current workspace, or the only one; with several workspaces and none current it goes to the chooser. The UI links to the short form for a user with one workspace and the full form for several; mail, exports and shared links always use the full form (`Tey\Kit\Features\Workspaces\WorkspaceUrl`). The old `/workspaces` and `/workspaces/{workspace}/...` URLs redirect permanently.
+
 | Route | Purpose |
 | --- | --- |
-| `GET /workspaces` | Workspaces with an active membership |
-| `GET`/`PUT /workspaces/{workspace}/settings` | Read and update settings |
-| `GET`/`POST /workspaces/{workspace}/notes`, `GET`/`PUT`/`DELETE .../notes/{note}` | Notes |
+| `GET /me/workspaces` | Workspaces with an active membership; a user with one is sent into it |
+| `GET`/`PUT /@{workspace}/settings` | Read and update settings |
+| `GET`/`POST /@{workspace}/notes`, `GET`/`PUT`/`DELETE .../notes/{note}` | Notes |
 | `POST /tenant-invitations/accept` | Accept a workspace invitation |
-| `GET`/`POST /workspaces/{workspace}/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
+| `GET`/`POST /@{workspace}/connections`, `DELETE .../connections/{connection}` | List, approve and revoke MCP connections |
 
 Pages are Inertia/Vue (`resources/js/pages/<Resource>/<Action>/Page.vue`, wrapped by `resources/js/layouts`): sign-in, workspaces, settings and Notes. The same routes return JSON when the request expects JSON without an `X-Inertia` header. The shared `shell` prop (`PageShell`, typed as `ShellData`) carries the identity, workspace choices and navigation, each checked server-side. Permission props only control presentation; operations authorize every write. Versions and intent keys arrive as props and refresh after a successful redirect.
 
@@ -25,7 +27,7 @@ The mcp feature's routes (tey/kit) register Passport OAuth routes without dynami
 ### Flow
 
 1. The client runs authorization code with PKCE. The signed-in user sees a consent page naming the requested scopes. Consent alone grants no workspace access.
-2. The user then approves a connection for one workspace: a token id plus a subset of scopes (`POST /workspaces/{workspace}/connections`). `settings.read` is required.
+2. The user then approves a connection for one workspace: a token id plus a subset of scopes (`POST /@{workspace}/connections`). `settings.read` is required.
 3. The client calls `/mcp/connections/{connection}` with the bearer token.
 
 Tokens expire after one hour. A connection is bound to one token, so refreshing or replacing the token needs a new workspace approval; revoke the old connection separately.

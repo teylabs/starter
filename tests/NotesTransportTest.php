@@ -30,42 +30,42 @@ final class NotesTransportTest extends TestCase
         User::findOrFail(1)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
-        $this->getJson('/workspaces/1/notes')->assertOk()->assertJsonCount(1, 'notes')->assertJsonPath('notes.0.body', 'Alpha private');
-        $this->getJson('/workspaces/2/notes?actor_id=2')->assertNotFound();
-        $this->getJson('/workspaces/1/notes/2')->assertNotFound();
+        $this->getJson('/@alpha/notes')->assertOk()->assertJsonCount(1, 'notes')->assertJsonPath('notes.0.body', 'Alpha private');
+        $this->getJson('/@beta/notes?actor_id=2')->assertNotFound();
+        $this->getJson('/@alpha/notes/2')->assertNotFound();
         $create = ['body' => 'HTTP note', 'intent_key' => 'create-note'];
-        $id = $this->postJson('/workspaces/1/notes', $create)->assertCreated()->assertJsonPath('record.version', 1)->json('note_id');
-        $this->postJson('/workspaces/1/notes', $create)->assertCreated()->assertJsonPath('note_id', $id);
+        $id = $this->postJson('/@alpha/notes', $create)->assertCreated()->assertJsonPath('record.version', 1)->json('note_id');
+        $this->postJson('/@alpha/notes', $create)->assertCreated()->assertJsonPath('note_id', $id);
         self::assertSame(3, DB::table('notes')->count());
         $update = ['body' => 'Changed note', 'expected_version' => 1, 'intent_key' => 'update-note'];
-        $this->putJson('/workspaces/1/notes/'.$id, $update)->assertOk()->assertJsonPath('record.version', 2);
-        $this->putJson('/workspaces/1/notes/'.$id, $update)->assertOk()->assertJsonPath('record.version', 2);
+        $this->putJson('/@alpha/notes/'.$id, $update)->assertOk()->assertJsonPath('record.version', 2);
+        $this->putJson('/@alpha/notes/'.$id, $update)->assertOk()->assertJsonPath('record.version', 2);
         $stale = $update;
         $stale['intent_key'] = 'stale-note';
-        $this->putJson('/workspaces/1/notes/'.$id, $stale)->assertConflict()->assertJsonPath('error', 'stale_note');
+        $this->putJson('/@alpha/notes/'.$id, $stale)->assertConflict()->assertJsonPath('error', 'stale_note');
         // Recovery: re-read the note and retry at its current version.
-        $current = $this->getJson('/workspaces/1/notes/'.$id)->assertOk()->json('version');
-        $this->putJson('/workspaces/1/notes/'.$id, ['body' => 'Changed note', 'expected_version' => $current, 'intent_key' => 'recover-note'])->assertOk()->assertJsonPath('record.version', $current + 1);
+        $current = $this->getJson('/@alpha/notes/'.$id)->assertOk()->json('version');
+        $this->putJson('/@alpha/notes/'.$id, ['body' => 'Changed note', 'expected_version' => $current, 'intent_key' => 'recover-note'])->assertOk()->assertJsonPath('record.version', $current + 1);
         $foreign = $update;
         $foreign['intent_key'] = 'foreign-note';
-        $this->putJson('/workspaces/1/notes/2', $foreign)->assertNotFound();
+        $this->putJson('/@alpha/notes/2', $foreign)->assertNotFound();
         $changed = $update;
         $changed['body'] = 'Changed intent';
-        $this->putJson('/workspaces/1/notes/'.$id, $changed)->assertConflict()->assertJsonPath('error', 'note_intent_conflict');
-        $this->postJson('/workspaces/1/notes', ['body' => '', 'intent_key' => 'invalid'])->assertUnprocessable();
-        $this->get('/workspaces/1/notes')->assertOk()->assertSee('Changed note');
+        $this->putJson('/@alpha/notes/'.$id, $changed)->assertConflict()->assertJsonPath('error', 'note_intent_conflict');
+        $this->postJson('/@alpha/notes', ['body' => '', 'intent_key' => 'invalid'])->assertUnprocessable();
+        $this->get('/@alpha/notes')->assertOk()->assertSee('Changed note');
         $delete = ['expected_version' => 3, 'intent_key' => 'delete-note'];
-        $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
-        $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
-        $this->getJson('/workspaces/1/notes/'.$id)->assertNotFound();
+        $this->deleteJson('/@alpha/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
+        $this->deleteJson('/@alpha/notes/'.$id, $delete)->assertOk()->assertJsonPath('deleted', true);
+        $this->getJson('/@alpha/notes/'.$id)->assertNotFound();
         DB::table('notes')->insert(['id' => $id, 'workspace_id' => 2, 'body' => 'Foreign replacement', 'version' => 1]);
-        $this->deleteJson('/workspaces/1/notes/'.$id, $delete)->assertNotFound();
+        $this->deleteJson('/@alpha/notes/'.$id, $delete)->assertNotFound();
         self::assertSame('Foreign replacement', DB::table('notes')->where('id', $id)->value('body'));
         self::assertSame(4, DB::table('audit_events')->where('event', 'like', 'workspace.note.%')->count());
         self::assertSame('Beta private', DB::table('notes')->where('workspace_id', 2)->value('body'));
         failInserts('fail_note_audit', 'audit_events', 'synthetic_note_audit_failure');
         try {
-            $this->putJson('/workspaces/1/notes/1', ['body' => 'Must roll back', 'expected_version' => 1, 'intent_key' => 'failed-note-audit'])->assertServerError();
+            $this->putJson('/@alpha/notes/1', ['body' => 'Must roll back', 'expected_version' => 1, 'intent_key' => 'failed-note-audit'])->assertServerError();
         } finally {
             allowInserts('fail_note_audit', 'audit_events');
         }
@@ -74,8 +74,8 @@ final class NotesTransportTest extends TestCase
         self::assertFalse(DB::table('note_intents')->where('intent_key', 'failed-note-audit')->exists());
         // Recovery: once the failure clears, the same intent applies exactly once.
         $failed = ['body' => 'Must roll back', 'expected_version' => 1, 'intent_key' => 'failed-note-audit'];
-        $this->putJson('/workspaces/1/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
-        $this->putJson('/workspaces/1/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
+        $this->putJson('/@alpha/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
+        $this->putJson('/@alpha/notes/1', $failed)->assertOk()->assertJsonPath('record.version', 2);
         self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.note.update')->where('details', 'like', '%"note_id":1%')->count());
         $this->postJson('/logout')->assertNoContent();
         $this->withCookie(config('session.cookie'), app('session')->getId());
@@ -83,10 +83,10 @@ final class NotesTransportTest extends TestCase
         User::findOrFail(3)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor3@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
-        $this->getJson('/workspaces/1/notes')->assertOk()->assertJsonPath('can_write', false);
-        $this->postJson('/workspaces/1/notes', ['body' => 'Forbidden viewer note', 'intent_key' => 'viewer-write'])->assertForbidden();
+        $this->getJson('/@alpha/notes')->assertOk()->assertJsonPath('can_write', false);
+        $this->postJson('/@alpha/notes', ['body' => 'Forbidden viewer note', 'intent_key' => 'viewer-write'])->assertForbidden();
         config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.notes' => false]]);
-        $this->getJson('/workspaces/1/notes')->assertForbidden();
+        $this->getJson('/@alpha/notes')->assertForbidden();
         self::assertNull(Workspace::current());
     }
 }

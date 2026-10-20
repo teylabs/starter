@@ -37,11 +37,11 @@ final class CacheGuardTest extends TestCase
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
-        $this->get('/workspaces')->assertRedirect('/workspaces/1/notes');
-        $this->getJson('/workspaces/1/settings')->assertOk();
-        $this->putJson('/workspaces/1/settings', ['display_name' => 'Cached Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'cache-guard'])->assertOk();
-        $this->getJson('/workspaces/1/settings')->assertOk()->assertJsonPath('display_name', 'Cached Alpha');
-        $this->get('/workspaces/1/notes')->assertOk();
+        $this->get('/me/workspaces')->assertRedirect('/notes');
+        $this->getJson('/@alpha/settings')->assertOk();
+        $this->putJson('/@alpha/settings', ['display_name' => 'Cached Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'cache-guard'])->assertOk();
+        $this->getJson('/@alpha/settings')->assertOk()->assertJsonPath('display_name', 'Cached Alpha');
+        $this->get('/@alpha/notes')->assertOk();
         $this->assertNotSame([], $written, 'The flow writes to the cache');
         foreach ($written as $key => $value) {
             $this->assertSame([], $this->objects($value), $key.' caches an object');

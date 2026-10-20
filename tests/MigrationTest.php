@@ -41,6 +41,7 @@ final class MigrationTest extends TestCase
             '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000201_create_permission_tables',
             '0001_01_02_000202_create_kit_operators_table',
+            '0001_01_02_000203_add_slug_to_kit_workspaces_table',
             '0001_01_02_000300_create_kit_access_tables',
             '0001_01_02_000400_create_settings_table',
             '0001_01_02_000401_create_kit_settings_tables',

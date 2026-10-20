@@ -39,7 +39,7 @@ it('signs the first owner in with one click and reaches the app shell', function
         settled($page)->screenshot(filename: 'sign-in');
 
         $page->click('[data-local-login] button')
-            ->assertPathIs("/workspaces/{$workspace}/notes")
+            ->assertPathIs('/notes')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
@@ -53,7 +53,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-shell-nav]', 'Notes')
             ->click('[data-shell-settings]')
             ->click('Workspace settings')
-            ->assertPathIs("/workspaces/{$workspace}/settings")
+            ->assertPathIs('/settings')
             ->assertSeeIn('[data-shell-nav]', 'Notes')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'workspace');

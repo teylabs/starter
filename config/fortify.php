@@ -1,3 +1,3 @@
 <?php
 
-return ['guard' => 'web', 'middleware' => ['web'], 'username' => 'email', 'email' => 'email', 'home' => '/workspaces', 'views' => true, 'features' => []];
+return ['guard' => 'web', 'middleware' => ['web'], 'username' => 'email', 'email' => 'email', 'home' => '/me/workspaces', 'views' => true, 'features' => []];
