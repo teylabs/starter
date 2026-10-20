@@ -86,9 +86,9 @@ final class AccountTest extends TestCase
         $this->assertSame(['Account'], array_column($groups, 'label'));
         $this->assertSame(['profile', 'password', 'security', 'workspaces'], array_column($groups[0]['sections'], 'key'));
         $this->assertSame(['user', 'key-round', 'shield-check', 'building-2'], array_column($groups[0]['sections'], 'icon'));
-        $this->get('/me/profile', $this->inertia())->assertJsonPath('component', 'Workspace/Profile/Edit/Page')->assertJsonPath('props.email', 'actor1@example.test')->assertJsonPath('props.profile_url', '/user/profile-information');
-        $this->get('/me/password', $this->inertia())->assertJsonPath('component', 'Workspace/Password/Edit/Page')->assertJsonPath('props.document_title', 'Password · Account · Product name')->assertJsonPath('props.breadcrumbs.2.title', 'Password');
-        $this->get('/me/security', $this->inertia())->assertJsonPath('component', 'Workspace/Security/Edit/Page')->assertJsonPath('props.two_factor.state', 'off')->assertJsonPath('props.settings_nav.groups.0.sections.2.current', true);
+        $this->get('/me/profile', $this->inertia())->assertJsonPath('component', 'Workspace/Account/Profile/Page')->assertJsonPath('props.email', 'actor1@example.test')->assertJsonPath('props.profile_url', '/user/profile-information');
+        $this->get('/me/password', $this->inertia())->assertJsonPath('component', 'Workspace/Account/Password/Page')->assertJsonPath('props.layout.documentTitle', 'Password · Account · Product name')->assertJsonPath('props.layout.breadcrumbs.2.label', 'Password');
+        $this->get('/me/security', $this->inertia())->assertJsonPath('component', 'Workspace/Account/Security/Page')->assertJsonPath('props.two_factor.state', 'off')->assertJsonPath('props.layout.navigation.0.items.2.current', true);
         $this->postJson('/logout')->assertNoContent();
         $this->flushSession();
         $this->get('/me/security')->assertRedirect('/login');

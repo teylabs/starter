@@ -47,6 +47,25 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->click('[data-confirm-action]')->assertSee('Add a second step to signing in')->assertNoJavaScriptErrors();
         expect($user->fresh()->two_factor_secret)->toBeNull();
 
+        // Sibling sections keep one persistent sublayout: a sentinel on the sidebar's frame survives moving between them (a client visit, no reload) while the current item,
+        // the heading and the trail change; back and forward restore them.
+        $page->navigate('/me/security')->assertPresent('[data-settings-frame]');
+        $page->script('() => { document.querySelector("[data-settings-frame]").dataset.sentinel = "kept"; return true; }');
+        $state = fn (): array => $page->script('() => [document.querySelector("[data-settings-frame]").dataset.sentinel ?? null, document.querySelector("[data-settings-sidebar] [aria-current=page]")?.textContent.trim(), document.querySelector("[data-slot=page-heading]")?.textContent.trim(), location.pathname, [...document.querySelectorAll("[data-shell-breadcrumbs] li")].at(-1)?.textContent.trim()]');
+        expect($state())->toBe(['kept', 'Security', 'Security', '/me/security', 'Security']);
+        $page->click('[data-settings-sidebar] a[href="/me/password"]')->assertPathIs('/me/password');
+        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password', 'Password']);
+        $page->click('[data-settings-sidebar] a[href="/me/profile"]')->assertPathIs('/me/profile');
+        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile', 'Profile']);
+        $page->script('() => { history.back(); return true; }');
+        $page->assertPathIs('/me/password');
+        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password', 'Password']);
+        $page->script('() => { history.forward(); return true; }');
+        $page->assertPathIs('/me/profile');
+        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile', 'Profile']);
+        // Leaving the section for one without a sidebar drops the sublayout and the item does not linger.
+        $page->navigate('/dashboard')->assertMissing('[data-settings-sidebar]');
+
         // Password page and profile page render on the same pieces.
         $page->navigate('/me/password')->assertPresent('[data-form-card] [data-form-actions]')->assertSee('Update password')->assertNoJavaScriptErrors();
         $page->navigate('/me/profile')->assertPresent('#profile-email')->assertNoJavaScriptErrors();

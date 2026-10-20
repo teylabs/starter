@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Avatar, Button, ConfirmDialog, Field, FileInput, FormActions, FormCard, Input, Page, Section, SettingsFrame } from '@kit/ui';
+import { Avatar, Button, ConfirmDialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 // Your profile: your name and email address (Fortify's update; a changed address stays unconfirmed until its link is followed) and your photo. The photo
@@ -19,7 +19,6 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
 </script>
 <template>
     <Page sm>
-        <SettingsFrame>
             <div class="grid gap-6">
                 <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
                 <Form :action="profile_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
@@ -48,6 +47,5 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
                     </ConfirmDialog>
                 </Section>
             </div>
-        </SettingsFrame>
     </Page>
 </template>

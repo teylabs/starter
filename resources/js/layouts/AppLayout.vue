@@ -7,18 +7,18 @@ import { Toaster } from '@/components/ui/sonner';
 import WorkspaceShell from '@/pages/Workspace/Layout.vue';
 
 /*
- * The signed-in shell is tey/kit's (pages/Workspace/Layout.vue), built on the server's `layout` prop (ShellData); its mark is the platform's logomark and APP_NAME.
+ * The signed-in shell is tey/kit's (pages/Workspace/Layout.vue), built on the server's `shell` prop (ShellData); its mark is the platform's logomark and APP_NAME.
  * This wrapper is the app's part: the appearance choice in the account menu, the content width and a quiet footer.
  * The page title is the page's: <Page> renders it, with the page's actions, in the content column. The breadcrumbs are the shell's, shared by gretel from each route's declaration. The shell owns the gutters and the measure, so pages add no outer padding.
  */
 defineOptions({ inheritAttrs: false });
 
-const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
-const layout = computed(() => page.props.layout);
+const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
+const shell = computed(() => page.props.shell);
 </script>
 
 <template>
-    <WorkspaceShell v-if="layout" :layout="layout" width-class="max-w-2k">
+    <WorkspaceShell v-if="shell" :shell="shell" width-class="max-w-2k">
         <template #actions><AppearanceToggle /></template>
         <template #extra>
             <div class="flex min-h-11 items-center justify-between gap-2 px-3 text-sm font-medium text-muted-foreground">
@@ -28,7 +28,7 @@ const layout = computed(() => page.props.layout);
         </template>
         <slot />
         <template #footer>
-            <ShellFooter :footer="layout.footer" />
+            <ShellFooter :footer="shell.footer" />
         </template>
     </WorkspaceShell>
     <Toaster />

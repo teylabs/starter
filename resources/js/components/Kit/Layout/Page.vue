@@ -7,15 +7,15 @@ import FocusPage from './FocusPage.vue';
  * The root of every page, rendered below the shell's breadcrumb sub-bar: the header (title and an `actions` slot), then the content, in one column.
  * the width is a boolean prop (`<Page sm>`: `xs`, `sm`, `md`, `lg`, `xl`, or `full`); `full` or no prop is the whole shell, for lists, tables and grids. A page whose content does not
  * grow with data (a form, a settings section, a detail or confirmation page, an empty state, an account or guest page) declares a focused width.
- * The title is the page's `title` prop (the same label as the breadcrumb and the document title) unless `title` is passed; guest pages outside the shell
+ * The title is the page's `layout.title` (the same decision as the breadcrumb and the document title) unless `title` is passed; guest pages outside the shell
  * show none. `state` swaps the content for the `loading`, `empty` or `error` slot (each has a plain default).
  */
 type PageState = 'ready' | 'loading' | 'empty' | 'error';
 
 const props = withDefaults(defineProps<{ xs?: boolean; sm?: boolean; md?: boolean; lg?: boolean; xl?: boolean; full?: boolean; title?: string; heading?: boolean; state?: PageState }>(), { title: undefined, heading: true, state: 'ready' });
 const inShell = inject('kit.shell', false);
-const page = usePage<{ title?: string }>();
-const headingText = computed(() => (inShell && props.heading ? (props.title ?? page.props.title ?? '') : ''));
+const page = usePage<{ layout?: { title: string }; title?: string }>();
+const headingText = computed(() => (inShell && props.heading ? (props.title ?? page.props.layout?.title ?? page.props.title ?? '') : ''));
 // One width at most: more than one is a mistake, warned about in development. The first focused width given wins; `full`, or none, is the whole shell.
 if (import.meta.env?.DEV && [props.xs, props.sm, props.md, props.lg, props.xl, props.full].filter(Boolean).length > 1) {
     console.warn('<Page>: set one width at most (xs, sm, md, lg, xl or full).');

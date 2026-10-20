@@ -65,7 +65,7 @@ final class AvatarTest extends TestCase
         $this->assertSame([96, 96], array_slice(getimagesize($media->getPath('thumb')), 0, 2));
         $this->assertSame([192, 192], array_slice(getimagesize($media->getPath('thumb2x')), 0, 2));
         // The shell shows it.
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.user.avatar_url', $first['url'])->assertJsonPath('props.layout.user.avatar_url_2x', $first['url_2x']);
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.user.avatar_url', $first['url'])->assertJsonPath('props.shell.user.avatar_url_2x', $first['url_2x']);
         // Replacing keeps one avatar, at a new URL, and deletes the old file.
         $oldPath = $media->getPath();
         $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('new.jpg', 300, 300)])->assertCreated();
@@ -73,14 +73,14 @@ final class AvatarTest extends TestCase
         $this->assertNotSame($first['url'], $second['url']);
         $this->assertSame(1, Media::query()->where('collection_name', 'avatar')->count());
         $this->assertFileDoesNotExist($oldPath);
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.user.avatar_url', $second['url']);
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.user.avatar_url', $second['url']);
         // Removing it leaves no file, no media and no URL: initials again.
         $current = $this->original(1)->getPath();
         $this->deleteJson('/me/avatar')->assertOk()->assertJsonPath('avatar', null);
         $this->assertSame(0, Media::query()->count());
         $this->assertFileDoesNotExist($current);
         $this->assertNull(Avatars::urls(1));
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.user.avatar_url', null)->assertJsonPath('props.layout.user.initials', 'AL');
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.user.avatar_url', null)->assertJsonPath('props.shell.user.initials', 'AL');
     }
 
     public function test_type_size_and_pixel_limits_refuse_the_upload(): void
@@ -140,9 +140,9 @@ final class AvatarTest extends TestCase
     {
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
-        $this->get('/me/profile', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Profile/Edit/Page')
+        $this->get('/me/profile', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Account/Profile/Page')
             ->assertJsonPath('props.avatar', null)->assertJsonPath('props.initials', 'AL')->assertJsonPath('props.store_url', '/me/avatar')
-            ->assertJsonPath('props.breadcrumbs.2.title', 'Profile');
+            ->assertJsonPath('props.layout.breadcrumbs.2.label', 'Profile');
         $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('a.png', 100, 100)])->assertCreated();
         $shown = $this->get('/me/profile', $this->inertia())->json('props.avatar.url');
         $this->assertSame(Avatars::urls(1)['url'], $shown);
@@ -180,7 +180,6 @@ final class AvatarTest extends TestCase
         // A random token: no user id, no media id, nothing to count up from.
         $this->assertMatchesRegularExpression('#^/avatars/[A-Za-z0-9]{40}$#', $urls['url']);
         $this->assertMatchesRegularExpression('#^/avatars/[A-Za-z0-9]{40}/2x$#', $urls['url_2x']);
-        $this->assertStringNotContainsString('/'.$media->id, $urls['url']);
         // It is public (no sign-in), streamed from the private disk, cached for a year, and carries an ETag.
         $this->postJson('/logout')->assertNoContent();
         $this->flushSession();

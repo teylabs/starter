@@ -15,6 +15,8 @@ use Laravel\Pennant\Feature;
 use Tey\Kit\Features\Access\Access;
 use Tey\Kit\Features\Core\Principal;
 use Tey\Kit\Features\Core\Registry;
+use Tey\Kit\Features\Core\ViewModels\AdHocViewModel;
+use Tey\Kit\Features\Core\ViewModels\PageViewModel;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Tey\Kit\Features\Workspaces\WorkspaceUrl;
@@ -76,7 +78,7 @@ final class RecordsController
                 return response()->json(['records' => $records]);
             }
 
-            return Inertia::render('Workspace/Record/Index/Page', ['title' => 'Records', 'records' => $records, 'create_url' => WorkspaceUrl::to($workspace, 'records', null, $request), 'actions' => collect($records)->mapWithKeys(fn (array $record) => [$record['id'] => ['url' => WorkspaceUrl::to($workspace, 'records/'.$record['id'], null, $request)]])->all()]);
+            return Inertia::render('Workspace/Record/Index/Page', new RecordsIndexViewModel($records, WorkspaceUrl::to($workspace, 'records', null, $request), collect($records)->mapWithKeys(fn (array $record) => [$record['id'] => ['url' => WorkspaceUrl::to($workspace, 'records/'.$record['id'], null, $request)]])->all()));
         });
     }
 
@@ -85,7 +87,7 @@ final class RecordsController
         return $this->in($request, $workspace, 'records.read', function () use ($request, $workspace, $record) {
             $found = (array) (DB::table('fixture_records')->where('workspace_id', $workspace)->where('id', $record)->first() ?? abort(404));
 
-            return $this->json($request) ? response()->json($found) : Inertia::render('Workspace/Record/Show/Page', ['title' => 'Record', 'record' => $found, 'list_url' => WorkspaceUrl::to($workspace, 'records', null, $request)]);
+            return $this->json($request) ? response()->json($found) : Inertia::render('Workspace/Record/Show/Page', AdHocViewModel::make()->title('Record')->with(['record' => $found, 'list_url' => WorkspaceUrl::to($workspace, 'records', null, $request)]));
         });
     }
 
@@ -150,5 +152,37 @@ final class Record extends Model
             || ! self::query()->whereKey($this->getOriginal($this->getKeyName()))->exists()) {
             throw new \RuntimeException('workspace_mismatch');
         }
+    }
+}
+
+/** The records list page (a class: it has an action prop). */
+final class RecordsIndexViewModel extends PageViewModel
+{
+    /**
+     * @param  list<array{id: int, workspace_id: int, title: string}>  $records
+     * @param  array<int, array{url: string}>  $actions
+     */
+    public function __construct(private array $records, private string $create_url, private array $actions) {}
+
+    public function title(): string
+    {
+        return 'Records';
+    }
+
+    /** @return list<array{id: int, workspace_id: int, title: string}> */
+    public function records(): array
+    {
+        return $this->records;
+    }
+
+    public function create_url(): string
+    {
+        return $this->create_url;
+    }
+
+    /** @return array<int, array{url: string}> */
+    public function actions(): array
+    {
+        return $this->actions;
     }
 }

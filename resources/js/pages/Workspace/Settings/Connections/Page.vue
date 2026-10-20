@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Button, Checkbox, ConfirmDialog, Field, FormCard, Input, Page, Section, Select, SettingsFrame } from '@kit/ui';
+import { Button, Checkbox, ConfirmDialog, Field, FormCard, Input, Page, Section, Select } from '@kit/ui';
 import { computed } from 'vue';
 
 // Delegated MCP access: approve an authorised client token for this workspace with the scopes it may use, and revoke connections you no longer want (after a confirmation).
@@ -10,7 +10,6 @@ function revoke(url: string) { router.delete(url, { preserveScroll: true }); }
 </script>
 <template>
     <Page lg>
-        <SettingsFrame>
             <div class="grid gap-6">
                 <p v-if="!tokens.length" class="text-sm text-muted-foreground">No authorised client tokens yet. Connect a client first, then approve it here.</p>
                 <Form v-else :action="create_url" method="post" :options="{ preserveScroll: true }" reset-on-success>
@@ -39,6 +38,5 @@ function revoke(url: string) { router.delete(url, { preserveScroll: true }); }
                     </ul>
                 </Section>
             </div>
-        </SettingsFrame>
     </Page>
 </template>

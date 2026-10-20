@@ -2,7 +2,7 @@
     "version": 1,
     "inventory": [
         {
-            "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
+            "path": "resources/js/pages/Workspace/Settings/General/Page.vue",
             "capabilities": [
                 "workspace.settings.read",
                 "workspace.settings.update"
@@ -38,7 +38,7 @@
             "kind": "read",
             "ui": [
                 {
-                    "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
+                    "path": "resources/js/pages/Workspace/Settings/General/Page.vue",
                     "symbol": "props"
                 },
                 {
@@ -182,7 +182,7 @@
             "kind": "write",
             "ui": [
                 {
-                    "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
+                    "path": "resources/js/pages/Workspace/Settings/General/Page.vue",
                     "symbol": "props"
                 },
                 {

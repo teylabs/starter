@@ -1,28 +1,55 @@
 declare namespace Tey {
 export namespace Kit {
 export namespace Features {
+export namespace Core {
+export namespace Data {
+export type Breadcrumb = {
+label: string,
+url: string | null,
+current: boolean,
+};
+export type NavGroup = {
+label: string | null,
+items: Tey.Kit.Features.Core.Data.NavItem[],
+};
+export type NavItem = {
+label: string,
+url: string,
+current: boolean,
+icon: string | null,
+badge: string | null,
+};
+export type PageLayout = {
+navigation: Tey.Kit.Features.Core.Data.NavGroup[],
+title: string,
+documentTitle: string,
+breadcrumbs: Tey.Kit.Features.Core.Data.Breadcrumb[],
+};
+}
+}
 export namespace Mcp {
 export namespace ViewModels {
 export type ConnectionsViewModel = {
-title: string,
-tokens: {
+readonly title: string,
+readonly tokens: {
 id: string,
 label: string,
 }[],
-scopes: {
+readonly scopes: {
 key: string,
 description: string,
 required: boolean,
 }[],
-connections: {
+readonly connections: {
 id: number,
 revoked: boolean,
 expires_at: string | null,
 endpoint: string,
 revoke_url: string,
 }[],
-create_url: string,
-intent_key: string,
+readonly create_url: string,
+readonly intent_key: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
 }
@@ -84,50 +111,61 @@ url: string,
 }
 export namespace ViewModels {
 export type ChallengeViewModel = {
-title: string,
-status: string | null,
-email: string | null,
+readonly title: string,
+readonly status: string | null,
+readonly email: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type DashboardViewModel = {
-title: string,
-workspace: string,
-next_label: string,
-next_url: string,
+readonly title: string,
+readonly workspace: string,
+readonly next_label: string,
+readonly next_url: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type ErrorViewModel = {
-title: string,
-status: number,
-message: string,
-recovery_url: string,
-recovery_label: string,
+readonly title: string,
+readonly status: number,
+readonly message: string,
+readonly recovery_url: string,
+readonly recovery_label: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type InvitationViewModel = {
-title: string,
-state: string,
-message: string,
-invitation: {
+readonly title: string,
+readonly state: string,
+readonly message: string,
+readonly invitation: {
 workspace: string,
 inviter: string | null,
 role: string,
 email: string,
 } | null,
-signed_in_as: string | null,
-accept_url: string,
-register_url: string,
-login_url: string,
-workspace_url: string | null,
+readonly signed_in_as: string | null,
+readonly accept_url: string,
+readonly register_url: string,
+readonly login_url: string,
+readonly workspace_url: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type LoginViewModel = {
-title: string,
+readonly title: string,
+readonly status: string | null,
+readonly localLogin: {
+url: string,
+email: string,
+} | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type PasswordViewModel = {
-title: string,
-update_url: string,
-notice: string | null,
+readonly title: string,
+readonly update_url: string,
+readonly notice: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type PeopleViewModel = {
-title: string,
-members: {
+readonly title: string,
+readonly members: {
 id: number,
 name: string,
 email: string,
@@ -145,7 +183,7 @@ update_url: string,
 destroy_url: string,
 transferable: boolean,
 }[],
-invitations: {
+readonly invitations: {
 id: string,
 email: string,
 role: string,
@@ -156,37 +194,39 @@ invited_by: string | null,
 resend_url: string,
 revoke_url: string,
 }[],
-roles: {
+readonly roles: {
 value: string,
 label: string,
 }[],
-can_manage: boolean,
-invite_url: string,
-search: string,
-sort: string,
-invite_link: string | null,
-can_transfer: boolean,
-transfer_url: string,
+readonly can_manage: boolean,
+readonly invite_url: string,
+readonly search: string,
+readonly sort: string,
+readonly invite_link: string | null,
+readonly can_transfer: boolean,
+readonly transfer_url: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type ProfileViewModel = {
-title: string,
-name: string,
-initials: string,
-avatar: {
+readonly title: string,
+readonly name: string,
+readonly initials: string,
+readonly avatar: {
 url: string,
 url_2x: string,
 } | null,
-store_url: string,
-max_kb: number,
-email: string,
-email_verified: boolean,
-profile_url: string,
-notice: string | null,
-verify_url: string,
+readonly store_url: string,
+readonly max_kb: number,
+readonly email: string,
+readonly email_verified: boolean,
+readonly profile_url: string,
+readonly notice: string | null,
+readonly verify_url: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type SectionsViewModel = {
-title: string,
-groups: {
+readonly title: string,
+readonly groups: {
 label: string,
 sections: {
 key: string,
@@ -196,17 +236,18 @@ icon: string,
 url: string,
 }[],
 }[],
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type SecurityViewModel = {
-title: string,
-two_factor: {
+readonly title: string,
+readonly two_factor: {
 state: string,
 qr_svg: string | null,
 secret_key: string | null,
 codes_left: number,
 recovery_codes: string[],
 },
-sessions: {
+readonly sessions: {
 supported: boolean,
 items: {
 agent: string,
@@ -215,17 +256,18 @@ last_active: string,
 current: boolean,
 }[],
 },
-events: {
+readonly events: {
 type: string,
 label: string,
 ip: string | null,
 agent: string,
 at: string,
 }[],
-two_factor_url: string,
-recovery_codes_url: string,
-sessions_url: string,
-notice: string | null,
+readonly two_factor_url: string,
+readonly recovery_codes_url: string,
+readonly sessions_url: string,
+readonly notice: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
 }
@@ -244,22 +286,24 @@ version: number,
 }
 export namespace ViewModels {
 export type EditSettingsViewModel = {
-title: string,
-settings: Tey.Kit.Features.Settings.Data.SettingsView,
-can_write: boolean,
-update_url: string,
-intent_key: string,
+readonly title: string,
+readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
+readonly can_write: boolean,
+readonly update_url: string,
+readonly intent_key: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
 }
 export namespace Workspaces {
 export namespace ViewModels {
 export type IndexWorkspaceViewModel = {
-title: string,
-workspaces: {
+readonly title: string,
+readonly workspaces: {
 id: number,
 name: string,
 }[],
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
 }

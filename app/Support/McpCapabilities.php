@@ -23,7 +23,7 @@ final class McpCapabilities
 
     private const KIT = 'vendor/tey/kit/src/Features/';
 
-    private const SETTINGS_PAGE = 'resources/js/pages/Workspace/Settings/Edit/Page.vue';
+    private const SETTINGS_PAGE = 'resources/js/pages/Workspace/Settings/General/Page.vue';
 
     private const SETTINGS_CONTROLLER = self::KIT.'Settings/Http/SettingsController.php';
 

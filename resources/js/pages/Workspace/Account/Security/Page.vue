@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section, SettingsFrame } from '@kit/ui';
+import { Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section } from '@kit/ui';
 
 // Security: two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
 // you are signed in on, and your own security log. Turning two-factor off, regenerating the recovery codes and signing out other sessions each ask first.
@@ -9,7 +9,6 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
 </script>
 <template>
     <Page sm>
-        <SettingsFrame>
             <div class="grid gap-6">
                 <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
 
@@ -105,6 +104,5 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                     </ul>
                 </Section>
             </div>
-        </SettingsFrame>
     </Page>
 </template>

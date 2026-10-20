@@ -80,7 +80,7 @@ final class InvitationAcceptTest extends TestCase
         $this->assertSame('register_required', $props['state']);
         $this->assertSame(['workspace' => 'Alpha', 'inviter' => 'Alpha', 'role' => 'Admin', 'email' => 'newcomer@example.test'], $props['invitation']);
         $this->assertSame('Join Alpha', $props['title']);
-        $this->assertSame('Join Alpha · Product name', $this->get('/invitations/'.$token, $this->inertia())->json('props.document_title'));
+        $this->assertSame('Join Alpha · Product name', $this->get('/invitations/'.$token, $this->inertia())->json('props.layout.documentTitle'));
         // The open registration door stays shut; the invitation is the way in, for its own address only.
         $this->postJson('/register', ['name' => 'X', 'email' => 'newcomer@example.test', 'password' => 'password', 'password_confirmation' => 'password'])->assertNotFound();
         $this->postJson('/invitations/'.$token.'/account', ['name' => 'Newcomer'])->assertUnprocessable()->assertJsonValidationErrors('password');

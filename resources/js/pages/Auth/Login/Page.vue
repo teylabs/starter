@@ -2,9 +2,9 @@
 import { Form, Head } from '@inertiajs/vue3';
 import { Button, Checkbox, Field, Input, Page, PasswordInput } from '@kit/ui';
 
-// Registration is closed. `status` and `localLogin` are optional: an app that offers a one-click local sign-in passes the offer (null elsewhere).
+// Registration is closed. `status` and `localLogin` are the view model's: an app that offers a one-click local sign-in passes the offer (null elsewhere).
 // A guest card is not a settings form: no sticky FormActions bar, one full-width primary button, everything aligned to the card's left edge.
-defineProps<Tey.Kit.Features.SessionUi.ViewModels.LoginViewModel & { status?: string; localLogin?: { url: string; email: string } | null }>();
+defineProps<Tey.Kit.Features.SessionUi.ViewModels.LoginViewModel>();
 </script>
 <template>
     <Head :title="title" />

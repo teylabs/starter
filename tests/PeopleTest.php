@@ -69,8 +69,8 @@ final class PeopleTest extends TestCase
     {
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
-        $page = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/People/Index/Page')
-            ->assertJsonPath('props.title', 'People')->assertJsonPath('props.breadcrumbs.2.title', 'People')->assertJsonPath('props.document_title', 'People · Settings · Product name')->json('props');
+        $page = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')
+            ->assertJsonPath('props.title', 'People')->assertJsonPath('props.layout.breadcrumbs.2.label', 'People')->assertJsonPath('props.layout.documentTitle', 'People · Settings · Product name')->json('props');
         $this->assertSame(['Alpha', 'Viewer'], array_column($page['members'], 'name'));
         $this->assertSame(['Owner', 'Viewer'], array_column($page['members'], 'role_label'));
         $this->assertSame([false, true], array_column($page['members'], 'manageable'), 'the owner cannot be managed; the viewer can');

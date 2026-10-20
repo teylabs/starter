@@ -71,8 +71,8 @@ final class FeatureGraphTest extends TestCase
         $this->assertSame(['Core/Bad.php uses Tey\\Kit\\Features\\Workspaces\\Models\\Workspace'], $this->phpViolations($app.'/Core/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Core;\nuse Tey\\Kit\\Features\\Workspaces\\Models\\Workspace;\nfinal class Bad {}"));
         $js = dirname(__DIR__).'/resources/js/pages';
         $this->assertSame(
-            ['Workspace/Settings/Edit/Page.vue imports ../../Layout.vue', 'Workspace/Settings/Edit/Page.vue imports ../../Note/Index/Partials/NoteEditor.vue'],
-            $this->jsViolations($js, $js.'/Workspace/Settings/Edit/Page.vue', "<script setup lang=\"ts\">\nimport Layout from '../../Layout.vue';\nimport NoteEditor from '../../Note/Index/Partials/NoteEditor.vue';\nimport Field from './Partials/Field.vue';\n</script>"),
+            ['Workspace/Settings/General/Page.vue imports ../../Layout.vue', 'Workspace/Settings/General/Page.vue imports ../../Note/Index/Partials/NoteEditor.vue'],
+            $this->jsViolations($js, $js.'/Workspace/Settings/General/Page.vue', "<script setup lang=\"ts\">\nimport Layout from '../../Layout.vue';\nimport NoteEditor from '../../Note/Index/Partials/NoteEditor.vue';\nimport Field from './Partials/Field.vue';\n</script>"),
         );
     }
 

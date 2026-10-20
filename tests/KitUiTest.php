@@ -88,7 +88,7 @@ final class KitUiTest extends TestCase
             $checked[] = $relative;
         }
         $this->assertGreaterThanOrEqual(6, count($checked));
-        $this->assertContains('resources/js/pages/Workspace/Settings/Edit/Page.vue', $checked);
+        $this->assertContains('resources/js/pages/Workspace/Settings/General/Page.vue', $checked);
     }
 
     public function test_hand_rolled_controls_live_only_in_kit_components(): void

@@ -79,26 +79,26 @@ final class BreadcrumbsTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         RecordsFixtureProvider::install();
         $this->signIn(1);
-        $home = ['title' => 'Product name', 'url' => '/', 'is_current_page' => false];
+        $home = ['label' => 'Product name', 'url' => '/', 'current' => false];
         // One workspace: the crumbs link in the short form, whichever form the page was reached by.
         foreach (['/records/1', '/@alpha/records/1'] as $path) {
             $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Record/Show/Page')
-                ->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Records', 'url' => '/records', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/records/1', 'is_current_page' => true]]);
+                ->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => false], ['label' => 'Alpha private', 'url' => '/records/1', 'current' => true]]);
         }
         // A list page is the home icon and itself.
-        $this->get('/records', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Records', 'url' => '/records', 'is_current_page' => true]]);
+        $this->get('/records', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => true]]);
         // The dashboard and settings are siblings under home, not nested.
-        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Dashboard', 'url' => '/dashboard', 'is_current_page' => true]]);
-        $this->get('/settings', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$home, ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => true]]);
+        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Dashboard', 'url' => '/dashboard', 'current' => true]]);
+        $this->get('/settings', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Settings', 'url' => '/settings', 'current' => true]]);
         // Two workspaces: the same trail, in the full form; home is "/" and is named by the workspace.
         $this->addSecondWorkspace();
-        $alpha = ['title' => 'Alpha', 'url' => '/', 'is_current_page' => false];
+        $alpha = ['label' => 'Alpha', 'url' => '/', 'current' => false];
         $this->get('/@alpha/records/1', $this->inertia())->assertOk()
-            ->assertJsonPath('props.breadcrumbs', [$alpha, ['title' => 'Records', 'url' => '/@alpha/records', 'is_current_page' => false], ['title' => 'Alpha private', 'url' => '/@alpha/records/1', 'is_current_page' => true]]);
+            ->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Records', 'url' => '/@alpha/records', 'current' => false], ['label' => 'Alpha private', 'url' => '/@alpha/records/1', 'current' => true]]);
         $this->get('/records/1', $this->inertia())->assertOk()
-            ->assertJsonPath('props.breadcrumbs.0.url', '/')->assertJsonPath('props.breadcrumbs.1.url', '/@alpha/records');
+            ->assertJsonPath('props.layout.breadcrumbs.0.url', '/')->assertJsonPath('props.layout.breadcrumbs.1.url', '/@alpha/records');
         // The personal page is rooted at home too, with no workspace in its own links.
-        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.breadcrumbs', [$alpha, ['title' => 'Account', 'url' => '/me', 'is_current_page' => false], ['title' => 'Workspaces', 'url' => '/me/workspaces', 'is_current_page' => true]]);
+        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Account', 'url' => '/me', 'current' => false], ['label' => 'Workspaces', 'url' => '/me/workspaces', 'current' => true]]);
     }
 
     public function test_every_page_route_has_a_breadcrumb(): void
@@ -127,16 +127,16 @@ final class BreadcrumbsTest extends TestCase
         $this->signIn(1);
         // The last crumb carries its own URL (a link, not plain text) and is marked current; the ancestors are not.
         foreach (['/dashboard', '/settings', '/settings/general', '/records', '/records/1', '/me'] as $path) {
-            $crumbs = $this->get($path, $this->inertia())->assertOk()->json('props.breadcrumbs');
+            $crumbs = $this->get($path, $this->inertia())->assertOk()->json('props.layout.breadcrumbs');
             $last = end($crumbs);
-            $this->assertTrue($last['is_current_page'], $path);
+            $this->assertTrue($last['current'], $path);
             $this->assertSame($path, $last['url'], $path.' links to itself');
-            $this->assertSame([], array_filter(array_slice($crumbs, 0, -1), fn (array $crumb): bool => $crumb['is_current_page']), $path.' marks only the last crumb current');
+            $this->assertSame([], array_filter(array_slice($crumbs, 0, -1), fn (array $crumb): bool => $crumb['current']), $path.' marks only the last crumb current');
         }
         // The component renders every crumb as a link, marks the current one with aria-current and the foreground colour, and ancestors stay muted.
         $vue = (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/Workspace/Partials/Breadcrumbs.vue');
-        $this->assertStringContainsString(":aria-current=\"crumb.is_current_page ? 'page' : undefined\"", $vue);
-        $this->assertStringContainsString("crumb.is_current_page ? 'text-foreground' : ''", $vue);
+        $this->assertStringContainsString(":aria-current=\"crumb.current ? 'page' : undefined\"", $vue);
+        $this->assertStringContainsString("crumb.current ? 'text-foreground' : ''", $vue);
         $this->assertSame(2, substr_count($vue, '<Link '), 'the home icon and the titled crumbs are both links');
         $this->assertStringNotContainsString('<span aria-current', $vue, 'the current crumb is not plain text');
     }

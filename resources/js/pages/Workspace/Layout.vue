@@ -14,35 +14,35 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
  * owns its mark (`mark` slot), what the account menu adds (`extra`), header controls (`actions`, in the header and the drawer), the footer and the width (`widthClass`); the
  * chrome comes from the server's `layout` props.
  */
-const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
-// The document title comes from the server (the page's breadcrumb label and the product), never set per page.
-const page = usePage<{ document_title?: string }>();
-// Pages in this shell render their heading (the `title` prop) and actions inside their <Page>, so it aligns with the content column.
+const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
+// The document title comes from the page's `layout` (composed on the server), never set per page.
+const page = usePage<{ layout?: { documentTitle: string } }>();
+// Pages in this shell render their heading (the layout's `title`) and actions inside their <Page>, so it aligns with the content column.
 provide('kit.shell', true);
 </script>
 <template>
-    <Head :title="page.props.document_title" />
+    <Head :title="page.props.layout?.documentTitle" />
     <div class="flex min-h-svh flex-col bg-background text-foreground">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
-        <header v-if="props.layout.user" class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur" data-shell-bar>
+        <header v-if="props.shell.user" class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur" data-shell-bar>
             <div :class="['mx-auto flex h-16 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
-                <Link :href="props.layout.product.url" class="shrink-0 truncate rounded-md px-1 text-base font-semibold tracking-tight text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-shell-wordmark>
-                    <slot name="mark"><span class="flex items-center gap-2"><img v-if="props.layout.product.logomark" :src="props.layout.product.logomark" alt="" class="size-6" />{{ props.layout.product.name }}</span></slot>
+                <Link :href="props.shell.product.url" class="shrink-0 truncate rounded-md px-1 text-base font-semibold tracking-tight text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-shell-wordmark>
+                    <slot name="mark"><span class="flex items-center gap-2"><img v-if="props.shell.product.logomark" :src="props.shell.product.logomark" alt="" class="size-6" />{{ props.shell.product.name }}</span></slot>
                 </Link>
-                <WorkspaceSwitcher v-if="props.layout.switcher.choices.length > 1" :switcher="props.layout.switcher" :all-url="props.layout.links.switcher" class="hidden lg:flex" />
+                <WorkspaceSwitcher v-if="props.shell.switcher.choices.length > 1" :switcher="props.shell.switcher" :all-url="props.shell.links.switcher" class="hidden lg:flex" />
                 <div class="ml-3 hidden items-center gap-0.5 lg:flex">
-                    <PrimaryNav :navigation="props.layout.navigation" :label="props.layout.switcher.current?.name ?? props.layout.product.name" />
+                    <PrimaryNav :navigation="props.shell.navigation" :label="props.shell.switcher.current?.name ?? props.shell.product.name" />
                 </div>
                 <div class="ml-auto flex shrink-0 items-center gap-2">
-                    <EnvPill v-if="props.layout.env" :env="props.layout.env" />
+                    <EnvPill v-if="props.shell.env" :env="props.shell.env" />
                     <div class="hidden items-center gap-2 lg:flex">
                         <slot name="actions" />
-                        <UserMenu v-if="props.layout.user && props.layout.links.sign_out" :user="props.layout.user" :sign-out-url="props.layout.links.sign_out">
+                        <UserMenu v-if="props.shell.user && props.shell.links.sign_out" :user="props.shell.user" :sign-out-url="props.shell.links.sign_out">
                             <template #extra><slot name="extra" /></template>
                         </UserMenu>
                     </div>
                     <div class="lg:hidden">
-                        <ShellDrawer :layout="props.layout">
+                        <ShellDrawer :shell="props.shell">
                             <template #actions><slot name="actions" /></template>
                             <template #extra><slot name="extra" /></template>
                         </ShellDrawer>

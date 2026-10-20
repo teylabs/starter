@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { Field, FormCard, Input, Page, SettingsFrame, TimezoneSelect } from '@kit/ui';
+import { Field, FormCard, Input, Page, TimezoneSelect } from '@kit/ui';
 
 // General settings: Inertia's <Form> (uncontrolled; every control submits a named value) in a FormCard. The save is always there: a user who may not use it
 // sees the form read-only with the reason, never a form with nothing to press.
@@ -8,7 +8,6 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
 </script>
 <template>
     <Page sm>
-        <SettingsFrame>
             <Form :action="props.update_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
                 <fieldset :disabled="!can_write" class="contents">
                     <FormCard title="General" description="How this workspace is named and which timezone it keeps." submit-label="Save" busy-label="Saving…">
@@ -24,6 +23,5 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
                     </FormCard>
                 </fieldset>
             </Form>
-        </SettingsFrame>
     </Page>
 </template>

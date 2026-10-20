@@ -110,8 +110,8 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertPresent('[data-slot="avatar"] img')
             ->assertNoJavaScriptErrors();
         @unlink($png);
-        // The shell owns the vertical rhythm: the page sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
-        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] [data-slot=\"page\"]").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
+        // The shell owns the vertical rhythm: what the page starts with (its heading column, or the section navigation on a phone) sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
+        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] > :first-child").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
         $page->script('() => document.documentElement.classList.add("dark")');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);

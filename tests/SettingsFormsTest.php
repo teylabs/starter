@@ -226,7 +226,7 @@ final class SettingsFormsTest extends TestCase
     public function test_a_settings_section_is_a_small_page(): void
     {
         // Settings sections beside the sidebar are <Page sm>: General (Settings/Edit) and the profile. The data pages (People, Connections) are full width.
-        foreach (['Workspace/Settings/Edit/Page.vue', 'Workspace/Profile/Edit/Page.vue'] as $page) {
+        foreach (['Workspace/Settings/General/Page.vue', 'Workspace/Account/Profile/Page.vue'] as $page) {
             $this->assertMatchesRegularExpression('/<Page sm[\s>]/', (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/'.$page), $page.' is <Page sm>');
         }
     }

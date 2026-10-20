@@ -4,8 +4,8 @@ import { computed } from 'vue';
 import { Page } from '@kit/ui';
 defineProps<Tey.Kit.Features.Workspaces.ViewModels.IndexWorkspaceViewModel>();
 // Each workspace opens at its first page; the shell's choices already carry the link and what the user may reach.
-const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
-const choices = computed(() => page.props.layout?.switcher.choices ?? []);
+const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
+const choices = computed(() => page.props.shell?.switcher.choices ?? []);
 </script>
 <template>
     <Page sm>

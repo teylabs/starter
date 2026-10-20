@@ -55,16 +55,16 @@ final class PageTitleTest extends TestCase
         $this->signIn(1);
         foreach (['/dashboard' => 'Dashboard · Product', '/settings' => 'Settings · Product', '/records' => 'Records · Product', '/me' => 'Account · Product', '/settings/general' => 'General · Settings · Product', '/records/1' => 'Alpha private · Records · Product'] as $path => $title) {
             // The prop, for client-side visits, and the server-rendered <title>, so the first paint has it and no URL flashes.
-            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('props.document_title', $title);
+            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('props.layout.documentTitle', $title);
             $this->get($path)->assertOk()->assertSee('<title inertia>'.e($title).'</title>', false);
         }
         // With several workspaces the workspace's name is added, before the product.
         $invite = InviteMember::run(User::findOrFail(2), Workspace::findOrFail(2), 'actor1@example.test', new GrantSet(['viewer']));
         AcceptInvitation::run(User::findOrFail(1), $invite->token);
-        $this->get('/@alpha/records', $this->inertia())->assertJsonPath('props.document_title', 'Records · Alpha · Product');
-        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.document_title', 'General · Settings · Alpha · Product');
+        $this->get('/@alpha/records', $this->inertia())->assertJsonPath('props.layout.documentTitle', 'Records · Alpha · Product');
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.layout.documentTitle', 'General · Settings · Alpha · Product');
         // An error names its page once: the heading and the title are the same label.
-        $this->get('/@nobody/records', $this->inertia())->assertNotFound()->assertJsonPath('props.document_title', 'Page not found · Product')->assertJsonPath('props.title', 'Page not found');
+        $this->get('/@nobody/records', $this->inertia())->assertNotFound()->assertJsonPath('props.layout.documentTitle', 'Page not found · Product')->assertJsonPath('props.title', 'Page not found');
     }
 
     public function test_no_page_has_a_blank_or_url_title(): void
@@ -83,7 +83,7 @@ final class PageTitleTest extends TestCase
             if ($response->isRedirect() || $response->getStatusCode() >= 500 || ! str_contains((string) $response->headers->get('Content-Type'), 'json')) {
                 continue;
             }
-            $title = (string) $response->json('props.document_title');
+            $title = (string) $response->json('props.layout.documentTitle');
             $this->assertNotSame('', trim($title), $path.' has a blank title');
             $this->assertDoesNotMatchRegularExpression('#^(https?:|/)#', $title, $path.' has a URL for a title');
             $this->assertStringEndsWith('Product', $title, $path);

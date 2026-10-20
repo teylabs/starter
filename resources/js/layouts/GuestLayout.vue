@@ -13,12 +13,12 @@ withDefaults(
     { title: '', description: '', wide: false, showHeading: false },
 );
 
-const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData; document_title?: string }>();
-const product = computed(() => page.props.layout?.product.name ?? '');
+const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData; layout?: { documentTitle: string } }>();
+const product = computed(() => page.props.shell?.product.name ?? '');
 </script>
 
 <template>
-    <Head :title="page.props.document_title" />
+    <Head :title="page.props.layout?.documentTitle" />
     <div
         class="flex min-h-svh flex-col bg-muted/40 text-foreground"
         :class="

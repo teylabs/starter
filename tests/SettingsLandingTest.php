@@ -71,15 +71,15 @@ final class SettingsLandingTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         foreach (['/@alpha/settings/general', '/settings/general'] as $path) {
-            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/Edit/Page');
+            $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/General/Page');
         }
         // The Connections section is a page of the same shape (its own tests set up the OAuth tables it reads).
         $this->assertTrue(Route::has('workspaces.connections.index') && Route::has('short.workspaces.connections.index'));
         $this->assertStringEndsWith('/@alpha/settings/connections', route('workspaces.connections.index', ['workspace' => 'alpha']));
         // Settings is one link in the nav, to the landing page; the sections are not.
-        $this->get('/settings/general', $this->inertia())->assertJsonPath('props.layout.navigation.1', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
-            ->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => false], ['title' => 'General', 'url' => '/settings/general', 'is_current_page' => true]]);
-        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.layout.navigation.1.current', true)->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Settings', 'url' => '/settings', 'is_current_page' => true]]);
+        $this->get('/settings/general', $this->inertia())->assertJsonPath('props.shell.navigation.1', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
+            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Settings', 'url' => '/settings', 'current' => false], ['label' => 'General', 'url' => '/settings/general', 'current' => true]]);
+        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Settings', 'url' => '/settings', 'current' => true]]);
     }
 
     public function test_the_personal_landing_page_lists_the_personal_sections(): void
@@ -88,7 +88,7 @@ final class SettingsLandingTest extends TestCase
         $this->signIn(1);
         $this->get('/me', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
             ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'url' => '/me/workspaces']]]])
-            ->assertJsonPath('props.breadcrumbs', [['title' => 'Product name', 'url' => '/', 'is_current_page' => false], ['title' => 'Account', 'url' => '/me', 'is_current_page' => true]]);
+            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Account', 'url' => '/me', 'current' => true]]);
         $this->getJson('/me')->assertOk()->assertJsonPath('sections.3.key', 'workspaces');
         $this->postJson('/logout')->assertNoContent();
         $this->get('/me')->assertRedirect('/login');
@@ -112,22 +112,23 @@ final class SettingsLandingTest extends TestCase
     {
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
-        // The sidebar is the same server data as the landing cards, plus which one is shown; the landing pages (the card grids) have none.
+        // The section navigation is the page's `layout.navigation`: the same server data as the landing cards, with the shown one current. The landing pages (the
+        // card grids) and the dashboard have none, and the empty list clears what the previous page showed.
         foreach (['/settings/general', '/@alpha/settings/general'] as $path) {
-            $nav = $this->get($path, $this->inertia())->assertOk()->json('props.settings_nav');
-            $this->assertSame('Workspace', $nav['groups'][0]['label']);
-            $this->assertSame([['general', true], ['people', false], ['connections', false]], array_map(fn (array $section): array => [$section['key'], $section['current']], $nav['groups'][0]['sections']));
-            $this->assertSame('sliders-horizontal', $nav['groups'][0]['sections'][0]['icon']);
+            $nav = $this->get($path, $this->inertia())->assertOk()->json('props.layout.navigation');
+            $this->assertCount(1, $nav);
+            $this->assertSame('Workspace', $nav[0]['label']);
+            $this->assertSame([['General', true], ['People', false], ['Connections', false]], array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']));
+            $this->assertSame('sliders-horizontal', $nav[0]['items'][0]['icon']);
         }
-        $this->get('/settings', $this->inertia())->assertJsonPath('props.settings_nav', null);
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.settings_nav', null);
-        // A viewer's sidebar lists only what the viewer may open.
+        $this->get('/settings', $this->inertia())->assertJsonPath('props.layout.navigation', []);
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.navigation', []);
+        // A viewer's navigation lists only what the viewer may open.
         app(Registry::class)->settingsSection('workspace', 'owner-only', 'Owner only', 'Needs write access.', 'settings.write', 'Workspace', 30);
-        $keys = array_column($this->get('/settings/general', $this->inertia())->json('props.settings_nav.groups.0.sections'), 'key');
-        $this->assertContains('owner-only', $keys);
+        $labels = array_column($this->get('/settings/general', $this->inertia())->json('props.layout.navigation.0.items'), 'label');
+        $this->assertContains('Owner only', $labels);
         $this->postJson('/logout')->assertNoContent();
         $this->signIn(3);
-        $this->get('/settings/connections', $this->inertia());
-        $this->assertNotContains('owner-only', array_column($this->get('/settings/general', $this->inertia())->json('props.settings_nav.groups.0.sections') ?? [], 'key'));
+        $this->assertNotContains('Owner only', array_column($this->get('/settings/general', $this->inertia())->json('props.layout.navigation.0.items') ?? [], 'label'));
     }
 }

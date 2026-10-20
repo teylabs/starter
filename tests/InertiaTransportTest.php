@@ -36,8 +36,8 @@ final class InertiaTransportTest extends TestCase
         RecordsFixtureProvider::install();
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
-            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.layout.user', null)
-            ->assertJsonPath('props.layout.switcher.choices', [])->assertJsonPath('props.layout.navigation', []);
+            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.shell.user', null)
+            ->assertJsonPath('props.shell.switcher.choices', [])->assertJsonPath('props.shell.navigation', []);
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
@@ -48,9 +48,9 @@ final class InertiaTransportTest extends TestCase
         $this->get('/', $inertia)->assertRedirect('/me/workspaces');
         $this->get('/@alpha/records', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'Workspace/Record/Index/Page')->assertJsonPath('props.records.0.title', 'Alpha private')->assertJsonCount(1, 'props.records')
-            ->assertJsonPath('props.layout.switcher.current.id', 1)->assertJsonCount(3, 'props.layout.navigation')->assertJsonPath('props.layout.navigation.0.label', 'Dashboard')->assertJsonPath('props.layout.navigation.1.label', 'Records')
-            ->assertJsonPath('props.layout.navigation.1.current', true)->assertJsonPath('props.layout.navigation.2.label', 'Settings')
-            ->assertJsonPath('props.layout.navigation.2.current', false);
+            ->assertJsonPath('props.shell.switcher.current.id', 1)->assertJsonCount(3, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.0.label', 'Dashboard')->assertJsonPath('props.shell.navigation.1.label', 'Records')
+            ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.navigation.2.label', 'Settings')
+            ->assertJsonPath('props.shell.navigation.2.current', false);
         // A write redirects back to the list, in the short form for a user with one workspace; a validation error returns to the form.
         $this->post('/@alpha/records', ['title' => 'Inertia-created'], $inertia)->assertRedirect('/records');
         $this->get('/@alpha/records', $inertia)->assertOk()->assertJsonCount(2, 'props.records')->assertJsonPath('props.records.1.title', 'Inertia-created');
@@ -63,7 +63,7 @@ final class InertiaTransportTest extends TestCase
         $this->get('/@alpha/records', $inertia)->assertOk()->assertJsonCount(1, 'props.records');
         // Another workspace's record is not found, never shown.
         $this->get('/@alpha/records/2', $inertia)->assertNotFound();
-        $settings = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Settings/Edit/Page')->assertJsonPath('props.can_write', true)->json('props');
+        $settings = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Settings/General/Page')->assertJsonPath('props.can_write', true)->json('props');
         $payload = ['display_name' => 'Inertia Alpha', 'timezone' => 'America/Toronto', 'expected_version' => $settings['settings']['version'], 'intent_key' => $settings['intent_key']];
         $this->put('/@alpha/settings/general', $payload, $inertia)->assertStatus(303)->assertRedirect('/settings/general');
         $payload['intent_key'] = 'stale-inertia';
@@ -71,11 +71,11 @@ final class InertiaTransportTest extends TestCase
             ->assertJsonPath('component', 'Workspace/Error/Page')->assertJsonPath('props.status', 409)
             ->assertJsonPath('props.message', 'These settings changed since you opened the form. Reload and review the current values.');
         $this->get('/@beta/records', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page')
-            ->assertJsonPath('props.layout.switcher.current', null)->assertJsonCount(1, 'props.layout.switcher.choices');
+            ->assertJsonPath('props.shell.switcher.current', null)->assertJsonCount(1, 'props.shell.switcher.choices');
         config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.records' => true]]);
         Feature::define('workspace.records', fn (): bool => false);
-        $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonCount(2, 'props.layout.navigation')->assertJsonPath('props.layout.navigation.1.label', 'Settings')
-            ->assertJsonPath('props.layout.navigation.1.current', true)->assertJsonPath('props.layout.switcher.choices.0.url', '/dashboard');
+        $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonCount(2, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.1.label', 'Settings')
+            ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.switcher.choices.0.url', '/dashboard');
         $this->get('/@alpha/records', $inertia)->assertForbidden()->assertJsonPath('component', 'Workspace/Error/Page');
         Feature::define('workspace.records', fn (): bool => true);
         config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true]]);

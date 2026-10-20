@@ -61,14 +61,14 @@ final class BrandVariantsTest extends TestCase
         $this->local(true);
         $this->get('/dashboard?brand=fill-one')->assertOk()->assertSee(':root{--primary:#2563eb;--primary-foreground:#ffffff;--ring:#1d4ed8', false)->assertSee('content="#2563eb"', false);
         // It stays for the session, the environment pill names it, and a second preset replaces it.
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.env', 'local · preset: fill-one');
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.env', 'local · preset: fill-one');
         $mono = $this->get('/dashboard?brand=mono-one')->assertOk();
         $mono->assertSee('[data-shell-bar]{--background:#050505', false)->assertDontSee('--primary:#2563eb', false);
         // An unknown name, or none, goes back to the configured brand.
         $this->get('/dashboard?brand=nonsense')->assertOk()->assertDontSee('--brand-marker', false);
         $this->get('/dashboard?brand=fill-one');
         $this->get('/dashboard?brand=')->assertOk()->assertDontSee('--brand-marker', false);
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.layout.env', 'local');
+        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.env', 'local');
     }
 
     public function test_the_switch_is_ignored_outside_a_local_environment(): void

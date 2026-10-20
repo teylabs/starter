@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Avatar, Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section, Select, SettingsFrame } from '@kit/ui';
+import { Avatar, Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section, Select } from '@kit/ui';
 import { computed, ref } from 'vue';
 
 // Settings › People: the members (avatar, name, email, role, joined), the invitations still open, invite by email with a role, and transfer ownership. The list is
@@ -20,7 +20,6 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
 </script>
 <template>
     <Page lg>
-        <SettingsFrame>
             <div class="grid gap-6">
                 <Form :action="invite_url" method="post" :options="{ preserveScroll: true }" reset-on-success>
                     <fieldset :disabled="!can_manage" class="contents">
@@ -92,6 +91,5 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
                     </ul>
                 </Section>
             </div>
-        </SettingsFrame>
     </Page>
 </template>

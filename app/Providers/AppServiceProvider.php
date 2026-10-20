@@ -12,6 +12,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Fortify;
 use Tey\Concierge\LocalAuth\LocalLogin;
+use Tey\Kit\Features\SessionUi\ViewModels\LoginViewModel;
 
 /** Register supported package resources; booting never executes migrations or seeds. */
 final class AppServiceProvider extends ServiceProvider
@@ -33,6 +34,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->commands([FirstOwnerCommand::class]);
         // The kit's sign-in page takes the status and the local offer as extra props; this overrides session-ui's loginView with them. Concierge decides
         // whether the one-click local sign-in is offered: the offer is null wherever it isn't available.
-        Fortify::loginView(fn () => Inertia::render('Auth/Login/Page', ['title' => 'Sign in', 'status' => session('status'), 'localLogin' => app(LocalLogin::class)->offer()]));
+        Fortify::loginView(fn () => Inertia::render('Auth/Login/Page', new LoginViewModel('Sign in', session('status'), app(LocalLogin::class)->offer()?->toArray())));
     }
 }

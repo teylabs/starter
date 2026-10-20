@@ -65,7 +65,7 @@ final class HomeLandingTest extends TestCase
         $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor2@example.test', new GrantSet(['viewer']));
         AcceptInvitation::run(User::findOrFail(2), $invite->token);
         $this->get('/me/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
-            ->assertJsonPath('props.layout.user.name', 'Beta')->assertJsonPath('props.layout.product.name', config('app.name'))
-            ->assertJsonCount(2, 'props.layout.switcher.choices')->assertJsonPath('props.layout.switcher.choices.0.url', '/@alpha/dashboard');
+            ->assertJsonPath('props.shell.user.name', 'Beta')->assertJsonPath('props.shell.product.name', config('app.name'))
+            ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.url', '/@alpha/dashboard');
     }
 }

@@ -40,7 +40,7 @@ export type AppearanceProps = Record<string, never>;
 /** A settings section's icon by its lucide name (kebab case); an unknown name is the generic Settings icon. */
 export interface SectionIconProps { name?: string }
 
-/** The frame of a settings section's page: the sidebar of the sections the user may open (the server's `settings_nav`, `aria-current` on the shown one), and the content in the default slot. */
+/** The frame of a settings section's page: the sidebar of the sections the user may open (the page's `layout.navigation`, `aria-current` on the shown one), and the content in the default slot. */
 export type SettingsFrameProps = Record<string, never>;
 
 /** A person's photo (`src`, `src2x`) or their initials when there is none; `large` is the profile size. */
