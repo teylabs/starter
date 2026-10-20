@@ -35,7 +35,7 @@ const maxWidthClass = computed(() => maxWidths[props.size]);
 <template>
     <div data-slot="focus-page" :class="['mx-auto w-full', maxWidthClass, props.class]">
         <div v-if="headingText || $slots.actions" class="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-2" data-slot="page-header">
-            <h1 v-if="headingText" class="font-serif text-4xl tracking-tight [font-weight:var(--font-display-weight)]">{{ headingText }}</h1>
+            <h1 v-if="headingText" data-slot="page-heading" class="text-3xl font-semibold tracking-tight">{{ headingText }}</h1>
             <div v-if="$slots.actions" class="flex items-center gap-2"><slot name="actions" /></div>
         </div>
         <slot />
