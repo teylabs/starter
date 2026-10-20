@@ -9,12 +9,12 @@ import WorkspaceShell from '@/pages/Workspace/Layout.vue';
 
 /*
  * The signed-in shell is tey/kit's (pages/Workspace/Layout.vue), built on the server's `layout` prop (ShellData); its mark is the platform's logomark and APP_NAME.
- * This wrapper is the app's part: the appearance choice in the account menu, the content width, the
- * page title, and a quiet footer. The breadcrumbs are the shell's, shared by gretel from each route's declaration. The shell owns the gutters and the measure, so pages add no outer padding.
+ * This wrapper is the app's part: the appearance choice in the account menu, the content width and a quiet footer.
+ * The page title is the page's: FocusPage renders it, with the page's actions, in the content column. The breadcrumbs are the shell's, shared by gretel from each route's declaration. The shell owns the gutters and the measure, so pages add no outer padding.
  */
 defineOptions({ inheritAttrs: false });
 
-const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData; title?: string }>();
+const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
 const layout = computed(() => page.props.layout);
 </script>
 
@@ -27,7 +27,6 @@ const layout = computed(() => page.props.layout);
                 <AppearanceChoice />
             </div>
         </template>
-        <h1 v-if="page.props.title" class="mb-6 font-serif text-4xl tracking-tight [font-weight:var(--font-display-weight)]">{{ page.props.title }}</h1>
         <slot />
         <template #footer>
             <ShellFooter :footer="layout.footer" />

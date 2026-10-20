@@ -47,7 +47,7 @@ final class KitUiTest extends TestCase
         preg_match('/const maxWidths[^{]*\{(.*?)\};/s', $vue, $lookup);
         preg_match_all("/(\w+): '([^']+)'/", $lookup[1] ?? '', $pairs, PREG_SET_ORDER);
         // Each size maps to its whole class string.
-        $this->assertSame(['xs' => 'max-w-2xl', 'sm' => 'max-w-3xl', 'md' => 'max-w-5xl', 'lg' => 'max-w-7xl', 'xl' => 'max-w-[96rem]'], array_column($pairs, 2, 1));
+        $this->assertSame(['xs' => 'max-w-2xl', 'sm' => 'max-w-3xl', 'md' => 'max-w-5xl', 'lg' => 'max-w-7xl', 'xl' => 'max-w-[96rem]', 'full' => 'max-w-none'], array_column($pairs, 2, 1));
         // Never interpolated: no template literal or concatenation builds a class from the size.
         $code = preg_replace('#/\*.*?\*/#s', '', $vue);
         $this->assertDoesNotMatchRegularExpression('/`[^`]*max-w-[^`]*\$\{|max-w-[\'"]\s*\+|\+\s*[\'"]max-w/', $code);

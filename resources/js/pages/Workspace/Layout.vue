@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
+import { provide } from 'vue';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import EnvPill from './Partials/EnvPill.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
@@ -16,6 +17,8 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
 const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
 // The document title comes from the server (the page's breadcrumb label and the product), never set per page.
 const page = usePage<{ document_title?: string }>();
+// Pages in this shell render their heading (the `title` prop) and actions inside their FocusPage, so it aligns with the content column.
+provide('kit.shell', true);
 </script>
 <template>
     <Head :title="page.props.document_title" />
@@ -46,10 +49,15 @@ const page = usePage<{ document_title?: string }>();
                     </div>
                 </div>
             </div>
+            <!-- The trail is chrome: a thin sub-bar under the header, at the shell gutter, in the same place on every page. -->
+            <div class="border-t border-border/60">
+                <div :class="['mx-auto flex min-h-10 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
+                    <Breadcrumbs />
+                </div>
+            </div>
         </header>
         <main id="main" class="flex-1">
             <div :class="['mx-auto w-full px-4 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-10 lg:px-8', props.widthClass]" data-shell-content>
-                <Breadcrumbs />
                 <slot />
             </div>
         </main>

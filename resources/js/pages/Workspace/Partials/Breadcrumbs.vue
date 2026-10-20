@@ -10,7 +10,7 @@ const page = usePage<{ breadcrumbs?: Crumb[] }>();
 const breadcrumbs = computed(() => page.props.breadcrumbs ?? []);
 </script>
 <template>
-    <nav aria-label="Breadcrumb" class="mb-4 min-h-6" data-shell-breadcrumbs>
+    <nav aria-label="Breadcrumb" class="py-2" data-shell-breadcrumbs>
         <ol v-if="breadcrumbs.length" class="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
             <li v-for="(crumb, index) in breadcrumbs" :key="crumb.url" class="flex items-center gap-1">
                 <ChevronRight v-if="index > 0" class="size-3.5" aria-hidden="true" />

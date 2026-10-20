@@ -8,7 +8,7 @@ function submit() { form.post('/login', { onFinish: () => form.reset('password')
 <template>
     <Head :title="title" />
     <main>
-        <FocusPage size="xs">
+        <FocusPage size="xs" :heading="false">
         <h1>{{ title }}</h1>
         <p>Use your invited account. Registration is closed.</p>
         <form @submit.prevent="submit">

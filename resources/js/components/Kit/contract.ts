@@ -16,14 +16,14 @@ export interface SelectProps { id?: string; options: { value: string; label: str
 /** A timezone select (`v-model`: an IANA zone name): Select over the zones the browser knows. */
 export interface TimezoneSelectProps { id?: string; disabled?: boolean; invalid?: boolean }
 
-/** A checkbox (`v-model`: boolean) with its label in the default slot. */
+/** A checkbox (`v-model`: boolean) with its label in the default slot. In the shell it renders the page header (the `title` prop and an `actions` slot) above the content. */
 export interface CheckboxProps { id: string; disabled?: boolean }
 
 /** A button: `primary`, `secondary` or `destructive`; a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
 export interface ButtonProps { variant?: 'primary' | 'secondary' | 'destructive'; type?: 'submit' | 'button' }
 
-/** The page measure: a centred column at `xs` (42rem), `sm` (48rem), `md` (64rem), `lg` (80rem, the default) or `xl` (96rem), in the default slot. It adds no padding: the shell owns the gutters. */
-export interface FocusPageProps { size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' }
+/** The page measure: a centred column at `xs` (42rem), `sm` (48rem), `md` (64rem), `lg` (80rem, the default) `xl` (96rem) or `full` (no cap, for fluid data pages), in the default slot. It adds no padding: the shell owns the gutters. */
+export interface FocusPageProps { size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'; title?: string; heading?: boolean }
 
 /** The row of buttons that ends a form (default slot). No props. */
 export type FormActionsProps = Record<string, never>;
