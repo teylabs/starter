@@ -21,7 +21,7 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 | `laravel/mcp` | The MCP web server and its tools ([mcp-capabilities.json](mcp-capabilities.json)). |
 | `laravel/nightwatch` | Monitoring, with committed sampling (`config/nightwatch.php`). |
 | `lorisleiva/laravel-actions` | Used by `WorkspaceProfile`. |
-| `glhd/gretel`, `spatie/laravel-query-builder`, Pest (with the browser plugin), Larastan, Boost, Pail, Pao, Tinker | Tooling, or installed and not yet adopted by a feature. |
+| `spatie/laravel-query-builder`, Pest (with the browser plugin), Larastan, Boost, Pail, Pao, Tinker | Tooling, or installed and not yet adopted by a feature. |
 
 ## Host layout
 

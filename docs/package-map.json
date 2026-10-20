@@ -2,12 +2,6 @@
   "contract_version": "0.1.0",
   "packages": [
     {
-      "package": "glhd/gretel",
-      "constraint": "^1.10",
-      "locked": "1.10.0",
-      "state": "installed-not-feature-accepted"
-    },
-    {
       "package": "inertiajs/inertia-laravel",
       "constraint": "^3.0",
       "locked": "v3.5.1",
