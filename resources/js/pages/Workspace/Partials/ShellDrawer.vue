@@ -3,7 +3,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Menu } from '@lucide/vue';
 import { onBeforeUnmount, ref } from 'vue';
 import UserAvatar from './UserAvatar.vue';
-import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
+import { Button, Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
 
 // Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
 defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData }>();
@@ -18,10 +18,10 @@ onBeforeUnmount(stop);
 <template>
     <Sheet v-if="layout.user" v-model:open="open">
         <SheetTrigger as-child>
-            <button type="button" class="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-medium text-foreground ring-1 ring-border hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-shell-menu-button>
+            <Button variant="secondary" type="button" class="min-h-11 gap-2 px-3" data-shell-menu-button>
                 <Menu class="size-4" aria-hidden="true" />
                 Menu
-            </button>
+            </Button>
         </SheetTrigger>
         <SheetContent side="right" class="w-80 max-w-[85vw] gap-0 overflow-y-auto p-0" data-shell-sheet>
             <div class="flex h-16 items-center border-b border-border px-4">

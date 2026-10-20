@@ -1,7 +1,7 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
-import { initializeTheme } from '@/composables/useAppearance';
+import { initializeTheme } from '@kit/ui';
 import AppLayout from '@/layouts/AppLayout.vue';
 import GuestLayout from '@/layouts/GuestLayout.vue';
 

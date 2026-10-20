@@ -36,7 +36,7 @@ final class LocalLoginOfferTest extends TestCase
             $this->app->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
             $this->app['router']->getRoutes()->refreshNameLookups();
 
-            $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('component', 'Auth/SignIn/Page')
+            $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('component', 'Auth/Login/Page')
                 ->assertJsonPath('props.localLogin', ['url' => '/local-login', 'email' => 'owner@example.com']);
             $this->withSession(['_token' => 'local-token'])->post('/local-login', ['_token' => 'local-token'])->assertRedirect('/');
             $this->assertAuthenticatedAs($owner);
@@ -48,7 +48,7 @@ final class LocalLoginOfferTest extends TestCase
 
     public function test_the_offer_is_absent_when_concierge_says_it_is_unavailable(): void
     {
-        $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('component', 'Auth/SignIn/Page')
+        $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('component', 'Auth/Login/Page')
             ->assertJsonPath('props.localLogin', null);
     }
 

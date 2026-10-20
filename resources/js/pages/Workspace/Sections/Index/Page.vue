@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { FocusPage } from '@kit/ui';
+import { Page } from '@kit/ui';
 // A settings landing page: the registered sections, grouped and in the registry's order, each with a line saying what it holds.
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
 </script>
 <template>
-    <FocusPage size="md">
+    <Page md>
     <p v-if="!groups.length">There is nothing to set up here yet.</p>
     <section v-for="group in groups" :key="group.label" class="mb-8">
         <h2 class="mb-2 text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
@@ -18,5 +18,5 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
             </li>
         </ul>
     </section>
-    </FocusPage>
+    </Page>
 </template>

@@ -31,8 +31,8 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(InstalledVersions::getInstallPath('laravel/passport').'/database/migrations');
         $this->commands([FirstOwnerCommand::class]);
-        // The designed sign-in page replaces session-ui's unstyled starting point; it boots after the kit. Concierge decides
+        // The kit's sign-in page takes the status and the local offer as extra props; this overrides session-ui's loginView with them. Concierge decides
         // whether the one-click local sign-in is offered: the offer is null wherever it isn't available.
-        Fortify::loginView(fn () => Inertia::render('Auth/SignIn/Page', ['title' => 'Sign in', 'status' => session('status'), 'localLogin' => app(LocalLogin::class)->offer()]));
+        Fortify::loginView(fn () => Inertia::render('Auth/Login/Page', ['title' => 'Sign in', 'status' => session('status'), 'localLogin' => app(LocalLogin::class)->offer()]));
     }
 }

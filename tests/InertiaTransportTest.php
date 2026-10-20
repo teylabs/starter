@@ -36,7 +36,7 @@ final class InertiaTransportTest extends TestCase
         RecordsFixtureProvider::install();
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
-            ->assertJsonPath('component', 'Auth/SignIn/Page')->assertJsonPath('props.layout.user', null)
+            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.layout.user', null)
             ->assertJsonPath('props.layout.switcher.choices', [])->assertJsonPath('props.layout.navigation', []);
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);

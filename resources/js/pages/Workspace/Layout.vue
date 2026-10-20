@@ -17,7 +17,7 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
 const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
 // The document title comes from the server (the page's breadcrumb label and the product), never set per page.
 const page = usePage<{ document_title?: string }>();
-// Pages in this shell render their heading (the `title` prop) and actions inside their FocusPage, so it aligns with the content column.
+// Pages in this shell render their heading (the `title` prop) and actions inside their <Page>, so it aligns with the content column.
 provide('kit.shell', true);
 </script>
 <template>

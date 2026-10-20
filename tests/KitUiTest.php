@@ -22,7 +22,7 @@ final class KitUiTest extends TestCase
         $manifest = json_decode((string) file_get_contents(dirname(__DIR__).'/docs/generation-manifest.json'), true);
         $checked = 0;
         foreach ($manifest['kit_generated']['paths'] as $path) {
-            if (! str_starts_with($path, 'resources/js/pages/') || str_ends_with($path, '/Auth/Login/')) {
+            if (! str_starts_with($path, 'resources/js/pages/') || str_ends_with($path, '/Auth/Login/Page.vue')) {
                 continue;
             }
             $files = is_dir(dirname(__DIR__).'/'.$path) ? new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/'.$path, FilesystemIterator::SKIP_DOTS)) : [new SplFileInfo(dirname(__DIR__).'/'.$path)];
@@ -41,7 +41,7 @@ final class KitUiTest extends TestCase
         $this->assertFileExists(dirname(__DIR__).'/resources/js/components/Kit/contract.ts');
     }
 
-    public function test_focus_page_sizes_are_a_static_lookup(): void
+    public function test_page_widths_are_a_static_lookup(): void
     {
         $vue = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/FocusPage.vue');
         preg_match('/const maxWidths[^{]*\{(.*?)\};/s', $vue, $lookup);
@@ -55,33 +55,70 @@ final class KitUiTest extends TestCase
         $this->assertStringContainsString("'mx-auto w-full'", $vue);
         // The shell owns the gutters: the primitive adds no padding of its own.
         $this->assertDoesNotMatchRegularExpression('/(?<![\w-])p[xytblr]?-\d/', substr($vue, strpos($vue, '<template>')));
-        $this->assertStringContainsString("export { default as FocusPage } from './Layout/FocusPage.vue';", (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/index.ts'));
+        $index = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/index.ts');
+        $this->assertStringContainsString("export { default as Page } from './Layout/Page.vue';", $index);
+        // FocusPage is internal to <Page>, never exported.
+        $this->assertStringNotContainsString('FocusPage', $index);
+        // Widths are boolean props (`<Page sm>`), none is full; the heading carries its own utilities, not a stylesheet rule.
+        $page = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/Page.vue');
+        $this->assertStringContainsString('xs?: boolean; sm?: boolean; md?: boolean; lg?: boolean; xl?: boolean; full?: boolean', $page);
+        $this->assertStringContainsString("?? 'full'", $page);
+        $this->assertStringContainsString('font-serif', $page);
+        $this->assertStringNotContainsString('page-heading', (string) file_get_contents(dirname(__DIR__).'/resources/css/app.css'));
     }
 
-    public function test_every_kit_page_uses_focus_page_unless_it_is_a_fluid_data_page(): void
+    public function test_every_kit_page_roots_in_page_and_fixed_content_declares_a_width(): void
     {
-        // Fluid data pages (lists, tables, grids that grow with data) use the full width. Fixed-content pages, forms, settings sections,
-        // detail and confirmation pages, empty states and guest pages must sit in a FocusPage. Add a page here only when it is fluid.
-        $fluid = [];
-        $manifest = json_decode((string) file_get_contents(dirname(__DIR__).'/docs/generation-manifest.json'), true);
+        // Every page roots in <Page>; the default is full, for lists, tables and grids that grow with data. A page whose content does not
+        // grow (forms, settings sections, detail and confirmation pages, empty states, account and guest pages) declares a focused width
+        // (`<Page sm>`). Add a page to $full only when it is a full data page.
+        $full = [];
         $checked = [];
-        foreach ($manifest['kit_generated']['paths'] as $path) {
-            if (! str_starts_with($path, 'resources/js/pages/')) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js/pages', FilesystemIterator::SKIP_DOTS)) as $file) {
+            $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
+            if (basename($relative) !== 'Page.vue') {
                 continue;
             }
-            $files = is_dir(dirname(__DIR__).'/'.$path) ? new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/'.$path, FilesystemIterator::SKIP_DOTS)) : [new SplFileInfo(dirname(__DIR__).'/'.$path)];
-            foreach ($files as $file) {
-                $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
-                if ($file->getExtension() === 'vue' && basename($file->getPathname()) === 'Page.vue') {
-                    $checked[] = $relative;
-                    if (! in_array($relative, $fluid, true)) {
-                        $this->assertStringContainsString('<FocusPage', (string) file_get_contents($file->getPathname()), $relative.' must sit in a FocusPage');
-                    }
-                }
+            $source = (string) file_get_contents($file->getPathname());
+            $this->assertStringNotContainsString('FocusPage', $source, $relative.' uses <Page>, not FocusPage');
+            $this->assertMatchesRegularExpression('#<template>\s*(<Head[^>]*/>\s*)?(<main>\s*)?<Page[\s>]#', $source, $relative.' roots in <Page>');
+            if (! in_array($relative, $full, true)) {
+                $this->assertMatchesRegularExpression('#<Page (xs|sm|md|lg|xl)[\s>]#', $source, $relative.' has fixed content and must declare a width');
             }
+            $checked[] = $relative;
         }
         $this->assertGreaterThanOrEqual(6, count($checked));
         $this->assertContains('resources/js/pages/Workspace/Settings/Edit/Page.vue', $checked);
+    }
+
+    public function test_hand_rolled_controls_live_only_in_kit_components(): void
+    {
+        $root = dirname(__DIR__).'/resources/js';
+        $outside = [];
+        foreach (['pages', 'layouts', 'components/Shell'] as $folder) {
+            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$folder, FilesystemIterator::SKIP_DOTS)) as $file) {
+                if (! in_array($file->getExtension(), ['vue', 'ts'], true)) {
+                    continue;
+                }
+                $source = (string) file_get_contents($file->getPathname());
+                $relative = substr($file->getPathname(), strlen($root) + 1);
+                // Pages and the shell use the kit's controls (Input, Checkbox, Button, PasswordInput, the toggles), never raw form elements.
+                $this->assertDoesNotMatchRegularExpression('/<(input|button|select|textarea|label)\b/', $source, $relative.' has a raw form element: use the kit component');
+                // Pressed state and key handling belong to Reka, inside kit components, not hand-rolled in a page or the shell.
+                $this->assertDoesNotMatchRegularExpression('/aria-pressed|@keydown|@keyup|@keypress|onKey(down|up)/', $source, $relative.' hand-rolls pressed state or key handling');
+                $outside[] = $relative;
+            }
+        }
+        $this->assertGreaterThan(10, count($outside));
+        // The appearance controls and the password input are kit components on Reka, exported from @kit/ui.
+        $index = (string) file_get_contents($root.'/components/Kit/index.ts');
+        foreach (['AppearanceToggle', 'AppearanceChoice', 'PasswordInput'] as $name) {
+            $this->assertStringContainsString('as '.$name.' }', $index);
+        }
+        $this->assertFileDoesNotExist($root.'/pages/Auth/SignIn/Page.vue');
+        $this->assertFileDoesNotExist($root.'/components/Shell/Segmented.vue');
+        // <Page> warns in development when more than one width is set.
+        $this->assertStringContainsString('set one width at most', (string) file_get_contents($root.'/components/Kit/Layout/Page.vue'));
     }
 
     public function test_the_saved_appearance_is_applied_before_first_paint(): void
@@ -94,9 +131,10 @@ final class KitUiTest extends TestCase
         // The toggle is in the header and the drawer through the shell's `actions` slot, and names itself.
         $layout = (string) file_get_contents(dirname(__DIR__).'/resources/js/layouts/AppLayout.vue');
         $this->assertStringContainsString('<template #actions><AppearanceToggle />', $layout);
-        $toggle = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Shell/AppearanceToggle.vue');
+        $toggle = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Appearance/AppearanceToggle.vue');
         $this->assertStringContainsString('aria-label="Dark mode"', $toggle);
-        $this->assertStringContainsString(':aria-pressed=', $toggle);
+        // Reka's Toggle holds the pressed state (it renders aria-pressed), so none is hand-rolled here.
+        $this->assertStringContainsString('<Toggle', $toggle);
         $this->assertStringContainsString('<slot name="actions" />', (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/Workspace/Partials/ShellDrawer.vue'));
     }
 

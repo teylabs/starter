@@ -43,9 +43,9 @@ it('signs the first owner in with one click and reaches the app shell', function
         $page->click('[data-local-login] button')
             ->assertPathIs('/dashboard')
             ->assertTitle('Dashboard · '.config('app.name'))
-            // The trail is chrome, a sub-bar inside the header; the heading sits in the page's FocusPage, with the content.
+            // The trail is chrome, a sub-bar inside the header; it is outside <Page>. The heading sits in the page's column, with the content.
             ->assertPresent('[data-shell-bar] [data-shell-breadcrumbs]')
-            ->assertPresent('[data-shell-content] [data-slot="focus-page"] [data-slot="page-header"] h1')
+            ->assertPresent('[data-shell-content] [data-slot="page"] [data-slot="page-header"] h1')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
@@ -91,8 +91,8 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertTitle('General · Settings · '.config('app.name'))
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->assertNoJavaScriptErrors();
-        // The shell owns the vertical rhythm: the page's FocusPage sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
-        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] [data-slot=\"focus-page\"]").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
+        // The shell owns the vertical rhythm: the page sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
+        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] [data-slot=\"page\"]").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
         $page->script('() => document.documentElement.classList.add("dark")');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);

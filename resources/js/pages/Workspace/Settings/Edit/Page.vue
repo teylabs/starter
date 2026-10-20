@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { Button, FocusPage, Field, FormActions, Input, Section, TimezoneSelect } from '@kit/ui';
+import { Button, Field, FormActions, Input, Page, Section, TimezoneSelect } from '@kit/ui';
 const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewModel>();
 const form = useForm({ display_name: props.settings.display_name, timezone: props.settings.timezone, expected_version: props.settings.version, intent_key: props.intent_key });
 function submit() { form.put(props.update_url, { preserveScroll: true, onSuccess: () => { form.expected_version = props.settings.version; form.intent_key = props.intent_key; form.defaults(); } }); }
 function cancel() { form.reset(); form.clearErrors(); }
 </script>
 <template>
-    <FocusPage size="sm">
+    <Page sm>
     <form @submit.prevent="submit">
         <Section title="General" description="How this workspace is named and which timezone it keeps.">
             <p v-if="!can_write" class="text-sm text-muted-foreground">You can view these settings. An owner can update them.</p>
@@ -24,5 +24,5 @@ function cancel() { form.reset(); form.clearErrors(); }
             </FormActions>
         </Section>
     </form>
-    </FocusPage>
+    </Page>
 </template>

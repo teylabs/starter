@@ -22,8 +22,8 @@ export interface CheckboxProps { id: string; disabled?: boolean }
 /** A button: `primary`, `secondary` or `destructive`; a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
 export interface ButtonProps { variant?: 'primary' | 'secondary' | 'destructive'; type?: 'submit' | 'button' }
 
-/** The page measure: a centred column at `xs` (42rem), `sm` (48rem), `md` (64rem), `lg` (80rem, the default) `xl` (96rem) or `full` (no cap, for fluid data pages), in the default slot. It adds no padding: the shell owns the gutters. */
-export interface FocusPageProps { size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'; title?: string; heading?: boolean }
+/** The root of every page: the header (the `title` prop, or `title` here, and an `actions` slot) and the content in one column. the width is a boolean prop (`<Page sm>`: `xs`, `sm`, `md`, `lg`, `xl`, or `full`); none is full (the default: the whole shell, for lists and tables), and fixed-content pages declare a focused one. `state` swaps the content for the `loading`, `empty` or `error` slot. FocusPage is internal to it. */
+export interface PageProps { xs?: boolean; sm?: boolean; md?: boolean; lg?: boolean; xl?: boolean; full?: boolean; title?: string; heading?: boolean; state?: 'ready' | 'loading' | 'empty' | 'error' }
 
 /** The row of buttons that ends a form (default slot). No props. */
 export type FormActionsProps = Record<string, never>;
@@ -32,3 +32,9 @@ export type FormActionsProps = Record<string, never>;
 export interface SectionProps { title?: string; description?: string }
 
 // The menu and sheet primitives are the shadcn-vue ones (`DropdownMenu*`, `Sheet*`): Reka UI-shaped, with their usual props and slots.
+
+/** A password input with a show/hide toggle; the other attributes pass to the input. */
+export interface PasswordInputProps { invalid?: boolean }
+
+/** The header's light/dark switch (no props) and the appearance choice (light, dark or system, no props): both read and write the one appearance setting. `useAppearance()` and `initializeTheme()` are exported with them. */
+export type AppearanceProps = Record<string, never>;

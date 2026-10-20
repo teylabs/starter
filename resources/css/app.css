@@ -191,9 +191,3 @@
         @apply bg-background text-foreground;
     }
 }
-
-/* The page heading the kit's FocusPage renders takes the brand's display face. */
-[data-slot='page-heading'] {
-    font-family: var(--font-serif);
-    font-weight: var(--font-display-weight);
-}
