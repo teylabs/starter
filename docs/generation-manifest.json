@@ -8,7 +8,7 @@
   },
   "generated": {
     "resources/js/types.generated.d.ts": "e2ee06eb9e7c33c33349b7200d47f88ba0a4b03f69a35221362ab29d073281df",
-    "docs/mcp-capabilities.json": "6bd8f39c9ebcc83a5488a2b449a197c3df64a6a992ad2f3dda3df35f35ef2ba9"
+    "docs/mcp-capabilities.json": "1b3f9f60977ef027856ccbfcfc2ea4e9409ac7187d7e246ec11d4438b78e361a"
   },
   "host_owned": [
     "app/",

@@ -45,7 +45,7 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 | `FeatureSeamsTest.php` | The 0.2.1 schema, routes and registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
 | `FeatureGraphTest.php` | The kit library's feature graph, and pages importing only their own folder |
 | `TrustedHostTest.php` | Only `APP_URL`'s host is trusted behind the proxy: forged and lookalike hosts get a 400 |
-| `McpCapabilitiesTest.php`, `StorageTest.php`, `NightwatchConfigTest.php`, `CacheGuardTest.php`, `TimezoneTest.php` | The committed MCP inventory, the private s3 disk and media disk, Nightwatch sampling, the cache holding only arrays and scalars, UTC |
+| `McpCapabilitiesTest.php`, `StorageTest.php`, `NightwatchConfigTest.php`, `CacheGuardTest.php`, `TimezoneTest.php` | The MCP capability declaration (validated against `docs/schemas/mcp-capabilities.schema.json`, every path and symbol it names exists), the private s3 disk and media disk, Nightwatch sampling, the cache holding only arrays and scalars, UTC |
 | `MigrationTest.php` | Migrating an empty database, ordering, no seeded data, repeat runs |
 
 `composer fixture:check` runs `bin/check.php` for `FoundationCheck`, `BoundaryCheck`, `IntentCheck`, `OwnershipCheck` and `ConciergeCheck`.
