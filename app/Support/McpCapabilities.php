@@ -145,6 +145,13 @@ final class McpCapabilities
     /** A class's file, relative to the checkout. */
     private static function path(string $class): string
     {
-        return substr((string) (new ReflectionClass($class))->getFileName(), strlen(base_path()) + 1);
+        $file = (string) (new ReflectionClass($class))->getFileName();
+        // TEMP: the kit is a symlinked path repo, so its real path is outside the checkout.
+        $kit = (string) realpath(base_path('vendor/tey/kit'));
+        if (str_starts_with($file, $kit.'/')) {
+            return 'vendor/tey/kit/'.substr($file, strlen($kit) + 1);
+        }
+
+        return substr($file, strlen(base_path()) + 1);
     }
 }

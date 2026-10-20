@@ -44,7 +44,7 @@ final class LifecycleTest extends TestCase
     {
         $this->assertSame('v0.9.1', InstalledVersions::getPrettyVersion('tey/mod'));
         $this->assertSame('v0.7.4', InstalledVersions::getPrettyVersion('tey/concierge'));
-        $this->assertSame('v0.1.5', InstalledVersions::getPrettyVersion('tey/kit'));
+        $this->assertSame('dev-feat/shell-live', InstalledVersions::getPrettyVersion('tey/kit')); // TEMP: the local path repo
         $this->assertStringEndsWith('/vendor/tey/mod/src/Maintenance/Maintenance.php', (new ReflectionClass(Maintenance::class))->getFileName());
         $host = app(LifecycleHost::class);
         $this->assertInstanceOf(KitHost::class, $host);
