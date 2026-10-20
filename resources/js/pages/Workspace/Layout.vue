@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import EnvPill from './Partials/EnvPill.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
@@ -14,8 +14,11 @@ import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
  * chrome comes from the server's `layout` props.
  */
 const props = withDefaults(defineProps<{ layout: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
+// The document title comes from the server (the page's breadcrumb label and the product), never set per page.
+const page = usePage<{ document_title?: string }>();
 </script>
 <template>
+    <Head :title="page.props.document_title" />
     <div class="flex min-h-svh flex-col bg-background text-foreground">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
         <header v-if="props.layout.user" class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur" data-shell-bar>

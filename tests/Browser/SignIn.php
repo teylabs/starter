@@ -42,6 +42,7 @@ it('signs the first owner in with one click and reaches the app shell', function
 
         $page->click('[data-local-login] button')
             ->assertPathIs('/dashboard')
+            ->assertTitle('Dashboard · '.config('app.name'))
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
@@ -84,6 +85,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSee('Delegated access for MCP clients')
             ->click('main a[href="/settings/general"]')
             ->assertPathIs('/settings/general')
+            ->assertTitle('General · Settings · '.config('app.name'))
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->assertNoJavaScriptErrors();
         // The shell owns the vertical rhythm: the breadcrumb row sits about 16 to 24px below the header's border, in light and dark and on a phone.
