@@ -1,10 +1,6 @@
 <?php
 
 use App\Models\User;
-use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Models\Note;
-use Tey\Kit\Features\Workspaces\Models\Workspace;
-use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +9,10 @@ use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Support\GrantSet;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Notes\Models\Note;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
 Schema::create('workspaces', function (Blueprint $t): void {
     $t->id();

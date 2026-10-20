@@ -1,14 +1,14 @@
 <?php
 
 use App\Models\User;
-use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
-use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 

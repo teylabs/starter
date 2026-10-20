@@ -1,11 +1,11 @@
 <?php
 
 require __DIR__.'/FoundationCheck.php';
-use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
-use Tey\Kit\Features\Core\Principal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Laravel\Pennant\Feature;
+use Tey\Kit\Features\Access\Operations\ComplimentaryAccess;
+use Tey\Kit\Features\Core\Principal;
 
 check('invalid typed setting makes no database change on either adapter', function () use ($ui, $mcp, $alpha, $connection): void {
     $before = DB::table('settings')->get()->toJson();

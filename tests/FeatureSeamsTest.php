@@ -1,5 +1,12 @@
 <?php
 
+use App\Support\KitMigrationRepository;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+use Laravel\Passport\Passport;
+use Laravel\Pennant\Feature;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Notes\Integrations\Mcp\CreateNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
@@ -8,13 +15,6 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\UpdateNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
-use App\Support\KitMigrationRepository;
-use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
-use Laravel\Passport\Passport;
-use Laravel\Pennant\Feature;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
@@ -121,5 +121,4 @@ final class FeatureSeamsTest extends TestCase
 
         return $schema;
     }
-
 }

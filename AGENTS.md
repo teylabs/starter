@@ -14,12 +14,15 @@ Guidance for contributors and coding agents working in this repository.
 
 ```sh
 composer install --no-interaction
+vendor/bin/pint --test
 vendor/bin/phpunit --bootstrap vendor/autoload.php tests
 composer fixture:check
 npm ci && npm run typecheck && npm run build && npm test
 composer test:browser
 sh bin/privacy-check.sh
 ```
+
+The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `phpunit` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
 
 ## Conventions
 

@@ -2,10 +2,10 @@
 
 require __DIR__.'/application.php';
 require dirname(__DIR__).'/database/fixture.php';
+use Illuminate\Support\Facades\DB;
 use Tey\Kit\Features\Notes\Models\Note;
 use Tey\Kit\Features\Settings\WorkspaceSettings;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
-use Illuminate\Support\Facades\DB;
 
 $boundary = app(TenantBoundary::class);
 $held = $boundary->run(1, fn () => Note::query()->firstOrFail());

@@ -1,12 +1,6 @@
 <?php
 
 use App\Models\User;
-use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Operations\WorkspaceNotes;
-use Tey\Kit\Features\Settings\Operations\WorkspaceProfile;
-use Tey\Kit\Features\Workspaces\Models\Workspace;
-use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
-use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +8,12 @@ use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\PermissionRegistrar;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Concierge;
+use Tey\Kit\Features\Core\Principal;
+use Tey\Kit\Features\Notes\Operations\WorkspaceNotes;
+use Tey\Kit\Features\Settings\Operations\WorkspaceProfile;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
+use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
+use Tey\Kit\Features\Workspaces\TenantBoundary;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 

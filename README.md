@@ -19,6 +19,7 @@ From a fresh clone (or `laravel new app --using=tey/starter` once the template i
 ## Check
 
 ```sh
+vendor/bin/pint --test
 vendor/bin/phpunit --bootstrap vendor/autoload.php tests
 composer fixture:check
 composer test:browser
@@ -26,7 +27,18 @@ npm run typecheck && npm run build && npm test
 sh bin/privacy-check.sh
 ```
 
-CI runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
+The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `phpunit` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
+
+```sh
+createdb starter_test   # a disposable database: the tests wipe it
+export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
+vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+composer fixture:check
+```
+
+`DB_CONNECTION` alone doesn't switch the tests, and `DB_DATABASE` must be set for the run; a database named in `.env` is never used.
+
+CI checks Pint, runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
 
 ## Status
 
