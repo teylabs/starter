@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Page } from '@kit/ui';
-// The empty state: what this is, in one line, and the one obvious next step, in a focused <Page>, as fixed content is. An app replaces this
-// page by registering its own dashboard component (a data page goes `<Page full>`), which receives the same props.
+// The empty state: what this is, in one line, and the one obvious next step, in a full <Page>: the dashboard is the
+// workspace home and grows with data. An app replaces this page by registering its own dashboard component, which receives the same props.
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.DashboardViewModel>();
 </script>
 <template>
-    <Page sm>
+    <Page>
     <section class="grid max-w-xl justify-items-start gap-3 rounded-xl border border-dashed p-8" data-dashboard-empty>
         <h2 class="text-lg font-semibold">Nothing here yet</h2>
         <p class="text-sm text-muted-foreground">This is the home of {{ workspace }}. What your team works on will show up here.</p>
