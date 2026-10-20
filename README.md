@@ -47,4 +47,4 @@ MIT, see [LICENSE](LICENSE). The UI primitives and sign-in page come from Larave
 - [llms.txt](llms.txt): index for coding agents
 - [AGENTS.md](AGENTS.md): contributor and agent conventions
 
-Machine-readable maps live in `docs/*.json`: `mcp-capabilities.json` (the MCP capability inventory, version 1 of the shared capability schema), `package-map.json`, `conformance.json`, `feature-transports.json` and `generation-manifest.json`.
+Machine-readable maps live in `docs/*.json`: `mcp-capabilities.json` (the MCP capability declaration, validated against the vendored `schemas/mcp-capabilities.schema.json`), `package-map.json`, `conformance.json`, `feature-transports.json` and `generation-manifest.json`.

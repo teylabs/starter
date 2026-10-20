@@ -2,235 +2,1131 @@
     "version": 1,
     "inventory": [
         {
-            "path": "/workspaces",
-            "capabilities": [],
-            "variants": [
-                "inertia",
-                "json"
-            ]
-        },
-        {
-            "path": "/workspaces/{workspace}/settings",
+            "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
             "capabilities": [
                 "workspace.settings.read",
                 "workspace.settings.update"
             ],
-            "variants": [
-                "inertia",
-                "json"
-            ]
+            "variants": {
+                "default": [
+                    "workspace.settings.read",
+                    "workspace.settings.update"
+                ]
+            }
         },
         {
-            "path": "/workspaces/{workspace}/notes",
+            "path": "resources/js/pages/Workspace/Note/Index/Page.vue",
             "capabilities": [
+                "workspace.notes.list",
                 "workspace.notes.read",
-                "workspace.notes.write"
+                "workspace.notes.create"
             ],
-            "variants": [
-                "inertia",
-                "json"
-            ]
+            "variants": {
+                "default": [
+                    "workspace.notes.list",
+                    "workspace.notes.read",
+                    "workspace.notes.create"
+                ]
+            }
         },
         {
-            "path": "/workspaces/{workspace}/connections",
-            "capabilities": [],
-            "variants": [
-                "blade"
-            ]
+            "path": "resources/js/pages/Workspace/Note/Index/Partials/NoteEditor.vue",
+            "capabilities": [
+                "workspace.notes.update",
+                "workspace.notes.delete"
+            ],
+            "variants": {
+                "default": [
+                    "workspace.notes.update",
+                    "workspace.notes.delete"
+                ]
+            }
         }
     ],
     "capabilities": [
         {
             "id": "workspace.settings.read",
-            "operation": "Tey\\Kit\\Features\\Settings\\Operations\\WorkspaceProfile::read",
-            "mcp": {
-                "tools": [
-                    {
-                        "name": "workspace_settings_read",
-                        "description": "Read settings and current version of the approved workspace.",
-                        "input_schema": {
-                            "type": "object",
-                            "properties": {}
-                        }
-                    }
-                ],
-                "resources": []
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Settings/Http/SettingsController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Settings/Operations/WorkspaceProfile.php",
+                "symbol": "read"
             },
-            "scope": "settings.read",
-            "writes": false,
-            "parity_tests": [
-                "tests/TransportTest.php",
-                "tests/McpTransportTest.php"
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_settings_read",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Settings/Integrations/Mcp/ReadSettings.php",
+                    "symbol": "ReadSettings"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "settings.read"
+                ],
+                "description": "Read settings and current version of the approved workspace.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/TransportTest.php",
+                    "name": "test_session_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the display name, timezone and version"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the display name, timezone and version"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/TransportTest.php",
+                            "name": "test_session_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
+                            ]
+                        }
+                    ]
+                }
             ]
         },
         {
             "id": "workspace.settings.update",
-            "operation": "Tey\\Kit\\Features\\Settings\\Operations\\WorkspaceProfile::update",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Settings/Edit/Page.vue",
+                    "symbol": "submit"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Settings/Http/SettingsController.php",
+                    "symbol": "update"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Settings/Operations/WorkspaceProfile.php",
+                "symbol": "update"
+            },
             "mcp": {
-                "tools": [
-                    {
-                        "name": "workspace_settings_update",
-                        "description": "Update settings using the current version and stable intent key.",
-                        "input_schema": {
-                            "properties": {
-                                "display_name": {
-                                    "type": "string"
-                                },
-                                "timezone": {
-                                    "type": "string"
-                                },
-                                "expected_version": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                },
-                                "intent_key": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object",
-                            "required": [
-                                "display_name",
-                                "timezone",
-                                "expected_version",
-                                "intent_key"
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_settings_update",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Settings/Integrations/Mcp/UpdateSettings.php",
+                    "symbol": "UpdateSettings"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "settings.write"
+                ],
+                "description": "Update settings using the current version and stable intent key.",
+                "input_schema": {
+                    "properties": {
+                        "display_name": {
+                            "type": "string"
+                        },
+                        "timezone": {
+                            "type": "string"
+                        },
+                        "expected_version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "intent_key": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "display_name",
+                        "timezone",
+                        "expected_version",
+                        "intent_key"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/TransportTest.php",
+                    "name": "test_session_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "display_name": "form field",
+                            "timezone": "form field",
+                            "expected_version": "form field",
+                            "intent_key": "form field"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "writes the settings at the expected version",
+                            "audits workspace.settings.updated once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "display_name": "tool argument",
+                            "timezone": "tool argument",
+                            "expected_version": "tool argument",
+                            "intent_key": "tool argument"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "writes the settings at the expected version",
+                            "audits workspace.settings.updated once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/TransportTest.php",
+                            "name": "test_session_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
                             ]
                         }
-                    }
-                ],
-                "resources": []
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.list",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Note/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "index"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "listing"
             },
-            "scope": "settings.write",
-            "writes": true,
-            "parity_tests": [
-                "tests/TransportTest.php",
-                "tests/McpTransportTest.php"
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_notes_list",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/ListNotes.php",
+                    "symbol": "ListNotes"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.read"
+                ],
+                "description": "List notes in the approved workspace.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTransportTest.php",
+                    "name": "test_workspace_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "privacy",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "recovery"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the workspace notes"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the workspace notes"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTransportTest.php",
+                            "name": "test_workspace_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "privacy",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "recovery"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
+                            ]
+                        }
+                    ]
+                }
             ]
         },
         {
             "id": "workspace.notes.read",
-            "operation": "Tey\\Kit\\Features\\Notes\\Operations\\WorkspaceNotes::listing",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Note/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "read"
+            },
             "mcp": {
-                "tools": [
-                    {
-                        "name": "workspace_notes_list",
-                        "description": "List notes in the approved workspace.",
-                        "input_schema": {
-                            "type": "object",
-                            "properties": {}
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_note_read",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/ReadNote.php",
+                    "symbol": "ReadNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.read"
+                ],
+                "description": "Read one note in the approved workspace.",
+                "input_schema": {
+                    "properties": {
+                        "id": {
+                            "minimum": 1,
+                            "type": "integer"
                         }
                     },
-                    {
-                        "name": "workspace_note_read",
-                        "description": "Read one note in the approved workspace.",
-                        "input_schema": {
-                            "properties": {
-                                "id": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                }
-                            },
-                            "type": "object",
-                            "required": [
-                                "id"
+                    "type": "object",
+                    "required": [
+                        "id"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTransportTest.php",
+                    "name": "test_workspace_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "privacy",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "recovery"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "id": "form field"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns one note and its version"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "id": "tool argument"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns one note and its version"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTransportTest.php",
+                            "name": "test_workspace_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "privacy",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "recovery"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
                             ]
                         }
-                    }
-                ],
-                "resources": []
-            },
-            "scope": "notes.read",
-            "writes": false,
-            "parity_tests": [
-                "tests/NotesTransportTest.php",
-                "tests/McpTransportTest.php"
+                    ]
+                }
             ]
         },
         {
-            "id": "workspace.notes.write",
-            "operation": "Tey\\Kit\\Features\\Notes\\Operations\\WorkspaceNotes::mutate",
-            "mcp": {
-                "tools": [
-                    {
-                        "name": "workspace_note_create",
-                        "description": "Create a note with a stable intent key.",
-                        "input_schema": {
-                            "properties": {
-                                "intent_key": {
-                                    "type": "string"
-                                },
-                                "body": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object",
-                            "required": [
-                                "intent_key",
-                                "body"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "workspace_note_update",
-                        "description": "Update a note using its current version and stable intent key.",
-                        "input_schema": {
-                            "properties": {
-                                "id": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                },
-                                "intent_key": {
-                                    "type": "string"
-                                },
-                                "expected_version": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                },
-                                "body": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object",
-                            "required": [
-                                "id",
-                                "intent_key",
-                                "expected_version",
-                                "body"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "workspace_note_delete",
-                        "description": "Delete a note using its current version and stable intent key.",
-                        "input_schema": {
-                            "properties": {
-                                "id": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                },
-                                "intent_key": {
-                                    "type": "string"
-                                },
-                                "expected_version": {
-                                    "minimum": 1,
-                                    "type": "integer"
-                                }
-                            },
-                            "type": "object",
-                            "required": [
-                                "id",
-                                "intent_key",
-                                "expected_version"
-                            ]
-                        }
-                    }
-                ],
-                "resources": []
+            "id": "workspace.notes.create",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Note/Index/Page.vue",
+                    "symbol": "create"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "store"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "mutate"
             },
-            "scope": "notes.write",
-            "writes": true,
-            "parity_tests": [
-                "tests/NotesTransportTest.php",
-                "tests/McpTransportTest.php"
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_note_create",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/CreateNote.php",
+                    "symbol": "CreateNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.write"
+                ],
+                "description": "Create a note with a stable intent key.",
+                "input_schema": {
+                    "properties": {
+                        "intent_key": {
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "intent_key",
+                        "body"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTransportTest.php",
+                    "name": "test_workspace_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "privacy",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "recovery"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "intent_key": "form field",
+                            "body": "form field"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "creates a note",
+                            "audits workspace.note.create once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "intent_key": "tool argument",
+                            "body": "tool argument"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "creates a note",
+                            "audits workspace.note.create once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTransportTest.php",
+                            "name": "test_workspace_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "privacy",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "recovery"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.update",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Note/Index/Partials/NoteEditor.vue",
+                    "symbol": "form"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "update"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "mutate"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_note_update",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/UpdateNote.php",
+                    "symbol": "UpdateNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.write"
+                ],
+                "description": "Update a note using its current version and stable intent key.",
+                "input_schema": {
+                    "properties": {
+                        "id": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "intent_key": {
+                            "type": "string"
+                        },
+                        "expected_version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "body": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "intent_key",
+                        "expected_version",
+                        "body"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTransportTest.php",
+                    "name": "test_workspace_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "privacy",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "recovery"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "id": "form field",
+                            "intent_key": "form field",
+                            "expected_version": "form field",
+                            "body": "form field"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "updates the note at the expected version",
+                            "audits workspace.note.update once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "id": "tool argument",
+                            "intent_key": "tool argument",
+                            "expected_version": "tool argument",
+                            "body": "tool argument"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "updates the note at the expected version",
+                            "audits workspace.note.update once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTransportTest.php",
+                            "name": "test_workspace_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "privacy",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "recovery"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.delete",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Note/Index/Partials/NoteEditor.vue",
+                    "symbol": "deletion"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "destroy"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "mutate"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_note_delete",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/DeleteNote.php",
+                    "symbol": "DeleteNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.write"
+                ],
+                "description": "Delete a note using its current version and stable intent key.",
+                "input_schema": {
+                    "properties": {
+                        "id": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "intent_key": {
+                            "type": "string"
+                        },
+                        "expected_version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "id",
+                        "intent_key",
+                        "expected_version"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTransportTest.php",
+                    "name": "test_workspace_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "privacy",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "recovery"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/InertiaTransportTest.php",
+                    "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "error"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "id": "form field",
+                            "intent_key": "form field",
+                            "expected_version": "form field"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "deletes the note at the expected version",
+                            "audits workspace.note.delete once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "id": "tool argument",
+                            "intent_key": "tool argument",
+                            "expected_version": "tool argument"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "deletes the note at the expected version",
+                            "audits workspace.note.delete once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTransportTest.php",
+                            "name": "test_workspace_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "privacy",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "recovery"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/InertiaTransportTest.php",
+                            "name": "test_inertia_session_pages_share_real_operations_and_fresh_navigation",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "error"
+                            ]
+                        }
+                    ]
+                }
             ]
         }
     ],
@@ -239,6 +1135,10 @@
         "version": "0.1.0",
         "transport": "streamable-http",
         "endpoint": "/mcp/connections/{connection}",
+        "entrypoint": {
+            "path": "vendor/tey/kit/src/Features/Mcp/WorkspaceServer.php",
+            "symbol": "WorkspaceServer"
+        },
         "auth": {
             "type": "oauth2",
             "flow": "authorization_code_pkce",

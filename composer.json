@@ -30,6 +30,7 @@
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "laravel/tinker": "^3.0",
+        "opis/json-schema": "^2.4",
         "pestphp/pest": "^5.0",
         "pestphp/pest-plugin-browser": "^5.1",
         "pestphp/pest-plugin-laravel": "^5.0",

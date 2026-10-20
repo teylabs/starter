@@ -2,12 +2,16 @@
 
 use App\Support\McpCapabilities;
 use Illuminate\Foundation\Testing\TestCase;
-use Illuminate\Support\Facades\Route;
+use Opis\JsonSchema\Errors\ErrorFormatter;
+use Opis\JsonSchema\Validator;
 use Tey\Kit\Features\Core\Registry;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-/** docs/mcp-capabilities.json follows the shared capability schema (version 1) and is the served MCP surface exactly. */
+/**
+ * docs/mcp-capabilities.json validates against the vendored schema (docs/schemas/mcp-capabilities.schema.json), every
+ * path and symbol it names exists, and it is the served MCP surface exactly.
+ */
 final class McpCapabilitiesTest extends TestCase
 {
     public function createApplication()
@@ -15,39 +19,62 @@ final class McpCapabilitiesTest extends TestCase
         return require __DIR__.'/application.php';
     }
 
-    public function test_the_committed_inventory_matches_the_served_tools(): void
+    public function test_the_committed_declaration_matches_the_served_tools(): void
     {
         $this->assertSame(McpCapabilities::json(), file_get_contents(base_path(McpCapabilities::PATH)), 'Run php bin/mcp-capabilities.php');
     }
 
-    public function test_the_inventory_has_the_schema_shape(): void
+    public function test_the_declaration_validates_against_the_vendored_schema(): void
+    {
+        $this->assertSame([], $this->schemaErrors(json_decode(file_get_contents(base_path(McpCapabilities::PATH)))));
+        // The validator refuses what the schema refuses.
+        $this->assertNotSame([], $this->schemaErrors(json_decode('{"version":1,"inventory":[{"path":"/workspaces","capabilities":[],"variants":["inertia"]}],"capabilities":[]}')));
+    }
+
+    public function test_every_path_symbol_and_capability_exists(): void
     {
         $document = json_decode(file_get_contents(base_path(McpCapabilities::PATH)), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(1, $document['version']);
-        $this->assertIsList($document['inventory']);
-        $this->assertIsList($document['capabilities']);
         $ids = array_column($document['capabilities'], 'id');
         $this->assertSame($ids, array_unique($ids));
-        $routes = array_map(fn ($route) => '/'.ltrim($route->uri(), '/'), iterator_to_array(Route::getRoutes()));
         foreach ($document['inventory'] as $entry) {
-            $this->assertSame(['path', 'capabilities', 'variants'], array_keys($entry));
-            $this->assertContains($entry['path'], $routes, $entry['path'].' is not a route');
+            $this->assertFileExists(base_path($entry['path']));
             $this->assertSame([], array_diff($entry['capabilities'], $ids), $entry['path']);
-            $this->assertNotSame([], $entry['variants']);
+            foreach ($entry['variants'] as $variant => $members) {
+                $this->assertSame([], array_diff($members, $entry['capabilities']), $entry['path'].' '.$variant);
+            }
         }
         $served = array_map(fn (string $class): string => app($class)->name(), app(Registry::class)->mcpTools());
-        $declared = [];
         foreach ($document['capabilities'] as $capability) {
-            $this->assertIsString($capability['operation']);
-            $this->assertIsList($capability['mcp']['resources']);
-            $this->assertArrayHasKey($capability['scope'], $document['server']['scopes'], $capability['id']);
-            foreach ($capability['parity_tests'] as $test) {
-                $this->assertFileExists(base_path($test));
+            foreach ([...$capability['ui'], $capability['domain'], $capability['mcp']['entrypoint']] as $reference) {
+                $this->assertDeclares($reference['path'], $reference['symbol']);
             }
-            array_push($declared, ...array_column($capability['mcp']['tools'], 'name'));
+            $this->assertContains($capability['mcp']['name'], $served);
+            foreach ($capability['mcp']['scopes'] as $scope) {
+                $this->assertArrayHasKey($scope, $document['server']['scopes'], $capability['id']);
+            }
+            foreach ([...$capability['tests'], ...array_merge(...array_column($capability['variants'], 'tests'))] as $test) {
+                $this->assertDeclares($test['path'], $test['name']);
+            }
         }
-        $this->assertEqualsCanonicalizing($served, $declared);
-        // Every capability is reachable from a UI entry point.
-        $this->assertSame([], array_diff($ids, array_merge(...array_column($document['inventory'], 'capabilities'))));
+        $this->assertEqualsCanonicalizing($served, array_column(array_column($document['capabilities'], 'mcp'), 'name'));
+        $this->assertSame([], array_diff($ids, array_merge(...array_column($document['inventory'], 'capabilities'))), 'Every capability is reachable from a UI file');
+        $this->assertDeclares($document['server']['entrypoint']['path'], $document['server']['entrypoint']['symbol']);
+    }
+
+    /** @return array<string, mixed> */
+    private function schemaErrors(mixed $data): array
+    {
+        $validator = new Validator;
+        $validator->setMaxErrors(20);
+        $result = $validator->validate($data, file_get_contents(base_path(McpCapabilities::SCHEMA)));
+
+        return $result->isValid() ? [] : (new ErrorFormatter)->format($result->error());
+    }
+
+    /** The file exists and declares the symbol: a function, class or const. */
+    private function assertDeclares(string $path, string $symbol): void
+    {
+        $this->assertFileExists(base_path($path));
+        $this->assertMatchesRegularExpression('/\b(function|class|const)\s+'.preg_quote($symbol, '/').'\b/', file_get_contents(base_path($path)), $path.' declares '.$symbol);
     }
 }
