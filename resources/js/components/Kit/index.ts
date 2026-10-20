@@ -4,6 +4,7 @@
 export { default as Button } from './Form/Button.vue';
 export { default as Checkbox } from './Form/Checkbox.vue';
 export { default as Field } from './Form/Field.vue';
+export { default as FocusPage } from './Layout/FocusPage.vue';
 export { default as FormActions } from './Form/FormActions.vue';
 export { default as Input } from './Form/Input.vue';
 export { default as Section } from './Form/Section.vue';

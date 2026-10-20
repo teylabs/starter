@@ -41,6 +41,49 @@ final class KitUiTest extends TestCase
         $this->assertFileExists(dirname(__DIR__).'/resources/js/components/Kit/contract.ts');
     }
 
+    public function test_focus_page_sizes_are_a_static_lookup(): void
+    {
+        $vue = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/FocusPage.vue');
+        preg_match('/const maxWidths[^{]*\{(.*?)\};/s', $vue, $lookup);
+        preg_match_all("/(\w+): '([^']+)'/", $lookup[1] ?? '', $pairs, PREG_SET_ORDER);
+        // Each size maps to its whole class string.
+        $this->assertSame(['xs' => 'max-w-2xl', 'sm' => 'max-w-3xl', 'md' => 'max-w-5xl', 'lg' => 'max-w-7xl', 'xl' => 'max-w-[96rem]'], array_column($pairs, 2, 1));
+        // Never interpolated: no template literal or concatenation builds a class from the size.
+        $code = preg_replace('#/\*.*?\*/#s', '', $vue);
+        $this->assertDoesNotMatchRegularExpression('/`[^`]*max-w-[^`]*\$\{|max-w-[\'"]\s*\+|\+\s*[\'"]max-w/', $code);
+        $this->assertStringContainsString('data-slot="focus-page"', $vue);
+        $this->assertStringContainsString("'mx-auto w-full'", $vue);
+        // The shell owns the gutters: the primitive adds no padding of its own.
+        $this->assertDoesNotMatchRegularExpression('/(?<![\w-])p[xytblr]?-\d/', substr($vue, strpos($vue, '<template>')));
+        $this->assertStringContainsString("export { default as FocusPage } from './Layout/FocusPage.vue';", (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/index.ts'));
+    }
+
+    public function test_every_kit_page_uses_focus_page_unless_it_is_a_fluid_data_page(): void
+    {
+        // Fluid data pages (lists, tables, grids that grow with data) use the full width. Fixed-content pages, forms, settings sections,
+        // detail and confirmation pages, empty states and guest pages must sit in a FocusPage. Add a page here only when it is fluid.
+        $fluid = [];
+        $manifest = json_decode((string) file_get_contents(dirname(__DIR__).'/docs/generation-manifest.json'), true);
+        $checked = [];
+        foreach ($manifest['kit_generated']['paths'] as $path) {
+            if (! str_starts_with($path, 'resources/js/pages/')) {
+                continue;
+            }
+            $files = is_dir(dirname(__DIR__).'/'.$path) ? new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/'.$path, FilesystemIterator::SKIP_DOTS)) : [new SplFileInfo(dirname(__DIR__).'/'.$path)];
+            foreach ($files as $file) {
+                $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
+                if ($file->getExtension() === 'vue' && basename($file->getPathname()) === 'Page.vue') {
+                    $checked[] = $relative;
+                    if (! in_array($relative, $fluid, true)) {
+                        $this->assertStringContainsString('<FocusPage', (string) file_get_contents($file->getPathname()), $relative.' must sit in a FocusPage');
+                    }
+                }
+            }
+        }
+        $this->assertGreaterThanOrEqual(6, count($checked));
+        $this->assertContains('resources/js/pages/Workspace/Settings/Edit/Page.vue', $checked);
+    }
+
     public function test_the_saved_appearance_is_applied_before_first_paint(): void
     {
         $html = $this->get('/login')->assertOk()->getContent();

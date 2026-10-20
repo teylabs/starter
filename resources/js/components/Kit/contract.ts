@@ -22,6 +22,9 @@ export interface CheckboxProps { id: string; disabled?: boolean }
 /** A button: `primary`, `secondary` or `destructive`; a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
 export interface ButtonProps { variant?: 'primary' | 'secondary' | 'destructive'; type?: 'submit' | 'button' }
 
+/** The page measure: a centred column at `xs` (42rem), `sm` (48rem), `md` (64rem), `lg` (80rem, the default) or `xl` (96rem), in the default slot. It adds no padding: the shell owns the gutters. */
+export interface FocusPageProps { size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' }
+
 /** The row of buttons that ends a form (default slot). No props. */
 export type FormActionsProps = Record<string, never>;
 

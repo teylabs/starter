@@ -17,10 +17,11 @@ final class InputLimitTest extends TestCase
 
     public function test_the_input_limit_warnings_are_a_bad_request_and_unreported(): void
     {
-        $messages = ['Input variable nesting level exceeded 64. To increase the limit change max_input_nesting_level in php.ini.', 'Input variables exceeded 1000. To increase the limit change max_input_vars in php.ini.'];
+        $messages = ['parse_str(): Input variable nesting level exceeded 64. To increase the limit change max_input_nesting_level in php.ini.', 'Input variable nesting level exceeded 64. To increase the limit change max_input_nesting_level in php.ini.', 'Input variables exceeded 1000. To increase the limit change max_input_vars in php.ini.'];
         $handler = app(ExceptionHandler::class);
         foreach ($messages as $index => $message) {
-            // PHP raises these as warnings, which Laravel turns into ErrorExceptions wherever the input is parsed.
+            // PHP raises these as warnings, which Laravel turns into ErrorExceptions wherever the input is parsed; the first is the exact
+            // production trace (Symfony's HeaderUtils::parseQuery(), reached through Request::fullUrl()).
             $this->assertFalse($handler->shouldReport(new ErrorException($message)), 'never reported, so no issue is opened');
             Route::get('/_input-limit-'.$index, fn () => throw new ErrorException($message));
             $this->get('/_input-limit-'.$index)->assertStatus(400);
