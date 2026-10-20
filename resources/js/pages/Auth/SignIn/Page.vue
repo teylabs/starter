@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 
 // Laravel's Vue starter kit sign-in page (MIT): registration is closed and password reset waits on mail (#24).
+// localLogin is Concierge's one-click local sign-in offer, null wherever it isn't available.
 defineProps<{
     title: string;
     status?: string;
+    localLogin?: { url: string; email: string } | null;
 }>();
 </script>
 
@@ -29,6 +31,29 @@ defineProps<{
     >
         {{ status }}
     </div>
+
+    <Form
+        v-if="localLogin"
+        :action="localLogin.url"
+        method="post"
+        v-slot="{ errors, processing }"
+        class="flex flex-col gap-2"
+        data-local-login
+    >
+        <Button
+            type="submit"
+            variant="outline"
+            class="w-full"
+            :disabled="processing"
+        >
+            <Spinner v-if="processing" />
+            Sign in as {{ localLogin.email }}
+        </Button>
+        <InputError :message="errors.local_login" />
+        <p class="text-center text-xs text-muted-foreground">
+            One-click sign-in, offered only locally
+        </p>
+    </Form>
 
     <Form
         action="/login"

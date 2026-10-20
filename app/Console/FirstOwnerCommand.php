@@ -40,7 +40,7 @@ final class FirstOwnerCommand extends Command
         }
         $interactive = $this->input->isInteractive();
         $name = $this->option('name') ?: ($interactive ? text('Owner name', default: 'Local owner', required: true) : 'Local owner');
-        $email = $this->option('email') ?: ($interactive ? text('Owner email', default: 'owner@example.test', required: true) : 'owner@example.test');
+        $email = $this->option('email') ?: ($interactive ? text('Owner email', default: 'owner@example.com', required: true) : 'owner@example.com');
         $workspaceName = $this->option('workspace') ?: ($interactive ? text('Workspace name', default: 'Local workspace', required: true) : 'Local workspace');
         $generated = $interactive ? null : Str::password(24);
         $secret = $generated ?? password('Owner password', required: true, validate: fn (string $value): ?string => strlen($value) < 12 ? 'Use at least 12 characters.' : null);

@@ -12,7 +12,7 @@ PHP 8.4 or 8.5 and Node 22 are required.
 composer setup
 ```
 
-From a fresh clone (or `laravel new app --using=tey/starter` once the template is on Packagist), one command installs the dependencies, copies `.env.example` to `.env`, generates the key, creates `database/database.sqlite`, migrates, builds the frontend and creates the first local owner and workspace (`php artisan starter:first-owner`). It prompts for the owner's password; with `--no-interaction` it generates one and prints it once. Nothing is stored or seeded outside the local environment, and there are no default credentials. Then `php artisan serve` and sign in at `/login`.
+From a fresh clone (or `laravel new app --using=tey/starter` once the template is on Packagist), one command installs the dependencies, copies `.env.example` to `.env`, generates the key, creates `database/database.sqlite`, migrates, builds the frontend and creates the first local owner and workspace (`php artisan starter:first-owner`). It prompts for the owner's password; with `--no-interaction` it generates one and prints it once. Nothing is stored or seeded outside the local environment, and there are no default credentials. Then `php artisan serve` and sign in at `/login`, with the password or, locally, with Concierge's one-click "Sign in as owner@example.com" (`CONCIERGE_LOCAL_LOGIN`; Concierge never offers it outside the local environment).
 
 `laravel/tinker` is a dev dependency (`php artisan tinker`).
 
