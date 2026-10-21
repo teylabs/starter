@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { AppearanceChoice, AppearanceToggle } from '@kit/ui';
+import { AppearanceToggle } from '@kit/ui';
 import ShellFooter from '@/components/Shell/ShellFooter.vue';
 import { Toaster } from '@/components/ui/sonner';
 import WorkspaceShell from '@/pages/Workspace/Layout.vue';
@@ -21,12 +21,6 @@ const shell = computed(() => (page.props.shell && 'navigation' in page.props.she
 <template>
     <WorkspaceShell v-if="shell" :shell="shell" width-class="max-w-2k">
         <template #actions><AppearanceToggle /></template>
-        <template #extra>
-            <div class="flex min-h-11 items-center justify-between gap-2 px-3 text-sm font-medium text-muted-foreground">
-                Appearance
-                <AppearanceChoice />
-            </div>
-        </template>
         <slot />
         <template #footer>
             <ShellFooter :footer="shell.footer" />

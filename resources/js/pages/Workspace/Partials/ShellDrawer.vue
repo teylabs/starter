@@ -18,7 +18,7 @@ onBeforeUnmount(stop);
 <template>
     <Sheet v-if="shell.user" v-model:open="open">
         <SheetTrigger as-child>
-            <Button variant="secondary" type="button" class="min-h-11 gap-2 px-3" data-shell-menu-button>
+            <Button variant="bar" type="button" class="min-h-11 shrink-0 gap-2 px-3" data-shell-menu-button>
                 <Menu class="size-4" aria-hidden="true" />
                 Menu
             </Button>
@@ -28,14 +28,14 @@ onBeforeUnmount(stop);
                 <SheetTitle class="text-base font-semibold">Menu</SheetTitle>
                 <SheetDescription class="sr-only">Navigation and your account</SheetDescription>
             </div>
-            <nav v-if="shell.switcher.choices.length > 1" aria-label="Workspaces" class="grid gap-1 px-2 pt-4">
+            <nav v-if="shell.switcher" aria-label="Workspaces" class="grid gap-1 px-2 pt-4">
                 <p class="px-3 text-xs font-medium text-muted-foreground">Workspaces</p>
                 <template v-for="choice in shell.switcher.choices" :key="choice.id">
                     <Link v-if="choice.url" :href="choice.url" :aria-current="choice.current ? 'true' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', choice.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ choice.name }}</Link>
                     <span v-else class="flex min-h-11 items-center px-3 text-sm text-muted-foreground">{{ choice.name }} · unavailable</span>
                 </template>
             </nav>
-            <nav v-if="shell.navigation.length" :aria-label="shell.switcher.current?.name ?? shell.product.name" class="grid gap-1 px-2 pt-4">
+            <nav v-if="shell.navigation.length" :aria-label="shell.workspace?.name ?? shell.product.name" class="grid gap-1 px-2 pt-4">
                 <Link v-for="item in shell.navigation" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
             </nav>
             <div class="mt-auto border-t border-border px-2 py-4">
