@@ -282,6 +282,28 @@ final class AccountTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_a_failed_log_write_is_reported_without_the_ip_or_user_agent(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        Schema::drop('kit_security_events');
+        $reported = [];
+        app(\Illuminate\Contracts\Debug\ExceptionHandler::class)->reportable(function (\Throwable $e) use (&$reported): bool {
+            $reported[] = $e;
+
+            return false;
+        });
+        $request = \Illuminate\Http\Request::create('/login', 'POST', server: ['REMOTE_ADDR' => '203.0.113.77', 'HTTP_USER_AGENT' => 'SecretAgent/9.9']);
+        SecurityLog::record(1, 'sign_in', $request);
+        $this->assertNotEmpty($reported);
+        foreach ($reported as $e) {
+            for ($link = $e; $link !== null; $link = $link->getPrevious()) {
+                $this->assertStringNotContainsString('203.0.113.77', $link->getMessage());
+                $this->assertStringNotContainsString('SecretAgent', $link->getMessage());
+                $this->assertNotInstanceOf(\Illuminate\Database\QueryException::class, $link);
+            }
+        }
+    }
+
     public function test_the_security_log_goes_with_the_account_and_a_soft_delete_keeps_it(): void
     {
         require dirname(__DIR__).'/database/fixture.php';

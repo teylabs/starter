@@ -37,6 +37,9 @@ const state = computed<'busy' | 'errors' | 'dirty' | 'saved' | 'idle' | 'readonl
     if (source.value?.recentlySuccessful) return 'saved';
     return 'idle';
 });
+// Unsaved changes, whatever the status shows: errors don't make an edit any less unsaved, so leaving warns on this, not on the status.
+// A form showing errors holds input its failed submit didn't save, even where <Form> re-reads its defaults after the error response.
+const dirty = computed(() => Boolean(source.value?.isDirty || source.value?.hasErrors));
 const statusText = computed(() => {
     if (state.value === 'busy') return progress.value !== null ? `Uploading… ${Math.round(progress.value)}%` : props.busyLabel;
     return { errors: 'There are errors in your submission.', dirty: 'Unsaved changes', saved: props.savedLabel, idle: '', readonly: props.submit?.reason ?? '' }[state.value];
@@ -76,7 +79,7 @@ let pending: { url: string } | null = null;
 let submitting = false;
 let offBefore: (() => void) | undefined;
 const unload = (event: BeforeUnloadEvent) => {
-    if (state.value === 'dirty' && !leaving.value) {
+    if (dirty.value && !leaving.value) {
         event.preventDefault();
         event.returnValue = '';
     }
@@ -98,18 +101,18 @@ onMounted(() => {
     if (props.warnOnLeave) {
         offBefore = router.on('before', (event) => {
             const visit = event.detail.visit;
-            if (state.value !== 'dirty' || leaving.value || submitting || visit.method !== 'get' || visit.url.pathname === window.location.pathname) return;
+            if (!dirty.value || leaving.value || submitting || visit.method !== 'get' || visit.url.pathname === window.location.pathname) return;
             pending = { url: visit.url.href };
             askLeave.value = true;
             return false;
         });
     }
 });
-watch(state, (now) => {
+watch(dirty, (now) => {
     if (!props.warnOnLeave) return;
-    if (now === 'dirty') window.addEventListener('beforeunload', unload);
+    if (now) window.addEventListener('beforeunload', unload);
     else window.removeEventListener('beforeunload', unload);
-});
+}, { immediate: true });
 onBeforeUnmount(() => {
     cancelAnimationFrame(frame);
     observer?.disconnect();

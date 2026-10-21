@@ -61,6 +61,8 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         expect([$state, $text])->toBe(['errors', 'There are errors in your submission.']);
         expect($class)->toContain('text-destructive');
         $page->assertPresent('[role="alert"]');
+        // Unsaved changes with errors still warn on leave: errors don't make the edit any less unsaved.
+        expect($unload())->toBeTrue();
         $page->click('[data-form-cancel]');
         expect($status()[0])->not->toBe('errors');
         $page->assertMissing('#display-name-error');
