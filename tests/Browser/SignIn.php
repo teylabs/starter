@@ -1,7 +1,9 @@
 <?php
 
-use Dotenv\Dotenv;
+require_once __DIR__.'/../Concerns/FreshClone.php';
+
 use Illuminate\Contracts\Console\Kernel;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Fonts;
@@ -25,8 +27,7 @@ it('signs the first owner in with one click and reaches the app shell', function
         // A local boot, the way Concierge's provider registers its route for one; Concierge decides the rest.
         putenv('APP_ENV=local');
         app()['env'] = 'local';
-        $example = Dotenv::parse((string) file_get_contents(base_path('.env.example')));
-        config(['concierge.local_login.enabled' => ($example['CONCIERGE_LOCAL_LOGIN'] ?? null) === 'true', 'concierge.local_login.account.email' => $example['CONCIERGE_LOCAL_LOGIN_EMAIL'] ?? null]);
+        config(['concierge.local_login' => FreshClone::localLogin('local')]);
         app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
         app('router')->getRoutes()->refreshNameLookups();
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);

@@ -4,10 +4,13 @@ use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
+use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/FreshClone.php';
 
 /** The sign-in page offers Concierge's one-click local sign-in exactly when Concierge says it is available. */
 final class LocalLoginOfferTest extends TestCase
@@ -50,6 +53,27 @@ final class LocalLoginOfferTest extends TestCase
     {
         $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('component', 'Auth/Login/Page')
             ->assertJsonPath('props.localLogin', null);
+    }
+
+    public function test_a_fresh_clone_with_no_concierge_keys_offers_sign_in_only_when_local(): void
+    {
+        $this->assertSame(['enabled' => true, 'account' => ['email' => 'owner@example.com']], FreshClone::localLogin('local'));
+        $this->assertFalse(FreshClone::localLogin('production')['enabled']);
+        $this->assertFalse(FreshClone::localLogin('local', ['CONCIERGE_LOCAL_LOGIN' => 'false'])['enabled']);
+        $this->assertSame('dev@example.test', FreshClone::localLogin('local', ['CONCIERGE_LOCAL_LOGIN_EMAIL' => 'dev@example.test'])['account']['email']);
+        // The key cannot turn it on in production: config says enabled, the runtime check refuses.
+        $this->assertTrue(FreshClone::localLogin('production', ['CONCIERGE_LOCAL_LOGIN' => 'true'])['enabled']);
+        config(['concierge.local_login' => FreshClone::localLogin('production', ['CONCIERGE_LOCAL_LOGIN' => 'true'])]);
+        $environment = getenv('APP_ENV');
+        try {
+            putenv('APP_ENV=production');
+            $this->app['env'] = 'production';
+            $this->assertFalse(app(LocalLogin::class)->isAvailable());
+            $this->get('/login', $this->inertia())->assertOk()->assertJsonPath('props.localLogin', null);
+        } finally {
+            putenv('APP_ENV='.$environment);
+            $this->app['env'] = $environment;
+        }
     }
 
     /** @return array<string, string> */

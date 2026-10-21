@@ -1,7 +1,9 @@
 <?php
 
-use Dotenv\Dotenv;
+require_once __DIR__.'/../Concerns/FreshClone.php';
+
 use Illuminate\Contracts\Console\Kernel;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Concierge\Support\ConciergeModels;
@@ -20,14 +22,13 @@ it('lays the sign-in and invitation cards out as full-width guest forms', functi
     try {
         putenv('APP_ENV=local');
         app()['env'] = 'local';
-        $example = Dotenv::parse((string) file_get_contents(base_path('.env.example')));
-        config(['concierge.local_login.enabled' => ($example['CONCIERGE_LOCAL_LOGIN'] ?? null) === 'true', 'concierge.local_login.account.email' => $example['CONCIERGE_LOCAL_LOGIN_EMAIL'] ?? null]);
+        config(['concierge.local_login' => FreshClone::localLogin('local')]);
         app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
         app('router')->getRoutes()->refreshNameLookups();
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
         $workspace = Workspace::query()->sole();
-        $owner = ConciergeModels::user()::query()->where('email', $example['CONCIERGE_LOCAL_LOGIN_EMAIL'])->firstOrFail();
+        $owner = ConciergeModels::user()::query()->where('email', config('concierge.local_login.account.email'))->firstOrFail();
         $invite = InviteMember::run($owner, $workspace, 'newcomer@example.test', new GrantSet(['viewer']));
 
         foreach ([[1440, 800], [390, 844]] as [$width, $height]) {

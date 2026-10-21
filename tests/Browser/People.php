@@ -1,9 +1,11 @@
 <?php
 
+require_once __DIR__.'/../Concerns/FreshClone.php';
+
 use App\Models\User;
-use Dotenv\Dotenv;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Hash;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
@@ -18,13 +20,12 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
     try {
         putenv('APP_ENV=local');
         app()['env'] = 'local';
-        $example = Dotenv::parse((string) file_get_contents(base_path('.env.example')));
-        config(['concierge.local_login.enabled' => ($example['CONCIERGE_LOCAL_LOGIN'] ?? null) === 'true', 'concierge.local_login.account.email' => $example['CONCIERGE_LOCAL_LOGIN_EMAIL'] ?? null]);
+        config(['concierge.local_login' => FreshClone::localLogin('local')]);
         app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
         app('router')->getRoutes()->refreshNameLookups();
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
-        $owner = ConciergeModels::user()::query()->where('email', $example['CONCIERGE_LOCAL_LOGIN_EMAIL'])->firstOrFail();
+        $owner = ConciergeModels::user()::query()->where('email', config('concierge.local_login.account.email'))->firstOrFail();
         $owner->forceFill(['password' => Hash::make('people-test-pass-1')])->save();
         $workspace = Workspace::query()->firstOrFail();
         // A viewer to act on, and a lot of members so the list pages.

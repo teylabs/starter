@@ -1,8 +1,10 @@
 <?php
 
-use Dotenv\Dotenv;
+require_once __DIR__.'/../Concerns/FreshClone.php';
+
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Hash;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Actions\InviteTenant;
@@ -19,13 +21,12 @@ use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 /** Signs the local owner in and returns the page. */
 function shellSignIn(): mixed
 {
-    $example = Dotenv::parse((string) file_get_contents(base_path('.env.example')));
-    config(['concierge.local_login.enabled' => ($example['CONCIERGE_LOCAL_LOGIN'] ?? null) === 'true', 'concierge.local_login.account.email' => $example['CONCIERGE_LOCAL_LOGIN_EMAIL'] ?? null]);
+    config(['concierge.local_login' => FreshClone::localLogin('local')]);
     app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
     app('router')->getRoutes()->refreshNameLookups();
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
-    ConciergeModels::user()::query()->where('email', $example['CONCIERGE_LOCAL_LOGIN_EMAIL'])->firstOrFail()->forceFill(['password' => Hash::make('shell-test-pass-1')])->save();
+    ConciergeModels::user()::query()->where('email', config('concierge.local_login.account.email'))->firstOrFail()->forceFill(['password' => Hash::make('shell-test-pass-1')])->save();
 
     return visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
 }
