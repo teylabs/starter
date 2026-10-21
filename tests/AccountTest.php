@@ -214,6 +214,18 @@ final class AccountTest extends TestCase
     public function test_signed_in_devices_are_listed_and_ended_only_with_the_database_driver(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
+        // Not the database driver to begin with, whatever an earlier test or the environment left in the config; put back afterwards.
+        $driver = config('session.driver');
+        config(['session.driver' => 'array']);
+        try {
+            $this->devicesAreListedAndEndedOnlyWithTheDatabaseDriver();
+        } finally {
+            config(['session.driver' => $driver]);
+        }
+    }
+
+    private function devicesAreListedAndEndedOnlyWithTheDatabaseDriver(): void
+    {
         $this->signIn(1);
         $page = $this->get('/me/security', $this->inertia())->assertOk()->json('props.sessions');
         $this->assertFalse($page['supported']);
@@ -233,7 +245,7 @@ final class AccountTest extends TestCase
         $this->assertNotSame('', $current);
         DB::table('sessions')->where('id', $current)->update(['ip_address' => '127.0.0.1', 'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit Version/17.0 Safari/605.1.15']);
         DB::table('sessions')->insert([['id' => 'phone', 'user_id' => 1, 'ip_address' => '198.51.100.4', 'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604', 'payload' => '', 'last_activity' => time() - 3600]]);
-        $page = $this->get('/me/security', $this->inertia())->json('props.sessions');
+        $page = $this->get('/me/security', $this->inertia())->assertOk()->json('props.sessions');
         $this->assertTrue($page['supported']);
         $this->assertContains('Safari on iOS', array_column($page['items'], 'agent'));
         // The row of the session being read is marked, the others are not.

@@ -76,8 +76,11 @@ it('signs the first owner in with one click and reaches the app shell', function
         // On a phone the same control is in the drawer.
         $page->resize(390, 844)->click('[data-shell-menu-button]')->assertPresent('[data-shell-sheet] [data-appearance-toggle]');
         $page->keys('[data-shell-sheet]', 'Escape')->resize(1440, 900);
+        // The drawer is closing and the layout is moving back to desktop: let both finish, or the click can land on a menu that is closed again a moment later.
+        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 500))');
 
         $page->click('[data-shell-user-menu]')
+            ->assertPresent('[role=menu]')
             ->assertSee('Local owner')
             ->assertSee('owner@example.com');
         settled($page)->screenshot(filename: 'user-menu');
