@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Concerns\AssertsPlaceholder;
@@ -24,7 +27,6 @@ final class PlaceholderTest extends TestCase
     {
         parent::setUp();
         config(['app.name' => 'Product name']);
-        PlaceholderRoutes::reset();
     }
 
     private function inertia(): array
@@ -47,7 +49,7 @@ final class PlaceholderTest extends TestCase
         $registry = app(Registry::class);
         $registry->placeholder('orders.index', 'orders', 'dashboard.read', 'Orders', 'Every order with its status and next step.', ['Orders'], 'full', 'the Orders release', [['label' => 'Back to the dashboard', 'route' => 'workspaces.dashboard.index'], ['label' => 'Manage people', 'route' => 'workspaces.people.index', 'ability' => 'members.manage']]);
         $registry->placeholder('billing.index', 'billing', 'members.manage', 'Billing', 'Plans and invoices.', ['Billing'], 'md');
-        PlaceholderRoutes::register();
+        app(PlaceholderRoutes::class)->register();
         app('router')->getRoutes()->refreshNameLookups();
     }
 
@@ -99,7 +101,7 @@ final class PlaceholderTest extends TestCase
         $registry->placeholder('workspaces.dashboard.index', 'forgotten', null, 'Dashboard', 'The real page landed and the line stayed.');
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('shares its route name');
-        PlaceholderRoutes::register();
+        app(PlaceholderRoutes::class)->register();
     }
 
     public function test_the_registry_refuses_a_version_a_date_more_than_three_links_and_a_twin(): void
@@ -129,7 +131,7 @@ final class PlaceholderTest extends TestCase
     {
         require dirname(__DIR__).'/database/fixture.php';
         app(Registry::class)->settingsSection('workspace', 'billing', 'Billing', 'Plans and invoices.', 'members.manage', 'Workspace', 30, 'credit-card', placeholder: true);
-        PlaceholderRoutes::register();
+        app(PlaceholderRoutes::class)->register();
         app('router')->getRoutes()->refreshNameLookups();
         $this->signIn(1);
         $sections = collect($this->get('/@alpha/settings', $this->inertia())->assertOk()->json('props.groups'))->flatMap(fn ($group) => $group['sections']);
@@ -147,5 +149,28 @@ final class PlaceholderTest extends TestCase
         $listed = collect($this->get('/@alpha/settings', $this->inertia())->json('props.groups'))->flatMap(fn ($group) => $group['sections'])->pluck('key')->all();
         $this->assertNotContains('billing', $listed);
         $this->get('/@alpha/settings/billing', $this->inertia())->assertNotFound();
+    }
+
+    public function test_two_applications_booted_in_one_process_each_get_their_own_placeholder_routes(): void
+    {
+        // What was declared is remembered per application, not per PHP process: a later boot in the same process (a test suite, a worker) loses nothing.
+        $first = $this->app;
+        $second = require __DIR__.'/application.php';
+        $second->make(Kernel::class)->bootstrap();
+        $this->assertNotSame($first->make(PlaceholderRoutes::class), $second->make(PlaceholderRoutes::class));
+        try {
+            foreach ([$first, $second] as $app) {
+                Container::setInstance($app);
+                Facade::setFacadeApplication($app);
+                $app->make(Registry::class)->placeholder('orders.index', 'orders', null, 'Orders', 'Every order with its status and next step.');
+                $app->make(PlaceholderRoutes::class)->register();
+                $app['router']->getRoutes()->refreshNameLookups();
+                $this->assertNotNull($app['router']->getRoutes()->getByName('orders.index'), 'the full form is declared in each application');
+                $this->assertNotNull($app['router']->getRoutes()->getByName('short.orders.index'), 'and the short form');
+            }
+        } finally {
+            Container::setInstance($first);
+            Facade::setFacadeApplication($first);
+        }
     }
 }

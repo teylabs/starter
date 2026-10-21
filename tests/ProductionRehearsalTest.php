@@ -165,4 +165,26 @@ final class ProductionRehearsalTest extends TestCase
         $this->assertSame(['PASSPORT_PRIVATE_KEY' => 'escaped-newlines', 'PASSPORT_PUBLIC_KEY' => 'missing'], PassportKeys::forms());
         $this->assertStringNotContainsString('MIIBVQ', json_encode(PassportKeys::forms()));
     }
+
+    public function test_the_file_takes_precedence_over_the_shell_and_nothing_the_shell_set_leaks_in(): void
+    {
+        // The shell has a mailer whose package is not installed (the file sets no mailer) and a cache store (the file sets another).
+        [$env] = $this->environment();
+        $lines = array_filter(explode("\n", (string) file_get_contents($env)), fn (string $line): bool => ! str_starts_with($line, 'MAIL_MAILER='));
+        file_put_contents($env, implode("\n", $lines)."\n");
+        $this->migrate($env);
+        putenv('MAIL_MAILER=postmark');
+        putenv('CACHE_STORE=array');
+        try {
+            [$exit, $output] = $this->preflight($env);
+        } finally {
+            putenv('MAIL_MAILER');
+            putenv('CACHE_STORE=array');
+        }
+        // MAIL_MAILER is not in the file, so the shell's postmark never reaches the child (it would have failed the mail check); CACHE_STORE is, and the file's value is the one used.
+        $this->assertSame(0, $exit, $output);
+        $this->assertStringNotContainsString('symfony/postmark-mailer', $output);
+        $this->assertMatchesRegularExpression('/Your shell sets [A-Z_, ]*CACHE_STORE/', $output, 'a shell variable that overrides a key in the file is warned about, by name');
+        $this->assertDoesNotMatchRegularExpression('/Your shell sets [A-Z_, ]*MAIL_MAILER/', $output, 'a shell variable the file does not set is not in the warning: it is simply not passed on');
+    }
 }
