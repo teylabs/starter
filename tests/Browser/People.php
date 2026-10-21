@@ -75,6 +75,13 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $page->click('[data-row]:has-text("Vera") [data-row-menu]')->click('[data-action="remove"]')->assertPresent('[data-confirm-dialog]')->assertSee('They lose access to this workspace straight away.');
         $page->click('[data-confirm-action]')->assertDontSee('Vera Viewer')->assertNoJavaScriptErrors();
 
+        // Sort by the Member column (ascending by default): it sends the server's own "name" sort, not the column key, with no error modal; a second click returns to the default.
+        $page->click('[data-sort="member"]')->assertQueryStringHas('sort', '-name')->assertMissing('[data-inertia-error], iframe')->assertNoJavaScriptErrors();
+        expect((string) $page->script('() => document.querySelector("th[data-column=member]").getAttribute("aria-sort")'))->toBe('descending');
+        $page->click('[data-sort="member"]');
+        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 500))');
+        expect(urldecode((string) $page->script('() => window.location.search')))->not->toContain('sort=');
+        expect((string) $page->script('() => document.querySelector("th[data-column=member]").getAttribute("aria-sort")'))->toBe('ascending');
         // Sort: the header button sets ?sort= and aria-sort follows; the order is the server's.
         $page->click('[data-sort="joined"]')->assertQueryStringHas('sort', 'joined');
         expect((string) $page->script('() => document.querySelector("th[data-column=joined]").getAttribute("aria-sort")'))->toBe('ascending');

@@ -163,6 +163,12 @@
     /* The shell. An app overrides these in its own CSS (or per brand): `--shell-bar` (a neutral near-black, in light and dark, opaque by default; give it an alpha and a `--shell-bar-blur` for a translucent header)
        and `--shell-bar-foreground` for the text and controls on it, `--shell-mark-brightness` and `--shell-mark-invert` (1 and 0 for a mark that already reads on the bar), `--shell-subbar` (the breadcrumb strip: translucent, so content scrolls under it) with its blur and hairline,
        and the mark slot: `--shell-mark-height` (fixed) and `--shell-mark-max-width` (the cap; narrower on phones), inside which the logomark scales with object-contain. */
+    /* The layers, low to high. Page content (sticky form footers, z-5) < the shell's sticky header and sub-bar (--z-header) < the modal stack (inertiaui/modal's own z-20 to z-40,
+       which lays out inside its own context) < menus, selects and popovers (--z-dropdown) < dialogs (--z-dialog, which a modal can open over itself) < toasts (--z-toast). */
+    --z-header: 10;
+    --z-dropdown: 50;
+    --z-dialog: 60;
+    --z-toast: 70;
     --shell-bar: hsl(240 10% 3.9%);
     --shell-bar-foreground: hsl(0 0% 98%);
     --shell-bar-border: hsl(240 4% 16%);

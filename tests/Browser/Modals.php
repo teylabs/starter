@@ -15,6 +15,18 @@ use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 // The kit's FormModal in a real browser, on People's Invite member and Change role: the modal opens over People from its server URL (also when that URL is opened directly), validation
 // errors stay in it, a successful submit closes it and refreshes People, closing with unsaved edits asks first, and the backdrop never closes a form.
+/** Waits until no modal layer is left in the page (its close animation done), then a beat for the modal stack to clear its base URL: opening the next one in the middle of that closes with the wrong URL. */
+function modalsSettled(mixed $page): void
+{
+    $page->script('() => new Promise((resolve) => { const started = Date.now(); const tick = () => (document.querySelectorAll(".im-modal-content, [data-form-modal]").length === 0 || Date.now() - started > 4000 ? setTimeout(() => resolve(true), 400) : setTimeout(tick, 50)); tick(); })');
+}
+
+/** Waits (up to four seconds) for the page to settle on a path, instead of a fixed sleep that races a busy machine. */
+function modalsWaitForPath(mixed $page, string $path): void
+{
+    $page->script('() => new Promise((resolve) => { const started = Date.now(); const tick = () => (location.pathname === '.json_encode($path).' || Date.now() - started > 4000 ? resolve(true) : setTimeout(tick, 50)); tick(); })');
+}
+
 it('opens, validates, submits and closes the form modals over People', function (): void {
     $environment = getenv('APP_ENV');
     try {
@@ -40,6 +52,11 @@ it('opens, validates, submits and closes the form modals over People', function 
         $page->click('[data-invite]')->assertPresent('[data-form-modal]')->assertPathIs('/settings/people/invitations')->assertSee('Invite member');
         $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 500))');
         expect((string) $page->script('() => document.activeElement?.id'))->toBe('invite-email');
+        // The modal stack sits above all shell chrome: at the header's and the sub-bar's own coordinates the top element is the backdrop or the modal, never the chrome, and the
+        // panel is centred in the viewport (not in the area below the header).
+        $layers = $page->script('() => { const at = (x, y) => document.elementFromPoint(x, y); const inChrome = (el) => !!el?.closest("[data-shell-top]"); const panel = document.querySelector("[data-form-modal]").closest(".im-modal-content").getBoundingClientRect(); return { header: inChrome(at(200, 30)), subbar: inChrome(at(200, 84)), centreY: Math.round(panel.top + panel.height / 2), viewportY: Math.round(window.innerHeight / 2) }; }');
+        expect([$layers['header'], $layers['subbar']])->toBe([false, false]);
+        expect(abs($layers['centreY'] - $layers['viewportY']))->toBeLessThanOrEqual(12);
         // The backdrop never closes a form: a click outside leaves it open.
         $page->script('() => { const backdrop = document.elementFromPoint(8, 8); backdrop?.dispatchEvent(new MouseEvent("click", { bubbles: true })); return true; }');
         $page->assertPresent('[data-form-modal]');
@@ -53,23 +70,25 @@ it('opens, validates, submits and closes the form modals over People', function 
         $page->click('[data-cancel-action]')->assertPresent('[data-form-modal]');
         $page->script('() => { document.querySelector("#invite-email").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); return true; }');
         $page->assertPresent('[data-confirm-dialog]')->click('[data-confirm-action]')->assertMissing('[data-form-modal]');
-        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 600))');
-        $page->assertPathIs('/settings/people');
+        modalsWaitForPath($page, '/settings/people');
+        expect($page->script('() => location.pathname'))->toBe('/settings/people');
         expect($count('invitations'))->toBe('0');
+        modalsSettled($page);
 
         // Success closes the modal and People refreshes (the invitation count moves).
         $page->click('[data-invite]')->assertPresent('[data-form-modal]');
         $page->type('#invite-email', 'new.person@example.test')->click('[data-form-submit]');
         $page->assertMissing('[data-form-modal]');
-        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 600))');
-        $page->assertPathIs('/settings/people');
+        modalsWaitForPath($page, '/settings/people');
+        expect($page->script('() => location.pathname'))->toBe('/settings/people');
         expect($count('invitations'))->toBe('1');
+        modalsSettled($page);
 
         // Opened directly, the URL shows People with the modal on top.
         $page->navigate('/settings/people/invitations')->assertPresent('[data-form-modal]')->assertSee('People');
         $page->click('[data-modal-close]')->assertMissing('[data-form-modal]');
-        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 600))');
-        $page->assertPathIs('/settings/people');
+        modalsWaitForPath($page, '/settings/people');
+        expect($page->script('() => location.pathname'))->toBe('/settings/people');
 
         // On a phone a small form modal is a bottom sheet: full width, its bottom on the viewport's bottom, rounded on top only.
         $page->resize(390, 844)->navigate('/settings/people')->click('[data-invite]')->assertPresent('[data-form-modal]');

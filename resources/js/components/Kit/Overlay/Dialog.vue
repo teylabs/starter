@@ -21,8 +21,8 @@ function confirm() {
     <AlertDialogRoot v-model:open="open">
         <AlertDialogTrigger v-if="$slots.default" as-child><slot /></AlertDialogTrigger>
         <AlertDialogPortal>
-            <AlertDialogOverlay class="fixed inset-0 z-50 bg-black/50" />
-            <AlertDialogContent class="fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border border-border bg-background p-6 text-foreground shadow-lg max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-b-none" data-confirm-dialog>
+            <AlertDialogOverlay class="fixed inset-0 z-(--z-dialog) bg-black/50" />
+            <AlertDialogContent class="fixed top-1/2 left-1/2 z-(--z-dialog) grid w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border border-border bg-background p-6 text-foreground shadow-lg max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-b-none" data-confirm-dialog>
                 <div class="flex gap-4">
                     <!-- The danger variant (the default) has an icon circle; `icon` replaces it, and a non-destructive confirm has none. -->
                     <slot name="icon"><span v-if="variant === 'danger'" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive" data-confirm-icon><TriangleAlert class="size-5" aria-hidden="true" /></span></slot>

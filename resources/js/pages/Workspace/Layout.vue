@@ -23,7 +23,7 @@ provide('kit.shell', true);
     <Head :title="page.props.layout?.documentTitle" />
     <div class="flex min-h-svh flex-col bg-background text-foreground">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
-        <div v-if="props.shell.user" class="sticky top-0 z-30" data-shell-top>
+        <div v-if="props.shell.user" class="sticky top-0 z-(--z-header)" data-shell-top>
             <header class="border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground backdrop-blur-(--shell-bar-blur)" data-shell-bar>
                 <div :class="['mx-auto flex h-16 min-w-0 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <!-- The mark slot holds the product SYMBOL only (no name text; the name is in the document title, the guest card and the footer): a fixed box (--shell-mark-height, capped by --shell-mark-max-width), the logomark scaling inside it. -->

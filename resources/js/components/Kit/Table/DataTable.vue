@@ -16,7 +16,7 @@ import RowActions from './RowActions.vue';
  */
 type Action = { key: string | null; label: string; url: string; method: string; destructive: boolean; confirm: { title: string; description: string; label: string } | null };
 type Row = Record<string, any> & { id: string | number; actions?: Action[] };
-type Column = { key: string; label: string; sortable: boolean; hideable: boolean; hiddenByDefault: boolean; align: string | null; srOnlyLabel: boolean };
+type Column = { key: string; label: string; sortable: boolean; hideable: boolean; hiddenByDefault: boolean; align: string | null; srOnlyLabel: boolean; sortBy: string | null };
 type Table = {
     rows: Row[];
     columns: Column[];
@@ -65,7 +65,9 @@ const clear = () => visit({ search: null, filters: Object.fromEntries(Object.key
 const ariaSort = (column: Column) => (!column.sortable || props.table.sort?.column !== column.key ? 'none' : props.table.sort.direction === 'desc' ? 'descending' : 'ascending');
 function sortBy(column: Column) {
     const active = props.table.sort?.column === column.key;
-    visit({ sort: !active ? column.key : props.table.sort?.direction === 'asc' ? `-${column.key}` : null });
+    // The `?sort=` value is the column's own `sortBy` (what the server allows), not necessarily its key.
+    const param = column.sortBy ?? column.key;
+    visit({ sort: !active ? param : props.table.sort?.direction === 'asc' ? `-${param}` : null });
 }
 
 // ---- columns: TanStack, headless ----------------------------------------------------------------------------------------------------------------------

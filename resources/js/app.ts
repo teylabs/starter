@@ -1,8 +1,9 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
 import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
 import { initializeTheme } from '@kit/ui';
+import { toast } from 'vue-sonner';
 import { honourReducedMotion } from '@/lib/reduced-motion';
 import ShellLayout from '@/layouts/ShellLayout.vue';
 
@@ -48,6 +49,11 @@ createInertiaApp({
 });
 
 initializeTheme();
+// A `toast` the server flashes with a redirect (a cleared bad sort, say) is shown as one.
+router.on('flash', (event) => {
+    const message = (event.detail.flash as { toast?: { message?: string } } | undefined)?.toast?.message;
+    if (message) toast(message);
+});
 // Not the browser's native <dialog>: it sits in the top layer, above every <Dialog> that a modal opens over itself.
 putConfig({ useNativeDialog: false });
 honourReducedMotion();

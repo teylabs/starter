@@ -316,4 +316,43 @@ final class PeopleTest extends TestCase
         $this->get('/@alpha/settings/people/invitations', [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
         $this->get('/@alpha/settings/people/members/'.$viewer->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
     }
+
+    public function test_every_sortable_column_toggles_ascending_and_descending_on_each_tab_from_its_own_descriptor(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        foreach (['members', 'invitations'] as $tab) {
+            $columns = $this->people('?tab='.$tab)['table']['columns'];
+            $sortable = array_values(array_filter($columns, fn (array $column): bool => $column['sortable']));
+            $this->assertNotEmpty($sortable, $tab.' has sortable columns');
+            foreach ($sortable as $column) {
+                // The table sends the descriptor's own sort value, so what it sends is always allowed.
+                $param = $column['sortBy'] ?? $column['key'];
+                foreach ([$param, '-'.$param] as $sort) {
+                    $table = $this->getJson('/@alpha/settings/people?tab='.$tab.'&sort='.$sort)->assertOk()->json('table');
+                    $this->assertSame($column['key'], $table['sort']['column'], $tab.' '.$sort);
+                    $this->assertSame(str_starts_with($sort, '-') ? 'desc' : 'asc', $table['sort']['direction'], $tab.' '.$sort);
+                }
+            }
+        }
+        // The Member column is sorted by the server's "name", not its own key.
+        $this->assertSame('name', collect($this->people()['table']['columns'])->firstWhere('key', 'member')['sortBy']);
+    }
+
+    public function test_a_bad_sort_or_filter_never_reaches_the_client_as_a_raw_400(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        // An Inertia visit goes back to the page without the bad parameter, and flashes a toast; the cleared page then loads.
+        $this->get('/@alpha/settings/people?tab=invitations&sort=bogus', $this->inertia())->assertRedirect('/@alpha/settings/people?tab=invitations')->assertStatus(303);
+        $this->get('/@alpha/settings/people?filter%5Bbogus%5D=1', $this->inertia())->assertStatus(303);
+        $this->get('/@alpha/settings/people', $this->inertia())->assertOk();
+        // JSON keeps a readable 400; a plain browser request gets the kit's error page with the status, not Symfony's bare default.
+        $this->getJson('/@alpha/settings/people?sort=bogus')->assertStatus(400)->assertJsonPath('error', 'invalid_query');
+        $html = $this->get('/@alpha/settings/people?sort=bogus', ['Accept' => 'text/html'])->assertStatus(400);
+        $this->assertMatchesRegularExpression('#Workspace\\\\?/Error\\\\?/Page#', $html->getContent());
+        $missing = $this->get('/this-page-does-not-exist', ['Accept' => 'text/html'])->assertNotFound();
+        $this->assertMatchesRegularExpression('#Workspace\\\\?/Error\\\\?/Page#', $missing->getContent(), 'a missing page is the kit error page');
+        $this->assertStringNotContainsString('Symfony', $missing->getContent());
+    }
 }

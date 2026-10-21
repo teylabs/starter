@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-    <div ref="bar" data-form-actions :data-state="state" :data-pinned="sticky && pinned" :class="['relative z-20 flex flex-wrap items-center justify-end gap-3 border-t px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-colors', sticky && 'sticky bottom-0', sticky && pinned ? 'border-border bg-background/95 shadow-[0_-4px_12px_-8px_rgb(0_0_0/0.15)]' : 'border-transparent']">
+    <div ref="bar" data-form-actions :data-state="state" :data-pinned="sticky && pinned" :class="['relative z-5 flex flex-wrap items-center justify-end gap-3 border-t px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-colors', sticky && 'sticky bottom-0', sticky && pinned ? 'border-border bg-background/95 shadow-[0_-4px_12px_-8px_rgb(0_0_0/0.15)]' : 'border-transparent']">
         <div v-if="progress !== null" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="Math.round(progress)" class="absolute inset-x-0 top-0 h-0.5 bg-muted" data-form-progress><div class="h-full bg-primary" :style="{ width: `${progress}%` }" /></div>
         <slot name="status" :state="state">
             <span :class="['min-h-5 flex-1 text-right text-sm', statusClass]" data-form-status :data-state="state">{{ statusText }}</span>
