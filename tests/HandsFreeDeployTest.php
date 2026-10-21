@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Tests\Concerns\DefaultBrand;
 use Tey\Kit\Brand;
 use Tey\Kit\Features\Core\Registry;
-use Tests\Concerns\DefaultBrand;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
