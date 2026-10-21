@@ -61,5 +61,13 @@
             ]
         ]
     ],
-    "foreign_keys": []
+    "foreign_keys": [
+        [
+            "user_id",
+            "users",
+            "id",
+            "NO ACTION",
+            "CASCADE"
+        ]
+    ]
 }

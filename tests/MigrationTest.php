@@ -52,6 +52,7 @@ final class MigrationTest extends TestCase
             '0001_01_02_000500_create_kit_security_events_table',
             '0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table',
             '0001_01_02_000502_create_kit_user_state_table',
+            '0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table',
             '0001_01_02_000600_create_kit_mcp_tables',
             '2016_06_01_000001_create_oauth_auth_codes_table',
             '2016_06_01_000002_create_oauth_access_tokens_table',
