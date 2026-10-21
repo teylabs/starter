@@ -21,6 +21,7 @@ export type Breadcrumb = {
 label: string,
 url: string | null,
 current: boolean,
+home: boolean,
 };
 export type NavGroup = {
 label: string | null,
@@ -33,11 +34,16 @@ current: boolean,
 icon: string | null,
 badge: string | null,
 };
+export type NavigationHeader = {
+label: string,
+url: string,
+};
 export type PageLayout = {
 navigation: Tey.Kit.Features.Core.Data.NavGroup[],
 title: string,
 documentTitle: string,
 breadcrumbs: Tey.Kit.Features.Core.Data.Breadcrumb[],
+navigationHeader: Tey.Kit.Features.Core.Data.NavigationHeader | null,
 };
 export type TableColumn = {
 key: string,
@@ -80,10 +86,20 @@ current: boolean,
 }
 }
 export namespace Mcp {
+export namespace Data {
+export type AssistantClient = {
+key: string,
+label: string,
+summary: string,
+install: Tey.Kit.Features.Core.Data.Action | null,
+command: string | null,
+steps: string[],
+};
+}
 export namespace ViewModels {
 export type ConnectionsViewModel = {
 readonly title: string,
-readonly tokens: {
+readonly pending: {
 id: string,
 label: string,
 }[],
@@ -92,15 +108,11 @@ key: string,
 description: string,
 required: boolean,
 }[],
-readonly connections: {
-id: number,
-revoked: boolean,
-expires_at: string | null,
-endpoint: string,
-revoke_url: string,
-}[],
-readonly create_url: string,
+readonly table: Tey.Kit.Features.Core.Data.TableData,
+readonly approve: Tey.Kit.Features.Core.Data.Action | null,
 readonly intent_key: string,
+readonly server_url: string,
+readonly assistants: Tey.Kit.Features.Mcp.Data.AssistantClient[],
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
@@ -123,11 +135,24 @@ url: string,
 },
 };
 export type ShellData = {
+account: {
+label: string,
+url: string,
+current: boolean,
+},
 product: {
 name: string,
 url: string,
 logomark: string | null,
 },
+workspace: {
+id: number,
+name: string,
+url: string | null,
+settings: Tey.Kit.Features.Core.Data.Action | null,
+all: Tey.Kit.Features.Core.Data.Action | null,
+leave: Tey.Kit.Features.Core.Data.Action | null,
+} | null,
 switcher: {
 current: {
 id: number,
@@ -139,7 +164,7 @@ name: string,
 url: string | null,
 current: boolean,
 }[],
-},
+} | null,
 navigation: {
 label: string,
 url: string,
@@ -165,7 +190,6 @@ switcher: string,
 sign_in: string,
 sign_out: string | null,
 },
-env: string | null,
 footer: {
 identity: string,
 credit: string,
@@ -182,6 +206,15 @@ readonly title: string,
 readonly status: string | null,
 readonly email: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type ChangeRoleViewModel = {
+readonly title: string,
+readonly role: string | null,
+readonly roles: {
+value: string,
+label: string,
+}[],
+readonly submit: Tey.Kit.Features.Core.Data.Action,
 };
 export type DashboardViewModel = {
 readonly title: string,
@@ -214,6 +247,14 @@ readonly register_url: string,
 readonly login_url: string,
 readonly workspace_url: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type InviteMemberViewModel = {
+readonly title: string,
+readonly roles: {
+value: string,
+label: string,
+}[],
+readonly submit: Tey.Kit.Features.Core.Data.Action,
 };
 export type LoginViewModel = {
 readonly title: string,
@@ -323,14 +364,8 @@ export namespace ViewModels {
 export type EditSettingsViewModel = {
 readonly title: string,
 readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
-readonly save: Tey.Kit.Features.Core.Data.Action,
+readonly save: Tey.Kit.Features.Core.Data.Action | null,
 readonly intent_key: string,
-readonly transfer: Tey.Kit.Features.Core.Data.Action | null,
-readonly heirs: {
-value: string,
-label: string,
-}[],
-readonly leave: Tey.Kit.Features.Core.Data.Action | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }

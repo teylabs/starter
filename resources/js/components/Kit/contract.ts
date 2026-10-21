@@ -19,8 +19,8 @@ export interface TimezoneSelectProps { id?: string; name?: string; disabled?: bo
 /** A checkbox (`v-model`: boolean) with its label in the default slot. */
 export interface CheckboxProps { id: string; name?: string; value?: string; disabled?: boolean }
 
-/** A button: `primary`, `secondary` or `destructive`; a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
-export interface ButtonProps { variant?: 'primary' | 'secondary' | 'destructive'; type?: 'submit' | 'button' }
+/** A button: `primary`, `secondary`, `destructive`, or `bar` (a ghost for controls on the shell's header bar, from `--shell-bar-foreground`); a submit button unless `type` says otherwise. The default slot is its label; other attributes (disabled, @click) pass through. */
+export interface ButtonProps { variant?: 'primary' | 'secondary' | 'destructive' | 'bar'; type?: 'submit' | 'button' }
 
 /** The root of every page: the header (the `title` prop, or `title` here, and an `actions` slot) and the content in one column. the width is a boolean prop (`<Page sm>`: `xs`, `sm`, `md`, `lg`, `xl`, or `full`); none is full (the default: the whole shell, for lists and tables), and fixed-content pages declare a focused one. `state` swaps the content for the `loading`, `empty` or `error` slot. FocusPage is internal to it. */
 export interface PageProps { xs?: boolean; sm?: boolean; md?: boolean; lg?: boolean; xl?: boolean; full?: boolean; title?: string; heading?: boolean; state?: 'ready' | 'loading' | 'empty' | 'error' }
@@ -61,15 +61,26 @@ export interface FormCardProps extends FormActionsProps { title?: string; descri
 /** A group of fields inside a FormCard, with a legend and a line under it. */
 export interface FormFieldsetProps { legend: string; description?: string }
 
-/** The confirmation a destructive action goes through (Reka AlertDialog): the trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without a trigger. */
-export interface ConfirmDialogProps { title: string; description?: string; confirmLabel?: string; cancelLabel?: string; destructive?: boolean }
+/** The kit's Dialog: a confirmation or a prompt (static; never a form), `variant` danger (icon circle, destructive action) or neutral; `action` is a server action the dialog performs. The trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without one. Slots: icon, title, body, footer. Bottom-aligned on phones. */
+export interface DialogProps { title: string; description?: string; confirmLabel?: string; cancelLabel?: string; variant?: 'danger' | 'neutral'; action?: { url: string; method: string } }
 
-/** A modal dialog (Reka Dialog) for a form that does not need a page: `title`, an optional `description`, the body in the default slot, the opener in the `trigger` slot (or `v-model:open`). */
-export interface DialogProps { title: string; description?: string }
 
 /**
  * A server-driven index table (TanStack headless, Tailwind). `table` is the server's TableData: rows, columns, sort, search, filters, tabs, pagination and the empty state, with each
  * row's `actions` already decided. Every change is an Inertia visit with the state in the URL. Slots: `cell-<key>` ({ row, value }), `row-actions`, `toolbar`, `empty-first-use`,
  * `empty-no-results`. `intercept` names row actions the page performs itself (`@act`). Nothing here checks a permission.
  */
-export interface DataTableProps { table: object; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[] }
+export interface DataTableProps { table: object; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[]; toolbar?: boolean }
+
+/** Vertical rhythm between sibling blocks: `flex flex-col gap-4` (`class="gap-6"` for a deliberate other rhythm). Spacing has one owner: siblings carry no margins. `as` / `asChild` as Reka's Primitive. */
+export interface BlockStackProps { as?: string; asChild?: boolean }
+
+/** Inline controls in one row that owns the gap and alignment: `overflow` (`wrap` | `scroll`) and `layout` (`inline` | `heading`). It never styles its children. */
+export interface ToolbarProps { as?: string; asChild?: boolean; overflow?: 'wrap' | 'scroll'; layout?: 'inline' | 'heading' }
+
+/**
+ * The kit's Modal: content and forms in a layer over the page, ONE component for a server-driven modal page (inertiaui/modal, detected automatically) and for local use with `v-model:open`.
+ * A fixed header, a scrolling body and a footer; with `submit` (the server's action) it is a form with FormActions as the sticky footer. Closing asks first with unsaved edits; the backdrop never closes it.
+ * `size` sm | md | lg | xl | full; `slideover`; bottom sheet (sm, md) or full screen (the rest) on phones.
+ */
+export interface ModalProps { title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; confirmMessage?: string }
