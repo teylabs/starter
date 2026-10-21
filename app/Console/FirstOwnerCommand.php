@@ -17,8 +17,10 @@ use function Laravel\Prompts\text;
 
 /**
  * Local only: the first owner and their workspace, through Concierge's tenant invitation and the kit's acceptance,
- * so the app is provisioned exactly as in production. Refuses outside the local environment and once any user
- * exists. There is no default password: it is prompted for, or generated and shown once without --interaction.
+ * so the app is provisioned exactly as in production. Refuses outside the local environment. Idempotent: the local owner
+ * (the one-click sign-in's account) who exists without a workspace, as after a first click on an older database, gets one;
+ * once they belong to a workspace, or other users exist without them, nothing is created. There is no default password for
+ * a new owner: it is prompted for, or generated and shown once without --interaction.
  */
 final class FirstOwnerCommand extends Command
 {
@@ -32,6 +34,10 @@ final class FirstOwnerCommand extends Command
             $this->error('starter:first-owner runs in the local environment only; nothing was created.');
 
             return self::FAILURE;
+        }
+        $existing = User::query()->where('email', $this->option('email') ?: (config('concierge.local_login.account.email') ?: 'owner@example.com'))->first();
+        if ($existing instanceof User) {
+            return $this->provisionFor($existing);
         }
         if (User::query()->exists()) {
             $this->info('Users already exist; nothing was created.');
@@ -50,15 +56,8 @@ final class FirstOwnerCommand extends Command
         }
         $workspace = DB::transaction(function () use ($name, $email, $secret, $workspaceName): int {
             $owner = User::create(['name' => $name, 'email' => $email, 'email_verified_at' => now(), 'password' => Hash::make($secret)]);
-            // The local owner operates their own install; tenant invitations need an operator.
-            DB::table('operators')->insert(['actor_id' => $owner->id]);
-            $invitation = InviteTenant::run($owner, $owner->email);
 
-            $workspace = app(AcceptWorkspaceInvitation::class)->handle(new Principal((int) $owner->id), $invitation->token)['workspace_id'];
-            // Provisioning names the workspace after its owner; give it its own name so it never reads as the person.
-            Workspace::query()->whereKey($workspace)->update(['name' => $workspaceName]);
-
-            return $workspace;
+            return $this->workspaceFor($owner, $workspaceName);
         });
 
         $this->info('Created '.$email.' as the owner of '.$workspaceName.' (workspace '.$workspace.').');
@@ -67,5 +66,36 @@ final class FirstOwnerCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /** The local owner is already there: a workspace they own is all that can be missing. */
+    private function provisionFor(User $owner): int
+    {
+        if (Workspace::query()->memberOf($owner)->exists()) {
+            $this->info($owner->email.' already belongs to a workspace; nothing was created.');
+
+            return self::SUCCESS;
+        }
+        if ($this->call('concierge:sync-roles', ['--no-interaction' => true]) !== self::SUCCESS || $this->call('kit:permissions:sync', ['--no-interaction' => true]) !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+        $name = (string) ($this->option('workspace') ?: 'Local workspace');
+        $workspace = DB::transaction(fn (): int => $this->workspaceFor($owner, $name));
+        $this->info('Created '.$name.' (workspace '.$workspace.') for '.$owner->email.'.');
+
+        return self::SUCCESS;
+    }
+
+    private function workspaceFor(User $owner, string $workspaceName): int
+    {
+        // The local owner operates their own install; tenant invitations need an operator.
+        DB::table('operators')->insertOrIgnore(['actor_id' => $owner->id]);
+        $invitation = InviteTenant::run($owner, $owner->email);
+
+        $workspace = app(AcceptWorkspaceInvitation::class)->handle(new Principal((int) $owner->id), $invitation->token)['workspace_id'];
+        // Provisioning names the workspace after its owner; give it its own name so it never reads as the person.
+        Workspace::query()->whereKey($workspace)->update(['name' => $workspaceName]);
+
+        return $workspace;
     }
 }
