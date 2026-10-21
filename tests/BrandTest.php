@@ -108,14 +108,14 @@ final class BrandTest extends TestCase
         $this->assertStringContainsString('property="og:image" content="'.asset('og-image.png').'"', $head);
     }
 
-    public function test_mail_is_from_the_product_replies_to_hello_and_carries_the_brand(): void
+    public function test_mail_is_from_the_product_replies_to_support_and_carries_the_brand(): void
     {
         config(['mail.default' => 'array', 'kit.brand.legal_name' => 'Acme Holdings', 'kit.brand.postal_address' => '5 Test Road, Testville', 'kit.brand.support_email' => 'help@acme.test']);
-        // The kit applies the brand to the mailers: the sender is the product's name (never "Example") and replies go to hello.
+        // The kit applies the brand to the mailers: the sender is the product's name (never "Example") and replies go to support.
         Brand::applyToMail();
         $this->assertSame('Product name', config('mail.from.name'));
         $this->assertSame('updates@example.com', config('mail.from.address'));
-        $this->assertSame('hello@example.com', config('mail.reply_to.address'));
+        $this->assertSame('help@acme.test', config('mail.reply_to.address'));
         $notification = new class extends Notification
         {
             public function via(): array
@@ -134,7 +134,7 @@ final class BrandTest extends TestCase
         $email = $sent[0]->getOriginalMessage();
         $this->assertSame('Product name', $email->getFrom()[0]->getName());
         $this->assertSame('updates@example.com', $email->getFrom()[0]->getAddress());
-        $this->assertSame('hello@example.com', $email->getReplyTo()[0]->getAddress());
+        $this->assertSame('help@acme.test', $email->getReplyTo()[0]->getAddress());
         $html = (string) $email->getHtmlBody();
         // The accent is a literal colour on the button and on a thin rule on the 570px header content, not the full-width header.
         $this->assertSame('#52525b', Brand::accent());
@@ -204,6 +204,7 @@ final class BrandTest extends TestCase
         config(['kit.brand.private' => true]);
         $this->assertNotContains('brand.legal_name', Brand::placeholders());
         $this->assertNotContains('brand.terms_url', Brand::placeholders());
+        $this->assertNotContains('brand.privacy_email', Brand::placeholders());
         $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
     }
 
@@ -216,7 +217,7 @@ final class BrandTest extends TestCase
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
-        $this->get('/dashboard', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy']]]);
+        $this->get('/dashboard', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy'], ['label' => 'Privacy requests', 'url' => 'mailto:privacy@example.com']]]);
         // A client build overrides the credit line; the identity can differ from the product name.
         config(['kit.brand.credit_verb' => 'Made', 'kit.brand.credit_org' => 'A Studio', 'kit.brand.credit_for' => 'Client Co', 'kit.brand.identity' => 'Client Co Platform']);
         $this->get('/dashboard', $inertia)->assertJsonPath('props.shell.footer.identity', 'Client Co Platform')->assertJsonPath('props.shell.footer.credit', 'Made by A Studio, for Client Co');
@@ -242,8 +243,8 @@ final class BrandTest extends TestCase
 
     public function test_placeholders_lists_the_defaults_and_is_empty_once_configured(): void
     {
-        $this->assertEqualsCanonicalizing(['brand.name', 'brand.logomark', 'brand.accent', 'brand.hello_email', 'brand.support_email', 'brand.mail_from_address', 'brand.legal_name', 'brand.postal_address', 'brand.terms_url', 'brand.privacy_url'], Brand::placeholders());
-        config(['app.name' => 'Real Product', 'kit.brand' => [...config('kit.brand'), 'logomark' => '/real-mark.svg', 'accent' => '#0f766e', 'hello_email' => 'hello@real.test', 'support_email' => 'support@real.test', 'mail_from_address' => 'updates@real.test', 'legal_name' => 'Real Ltd', 'postal_address' => '9 Real Street, Realtown', 'terms_url' => '/legal/terms', 'privacy_url' => '/legal/privacy']]);
+        $this->assertEqualsCanonicalizing(['brand.name', 'brand.logomark', 'brand.accent', 'brand.hello_email', 'brand.support_email', 'brand.privacy_email', 'brand.mail_from_address', 'brand.legal_name', 'brand.postal_address', 'brand.terms_url', 'brand.privacy_url'], Brand::placeholders());
+        config(['app.name' => 'Real Product', 'kit.brand' => [...config('kit.brand'), 'logomark' => '/real-mark.svg', 'accent' => '#0f766e', 'hello_email' => 'hello@real.test', 'support_email' => 'support@real.test', 'privacy_email' => 'privacy@real.test', 'mail_from_address' => 'updates@real.test', 'legal_name' => 'Real Ltd', 'postal_address' => '9 Real Street, Realtown', 'terms_url' => '/legal/terms', 'privacy_url' => '/legal/privacy']]);
         $this->assertSame([], Brand::placeholders());
         // Only keys are named, never values.
         config(['kit.brand.accent' => '#52525b']);
