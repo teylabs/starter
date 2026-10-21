@@ -28,7 +28,7 @@ watch(model, async () => {
         <SelectPortal>
             <SelectContent position="popper" :side-offset="4" class="z-50 max-h-72 min-w-(--reka-select-trigger-width) overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
                 <SelectViewport class="p-1">
-                    <SelectItem v-for="option in options" :key="option.value" :value="option.value" class="relative flex cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground">
+                    <SelectItem v-for="option in options" :key="option.value" :value="option.value" class="relative flex cursor-pointer data-[disabled]:cursor-not-allowed items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground">
                         <SelectItemText>{{ option.label }}</SelectItemText>
                         <SelectItemIndicator class="absolute right-2 flex items-center"><Check class="size-4" aria-hidden="true" /></SelectItemIndicator>
                     </SelectItem>

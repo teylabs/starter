@@ -1,0 +1,16 @@
+/*
+ * The kit's base styles: the one stylesheet the kit owns. It is the single documented exception to "no hand-written CSS rules" (those are Tailwind utilities on the markup): the web
+ * feel for the cursor. Every clickable thing shows the pointer, a disabled one shows not-allowed, and a component that names a cursor itself (a utility) wins over this base layer.
+ * An app that wants the native arrow puts `kit-cursor-native` on <html>. Import it after Tailwind: `@import './kit.css';`.
+ */
+@layer base {
+    html:not(.kit-cursor-native) {
+        :is(button:not(:disabled), [role='button'], summary, label[for], select, a[href], [role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'], [role='tab'], [role='switch'], [role='checkbox'], [role='radio'], [role='option'], [role='combobox']) {
+            @apply cursor-pointer;
+        }
+
+        :is(:disabled, [aria-disabled='true'], [data-disabled]) {
+            @apply cursor-not-allowed;
+        }
+    }
+}

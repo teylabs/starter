@@ -31,3 +31,4 @@ The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, 
 - Work on a branch and open a draft pull request. Never push to `main`, merge, tag or release.
 - Every PR names its issue with `Closes #N`.
 - Never commit private project names, internal tooling references or local paths. `bin/privacy-check.sh` runs in CI.
+- No hand-written CSS rules: styling is Tailwind utilities on the markup. The one documented exception is `resources/css/kit.css`, the kit's own base stylesheet (the pointer cursor on clickable things and not-allowed on disabled ones, with a `kit-cursor-native` opt-out on `<html>`); an app does not add rules beside it.
