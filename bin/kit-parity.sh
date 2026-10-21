@@ -6,7 +6,7 @@
 set -eu
 template=$(cd "$(dirname "$0")/.." && pwd)
 app=$(cd "$1" && pwd)
-locked() { php -r '$l = json_decode(file_get_contents($argv[1]), true); foreach ($l["packages"] as $p) { if ($p["name"] === $argv[2]) { echo ltrim($p["version"], "v"); exit; } } exit(1);' "$template/composer.lock" "$1"; }
+locked() { php -r '$l = json_decode(file_get_contents($argv[1]), true); foreach ($l["packages"] as $p) { if ($p["name"] === $argv[2]) { $v = ltrim($p["version"], "v"); echo str_starts_with($v, "dev-") && isset($p["source"]["reference"]) ? $v."#".$p["source"]["reference"] : $v; exit; } } exit(1);' "$template/composer.lock" "$1"; }
 
 cd "$app"
 packages=""
