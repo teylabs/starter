@@ -47,6 +47,7 @@ const members = computed(() => props.tab === 'members');
                         <span class="flex min-w-0 flex-col">
                             <span class="truncate font-medium">{{ row.member.name }}<span v-if="row.member.is_you" class="font-normal text-muted-foreground"> (you)</span></span>
                             <span class="truncate text-muted-foreground">{{ row.member.email }}</span>
+                            <span v-if="row.member.invited_as" class="truncate text-xs text-muted-foreground" data-invited-as>Invited as {{ row.member.invited_as }}</span>
                         </span>
                     </span>
                 </template>

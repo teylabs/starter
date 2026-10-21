@@ -20,7 +20,9 @@ const body = computed(() => {
     const ask = props.invitation?.inviter ? props.invitation.inviter : 'the person who invited you';
     switch (props.state) {
         case 'ready':
-            return `Accept to join. Signed in as ${props.signed_in_as}.`;
+            return props.other_email ? `This invitation was sent to ${props.invitation?.email}. You are signed in as ${props.signed_in_as}, and you can join as that account instead.` : `Accept to join. Signed in as ${props.signed_in_as}.`;
+        case 'unverified':
+            return `This invitation was sent to ${props.invitation?.email}. To join as ${props.signed_in_as}, confirm its email address first, or switch to the account the invitation is for.`;
         case 'sign_in_required':
             return `You already have an account for ${props.invitation?.email}. Sign in with it and you will come straight back here to join.`;
         case 'register_required':
@@ -50,9 +52,14 @@ const body = computed(() => {
             <p class="text-sm text-muted-foreground" data-invitation-message :data-state="state">{{ body }}</p>
         </div>
         <Form v-if="state === 'ready'" v-slot="{ processing }" :action="accept_url" method="post" class="mt-6 grid gap-4">
-            <Button class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : 'Accept invitation' }}</Button>
-            <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">Not {{ signed_in_as }}? Switch account</Link>
+            <Button class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
+            <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">{{ other_email ? 'Switch account' : `Not ${signed_in_as}? Switch account` }}</Link>
+            <Link v-if="other_email" href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
         </Form>
+        <div v-else-if="state === 'unverified'" class="mt-6 grid gap-3" data-invitation-unverified>
+            <Link v-if="verify_url" :href="verify_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-verify">Verify your email to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
+            <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-switch-account">Switch account</Link>
+        </div>
         <div v-else-if="state === 'sign_in_required'" class="mt-6 grid gap-3">
             <Link ref="signIn" :href="login_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-sign-in">Sign in to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
         </div>

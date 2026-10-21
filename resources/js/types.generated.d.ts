@@ -289,6 +289,8 @@ readonly accept_url: string,
 readonly register_url: string,
 readonly login_url: string,
 readonly workspace_url: string | null,
+readonly other_email: boolean,
+readonly verify_url: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type InviteMemberViewModel = {

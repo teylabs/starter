@@ -126,8 +126,12 @@ final class FirstRunTest extends TestCase
 
         $other = $this->fork('signed-in-as-other');
         $page = $this->get($other, $this->inertia())->assertOk();
-        $page->assertJsonPath('props.state', 'wrong_account')->assertJsonPath('props.signed_in_as', 'invitee+1@example.test');
+        // By default a verified account with another email is offered "Join as ..."; strict matching keeps the wrong-account page.
+        $page->assertJsonPath('props.state', 'ready')->assertJsonPath('props.other_email', true)->assertJsonPath('props.signed_in_as', 'invitee+1@example.test');
         $this->assertSame('invitee+2@example.test', $page->json('props.invitation.email'));
+        config(['concierge.invitations.match_email' => true]);
+        $this->get($other, $this->inertia())->assertJsonPath('props.state', 'wrong_account');
+        config(['concierge.invitations.match_email' => false]);
 
         $member = $this->fork('already-member');
         $this->actingAs(User::query()->where('email', 'member+1@example.test')->firstOrFail());
@@ -212,5 +216,51 @@ final class FirstRunTest extends TestCase
         $this->get($url)->assertRedirect();
         $this->assertAuthenticatedAs($member, 'web');
         putenv('APP_ENV='.$putenv);
+    }
+
+    public function test_a_join_as_current_fork_prints_a_one_click_link_to_the_join_as_page(): void
+    {
+        $path = $this->fork('join-as-current');
+        $this->assertNotSame('', $path);
+        $this->actingAs(User::query()->where('email', 'current+1@example.test')->firstOrFail());
+        $this->get($path, $this->inertia())->assertOk()->assertJsonPath('props.state', 'ready')->assertJsonPath('props.other_email', true);
+    }
+
+    public function test_a_verified_account_with_another_email_can_join_as_itself_unless_matching_is_strict(): void
+    {
+        $workspace = Workspace::query()->firstOrFail();
+        $owner = app(Concierge::class)->ownerOf($workspace)->user;
+        $current = User::query()->forceCreate(['name' => 'Current Person', 'email' => 'current.person@example.test', 'password' => bcrypt('x'), 'email_verified_at' => now()]);
+        $unverified = User::query()->forceCreate(['name' => 'Unconfirmed', 'email' => 'unconfirmed@example.test', 'password' => bcrypt('x')]);
+        $token = InviteMember::run($owner, $workspace, 'sent.to@example.test', new GrantSet(['viewer']))->token;
+
+        // The default: the page offers "Join as {current}", naming the address it was sent to.
+        $page = $this->actingAs($current)->get('/invitations/'.$token, $this->inertia())->assertOk();
+        $page->assertJsonPath('props.state', 'ready')->assertJsonPath('props.other_email', true)->assertJsonPath('props.signed_in_as', 'current.person@example.test')->assertJsonPath('props.invitation.email', 'sent.to@example.test');
+
+        // An unverified account is asked to verify first and cannot join.
+        $this->actingAs($unverified)->get('/invitations/'.$token, $this->inertia())->assertJsonPath('props.state', 'unverified')->assertJsonPath('props.verify_url', '/email/verify');
+        $this->actingAs($unverified)->postJson('/invitations/'.$token)->assertStatus(409);
+
+        // Strict mode keeps the old rule: only the invited address, Switch account only.
+        config(['concierge.invitations.match_email' => true]);
+        $this->actingAs($current)->get('/invitations/'.$token, $this->inertia())->assertJsonPath('props.state', 'wrong_account')->assertJsonPath('props.other_email', false);
+        $this->actingAs($current)->postJson('/invitations/'.$token)->assertStatus(409);
+        config(['concierge.invitations.match_email' => false]);
+
+        // Joining as the current account: they are in, and People says which address was invited.
+        $this->actingAs($current)->postJson('/invitations/'.$token)->assertCreated()->assertJsonPath('outcome', 'joined');
+        $this->assertTrue(ConciergeModels::invitation()::query()->where('email', 'sent.to@example.test')->value('accepted_with_other_email'));
+        $this->actingAs($owner);
+        $dashboard = WorkspaceUrl::to($workspace, 'settings/people', 'session-ui', request());
+        $row = collect($this->get($dashboard, $this->inertia())->assertOk()->json('props.table.rows'))->firstWhere('member.email', 'current.person@example.test');
+        $this->assertSame('sent.to@example.test', $row['member']['invited_as']);
+    }
+
+    public function test_the_default_is_to_allow_it_and_the_kit_flag_makes_it_strict(): void
+    {
+        $this->assertFalse(config('concierge.invitations.match_email'));
+        $config = require dirname(__DIR__).'/config/concierge.php';
+        $this->assertFalse($config['invitations']['match_email']);
     }
 }
