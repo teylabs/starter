@@ -15,6 +15,30 @@ That is all. Roles and permissions follow the migration by themselves, so there 
 - **`php artisan kit:preflight`** is optional. It is tey/standards' full preflight, with a non-zero exit on a misconfigured production, for a pipeline that wants a blocking gate (run it before or after the two lines). The standard deploy does not need it.
 - **`concierge:owners --workspace=<key>`** keeps the owner named in `CONCIERGE_OWNERS` on that workspace, if the app uses it. It is safe on every deploy: it never removes a user or an ownership, and it refuses (non-zero) a missing or unknown workspace.
 
+## Before the first deploy: rehearse it
+
+The first deploy is where hand-set configuration meets the platform: a cache store with no table, a mailer whose package is not installed, a key pasted with the two characters backslash and n instead of newlines. Rehearse it locally against the values you will set:
+
+1. Copy `.env.production.example` to a local file that is not committed (`.env.*` is ignored), and fill in every value as you would in the platform's dashboard. The file mirrors what Laravel Cloud injects: PostgreSQL, `CACHE_STORE`, `SESSION_DRIVER` and `QUEUE_CONNECTION` as `database` or `sync`, `MAIL_MAILER=resend` with `RESEND_KEY`, and the brand an app must fill.
+2. Run `php artisan kit:preflight --env-file=path/to/that/file`. It runs the full production preflight in a child process that reads that file as its whole environment (your `.env` is not read), and prints no value from it: it only says what is wrong, and which form the Passport keys arrived in. Migrate the database it points at first, or the table checks will say so.
+3. Fix what it names, run it again, then deploy.
+
+`php bin/rehearsal-env.php > rehearsal.env` builds a throwaway version of that file (a real `APP_KEY`, real RSA keys, a stand-in `RESEND_KEY`), which is what CI's **Production rehearsal** job uses.
+
+## Provisioning checklist
+
+Everything the platform does not inject is set by hand. Each line says how to check it; `php artisan kit:preflight --env-file=...` checks all of them.
+
+| Setting | What it must be | How to verify |
+|---|---|---|
+| `APP_KEY` | `base64:` and 32 random bytes (`php artisan key:generate --show`) | preflight `install.secrets` |
+| `PASSPORT_PRIVATE_KEY`, `PASSPORT_PUBLIC_KEY` | An RSA PEM pair (`php artisan passport:keys --force`, then copy the files' contents). Real newlines are best. If the dashboard cannot hold them, the kit also accepts the form with `\n` for each newline, or the whole PEM base64-encoded, and turns either into the PEM at boot. | preflight `install.secrets`, and the line `Passport keys: ... as pem / escaped-newlines / base64` (never the key) |
+| `MAIL_MAILER=resend`, `RESEND_KEY` | The Resend API key. The starter requires `resend/resend-php`; any other mailer needs its own package, and preflight names it when it is missing. | preflight `install.mail`, `install.secrets` |
+| `MEDIA_DISK=s3` and the `AWS_*` bucket variables | The one private bucket (Cloud injects them for an attached bucket) | preflight `install.filesystems` |
+| `KIT_BRAND_*` and `APP_NAME` | Your own name, logomark, accent and the four mail addresses (updates@, support@, hello@, privacy@) | `/up` answers 200 (it refuses the template's stand-ins in production) |
+| `CACHE_STORE`, `SESSION_DRIVER`, `QUEUE_CONNECTION` | `database` for the first two (the tables are migrations); `sync`, or `database` with a worker | preflight `install.tables`, `install.drivers` |
+| `CONCIERGE_OWNERS` | The workspace owner's email, if the app uses `concierge:owners` | `php artisan concierge:owners --workspace=<key>` |
+
 ## TLS
 
 TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded scheme from any proxy, so URLs and secure cookies follow `https`; the app must only be reachable through that proxy. The host is pinned to `APP_URL`'s (`trustHosts`, anchored and escaped), so a forged `Host` or `X-Forwarded-Host` gets a 400 and can never become the host of a reset or invitation link. Set `APP_URL` to the domain users reach; any other domain, the platform's default one included, is refused outside the local environment. CI proves it behind a local TLS proxy (`bin/tls-proxy.mjs`).
@@ -22,6 +46,8 @@ TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded schem
 ## CI
 
 The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, once with `QUEUE_CONNECTION=sync` and once with `database`, both with `CACHE_STORE=database` and `SESSION_DRIVER=database` as a platform with a database attached sets them (the cache, session and queue tables are migrations, so the migration has to come before `optimize`: laravel-data keeps its structure cache in the cache store), on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, the configured cache store takes a put, a get and a lock, and `/up` answers 200. The cache key prefix follows `APP_NAME` (set `CACHE_PREFIX` to pin it).
+
+The **Production rehearsal** job goes one step further: it fills `.env.production.example` with throwaway values (`bin/rehearsal-env.php`), migrates PostgreSQL with them, and runs `kit:preflight --env-file=` with the production-only checks on, with `QUEUE_CONNECTION` as `sync` and `database` and the Passport keys as real newlines and as escaped newlines. A cache store with no table, a mailer without its package or a malformed key fails a pull request here instead of the first deploy.
 
 ## Avatars and media
 

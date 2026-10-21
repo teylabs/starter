@@ -16,6 +16,7 @@
         "laravel/pennant": "^1.0",
         "league/flysystem-aws-s3-v3": "^3.29",
         "lorisleiva/laravel-actions": "^2.12",
+        "resend/resend-php": "^1.17",
         "spatie/laravel-data": "^4.23",
         "spatie/laravel-medialibrary": "^11.13",
         "spatie/laravel-multitenancy": "^4.2",

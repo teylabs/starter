@@ -151,6 +151,51 @@ jobs:
         run: |
           php bin/ci-assert-deploy.php
 
+  rehearsal:
+    name: Production rehearsal (queue ${{ matrix.queue }}, keys ${{ matrix.keys }})
+    runs-on: ubuntu-latest
+    # The deploy before the deploy: .env.production.example filled with throwaway values, migrated on PostgreSQL, then kit:preflight with the production-only checks ON (the mail
+    # transport's package, the cache/session/queue tables, the key forms). It catches what CI used to skip because it ran the preflight with --ci.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - queue: sync
+            keys: pem
+          - queue: database
+            keys: escaped
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: starter
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: composer install --no-interaction --no-dev
+      - run: npm ci && npm run build
+      - name: A throwaway production environment from .env.production.example
+        run: php bin/rehearsal-env.php --${{ matrix.keys }} DB_HOST=127.0.0.1 DB_DATABASE=starter DB_USERNAME=starter DB_PASSWORD=starter QUEUE_CONNECTION=${{ matrix.queue }} > "$RUNNER_TEMP/rehearsal.env"
+      - name: Migrate as the platform would
+        run: |
+          cp "$RUNNER_TEMP/rehearsal.env" .env.rehearsal
+          php artisan migrate --force --env=rehearsal
+          rm .env.rehearsal
+      - name: The preflight, production-only checks on, reading that file as its environment
+        run: php artisan kit:preflight --env-file="$RUNNER_TEMP/rehearsal.env"
+
   node:
     name: Node
     runs-on: ubuntu-latest
