@@ -95,8 +95,9 @@ final class McpTransportTest extends TestCase
         $account->forceFill(['status' => AccountStatus::Deactivated])->save();
         $this->rpc($connection, 'tools/list')->assertForbidden();
         $account->forceFill(['status' => AccountStatus::Active])->save();
+        // A capability that is off is absent: the endpoint answers 404, not 403.
         config(['kit.capabilities' => ['workspace.settings' => false]]);
-        $this->rpc($connection, 'tools/list')->assertForbidden();
+        $this->rpc($connection, 'tools/list')->assertNotFound();
         config(['kit.capabilities' => ['workspace.settings' => true]]);
         $this->withoutToken();
         Auth::forgetGuards();

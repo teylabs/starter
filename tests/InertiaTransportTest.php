@@ -74,7 +74,8 @@ final class InertiaTransportTest extends TestCase
         Feature::define('workspace.records', fn (): bool => false);
         $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonCount(2, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.1.label', 'Settings')
             ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.switcher.choices.0.url', '/dashboard');
-        $this->get('/@alpha/records', $inertia)->assertForbidden()->assertJsonPath('component', 'Workspace/Error/Page');
+        // A capability that is off is absent: a 404, not a 403.
+        $this->get('/@alpha/records', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page');
         Feature::define('workspace.records', fn (): bool => true);
         config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true]]);
         $this->postJson('/logout')->assertNoContent();

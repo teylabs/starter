@@ -51,8 +51,9 @@ final class FeatureSeamsTest extends TestCase
         $this->assertSame(['workspace.settings', 'workspace.dashboard'], $registry->workspaceCapabilities());
         $this->assertEqualsCanonicalizing(['workspace.settings', 'workspace.dashboard'], Feature::defined());
         $statuses = [
-            404 => ['workspace_not_found', 'workspace_mismatch'],
-            403 => ['account_inactive', 'verification_required', 'admission_required', 'permission_denied', 'connection_denied', 'capability_unavailable', 'entitlement_required'],
+            // A capability that is off is absent, not forbidden: a 404 like a page that is not there.
+            404 => ['workspace_not_found', 'workspace_mismatch', 'capability_unavailable'],
+            403 => ['account_inactive', 'verification_required', 'admission_required', 'permission_denied', 'connection_denied', 'entitlement_required'],
             409 => ['stale_settings', 'intent_conflict', 'connection_intent_conflict', 'connection_revoked', 'connection_active'],
             422 => ['unknown_arguments'],
         ];
@@ -92,7 +93,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(15, $kit);
+        $this->assertCount(16, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -119,6 +120,8 @@ final class FeatureSeamsTest extends TestCase
         $schema['concierge_invitations']['columns'][] = ['message', 'varchar', 0, null, 0];
         // The kit's own bookkeeping table: the fingerprint the deploy's role and permission syncs are gated by.
         $schema['kit_meta'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-meta.json'), true);
+        // A capability switched for one person in one workspace.
+        $schema['kit_capability_overrides'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-capability-overrides.json'), true);
         $schema['kit_permission_defaults'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-permission-defaults.json'), true);
         // The account pages: Fortify's two-factor columns on users (the starter's own migration) and the kit's per-user security log.
         $schema['users']['columns'] = [...$schema['users']['columns'], ['two_factor_secret', 'text', 0, null, 0], ['two_factor_recovery_codes', 'text', 0, null, 0], ['two_factor_confirmed_at', 'datetime', 0, null, 0]];

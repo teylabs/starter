@@ -104,6 +104,7 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000500_create_kit_security_events_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php'))->up();
 (require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
+(require base_path('database/migrations/kit/access/0001_01_02_000302_create_kit_capability_overrides_table.php'))->up();
 (require base_path('database/migrations/kit/core/0001_01_02_000101_create_kit_meta_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000502_create_kit_user_state_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php'))->up();
