@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a775789c7a1c35c04b34078a03cb925f",
+    "content-hash": "3fc6e1b0bbf29c7607669abfca8be1ed",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -830,16 +830,16 @@
         },
         {
             "name": "dragonmantank/cron-expression",
-            "version": "v3.6.0",
+            "version": "v3.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dragonmantank/cron-expression.git",
-                "reference": "d61a8a9604ec1f8c3d150d09db6ce98b32675013"
+                "reference": "4189372ffeff09bf14f731f67a9de90c7b413ebe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dragonmantank/cron-expression/zipball/d61a8a9604ec1f8c3d150d09db6ce98b32675013",
-                "reference": "d61a8a9604ec1f8c3d150d09db6ce98b32675013",
+                "url": "https://api.github.com/repos/dragonmantank/cron-expression/zipball/4189372ffeff09bf14f731f67a9de90c7b413ebe",
+                "reference": "4189372ffeff09bf14f731f67a9de90c7b413ebe",
                 "shasum": ""
             },
             "require": {
@@ -850,8 +850,8 @@
             },
             "require-dev": {
                 "phpstan/extension-installer": "^1.4.3",
-                "phpstan/phpstan": "^1.12.32|^2.1.31",
-                "phpunit/phpunit": "^8.5.48|^9.0"
+                "phpstan/phpstan": "^2.1.31",
+                "phpunit/phpunit": "^11.5.43 || ^12.4"
             },
             "type": "library",
             "extra": {
@@ -882,7 +882,7 @@
             ],
             "support": {
                 "issues": "https://github.com/dragonmantank/cron-expression/issues",
-                "source": "https://github.com/dragonmantank/cron-expression/tree/v3.6.0"
+                "source": "https://github.com/dragonmantank/cron-expression/tree/v3.6.1"
             },
             "funding": [
                 {
@@ -890,7 +890,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-31T18:51:33+00:00"
+            "time": "2026-10-19T17:53:57+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -1845,16 +1845,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.37.0",
+            "version": "v13.38.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "685f8d6c2ab4547287500bc80ccdf2ca12635109"
+                "reference": "c42f9abd4a3d2f9a3cd6be109255ddce8092ceb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/685f8d6c2ab4547287500bc80ccdf2ca12635109",
-                "reference": "685f8d6c2ab4547287500bc80ccdf2ca12635109",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/c42f9abd4a3d2f9a3cd6be109255ddce8092ceb8",
+                "reference": "c42f9abd4a3d2f9a3cd6be109255ddce8092ceb8",
                 "shasum": ""
             },
             "require": {
@@ -2072,7 +2072,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-10-16T04:59:27+00:00"
+            "time": "2026-10-20T10:45:58+00:00"
         },
         {
             "name": "laravel/mcp",
@@ -3942,21 +3942,21 @@
         },
         {
             "name": "nette/schema",
-            "version": "v1.3.6",
+            "version": "v1.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/schema.git",
-                "reference": "c54350438cd6914616f790a49cb424605f421562"
+                "reference": "c1162897273bf9499ca57924c4688a19d82c9310"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/schema/zipball/c54350438cd6914616f790a49cb424605f421562",
-                "reference": "c54350438cd6914616f790a49cb424605f421562",
+                "url": "https://api.github.com/repos/nette/schema/zipball/c1162897273bf9499ca57924c4688a19d82c9310",
+                "reference": "c1162897273bf9499ca57924c4688a19d82c9310",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^4.0",
-                "php": "8.1 - 8.5"
+                "php": "8.1 - 8.6"
             },
             "require-dev": {
                 "nette/phpstan-rules": "^1.0",
@@ -4003,26 +4003,26 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/schema/issues",
-                "source": "https://github.com/nette/schema/tree/v1.3.6"
+                "source": "https://github.com/nette/schema/tree/v1.3.7"
             },
-            "time": "2026-08-16T21:58:41+00:00"
+            "time": "2026-10-20T15:46:50+00:00"
         },
         {
             "name": "nette/utils",
-            "version": "v4.1.5",
+            "version": "v4.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "b043439dbdf954e6c28b5ea7e34b0100f83165e0"
+                "reference": "6bf24518accf32cf845bca305e0b92078700fd01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/b043439dbdf954e6c28b5ea7e34b0100f83165e0",
-                "reference": "b043439dbdf954e6c28b5ea7e34b0100f83165e0",
+                "url": "https://api.github.com/repos/nette/utils/zipball/6bf24518accf32cf845bca305e0b92078700fd01",
+                "reference": "6bf24518accf32cf845bca305e0b92078700fd01",
                 "shasum": ""
             },
             "require": {
-                "php": "8.2 - 8.5"
+                "php": "8.2 - 8.6"
             },
             "conflict": {
                 "nette/finder": "<3",
@@ -4094,9 +4094,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.1.5"
+                "source": "https://github.com/nette/utils/tree/v4.1.6"
             },
-            "time": "2026-07-17T23:02:45+00:00"
+            "time": "2026-10-20T17:07:56+00:00"
         },
         {
             "name": "nunomaduro/termwind",
@@ -9889,16 +9889,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.7.6",
+            "version": "v0.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "3f914cedf840a088e193e0d6b83fb716b978ca49"
+                "reference": "76510f21e7b4117f59898e4706863cf989d9ebb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/3f914cedf840a088e193e0d6b83fb716b978ca49",
-                "reference": "3f914cedf840a088e193e0d6b83fb716b978ca49",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/76510f21e7b4117f59898e4706863cf989d9ebb3",
+                "reference": "76510f21e7b4117f59898e4706863cf989d9ebb3",
                 "shasum": ""
             },
             "require": {
@@ -9981,7 +9981,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.7.6"
+                "source": "https://github.com/teylabs/concierge/tree/v0.8.0"
             },
             "funding": [
                 {
@@ -9989,7 +9989,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-20T21:52:32+00:00"
+            "time": "2026-10-21T13:14:43+00:00"
         },
         {
             "name": "tey/kit",
@@ -9997,12 +9997,13 @@
             "dist": {
                 "type": "path",
                 "url": "../kit-live",
-                "reference": "f9641c865e360a847c271c6e3ccbc01c78d6d8ca"
+                "reference": "b6604955aab4c827f2c603f63f4c4ba1309785fc"
             },
             "require": {
                 "composer/semver": "^3.4",
                 "glhd/gretel": "^1.10",
                 "illuminate/support": "^13.0",
+                "inertiaui/modal": "^3.1",
                 "lorisleiva/laravel-actions": "^2.12",
                 "php": "~8.4.0 || ~8.5.0",
                 "spatie/laravel-data": "^4.23",
@@ -10019,7 +10020,7 @@
                 "laravel/pennant": "^1.0",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
-                "tey/concierge": "^0.7.6"
+                "tey/concierge": "^0.8"
             },
             "type": "library",
             "extra": {
