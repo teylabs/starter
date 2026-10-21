@@ -118,6 +118,8 @@ final class FeatureSeamsTest extends TestCase
         }
         // The kit's permission-defaults table, which the sync records its applied grants in.
         // Concierge 0.8: an optional note from the inviter on an invitation.
+        // Concierge 0.8.1: whether the accepting account's email differed from the invited one.
+        $schema['concierge_invitations']['columns'][] = ['accepted_with_other_email', 'tinyint(1)', 1, "'0'", 0];
         $schema['concierge_invitations']['columns'][] = ['message', 'varchar', 0, null, 0];
         // The kit's own bookkeeping table: the fingerprint the deploy's role and permission syncs are gated by.
         $schema['kit_meta'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-meta.json'), true);

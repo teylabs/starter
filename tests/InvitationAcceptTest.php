@@ -124,6 +124,8 @@ final class InvitationAcceptTest extends TestCase
     public function test_the_wrong_account_cannot_accept(): void
     {
         require dirname(__DIR__).'/database/fixture.php';
+        // Strict matching (KIT_INVITES_MATCH_EMAIL=true): only the invited address may accept. By default another verified account may join as itself.
+        config(['concierge.invitations.match_email' => true]);
         [, $token] = $this->invite('someone@example.test');
         $this->signIn(2);
         $props = $this->page($token);

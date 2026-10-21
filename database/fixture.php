@@ -108,7 +108,7 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000502_create_kit_user_state_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
-foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_message.php'] as $migration) {
+foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php'] as $migration) {
     (require base_path('vendor/tey/concierge/database/migrations/'.$migration))->up();
 }
 app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]);

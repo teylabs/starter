@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3fc6e1b0bbf29c7607669abfca8be1ed",
+    "content-hash": "85102d9d3181358915f7519f35b39d0a",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -9889,16 +9889,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.8.0",
+            "version": "v0.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "76510f21e7b4117f59898e4706863cf989d9ebb3"
+                "reference": "37656e9e5305d70734e9e584f34209d780cbae87"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/76510f21e7b4117f59898e4706863cf989d9ebb3",
-                "reference": "76510f21e7b4117f59898e4706863cf989d9ebb3",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/37656e9e5305d70734e9e584f34209d780cbae87",
+                "reference": "37656e9e5305d70734e9e584f34209d780cbae87",
                 "shasum": ""
             },
             "require": {
@@ -9981,7 +9981,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.8.0"
+                "source": "https://github.com/teylabs/concierge/tree/v0.8.1"
             },
             "funding": [
                 {
@@ -9989,7 +9989,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-21T13:14:43+00:00"
+            "time": "2026-10-21T17:22:32+00:00"
         },
         {
             "name": "tey/kit",
@@ -9997,7 +9997,7 @@
             "dist": {
                 "type": "path",
                 "url": "../kit-live",
-                "reference": "b6604955aab4c827f2c603f63f4c4ba1309785fc"
+                "reference": "3b13c4f7c8d6d58f5337f443432d5340a786c24c"
             },
             "require": {
                 "composer/semver": "^3.4",
@@ -10020,7 +10020,7 @@
                 "laravel/pennant": "^1.0",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
-                "tey/concierge": "^0.8"
+                "tey/concierge": "^0.8.1"
             },
             "type": "library",
             "extra": {

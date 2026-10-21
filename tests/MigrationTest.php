@@ -61,6 +61,7 @@ final class MigrationTest extends TestCase
             'create_concierge_tables',
             'create_concierge_tenant_invitations_table',
             'create_concierge_user_accounts_table',
+            'update_concierge_invitations_with_acceptor',
             'update_concierge_invitations_with_message',
         ], $migrations);
         // A fresh install keeps sessions in the database, with the table in place: the security page lists devices out of the box.
