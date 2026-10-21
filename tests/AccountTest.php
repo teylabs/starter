@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Tey\Kit\Features\SessionUi\Account\OtherSessions;
+use Tey\Kit\Features\SessionUi\Account\SecurityLog;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\Models\SecurityEvent;
 
@@ -279,5 +280,46 @@ final class AccountTest extends TestCase
         Schema::drop('kit_security_events');
         $this->signIn(1);
         $this->assertAuthenticated();
+    }
+
+    public function test_the_security_log_goes_with_the_account_and_a_soft_delete_keeps_it(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        foreach ([50, 51] as $id) {
+            User::create(['id' => $id, 'name' => 'Temp '.$id, 'email' => 'temp'.$id.'@example.test']);
+        }
+        foreach ([1, 50, 51] as $id) {
+            SecurityLog::record($id, 'sign_in');
+            SecurityLog::record($id, 'password_changed');
+        }
+        // Deleting a user removes their rows and leaves everyone else's.
+        User::findOrFail(50)->delete();
+        $this->assertSame(0, SecurityEvent::query()->where('user_id', 50)->count());
+        $this->assertSame(2, SecurityEvent::query()->where('user_id', 1)->count());
+        $this->assertSame(2, SecurityEvent::query()->where('user_id', 51)->count());
+        // The foreign key removes the rows in the database itself, whatever the model does.
+        DB::table('users')->where('id', 51)->delete();
+        $this->assertSame(0, SecurityEvent::query()->where('user_id', 51)->count());
+        $this->assertSame(2, SecurityEvent::query()->where('user_id', 1)->count());
+        // A model that soft-deletes keeps the log until the force delete.
+        $soft = new class
+        {
+            public bool $force = false;
+
+            public function isForceDeleting(): bool
+            {
+                return $this->force;
+            }
+
+            public function getKey(): int
+            {
+                return 1;
+            }
+        };
+        SecurityLog::forget($soft);
+        $this->assertSame(2, SecurityEvent::query()->where('user_id', 1)->count(), 'a soft delete keeps the rows');
+        $soft->force = true;
+        SecurityLog::forget($soft);
+        $this->assertSame(0, SecurityEvent::query()->where('user_id', 1)->count(), 'a force delete removes them');
     }
 }

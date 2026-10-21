@@ -38,6 +38,7 @@ final class MigrationTest extends TestCase
             '0001_01_01_000001_create_media_table',
             '0001_01_01_000002_add_two_factor_columns_to_users_table',
             '0001_01_01_000003_create_password_reset_tokens_table',
+            '0001_01_01_000004_create_sessions_table',
             '0001_01_02_000200_create_kit_workspaces_table',
             '0001_01_02_000100_create_kit_core_tables',
             '0001_01_02_000201_create_permission_tables',
@@ -48,6 +49,7 @@ final class MigrationTest extends TestCase
             '0001_01_02_000400_create_settings_table',
             '0001_01_02_000401_create_kit_settings_tables',
             '0001_01_02_000500_create_kit_security_events_table',
+            '0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table',
             '0001_01_02_000600_create_kit_mcp_tables',
             '2016_06_01_000001_create_oauth_auth_codes_table',
             '2016_06_01_000002_create_oauth_access_tokens_table',
@@ -58,6 +60,10 @@ final class MigrationTest extends TestCase
             'create_concierge_tenant_invitations_table',
             'create_concierge_user_accounts_table',
         ], $migrations);
+        // A fresh install keeps sessions in the database, with the table in place: the security page lists devices out of the box.
+        $this->assertSame('database', Dotenv\Dotenv::parse((string) file_get_contents(base_path('.env.example')))['SESSION_DRIVER'] ?? null);
+        $this->assertTrue(Schema::hasTable('sessions'));
+        $this->assertStringContainsString('artisan migrate', (string) file_get_contents(base_path('bin/setup.php')));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($migrations, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
         $this->assertSame(0, User::count());

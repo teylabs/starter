@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Avatar, Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section, Select } from '@kit/ui';
+import { Avatar, Button, ConfirmDialog, Field, FormCard, Input, Page, Section, Select } from '@kit/ui';
 import { computed, ref } from 'vue';
 
-// Settings › People: the members (avatar, name, email, role, joined), the invitations still open, invite by email with a role, and transfer ownership. The list is
+// Settings › People: the members (avatar, name, email, role, joined), the invitations still open, invite by email with a role. The list is
 // the server's (search and sort are in the query string); every action is refused by the server too, so a hidden control is a convenience, never the gate.
-// Removing a member, revoking an invitation and transferring ownership each ask first.
+// Removing a member and revoking an invitation each ask first.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.PeopleViewModel>();
 const search = ref(props.search);
 function find() { router.get(window.location.pathname, { filter: { search: search.value || undefined }, sort: props.sort || undefined }, { preserveState: true, replace: true }); }
@@ -15,7 +15,6 @@ function remove(url: string) { router.delete(url, { preserveScroll: true }); }
 function resend(url: string) { router.put(url, {}, { preserveScroll: true }); }
 function revoke(url: string) { router.delete(url, { preserveScroll: true }); }
 const roleOptions = computed(() => props.roles.map((role) => ({ value: role.value, label: role.label })));
-const heirs = computed(() => props.members.filter((member) => member.transferable).map((member) => ({ value: String(member.id), label: `${member.name} (${member.email})` })));
 const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 </script>
 <template>
@@ -59,20 +58,6 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
                         </li>
                     </ul>
                 </Section>
-                <Form v-if="can_transfer" v-slot="{ submit }" :action="transfer_url" method="put" :options="{ preserveScroll: true }" reset-on-success>
-                    <FormCard title="Transfer ownership" description="Pass ownership to another member. They become the owner and you become an admin. Confirm with your password." submit-label="Transfer ownership" :cancel="false" :sticky="false">
-                        <p v-if="!heirs.length" class="col-span-6 text-sm text-muted-foreground">There is no other verified member to pass ownership to yet.</p>
-                        <template v-else>
-                            <Field id="transfer-member" name="membership" label="New owner" :span="3"><Select id="transfer-member" name="membership" :options="heirs" placeholder="Choose a member" /></Field>
-                            <Field id="transfer-password" name="password" label="Your password" :span="3"><PasswordInput id="transfer-password" name="password" required autocomplete="current-password" aria-describedby="transfer-password-error" /></Field>
-                        </template>
-                        <template v-if="heirs.length" #submit>
-                            <ConfirmDialog title="Transfer ownership?" description="They become the owner and you become an admin. Only the new owner can undo this." confirm-label="Transfer ownership" @confirm="submit()">
-                                <Button variant="destructive" type="button" data-test="transfer-ownership">Transfer ownership</Button>
-                            </ConfirmDialog>
-                        </template>
-                    </FormCard>
-                </Form>
                 <Section title="Pending invitations">
                     <p v-if="!invitations.length" class="text-sm text-muted-foreground">No pending invitations.</p>
                     <ul v-else class="grid divide-y divide-border">

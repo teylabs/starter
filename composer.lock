@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "51597c332bb1006e55fefae709b05a34",
+    "content-hash": "93b79ade47ef5cecd2b8cff97a697bad",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -9826,16 +9826,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.7.4",
+            "version": "v0.7.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "28bdd015d95f4a8f077fed2db64c75070e748767"
+                "reference": "3f914cedf840a088e193e0d6b83fb716b978ca49"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/28bdd015d95f4a8f077fed2db64c75070e748767",
-                "reference": "28bdd015d95f4a8f077fed2db64c75070e748767",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/3f914cedf840a088e193e0d6b83fb716b978ca49",
+                "reference": "3f914cedf840a088e193e0d6b83fb716b978ca49",
                 "shasum": ""
             },
             "require": {
@@ -9843,6 +9843,7 @@
                 "php": "~8.4.0||~8.5.0",
                 "spatie/laravel-package-tools": "^1.93",
                 "spatie/laravel-permission": "^8.3",
+                "spatie/laravel-query-builder": "^7.3",
                 "tey/mod": "^0.6.1 || ^0.7 || ^0.8 || ^0.9 || ^0.10"
             },
             "require-dev": {
@@ -9867,6 +9868,17 @@
                     "providers": [
                         "Tey\\Concierge\\ConciergeServiceProvider"
                     ]
+                },
+                "tey-standards": {
+                    "ci": {
+                        "drafts": "full",
+                        "enforce": true,
+                        "distribution": "package",
+                        "default-branches": [
+                            "main",
+                            "*.x"
+                        ]
+                    }
                 }
             },
             "autoload": {
@@ -9906,7 +9918,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.7.4"
+                "source": "https://github.com/teylabs/concierge/tree/v0.7.6"
             },
             "funding": [
                 {
@@ -9914,7 +9926,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-19T23:27:40+00:00"
+            "time": "2026-10-20T21:52:32+00:00"
         },
         {
             "name": "tey/kit",
@@ -9922,7 +9934,7 @@
             "dist": {
                 "type": "path",
                 "url": "../kit-live",
-                "reference": "8d4f73576f3342662305d0796432992ca23742b9"
+                "reference": "5f18b1c869ded71ce54c31e5ebacdd0578b0e3f2"
             },
             "require": {
                 "composer/semver": "^3.4",
@@ -9944,7 +9956,7 @@
                 "laravel/pennant": "^1.0",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
-                "tey/concierge": "^0.7.3"
+                "tey/concierge": "^0.7.6"
             },
             "type": "library",
             "extra": {
@@ -9999,6 +10011,9 @@
                 ],
                 "test:fonts": [
                     "@php tests/FontsCheck.php vendor/autoload.php"
+                ],
+                "test:brand": [
+                    "@php tests/BrandVariantsCheck.php"
                 ]
             },
             "license": [

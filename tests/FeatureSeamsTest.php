@@ -96,7 +96,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(11, $kit);
+        $this->assertCount(12, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -120,6 +120,7 @@ final class FeatureSeamsTest extends TestCase
         $schema['kit_permission_defaults'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-permission-defaults.json'), true);
         // The account pages: Fortify's two-factor columns on users (the starter's own migration) and the kit's per-user security log.
         $schema['users']['columns'] = [...$schema['users']['columns'], ['two_factor_secret', 'text', 0, null, 0], ['two_factor_recovery_codes', 'text', 0, null, 0], ['two_factor_confirmed_at', 'datetime', 0, null, 0]];
+        $schema['sessions'] = ['columns' => [['id', 'varchar', 1, null, 1], ['user_id', 'integer', 0, null, 0], ['ip_address', 'varchar', 0, null, 0], ['user_agent', 'text', 0, null, 0], ['payload', 'text', 1, null, 0], ['last_activity', 'integer', 1, null, 0]], 'indexes' => [[0, 'c', ['last_activity']], [0, 'c', ['user_id']], [1, 'pk', ['id']]], 'foreign_keys' => []];
         $schema['password_reset_tokens'] = ['columns' => [['email', 'varchar', 1, null, 1], ['token', 'varchar', 1, null, 0], ['created_at', 'datetime', 0, null, 0]], 'indexes' => [[1, 'pk', ['email']]], 'foreign_keys' => []];
         $schema['kit_security_events'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-security-events.json'), true);
         // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.

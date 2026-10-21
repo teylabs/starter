@@ -181,7 +181,6 @@ is_you: boolean,
 manageable: boolean,
 update_url: string,
 destroy_url: string,
-transferable: boolean,
 }[],
 readonly invitations: {
 id: string,
@@ -203,8 +202,6 @@ readonly invite_url: string,
 readonly search: string,
 readonly sort: string,
 readonly invite_link: string | null,
-readonly can_transfer: boolean,
-readonly transfer_url: string,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type ProfileViewModel = {
@@ -291,6 +288,13 @@ readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
 readonly can_write: boolean,
 readonly update_url: string,
 readonly intent_key: string,
+readonly is_owner: boolean,
+readonly heirs: {
+value: string,
+label: string,
+}[],
+readonly transfer_url: string,
+readonly leave_url: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
@@ -302,6 +306,7 @@ readonly title: string,
 readonly workspaces: {
 id: number,
 name: string,
+leave_url: string | null,
 }[],
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };

@@ -102,6 +102,7 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 // Avatars are media on the user row.
 (require base_path('database/migrations/0001_01_01_000001_create_media_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000500_create_kit_security_events_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php'))->up();
 (require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();

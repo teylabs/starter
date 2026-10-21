@@ -67,7 +67,7 @@ final class OwnershipTransferTest extends TestCase
 
     private function transfer(int $to, ?string $password = null): TestResponse
     {
-        return $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, $to)->id, 'password' => $password ?? $this->password]);
+        return $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, $to)->id, 'password' => $password ?? $this->password]);
     }
 
     public function test_the_owner_passes_ownership_and_becomes_an_admin(): void
@@ -75,8 +75,8 @@ final class OwnershipTransferTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         // The page offers it to the owner, with the other verified members to choose from.
-        $page = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->assertJsonPath('props.can_transfer', true)->assertJsonPath('props.transfer_url', '/settings/people/ownership')->json('props');
-        $this->assertSame([false, true], array_column($page['members'], 'transferable'));
+        $page = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.is_owner', true)->assertJsonPath('props.transfer_url', '/settings/ownership')->assertJsonPath('props.leave_url', null)->json('props');
+        $this->assertSame([(string) $this->membership(1, 3)->id], array_column($page['heirs'], 'value'));
         $this->transfer(3)->assertOk()->assertJsonPath('owner_membership_id', $this->membership(1, 3)->id);
         $this->assertSame(['owner'], $this->roles(3));
         $this->assertSame(['admin'], $this->roles(1));
@@ -86,12 +86,12 @@ final class OwnershipTransferTest extends TestCase
         // The password confirmation does not linger: the same session cannot transfer again without it.
         $this->assertNull(session('auth.password_confirmed_at'));
         // The former owner is an admin now: no transfer, and the new owner is protected from them.
-        $this->get('/@alpha/settings/people', $this->inertia())->assertJsonPath('props.can_transfer', false);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', false)->assertJsonPath('props.heirs', []);
         $this->transfer(3)->assertForbidden();
         $this->deleteJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id)->assertForbidden();
         $this->signOut();
         $this->signIn(3);
-        $this->get('/@alpha/settings/people', $this->inertia())->assertJsonPath('props.can_transfer', true);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', true);
         $this->deleteJson('/@alpha/settings/people/members/'.$this->membership(1, 1)->id)->assertOk();
     }
 
@@ -100,7 +100,7 @@ final class OwnershipTransferTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         $this->transfer(3, 'not-the-password')->assertUnprocessable()->assertJsonValidationErrors('password');
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, 3)->id])->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 3)->id])->assertUnprocessable()->assertJsonValidationErrors('password');
         $this->assertSame(['owner'], $this->roles(1));
         $this->assertSame(['viewer'], $this->roles(3));
     }
@@ -113,9 +113,9 @@ final class OwnershipTransferTest extends TestCase
         $this->signOut();
         // An admin, who may manage viewers, still cannot take ownership; nor can a viewer.
         $this->signIn(3);
-        $this->get('/@alpha/settings/people', $this->inertia())->assertJsonPath('props.can_transfer', false);
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, 3)->id, 'password' => $this->password])->assertForbidden();
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, 1)->id, 'password' => $this->password])->assertForbidden();
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', false)->assertJsonPath('props.heirs', []);
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 3)->id, 'password' => $this->password])->assertForbidden();
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 1)->id, 'password' => $this->password])->assertForbidden();
         $this->assertSame(['owner'], $this->roles(1));
         $this->assertSame(['admin'], $this->roles(3));
         $this->assertSame(1, Ownership::query()->where('workspace_id', 1)->count());
@@ -126,12 +126,37 @@ final class OwnershipTransferTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         // Yourself, a membership of another workspace, one that does not exist, and a member who has been removed.
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, 1)->id, 'password' => $this->password])->assertForbidden();
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(2, 2)->id, 'password' => $this->password])->assertNotFound();
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => 99999, 'password' => $this->password])->assertNotFound();
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 1)->id, 'password' => $this->password])->assertForbidden();
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(2, 2)->id, 'password' => $this->password])->assertNotFound();
+        $this->putJson('/@alpha/settings/ownership', ['membership' => 99999, 'password' => $this->password])->assertNotFound();
         $this->deleteJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id)->assertOk();
-        $this->putJson('/@alpha/settings/people/ownership', ['membership' => $this->membership(1, 3)->id, 'password' => $this->password])->assertForbidden();
+        $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 3)->id, 'password' => $this->password])->assertForbidden();
         $this->assertSame(['owner'], $this->roles(1));
         $this->assertSame(1, DB::table('concierge_ownerships')->where('workspace_id', 1)->count());
+    }
+
+    public function test_an_owner_cannot_leave_until_ownership_moves_and_a_member_can_leave(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $leave = '/me/workspaces/alpha/membership';
+        // The owner has no Leave on the chooser or General, and the server refuses it with the reason.
+        $this->getJson('/me/workspaces')->assertOk()->assertJsonPath('workspaces.0.leave_url', null);
+        $this->deleteJson($leave)->assertUnprocessable()->assertJsonValidationErrors('leave');
+        $this->assertTrue(Membership::query()->where('workspace_id', 1)->where('user_id', 1)->exists());
+        // After the transfer the former owner (an admin now) is offered Leave in both places, and leaving removes access.
+        $this->transfer(3)->assertOk();
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.leave_url', $leave);
+        $this->getJson('/me/workspaces')->assertJsonPath('workspaces.0.leave_url', $leave);
+        $this->delete($leave)->assertRedirect('/me/workspaces')->assertStatus(303);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertNotFound();
+    }
+
+    public function test_leaving_a_workspace_you_do_not_belong_to_is_not_found(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(3);
+        $this->deleteJson('/me/workspaces/missing/membership')->assertNotFound();
+        $this->deleteJson('/me/workspaces/beta/membership')->assertNotFound();
     }
 }

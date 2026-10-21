@@ -20,7 +20,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
-        $page->navigate('/settings/general')->assertPresent('[data-form-actions]');
+        $page->navigate('/settings/general')->assertPresent('form:first-of-type [data-form-actions]');
         $status = fn (): array => $page->script('() => { const s = document.querySelector("[data-form-status]"); return [s.dataset.state, s.textContent.trim(), s.className]; }');
         // Every state seen, whenever it happens: recorded as the DOM changes.
         $page->script('() => { window.__seen = []; new MutationObserver(() => { const s = document.querySelector("[data-form-status]"); const b = document.querySelector("[data-form-submit]"); if (s) window.__seen.push(s.dataset.state + ":" + s.textContent.trim() + ":" + (b && b.getAttribute("aria-busy") ? "busy" : "")); }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true }); return true; }');
@@ -47,7 +47,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         $page->click('[data-confirm-dialog] button:first-of-type')->assertMissing('[data-confirm-dialog]')->assertPathIs('/settings/general');
         expect($page->script('() => document.querySelector("#display-name").value'))->toBe('Kept edit');
         // Submitting does not prompt: busy, then saved, and the page keeps the new value.
-        $page->click('[data-form-submit]')->assertMissing('[data-confirm-dialog]')->assertPathIs('/settings/general');
+        $page->click('form:first-of-type [data-form-submit]')->assertMissing('[data-confirm-dialog]')->assertPathIs('/settings/general');
         $page->script('() => new Promise((resolve) => setTimeout(resolve, 600))');
         $seen = $page->script('() => window.__seen');
         expect(implode('|', $seen))->toContain('saved:Saved')->toContain('busy')->not->toContain('errors');
@@ -55,7 +55,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
 
         // Errors from the server's validation: the danger colour, in the spec's words; Cancel clears them.
         $page->script('() => { document.querySelector("#display-name").removeAttribute("maxlength"); return true; }');
-        $page->type('#display-name', str_repeat('x', 130))->click('[data-form-submit]');
+        $page->type('#display-name', str_repeat('x', 130))->click('form:first-of-type [data-form-submit]');
         $page->script('() => new Promise((resolve) => setTimeout(resolve, 600))');
         [$state, $text, $class] = $status();
         expect([$state, $text])->toBe(['errors', 'There are errors in your submission.']);
@@ -88,7 +88,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         [$pinned, $background, $position] = $bar();
         expect([$pinned, $position])->toBe(['true', 'sticky']);
         expect($background)->not->toBe('rgba(0, 0, 0, 0)');
-        $page->script('() => { window.scrollTo(0, document.documentElement.scrollHeight); return true; }');
+        $page->script('() => { window.scrollBy(0, document.querySelector("form").getBoundingClientRect().bottom - 120); return true; }');
         $page->script('() => new Promise((resolve) => setTimeout(resolve, 300))');
         [$pinned, $background] = $bar();
         expect($pinned)->toBe('false');

@@ -2,6 +2,7 @@
 
 use App\Kit\KitHost;
 use Composer\InstalledVersions;
+use Composer\Semver\Semver;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\TestCase;
@@ -42,8 +43,13 @@ final class LifecycleTest extends TestCase
 
     public function test_released_packages_and_trusted_host_binding(): void
     {
-        $this->assertSame('v0.9.1', InstalledVersions::getPrettyVersion('tey/mod'));
-        $this->assertSame('v0.7.4', InstalledVersions::getPrettyVersion('tey/concierge'));
+        // The released packages: the installed version (from the lock) satisfies the constraint composer.json asks for, whatever the patch release is; tey/mod comes in
+        // through them and is a release too.
+        $constraint = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/concierge'];
+        $this->assertTrue(Semver::satisfies((string) InstalledVersions::getVersion('tey/concierge'), $constraint), 'tey/concierge '.InstalledVersions::getPrettyVersion('tey/concierge').' satisfies '.$constraint);
+        foreach (['tey/concierge', 'tey/mod'] as $package) {
+            $this->assertMatchesRegularExpression('/^v\d+\.\d+\.\d+$/', (string) InstalledVersions::getPrettyVersion($package), $package.' is a release, not a branch');
+        }
         $this->assertSame('dev-feat/shell-live', InstalledVersions::getPrettyVersion('tey/kit')); // TEMP: the local path repo
         $this->assertStringEndsWith('/vendor/tey/mod/src/Maintenance/Maintenance.php', (new ReflectionClass(Maintenance::class))->getFileName());
         $host = app(LifecycleHost::class);
