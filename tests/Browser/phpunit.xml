@@ -12,6 +12,8 @@
             <file>AuthCards.php</file>
             <file>Account.php</file>
             <file>People.php</file>
+            <file>Shell.php</file>
+            <file>Modals.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

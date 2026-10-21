@@ -47,23 +47,22 @@ final class SettingsLandingTest extends TestCase
         $this->signIn(1);
         $general = ['key' => 'general', 'label' => 'General', 'description' => 'The workspace display name and timezone.', 'icon' => 'sliders-horizontal', 'url' => '/settings/general'];
         $people = ['key' => 'people', 'label' => 'People', 'description' => 'Who belongs to this workspace, their roles, and who is invited.', 'icon' => 'users', 'url' => '/settings/people'];
-        $connections = ['key' => 'connections', 'label' => 'Connections', 'description' => 'Delegated access for MCP clients to this workspace.', 'icon' => 'plug', 'url' => '/settings/connections'];
         $this->get('/@alpha/settings', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
             // One "Workspace" group for the workspace's sections (a group never repeats a lone item's label); each carries its lucide icon.
-            ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $people, $connections]]]);
+            ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $people]]]);
         // A provider registers a section with a group and an order, not a nav item; a lower order comes first, and a new group appears in place.
         app(Registry::class)->settingsSection('workspace', 'billing', 'Billing', 'Plan and invoices.', null, 'Account', -50, 'credit-card')->settingsSection('workspace', 'owner-only', 'Owner only', 'Needs write access.', 'settings.write', 'Workspace', 30);
         $this->get('/@alpha/settings', $this->inertia())->assertOk()
             ->assertJsonPath('props.groups.0.label', 'Account')->assertJsonPath('props.groups.0.sections.0.url', '/settings/billing')->assertJsonPath('props.groups.0.sections.0.icon', 'credit-card')
-            ->assertJsonPath('props.groups.1.label', 'Workspace')->assertJsonPath('props.groups.1.sections.3.label', 'Owner only');
+            ->assertJsonPath('props.groups.1.label', 'Workspace')->assertJsonPath('props.groups.1.sections.2.label', 'Owner only');
         // A section registered without an icon carries the generic one.
         app(Registry::class)->settingsSection('workspace', 'plain', 'Plain', 'No icon given.', null, 'Workspace', 40);
-        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.groups.1.sections.4.icon', 'settings');
+        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.groups.1.sections.3.icon', 'settings');
         // The registered sections are listed by what the user may open: a viewer cannot write settings.
         $this->postJson('/logout')->assertNoContent();
         $this->signIn(3);
         $this->get('/@alpha/settings', $this->inertia())->assertOk()
-            ->assertJsonPath('props.groups.1.sections', [$general, $connections, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
+            ->assertJsonPath('props.groups.1.sections', [$general, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
     }
 
     public function test_each_section_has_its_own_page_in_both_url_forms(): void
@@ -73,13 +72,14 @@ final class SettingsLandingTest extends TestCase
         foreach (['/@alpha/settings/general', '/settings/general'] as $path) {
             $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/General/Page');
         }
-        // The Connections section is a page of the same shape (its own tests set up the OAuth tables it reads).
+        // The AI assistants page is hidden until the connection rework (see McpTransportTest).
+        // The AI assistants page keeps its routes (it is only hidden: a 404 until kit.mcp.ui is on).
         $this->assertTrue(Route::has('workspaces.connections.index') && Route::has('short.workspaces.connections.index'));
         $this->assertStringEndsWith('/@alpha/settings/connections', route('workspaces.connections.index', ['workspace' => 'alpha']));
         // Settings is one link in the nav, to the landing page; the sections are not.
         $this->get('/settings/general', $this->inertia())->assertJsonPath('props.shell.navigation.1', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
-            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Settings', 'url' => '/settings', 'current' => false], ['label' => 'General', 'url' => '/settings/general', 'current' => true]]);
-        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Settings', 'url' => '/settings', 'current' => true]]);
+            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Settings', 'url' => '/settings', 'current' => false, 'home' => false], ['label' => 'General', 'url' => '/settings/general', 'current' => true, 'home' => false]]);
+        $this->get('/@alpha/settings', $this->inertia())->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false]]);
     }
 
     public function test_the_personal_landing_page_lists_the_personal_sections(): void
@@ -88,7 +88,7 @@ final class SettingsLandingTest extends TestCase
         $this->signIn(1);
         $this->get('/me', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
             ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'url' => '/me/workspaces']]]])
-            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false], ['label' => 'Account', 'url' => '/me', 'current' => true]]);
+            ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Account', 'url' => '/me', 'current' => true, 'home' => false]]);
         $this->getJson('/me')->assertOk()->assertJsonPath('sections.3.key', 'workspaces');
         $this->postJson('/logout')->assertNoContent();
         $this->get('/me')->assertRedirect('/login');
@@ -118,7 +118,7 @@ final class SettingsLandingTest extends TestCase
             $nav = $this->get($path, $this->inertia())->assertOk()->json('props.layout.navigation');
             $this->assertCount(1, $nav);
             $this->assertSame('Workspace', $nav[0]['label']);
-            $this->assertSame([['General', true], ['People', false], ['Connections', false]], array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']));
+            $this->assertSame([['General', true], ['People', false]], array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']));
             $this->assertSame('sliders-horizontal', $nav[0]['items'][0]['icon']);
         }
         $this->get('/settings', $this->inertia())->assertJsonPath('props.layout.navigation', []);

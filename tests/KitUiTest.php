@@ -72,7 +72,7 @@ final class KitUiTest extends TestCase
         // Every page roots in <Page>; the default is full, for lists, tables and grids that grow with data. A page whose content does not
         // grow (forms, settings sections, detail and confirmation pages, empty states, account and guest pages) declares a focused width
         // (`<Page sm>`). Add a page to $full only when it is a full data page.
-        $full = ['resources/js/pages/Workspace/Dashboard/Page.vue', 'resources/js/pages/Workspace/Settings/People/Page.vue', 'resources/js/pages/Workspace/Settings/Connections/Page.vue'];
+        $full = ['resources/js/pages/Workspace/Dashboard/Page.vue'];
         $checked = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js/pages', FilesystemIterator::SKIP_DOTS)) as $file) {
             $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
@@ -81,7 +81,18 @@ final class KitUiTest extends TestCase
             }
             $source = (string) file_get_contents($file->getPathname());
             $this->assertStringNotContainsString('FocusPage', $source, $relative.' uses <Page>, not FocusPage');
-            $this->assertMatchesRegularExpression('#<template>\s*(<Head[^>]*/>\s*)?(<main>\s*)?<Page[\s>]#', $source, $relative.' roots in <Page>');
+            // A server-driven modal page (Invite member, Change role) roots in <Modal>, not <Page>: it is a layer over People, not a page.
+            $modalPage = preg_match('#/Settings/People/(Invite|ChangeRole)/Page\.vue$#', $relative) === 1;
+            $this->assertMatchesRegularExpression($modalPage ? '#<template>\s*<Modal[\s>]#' : '#<template>\s*(<Head[^>]*/>\s*)?(<main>\s*)?<Page[\s>]#', $source, $relative.' roots in '.($modalPage ? '<Modal>' : '<Page>'));
+            if ($modalPage) {
+                $checked[] = $relative;
+
+                continue;
+            }
+            // Every settings section and /me page is the same focus column: <Page md>.
+            if (str_contains($relative, '/Workspace/Settings/') || str_contains($relative, '/Workspace/Account/')) {
+                $this->assertMatchesRegularExpression('#<Page md[\s>]#', $source, $relative.' is a settings page and must be <Page md>');
+            }
             if (! in_array($relative, $full, true)) {
                 $this->assertMatchesRegularExpression('#<Page (xs|sm|md|lg|xl)[\s>]#', $source, $relative.' has fixed content and must declare a width');
             }

@@ -44,7 +44,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertPathIs('/dashboard')
             ->assertTitle('Dashboard · '.config('app.name'))
             // The trail is chrome, a sub-bar inside the header; it is outside <Page>. The heading sits in the page's column, with the content.
-            ->assertPresent('[data-shell-bar] [data-shell-breadcrumbs]')
+            ->assertPresent('[data-shell-subbar] [data-shell-breadcrumbs]')
             ->assertPresent('[data-shell-content] [data-slot="page"] [data-slot="page-header"] h1')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
@@ -85,9 +85,8 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
-            ->assertSee('Delegated access for MCP clients')
             // The landing page is a grid of cards, each one link with an icon; the group is "Workspace".
-            ->assertCount('[data-settings-card]', 3)
+            ->assertCount('[data-settings-card]', 2)
             ->assertPresent('[data-settings-card] svg')
             ->assertPresent('section[aria-label="Workspace"]')
             ->click('main a[href="/settings/general"]')
@@ -111,7 +110,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertNoJavaScriptErrors();
         @unlink($png);
         // The shell owns the vertical rhythm: what the page starts with (its heading column, or the section navigation on a phone) sits about 16 to 24px below the header (trail sub-bar included), in light and dark and on a phone.
-        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] > :first-child").getBoundingClientRect().top - document.querySelector("[data-shell-bar]").getBoundingClientRect().bottom)');
+        $gap = fn (): int => (int) $page->script('() => Math.round(document.querySelector("[data-shell-content] > :first-child").getBoundingClientRect().top - (document.querySelector("[data-navigation-header]") ?? document.querySelector("[data-shell-top]")).getBoundingClientRect().bottom)');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);
         $page->script('() => document.documentElement.classList.add("dark")');
         expect($gap())->toBeGreaterThanOrEqual(14)->toBeLessThanOrEqual(24);

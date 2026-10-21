@@ -84,8 +84,8 @@ final class SettingsFormsTest extends TestCase
             $source = (string) file_get_contents($file->getPathname());
             $buttons = preg_match_all('/<Button\b[^>]*variant="destructive"/', $source);
             $destructive += $buttons;
-            // Each destructive button is the trigger inside a <ConfirmDialog> (its own element, so one per button).
-            $this->assertGreaterThanOrEqual($buttons, preg_match_all('/<ConfirmDialog\b/', $source), substr($file->getPathname(), strlen(dirname(__DIR__)) + 1).' has a destructive button outside a ConfirmDialog');
+            // Each destructive button is the trigger inside a <Dialog> (its own element, so one per button).
+            $this->assertGreaterThanOrEqual($buttons, preg_match_all('/<Dialog\b/', $source), substr($file->getPathname(), strlen(dirname(__DIR__)) + 1).' has a destructive button outside a ConfirmDialog');
             $this->assertDoesNotMatchRegularExpression('/<Button\b[^>]*(variant="destructive")[^>]*@click="(remove|revoke|transfer)/', $source, 'a destructive click must be a ConfirmDialog confirm');
         }
         $this->assertGreaterThanOrEqual(5, $destructive);
@@ -166,10 +166,10 @@ final class SettingsFormsTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
         $this->signIn(1);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save.disabled', false)->assertJsonPath('props.save.reason', null);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save.disabled', false)->assertJsonPath('props.save.reason', null)->assertJsonPath('props.save.method', 'put');
         $this->postJson('/logout')->assertNoContent();
         $this->signIn(3);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save.disabled', true);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save', null);
     }
 
     public function test_every_registered_settings_section_is_an_inertia_page_whose_component_exists(): void
@@ -194,7 +194,7 @@ final class SettingsFormsTest extends TestCase
             }
         }
         $this->assertContains('general', $checked);
-        $this->assertContains('connections', $checked);
+        $this->assertNotContains('connections', $checked, 'the AI assistants page is hidden until the connection rework');
         $this->assertContains('people', $checked);
     }
 
@@ -223,11 +223,30 @@ final class SettingsFormsTest extends TestCase
         $this->assertDoesNotMatchRegularExpression("/submitLabel: '(Submit|OK|Save changes)'/", $actions);
     }
 
-    public function test_a_settings_section_is_a_small_page(): void
+    public function test_every_settings_and_account_page_is_the_md_focus_column(): void
     {
-        // Settings sections beside the sidebar are <Page sm>: General (Settings/Edit) and the profile. The data pages (People, Connections) are full width.
-        foreach (['Workspace/Settings/General/Page.vue', 'Workspace/Account/Profile/Page.vue'] as $page) {
-            $this->assertMatchesRegularExpression('/<Page sm[\s>]/', (string) file_get_contents(dirname(__DIR__).'/resources/js/pages/'.$page), $page.' is <Page sm>');
+        // Ruled: every settings section and every account page beside the sidebar is <Page md>, the data pages (People) included.
+        $pages = array_merge(glob(dirname(__DIR__).'/resources/js/pages/Workspace/Settings/*/Page.vue'), glob(dirname(__DIR__).'/resources/js/pages/Workspace/Account/*/Page.vue'));
+        $this->assertGreaterThanOrEqual(6, count($pages));
+        foreach ($pages as $page) {
+            $this->assertMatchesRegularExpression('/<Page md[\s>]/', (string) file_get_contents($page), basename(dirname($page)).' is <Page md>');
+        }
+    }
+
+    public function test_the_cursor_rule_is_the_kits_stylesheet_and_disabled_items_are_not_pointer_events_none(): void
+    {
+        $root = dirname(__DIR__);
+        $kit = (string) file_get_contents($root.'/resources/css/kit.css');
+        $this->assertStringContainsString('html:not(.kit-cursor-native)', $kit, 'the cursor rule has its opt-out');
+        $this->assertStringContainsString('cursor-pointer', $kit);
+        $this->assertStringContainsString('cursor-not-allowed', $kit);
+        $app = (string) file_get_contents($root.'/resources/css/app.css');
+        $this->assertStringContainsString("@import './kit.css';", $app);
+        $this->assertStringNotContainsString('kit-cursor-native', $app, 'the rule lives in the kit stylesheet, not in the app');
+        // Disabled menu and select items are blocked by the disabled state, so the not-allowed cursor can show; none of them is pointer-events: none.
+        foreach (array_merge(glob($root.'/resources/js/components/ui/dropdown-menu/*.vue'), [$root.'/resources/js/components/Kit/Form/Select.vue']) as $file) {
+            $this->assertStringNotContainsString('data-[disabled]:pointer-events-none', (string) file_get_contents($file), basename($file));
+            $this->assertStringNotContainsString('cursor-default', (string) file_get_contents($file), basename($file));
         }
     }
 }

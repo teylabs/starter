@@ -92,18 +92,18 @@ final class PeopleTest extends TestCase
         $this->assertSame('members', $page['tab']);
         $this->assertSame(['Alpha', 'Viewer'], $this->names($rows));
         $this->assertSame(['Owner', 'Viewer'], array_map(fn (array $row) => $row['roles'][0]['label'], $rows));
-        $this->assertSame([null, 'change-role,remove'], $this->actionKeys($rows), 'the owner has no actions; the viewer can be re-roled and removed (Concierge decides, by rank)');
+        $this->assertSame([null, 'change-role,transfer-ownership,remove'], $this->actionKeys($rows), 'the owner has no actions; the viewer can be re-roled, made owner and removed (Concierge decides, by rank)');
         $this->assertSame([true, false], array_map(fn (array $row) => $row['member']['is_you'], $rows));
         $this->assertNull($rows[0]['member']['avatar']);
         $this->assertNotNull($rows[1]['joined']);
-        $this->assertSame(['put', 'delete'], array_column($rows[1]['actions'], 'method'));
+        $this->assertSame(['put', 'post', 'delete'], array_column($rows[1]['actions'], 'method'));
         $this->assertNull($rows[1]['actions'][0]['confirm'], 'a role change does not ask');
-        $this->assertSame('Remove member', $rows[1]['actions'][1]['label'] === 'Remove' ? $rows[1]['actions'][1]['confirm']['label'] : '', 'removing asks first');
-        $this->assertTrue($rows[1]['actions'][1]['destructive']);
+        $this->assertSame('Remove member', $rows[1]['actions'][2]['confirm']['label'], 'removing asks first');
+        $this->assertTrue($rows[1]['actions'][2]['destructive']);
         // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
         $this->assertSame(['admin', 'viewer'], array_column($page['roles'], 'value'));
         $this->assertSame('Invite member', $page['invite']['label']);
-        $this->assertSame('post', $page['invite']['method']);
+        $this->assertSame('get', $page['invite']['method']);
         $this->post('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'admin'], ['Accept' => 'application/json'])->assertCreated();
         $invitations = $this->people('?tab=invitations');
         $this->assertSame([['new@example.test', 'Admin']], array_map(fn (array $row): array => [$row['email'], $row['roles'][0]['label']], $invitations['table']['rows']));
@@ -114,7 +114,7 @@ final class PeopleTest extends TestCase
         $this->getJson('/@alpha/settings/people?sort=password')->assertStatus(400);
         // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
         $keys = array_column($this->get('/@alpha/settings', $this->inertia())->json('props.groups.0.sections'), 'key');
-        $this->assertSame(['general', 'people', 'connections'], $keys);
+        $this->assertSame(['general', 'people'], $keys);
     }
 
     public function test_a_viewer_is_refused_and_does_not_see_the_section(): void
@@ -199,7 +199,7 @@ final class PeopleTest extends TestCase
         $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
         $this->assertSame([null, null], $this->actionKeys($page['table']['rows']), 'an admin has no action on the owner, or on themselves');
         $this->assertSame(['viewer'], array_column($page['roles'], 'value'), 'an admin grants viewer only');
-        $this->assertSame('post', $page['invite']['method']);
+        $this->assertSame('get', $page['invite']['method']);
         $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
         $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
         $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
@@ -290,5 +290,30 @@ final class PeopleTest extends TestCase
         $this->assertNotContains('Beta', $this->names($this->rows()));
         $this->assertSame([2, 0], array_column($this->people()['table']['tabs'], 'count'));
         $this->getJson('/@alpha/settings/people?filter[search]=b-only')->assertJsonPath('table.tabs.1.count', 0);
+    }
+
+    public function test_the_invite_and_change_role_modals_are_server_routes_with_the_pages_authorisation(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        // Opened directly, the modal URL renders People with the modal's data on it; fetched as a modal it is the modal page alone.
+        $direct = $this->get('/@alpha/settings/people/invitations', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')->assertJsonPath('props._inertiaui_modal.component', 'Workspace/Settings/People/Invite/Page');
+        $this->assertSame('/settings/people', $direct->json('props._inertiaui_modal.baseUrl'));
+        $modal = $this->get('/@alpha/settings/people/invitations', [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Invite/Page');
+        $this->assertSame(['admin', 'viewer'], array_column($modal->json('props.roles'), 'value'));
+        $this->assertSame(['Send invitation', 'post'], [$modal->json('props.submit.label'), $modal->json('props.submit.method')]);
+        // The opener is the server's descriptor: a GET to the same URL the invitation is posted to.
+        $this->assertSame('get', $this->people()['invite']['method']);
+        // Change role: the member's current role, the roles the viewer may give, and the PUT the existing endpoint takes.
+        $viewer = $this->membership(1, 3);
+        $role = $this->get('/@alpha/settings/people/members/'.$viewer->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/ChangeRole/Page');
+        $this->assertSame(['viewer', 'put'], [$role->json('props.role'), $role->json('props.submit.method')]);
+        // Refusals are the page's own: the owner's row has no role change, another workspace's member is not found, a viewer cannot open either modal.
+        $this->get('/@alpha/settings/people/members/'.$this->membership(1, 1)->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
+        $this->get('/@alpha/settings/people/members/'.$this->membership(2, 2)->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertNotFound();
+        $this->signOut();
+        $this->signIn(3);
+        $this->get('/@alpha/settings/people/invitations', [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
+        $this->get('/@alpha/settings/people/members/'.$viewer->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
     }
 }

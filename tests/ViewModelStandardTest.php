@@ -100,7 +100,8 @@ final class ViewModelStandardTest extends TestCase
         // A class named ...ViewModel under a ViewModels folder is the typed base, not a laravel-data object.
         foreach ($this->sources(base_path('vendor/tey/kit/src/Features'), 'php') as $file) {
             if (str_contains($file, '/ViewModels/') && ! str_ends_with($file, 'PlainPageLayouts.php') && ! str_contains($file, '/Core/ViewModels/') && preg_match('/class \w+ViewModel extends (\w+)/', (string) file_get_contents($file), $m)) {
-                $this->assertSame('PageViewModel', $m[1], basename($file).' is a page ViewModel, not Data');
+                // The modal pages' ViewModels (Invite member, Change role) are plain ViewModels: a modal is not a page and has no layout.
+                $this->assertContains($m[1], ['PageViewModel', 'ViewModel'], basename($file).' is a ViewModel, not Data');
             }
         }
         // Pages declare no layout of their own, and there is no root-folder fallback layout.

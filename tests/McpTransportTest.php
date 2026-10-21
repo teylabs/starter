@@ -109,6 +109,9 @@ final class McpTransportTest extends TestCase
         config(['kit.capabilities' => ['workspace.settings' => true]]);
         $this->withoutToken();
         Auth::forgetGuards();
+        // The AI assistants page is hidden until the connection rework: a 404 by default, and the page itself once the app turns it on.
+        $this->get('/@alpha/settings/connections')->assertNotFound();
+        config(['kit.mcp.ui' => true]);
         $this->get('/@alpha/settings/connections')->assertOk()->assertSee('Synthetic delegated client');
         $this->deleteJson('/@alpha/settings/connections/'.$connection)->assertOk()->assertJsonPath('revoked', true);
         $this->deleteJson('/@alpha/settings/connections/'.$connection)->assertOk();

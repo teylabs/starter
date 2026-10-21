@@ -144,7 +144,7 @@ final class UrlConventionTest extends TestCase
         // One workspace: the shell's links, the page's own URLs and the redirects after a write are short; nothing is switchable.
         $page = $this->get('/records', $inertia)->assertOk()
             ->assertJsonPath('props.shell.navigation.0.url', '/dashboard')->assertJsonPath('props.shell.navigation.1.url', '/records')->assertJsonPath('props.shell.navigation.2.label', 'Settings')->assertJsonPath('props.shell.navigation.2.url', '/settings')
-            ->assertJsonPath('props.shell.switcher.choices.0.url', '/dashboard')->assertJsonCount(1, 'props.shell.switcher.choices')
+            ->assertJsonPath('props.shell.workspace.url', '/dashboard')->assertJsonCount(1, 'props.shell.switcher.choices')
             ->assertJsonPath('props.create_url', '/records')->json('props');
         $this->assertStringStartsWith('/records/', array_values($page['actions'])[0]['url']);
         $this->get('/me/workspaces', $inertia)->assertRedirect('/dashboard');

@@ -89,10 +89,13 @@ final class ActionDescriptorsTest extends TestCase
             }
         }
         $owner = $this->get('/@alpha/settings/general', $this->inertia())->json('props');
-        $this->assertFalse($owner['save']['disabled']);
-        $this->assertSame('put', $owner['transfer']['method']);
-        $this->assertTrue($owner['leave']['disabled'], 'an owner is shown Leave as unusable, with the reason');
-        $this->assertNotSame('', (string) $owner['leave']['reason']);
+        $this->assertSame(['Save', 'put', false], [$owner['save']['label'], $owner['save']['method'], $owner['save']['disabled']]);
+        // Role-denied is null, never disabled: General has no danger zone at all, Make owner is a row action for the owner, and the owner has no Leave.
+        $this->assertArrayNotHasKey('transfer', $owner);
+        $this->assertArrayNotHasKey('leave', $owner);
+        $this->assertNull($this->get('/@alpha/dashboard', $this->inertia())->json('props.shell.workspace.leave'));
+        $rows = $this->get('/@alpha/settings/people', $this->inertia())->json('props.table.rows');
+        $this->assertSame([[], ['change-role', 'transfer-ownership', 'remove']], array_map(fn (array $row) => array_column($row['actions'], 'key'), $rows));
         $this->signOut();
         $this->signIn(3);
         foreach ($pages as $url) {
@@ -102,10 +105,10 @@ final class ActionDescriptorsTest extends TestCase
             }
         }
         $viewer = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->json('props');
-        $this->assertTrue($viewer['save']['disabled']);
-        $this->assertNotSame('', (string) $viewer['save']['reason'], 'a disabled action says why');
-        $this->assertNull($viewer['transfer'], 'a denied action is absent');
-        $this->assertFalse($viewer['leave']['disabled']);
+        $this->assertNull($viewer['save'], 'a viewer whose role can only read has no Save: the page is read-only, nothing is greyed out');
+        $leave = $this->get('/@alpha/dashboard', $this->inertia())->json('props.shell.workspace.leave');
+        $this->assertFalse($leave['disabled']);
+        $this->assertSame('delete', $leave['method']);
         $this->assertSame([], $found, 'no can map, can_* flag, permissions list or role flag in any page or shared prop');
     }
 
@@ -150,9 +153,9 @@ final class ActionDescriptorsTest extends TestCase
         $this->assertSame([], $found);
         $general = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->json('props');
         $this->assertFalse($general['save']['disabled'], 'an admin may change the settings');
-        $this->assertNull($general['transfer'], 'only the owner has Transfer ownership');
-        $this->assertFalse($general['leave']['disabled']);
-        $this->assertSame('delete', $general['leave']['method']);
+        $this->assertArrayNotHasKey('transfer', $general);
+        $leave = $this->get('/@alpha/dashboard', $this->inertia())->json('props.shell.workspace.leave');
+        $this->assertSame(['delete', false], [$leave['method'], $leave['disabled']], 'an admin can leave');
         $people = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->json('props');
         $this->assertSame('Invite member', $people['invite']['label']);
         $this->assertSame([[], []], array_column($people['table']['rows'], 'actions'), 'no action on the owner or on themselves');

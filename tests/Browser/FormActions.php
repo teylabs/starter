@@ -98,7 +98,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         // The other kit forms render on the same pieces, without script errors.
         $page->resize(1440, 900)->navigate('/settings/people')->assertSee('Invite member')->assertNoJavaScriptErrors();
         $page->navigate('/me/profile')->assertPresent('[data-form-card] [data-form-actions]')->assertSee('Upload photo')->assertNoJavaScriptErrors();
-        $page->navigate('/settings/connections')->assertSee('Connections')->assertNoJavaScriptErrors();
+        $page->navigate('/settings/general')->assertSee('General')->assertNoJavaScriptErrors();
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

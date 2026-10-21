@@ -79,26 +79,26 @@ final class BreadcrumbsTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         RecordsFixtureProvider::install();
         $this->signIn(1);
-        $home = ['label' => 'Product name', 'url' => '/', 'current' => false];
+        $home = ['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true];
         // One workspace: the crumbs link in the short form, whichever form the page was reached by.
         foreach (['/records/1', '/@alpha/records/1'] as $path) {
             $this->get($path, $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Record/Show/Page')
-                ->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => false], ['label' => 'Alpha private', 'url' => '/records/1', 'current' => true]]);
+                ->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => false, 'home' => false], ['label' => 'Alpha private', 'url' => '/records/1', 'current' => true, 'home' => false]]);
         }
         // A list page is the home icon and itself.
-        $this->get('/records', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => true]]);
+        $this->get('/records', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => true, 'home' => false]]);
         // The dashboard and settings are siblings under home, not nested.
-        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Dashboard', 'url' => '/dashboard', 'current' => true]]);
-        $this->get('/settings', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Settings', 'url' => '/settings', 'current' => true]]);
+        $this->get('/dashboard', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Dashboard', 'url' => '/dashboard', 'current' => true, 'home' => false]]);
+        $this->get('/settings', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false]]);
         // Two workspaces: the same trail, in the full form; home is "/" and is named by the workspace.
         $this->addSecondWorkspace();
-        $alpha = ['label' => 'Alpha', 'url' => '/', 'current' => false];
+        $alpha = ['label' => 'Alpha', 'url' => '/', 'current' => false, 'home' => true];
         $this->get('/@alpha/records/1', $this->inertia())->assertOk()
-            ->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Records', 'url' => '/@alpha/records', 'current' => false], ['label' => 'Alpha private', 'url' => '/@alpha/records/1', 'current' => true]]);
+            ->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Records', 'url' => '/@alpha/records', 'current' => false, 'home' => false], ['label' => 'Alpha private', 'url' => '/@alpha/records/1', 'current' => true, 'home' => false]]);
         $this->get('/records/1', $this->inertia())->assertOk()
             ->assertJsonPath('props.layout.breadcrumbs.0.url', '/')->assertJsonPath('props.layout.breadcrumbs.1.url', '/@alpha/records');
         // The personal page is rooted at home too, with no workspace in its own links.
-        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Account', 'url' => '/me', 'current' => false], ['label' => 'Workspaces', 'url' => '/me/workspaces', 'current' => true]]);
+        $this->get('/me/workspaces', $this->inertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Account', 'url' => '/me', 'current' => false, 'home' => false], ['label' => 'Workspaces', 'url' => '/me/workspaces', 'current' => true, 'home' => false]]);
     }
 
     public function test_every_page_route_has_a_breadcrumb(): void
@@ -109,7 +109,7 @@ final class BreadcrumbsTest extends TestCase
         $checked = [];
         foreach (Route::getRoutes() as $route) {
             $action = $route->getActionName();
-            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'Moved') && ! str_contains($action, 'AvatarImage')) {
+            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'Moved') && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'AvatarImage')) {
                 $this->assertNotNull($registry->get($route), $route->uri().' declares no breadcrumb');
                 $checked[] = $route->uri();
             }
@@ -150,7 +150,7 @@ final class BreadcrumbsTest extends TestCase
         $checked = 0;
         foreach (Route::getRoutes() as $route) {
             $action = $route->getActionName();
-            if (! in_array('GET', $route->methods(), true) || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage')) {
+            if (! in_array('GET', $route->methods(), true) || str_contains($action, 'PeopleModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage')) {
                 continue;
             }
             $crumb = $registry->get($route);
