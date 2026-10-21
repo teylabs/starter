@@ -76,6 +76,7 @@
     "POST oauth/token/refresh web,auth:web",
     "POST settings/connections web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "POST settings/people/invitations web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
+    "POST switch-account web,auth:web",
     "POST two-factor-challenge web,guest:web",
     "POST user/confirm-password web,auth:web",
     "POST user/confirmed-two-factor-authentication web,auth:web,password.confirm",

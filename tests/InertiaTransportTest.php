@@ -39,8 +39,8 @@ final class InertiaTransportTest extends TestCase
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.shell.product.name', config('app.name'))
             ->assertJsonStructure(['props' => ['shell' => ['product', 'footer']]]);
-        // The GuestShell carries the product and the footer only: no ShellData-only field.
-        $this->assertSame(['footer', 'product'], array_keys(Arr::sortRecursive($this->get('/login', $inertia)->json('props.shell'))));
+        // The GuestShell carries its kind, the product and the footer only: no ShellData-only field.
+        $this->assertSame(['footer', 'kind', 'product'], array_keys(Arr::sortRecursive($this->get('/login', $inertia)->json('props.shell'))));
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();

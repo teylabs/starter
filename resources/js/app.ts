@@ -4,11 +4,10 @@ import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
 import { initializeTheme } from '@kit/ui';
 import { honourReducedMotion } from '@/lib/reduced-motion';
-import AppLayout from '@/layouts/AppLayout.vue';
-import GuestLayout from '@/layouts/GuestLayout.vue';
+import ShellLayout from '@/layouts/ShellLayout.vue';
 
 
-// Pages live at ./pages/<Resource>/<Section>/Page.vue and declare no layout: sign-in pages get the guest shell, everything else the app shell (fed by the
+// Pages live at ./pages/<Resource>/<Section>/Page.vue and declare no layout: the shell is the server's pick (`shell.kind`: guest, focus or app, fed by the
 // backend's shared `shell`), and a page inside a folder that has a Layout.vue (pages/Workspace/Settings, pages/Workspace/Account) is wrapped in that one too,
 // the nearest one up its own resource folder. Those sublayouts are imported eagerly so moving between siblings keeps the same instance mounted. A Layout.vue at
 // the pages root or directly in `Workspace` (the kit's own shell component, not a layout to use) is never picked.
@@ -34,9 +33,8 @@ createInertiaApp({
     layout: (name) => {
         const sublayout = nearestPageLayout(name);
 
-        const shell = name.startsWith('Auth/') ? GuestLayout : AppLayout;
-
-        return sublayout ? [shell, sublayout] : shell;
+        // The server names the shell per request (`shell.kind`): app, guest or focus.
+        return sublayout ? [ShellLayout, sublayout] : ShellLayout;
     },
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });

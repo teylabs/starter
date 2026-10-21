@@ -119,6 +119,30 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 }
 export namespace SessionUi {
 export namespace Data {
+export type FocusShellData = {
+product: {
+name: string,
+url: string,
+logomark: string | null,
+},
+user: {
+name: string,
+email: string,
+initials: string,
+avatar_url: string | null,
+avatar_url_2x: string | null,
+},
+links: {
+sign_out: string,
+switch_account: string,
+},
+step: {
+current: number,
+total: number,
+label: string,
+} | null,
+kind: undefined,
+};
 export type GuestShellData = {
 product: {
 name: string,
@@ -133,6 +157,7 @@ label: string,
 url: string,
 }[],
 },
+kind: undefined,
 };
 export type ShellData = {
 account: {
@@ -198,6 +223,7 @@ label: string,
 url: string,
 }[],
 },
+kind: undefined,
 };
 }
 export namespace ViewModels {

@@ -53,7 +53,7 @@
         ],
         "setup": "@php bin/setup.php",
         "test:brand-env": "sh bin/fake-brand-env.sh",
-        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php tests/Browser/FormActions.php tests/Browser/AuthCards.php tests/Browser/Account.php tests/Browser/People.php tests/Browser/Shell.php tests/Browser/Modals.php",
+        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php tests/Browser/FormActions.php tests/Browser/AuthCards.php tests/Browser/Account.php tests/Browser/People.php tests/Browser/Shell.php tests/Browser/Modals.php tests/Browser/Focus.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
