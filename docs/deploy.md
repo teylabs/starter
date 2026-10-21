@@ -21,7 +21,7 @@ TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded schem
 
 ## CI
 
-The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, and `/up` answers 200.
+The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, once with `QUEUE_CONNECTION=sync` and once with `database`, both with `CACHE_STORE=database` and `SESSION_DRIVER=database` as a platform with a database attached sets them (the cache, session and queue tables are migrations, so the migration has to come before `optimize`: laravel-data keeps its structure cache in the cache store), on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, the configured cache store takes a put, a get and a lock, and `/up` answers 200. The cache key prefix follows `APP_NAME` (set `CACHE_PREFIX` to pin it).
 
 ## Avatars and media
 

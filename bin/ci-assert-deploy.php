@@ -3,7 +3,9 @@
 use Glhd\Gretel\Support\Cache;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache as AppCache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
 // CI only: asserts what `php artisan migrate --force && php artisan optimize` did on a fresh database, in a production install (no
@@ -36,6 +38,19 @@ foreach (['bootstrap/cache/config.php', 'bootstrap/cache/routes-v7.php'] as $cac
 }
 if (! app(Cache::class)->exists()) {
     $fail('breadcrumbs not cached');
+}
+// The cache the platform configured works (the database store's table is migrated): a put and a get, and a lock.
+if (AppCache::put('ci-assert-deploy', 'ok', 60) !== true || AppCache::get('ci-assert-deploy') !== 'ok') {
+    $fail('the cache store ('.config('cache.default').') does not round-trip');
+}
+AppCache::forget('ci-assert-deploy');
+$lock = AppCache::lock('ci-assert-deploy', 5);
+if (! $lock->get()) {
+    $fail('the cache store ('.config('cache.default').') cannot take a lock');
+}
+$lock->release();
+if (config('queue.default') === 'database' && ! Schema::hasTable('jobs')) {
+    $fail('the database queue has no jobs table');
 }
 $status = app(Illuminate\Contracts\Http\Kernel::class)->handle(Request::create(rtrim((string) config('app.url'), '/').'/up'))->getStatusCode();
 if ($status !== 200) {

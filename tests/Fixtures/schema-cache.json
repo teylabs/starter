@@ -1,0 +1,86 @@
+{
+    "cache": {
+        "columns": [
+            [
+                "key",
+                "varchar",
+                1,
+                null,
+                1
+            ],
+            [
+                "value",
+                "text",
+                1,
+                null,
+                0
+            ],
+            [
+                "expiration",
+                "integer",
+                1,
+                null,
+                0
+            ]
+        ],
+        "indexes": [
+            [
+                0,
+                "c",
+                [
+                    "expiration"
+                ]
+            ],
+            [
+                1,
+                "pk",
+                [
+                    "key"
+                ]
+            ]
+        ],
+        "foreign_keys": []
+    },
+    "cache_locks": {
+        "columns": [
+            [
+                "key",
+                "varchar",
+                1,
+                null,
+                1
+            ],
+            [
+                "owner",
+                "varchar",
+                1,
+                null,
+                0
+            ],
+            [
+                "expiration",
+                "integer",
+                1,
+                null,
+                0
+            ]
+        ],
+        "indexes": [
+            [
+                0,
+                "c",
+                [
+                    "expiration"
+                ]
+            ],
+            [
+                1,
+                "pk",
+                [
+                    "key"
+                ]
+            ]
+        ],
+        "foreign_keys": []
+    }
+}

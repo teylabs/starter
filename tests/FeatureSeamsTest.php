@@ -118,6 +118,8 @@ final class FeatureSeamsTest extends TestCase
         // Concierge 0.8.1: whether the accepting account's email differed from the invited one.
         $schema['concierge_invitations']['columns'][] = ['accepted_with_other_email', 'tinyint(1)', 1, "'0'", 0];
         $schema['concierge_invitations']['columns'][] = ['message', 'varchar', 0, null, 0];
+        // Laravel's own cache and queue tables (the database cache store and the database queue).
+        $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-cache.json'), true), ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-queue.json'), true)];
         // The kit's own bookkeeping table: the fingerprint the deploy's role and permission syncs are gated by.
         $schema['kit_meta'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-meta.json'), true);
         // A capability switched for one person in one workspace.

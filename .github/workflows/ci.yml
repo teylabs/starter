@@ -84,8 +84,13 @@ jobs:
       - run: composer fixture:check
 
   deploy:
-    name: Deploy order (PostgreSQL)
+    name: Deploy order (PostgreSQL, queue ${{ matrix.queue }})
     runs-on: ubuntu-latest
+    # As a platform with a database attached sets it: the database cache and sessions, and either queue (sync runs jobs in the request).
+    strategy:
+      fail-fast: false
+      matrix:
+        queue: [sync, database]
     services:
       postgres:
         image: postgres:17
@@ -100,6 +105,9 @@ jobs:
       APP_ENV: production
       APP_DEBUG: 'false'
       APP_URL: https://app.example.test
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: ${{ matrix.queue }}
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432

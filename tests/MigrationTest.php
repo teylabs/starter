@@ -37,6 +37,8 @@ final class MigrationTest extends TestCase
             '0001_01_01_000002_add_two_factor_columns_to_users_table',
             '0001_01_01_000003_create_password_reset_tokens_table',
             '0001_01_01_000004_create_sessions_table',
+            '0001_01_01_000005_create_cache_table',
+            '0001_01_01_000006_create_jobs_table',
             '0001_01_02_000101_create_kit_meta_table',
             '0001_01_02_000200_create_kit_workspaces_table',
             '0001_01_02_000100_create_kit_core_tables',
