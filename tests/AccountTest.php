@@ -2,6 +2,8 @@
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -287,19 +289,19 @@ final class AccountTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         Schema::drop('kit_security_events');
         $reported = [];
-        app(\Illuminate\Contracts\Debug\ExceptionHandler::class)->reportable(function (\Throwable $e) use (&$reported): bool {
+        app(ExceptionHandler::class)->reportable(function (Throwable $e) use (&$reported): bool {
             $reported[] = $e;
 
             return false;
         });
-        $request = \Illuminate\Http\Request::create('/login', 'POST', server: ['REMOTE_ADDR' => '203.0.113.77', 'HTTP_USER_AGENT' => 'SecretAgent/9.9']);
+        $request = Request::create('/login', 'POST', server: ['REMOTE_ADDR' => '203.0.113.77', 'HTTP_USER_AGENT' => 'SecretAgent/9.9']);
         SecurityLog::record(1, 'sign_in', $request);
         $this->assertNotEmpty($reported);
         foreach ($reported as $e) {
             for ($link = $e; $link !== null; $link = $link->getPrevious()) {
                 $this->assertStringNotContainsString('203.0.113.77', $link->getMessage());
                 $this->assertStringNotContainsString('SecretAgent', $link->getMessage());
-                $this->assertNotInstanceOf(\Illuminate\Database\QueryException::class, $link);
+                $this->assertNotInstanceOf(QueryException::class, $link);
             }
         }
     }
