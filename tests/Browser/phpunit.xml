@@ -11,6 +11,7 @@
             <file>FormActions.php</file>
             <file>AuthCards.php</file>
             <file>Account.php</file>
+            <file>People.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

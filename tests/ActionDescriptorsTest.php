@@ -7,7 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tey\Concierge\Actions\AcceptInvitation;
+use Tey\Concierge\Actions\InviteMember;
+use Tey\Concierge\Models\Membership;
+use Tey\Concierge\Support\GrantSet;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
+use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
@@ -125,5 +130,46 @@ final class ActionDescriptorsTest extends TestCase
         foreach (['user', 'navigation', 'switcher', 'links', 'env', 'can'] as $field) {
             $this->assertNotContains($field, $sent, $field.' belongs to ShellData only');
         }
+    }
+
+    public function test_an_admin_variant_has_no_owner_actions_and_every_row_action_check_is_batched(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
+        $this->signIn(1);
+        $this->putJson('/@alpha/settings/people/members/'.Membership::query()->where('workspace_id', 1)->where('user_id', 3)->firstOrFail()->id, ['role' => 'admin'])->assertOk();
+        $this->signOut();
+        $this->signIn(3);
+        $found = [];
+        foreach (['/@alpha/dashboard', '/@alpha/settings', '/@alpha/settings/general', '/@alpha/settings/people', '/me/workspaces'] as $url) {
+            $response = $this->get($url, $this->inertia());
+            if ($response->getStatusCode() === 200) {
+                $this->walk($response->json('props'), $url, $found);
+            }
+        }
+        $this->assertSame([], $found);
+        $general = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->json('props');
+        $this->assertFalse($general['save']['disabled'], 'an admin may change the settings');
+        $this->assertNull($general['transfer'], 'only the owner has Transfer ownership');
+        $this->assertFalse($general['leave']['disabled']);
+        $this->assertSame('delete', $general['leave']['method']);
+        $people = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->json('props');
+        $this->assertSame('Invite member', $people['invite']['label']);
+        $this->assertSame([[], []], array_column($people['table']['rows'], 'actions'), 'no action on the owner or on themselves');
+        // The descriptors for a page of rows come from batched reads: ten more members add no queries per row.
+        $queries = function (): int {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->get('/@alpha/settings/people', $this->inertia())->assertOk();
+
+            return count(DB::getQueryLog());
+        };
+        $before = $queries();
+        foreach (range(10, 19) as $id) {
+            User::create(['id' => $id, 'name' => 'Person '.$id, 'email' => 'person'.$id.'@example.test', 'email_verified_at' => now()]);
+            AcceptInvitation::run(User::findOrFail($id), InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'person'.$id.'@example.test', new GrantSet(['viewer']))->token);
+        }
+        $this->assertSame($before, $queries(), 'more rows, no more queries');
+        $this->assertCount(12, $this->getJson('/@alpha/settings/people')->json('table.rows'));
     }
 }

@@ -50,10 +50,10 @@ export interface AvatarProps { initials: string; src?: string | null; src2x?: st
 export interface FileInputProps { id: string; accept?: string; disabled?: boolean }
 
 /**
- * The bar at the foot of a form (status, Cancel, submit; right-aligned; sticky). It reads Inertia's <Form> context, or `form` (a useForm() result). `submitLabel` is the verb
+ * The bar at the foot of a form (status, Cancel, submit; right-aligned; sticky). It reads Inertia's <Form> context, or `form` (a useForm() result). `submit` is the server's action descriptor (its label, and `disabled` with a `reason` shown in the status slot); `submitLabel` is the verb
  * for the action, never "Submit"; `busyLabel` follows it. Slots: `status` (slot props `{ state }`), `actions` (before Cancel), `submit`. Delete never goes here.
  */
-export interface FormActionsProps { form?: object; submitLabel?: string; busyLabel?: string; savedLabel?: string; cancelUrl?: string; cancel?: boolean; sticky?: boolean; warnOnLeave?: boolean }
+export interface FormActionsProps { form?: object; submit?: { label: string; disabled?: boolean; reason?: string | null }; submitLabel?: string; busyLabel?: string; savedLabel?: string; cancelUrl?: string; cancel?: boolean; sticky?: boolean; warnOnLeave?: boolean }
 
 /** A card for a form: a title, a six-column field grid, fieldsets, and the FormActions bar in its footer (same props). */
 export interface FormCardProps extends FormActionsProps { title?: string; description?: string }
@@ -63,3 +63,13 @@ export interface FormFieldsetProps { legend: string; description?: string }
 
 /** The confirmation a destructive action goes through (Reka AlertDialog): the trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without a trigger. */
 export interface ConfirmDialogProps { title: string; description?: string; confirmLabel?: string; cancelLabel?: string; destructive?: boolean }
+
+/** A modal dialog (Reka Dialog) for a form that does not need a page: `title`, an optional `description`, the body in the default slot, the opener in the `trigger` slot (or `v-model:open`). */
+export interface DialogProps { title: string; description?: string }
+
+/**
+ * A server-driven index table (TanStack headless, Tailwind). `table` is the server's TableData: rows, columns, sort, search, filters, tabs, pagination and the empty state, with each
+ * row's `actions` already decided. Every change is an Inertia visit with the state in the URL. Slots: `cell-<key>` ({ row, value }), `row-actions`, `toolbar`, `empty-first-use`,
+ * `empty-no-results`. `intercept` names row actions the page performs itself (`@act`). Nothing here checks a permission.
+ */
+export interface DataTableProps { table: object; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[] }

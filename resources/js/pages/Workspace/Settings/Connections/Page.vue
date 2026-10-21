@@ -9,7 +9,7 @@ const options = computed(() => props.tokens.map((token) => ({ value: token.id, l
 function revoke(url: string) { router.delete(url, { preserveScroll: true }); }
 </script>
 <template>
-    <Page lg>
+    <Page>
             <div class="grid gap-6">
                 <p v-if="!tokens.length" class="text-sm text-muted-foreground">No authorised client tokens yet. Connect a client first, then approve it here.</p>
                 <Form v-else :action="create_url" method="post" :options="{ preserveScroll: true }" reset-on-success>

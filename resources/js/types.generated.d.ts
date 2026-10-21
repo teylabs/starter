@@ -14,6 +14,8 @@ title: string,
 description: string,
 label: string,
 } | null,
+key: string | null,
+destructive: boolean,
 };
 export type Breadcrumb = {
 label: string,
@@ -36,6 +38,44 @@ navigation: Tey.Kit.Features.Core.Data.NavGroup[],
 title: string,
 documentTitle: string,
 breadcrumbs: Tey.Kit.Features.Core.Data.Breadcrumb[],
+};
+export type TableColumn = {
+key: string,
+label: string,
+sortable: boolean,
+hideable: boolean,
+hiddenByDefault: boolean,
+align: string | null,
+srOnlyLabel: boolean,
+};
+export type TableData = {
+rows: Record<string, any>[],
+columns: Tey.Kit.Features.Core.Data.TableColumn[],
+sort: Tey.Kit.Features.Core.Data.TableSort | null,
+search: string | null,
+filters: Record<string, string>,
+tabs: Tey.Kit.Features.Core.Data.TableTab[],
+pagination: Tey.Kit.Features.Core.Data.TablePagination,
+emptyState: unknown | null,
+};
+export type TablePagination = {
+page: number,
+perPage: number,
+total: number,
+from: number | null,
+to: number | null,
+lastPage: number,
+};
+export type TableSort = {
+column: string,
+direction: string,
+};
+export type TableTab = {
+key: string,
+label: string,
+url: string,
+count: number,
+current: boolean,
 };
 }
 }
@@ -192,40 +232,13 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type PeopleViewModel = {
 readonly title: string,
-readonly members: {
-id: number,
-name: string,
-email: string,
-initials: string,
-avatar: {
-url: string,
-url_2x: string,
-} | null,
-role: string,
-role_label: string,
-joined_at: string | null,
-is_you: boolean,
-change_role: Tey.Kit.Features.Core.Data.Action | null,
-remove: Tey.Kit.Features.Core.Data.Action | null,
-}[],
-readonly invitations: {
-id: string,
-email: string,
-role: string,
-role_label: string,
-expires_at: string,
-expired: boolean,
-invited_by: string | null,
-resend: Tey.Kit.Features.Core.Data.Action | null,
-revoke: Tey.Kit.Features.Core.Data.Action | null,
-}[],
+readonly tab: string,
+readonly table: Tey.Kit.Features.Core.Data.TableData,
+readonly invite: Tey.Kit.Features.Core.Data.Action | null,
 readonly roles: {
 value: string,
 label: string,
 }[],
-readonly invite: Tey.Kit.Features.Core.Data.Action,
-readonly search: string,
-readonly sort: string,
 readonly invite_link: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };

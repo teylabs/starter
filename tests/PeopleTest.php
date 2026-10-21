@@ -60,9 +60,26 @@ final class PeopleTest extends TestCase
         return Membership::query()->where('workspace_id', $workspace)->where('user_id', $user)->firstOrFail();
     }
 
-    private function people(): array
+    private function people(string $query = ''): array
     {
-        return $this->getJson('/@alpha/settings/people')->assertOk()->json();
+        return $this->getJson('/@alpha/settings/people'.$query)->assertOk()->json();
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function rows(string $query = ''): array
+    {
+        return $this->people($query)['table']['rows'];
+    }
+
+    private function names(array $rows): array
+    {
+        return array_column(array_column($rows, 'member'), 'name');
+    }
+
+    /** @return list<?string> the keys of the actions a row carries, by row */
+    private function actionKeys(array $rows): array
+    {
+        return array_map(fn (array $row) => implode(',', array_column($row['actions'], 'key')) ?: null, $rows);
     }
 
     public function test_the_owner_sees_the_members_and_the_pending_invitations(): void
@@ -71,22 +88,29 @@ final class PeopleTest extends TestCase
         $this->signIn(1);
         $page = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')
             ->assertJsonPath('props.title', 'People')->assertJsonPath('props.layout.breadcrumbs.2.label', 'People')->assertJsonPath('props.layout.documentTitle', 'People · Settings · Product name')->json('props');
-        $this->assertSame(['Alpha', 'Viewer'], array_column($page['members'], 'name'));
-        $this->assertSame(['Owner', 'Viewer'], array_column($page['members'], 'role_label'));
-        $this->assertSame([null, 'put'], array_map(fn (array $member) => $member['change_role']['method'] ?? null, $page['members']), 'the owner cannot be managed; the viewer can');
-        $this->assertSame([null, 'delete'], array_map(fn (array $member) => $member['remove']['method'] ?? null, $page['members']));
-        $this->assertSame([true, false], array_column($page['members'], 'is_you'));
-        $this->assertNull($page['members'][0]['avatar']);
-        $this->assertNotNull($page['members'][1]['joined_at']);
+        $rows = $page['table']['rows'];
+        $this->assertSame('members', $page['tab']);
+        $this->assertSame(['Alpha', 'Viewer'], $this->names($rows));
+        $this->assertSame(['Owner', 'Viewer'], array_map(fn (array $row) => $row['roles'][0]['label'], $rows));
+        $this->assertSame([null, 'change-role,remove'], $this->actionKeys($rows), 'the owner has no actions; the viewer can be re-roled and removed (Concierge decides, by rank)');
+        $this->assertSame([true, false], array_map(fn (array $row) => $row['member']['is_you'], $rows));
+        $this->assertNull($rows[0]['member']['avatar']);
+        $this->assertNotNull($rows[1]['joined']);
+        $this->assertSame(['put', 'delete'], array_column($rows[1]['actions'], 'method'));
+        $this->assertNull($rows[1]['actions'][0]['confirm'], 'a role change does not ask');
+        $this->assertSame('Remove member', $rows[1]['actions'][1]['label'] === 'Remove' ? $rows[1]['actions'][1]['confirm']['label'] : '', 'removing asks first');
+        $this->assertTrue($rows[1]['actions'][1]['destructive']);
         // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
         $this->assertSame(['admin', 'viewer'], array_column($page['roles'], 'value'));
-        $this->assertFalse($page['invite']['disabled']);
+        $this->assertSame('Invite member', $page['invite']['label']);
         $this->assertSame('post', $page['invite']['method']);
         $this->post('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'admin'], ['Accept' => 'application/json'])->assertCreated();
-        $this->assertSame([['new@example.test', 'Admin']], array_map(fn (array $invitation): array => [$invitation['email'], $invitation['role_label']], $this->people()['invitations']));
-        // Search and sort are the server's, through the query string.
-        $this->getJson('/@alpha/settings/people?filter[search]=view')->assertJsonCount(1, 'members')->assertJsonPath('members.0.name', 'Viewer');
-        $this->getJson('/@alpha/settings/people?sort=-name')->assertJsonPath('members.0.name', 'Viewer');
+        $invitations = $this->people('?tab=invitations');
+        $this->assertSame([['new@example.test', 'Admin']], array_map(fn (array $row): array => [$row['email'], $row['roles'][0]['label']], $invitations['table']['rows']));
+        $this->assertSame(['resend,revoke'], $this->actionKeys($invitations['table']['rows']));
+        // Search and sort are the server's, through the query string, and come back in the table.
+        $this->getJson('/@alpha/settings/people?filter[search]=view')->assertJsonCount(1, 'table.rows')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.search', 'view');
+        $this->getJson('/@alpha/settings/people?sort=-name')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.sort.direction', 'desc');
         $this->getJson('/@alpha/settings/people?sort=password')->assertStatus(400);
         // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
         $keys = array_column($this->get('/@alpha/settings', $this->inertia())->json('props.groups.0.sections'), 'key');
@@ -119,12 +143,12 @@ final class PeopleTest extends TestCase
         $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'owner'])->assertForbidden();
         $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'nonsense'])->assertForbidden();
         $this->postJson('/@alpha/settings/people/invitations', ['email' => 'not-an-email', 'role' => 'viewer'])->assertUnprocessable();
-        $id = $this->people()['invitations'][0]['id'];
+        $id = $this->rows('?tab=invitations')[0]['id'];
         // Resend is Concierge's: a fresh link, after its cooldown.
         $resent = $this->putJson('/@alpha/settings/people/invitations/'.$id);
         $this->assertContains($resent->getStatusCode(), [200, 403], 'resent, or held by the cooldown');
         $this->deleteJson('/@alpha/settings/people/invitations/'.$id)->assertOk()->assertJsonPath('revoked', true);
-        $this->assertSame([], $this->people()['invitations']);
+        $this->assertSame([], $this->rows('?tab=invitations'));
         $this->assertSame(InvitationStatus::Revoked, Invitation::query()->where('public_id', $id)->firstOrFail()->status);
         // An invitation of another workspace is not found here.
         $this->signOut();
@@ -143,7 +167,7 @@ final class PeopleTest extends TestCase
         $viewer = $this->membership(1, 3);
         $url = '/@alpha/settings/people/members/'.$viewer->id;
         $this->putJson($url, ['role' => 'admin'])->assertOk()->assertJsonPath('role', 'admin');
-        $this->assertSame(['Owner', 'Admin'], array_column($this->people()['members'], 'role_label'));
+        $this->assertSame(['Owner', 'Admin'], array_map(fn (array $row) => $row['roles'][0]['label'], $this->rows()));
         $this->putJson($url, ['role' => 'owner'])->assertForbidden();
         $this->putJson($url, ['role' => 'nonsense'])->assertForbidden();
         $this->putJson($url, [])->assertUnprocessable();
@@ -151,7 +175,7 @@ final class PeopleTest extends TestCase
         $this->putJson('/@alpha/settings/people/members/'.$this->membership(2, 2)->id, ['role' => 'viewer'])->assertNotFound();
         $this->deleteJson($url)->assertOk()->assertJsonPath('removed', true);
         $this->assertSame(MembershipStatus::Removed, $viewer->fresh()->status);
-        $this->assertSame(['Alpha'], array_column($this->people()['members'], 'name'));
+        $this->assertSame(['Alpha'], $this->names($this->rows()));
         // The removed user no longer reaches the workspace.
         $this->signOut();
         $this->signIn(3);
@@ -173,10 +197,8 @@ final class PeopleTest extends TestCase
         $this->signOut();
         $this->signIn(3);
         $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
-        $this->assertSame([null, null], array_column($page['members'], 'change_role'), 'an admin cannot manage the owner, or themselves');
-        $this->assertSame([null, null], array_column($page['members'], 'remove'));
+        $this->assertSame([null, null], $this->actionKeys($page['table']['rows']), 'an admin has no action on the owner, or on themselves');
         $this->assertSame(['viewer'], array_column($page['roles'], 'value'), 'an admin grants viewer only');
-        $this->assertFalse($page['invite']['disabled']);
         $this->assertSame('post', $page['invite']['method']);
         $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
         $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
@@ -213,7 +235,60 @@ final class PeopleTest extends TestCase
         $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
         $this->assertSame(['admin'], app(Concierge::class)->roleNames($otherAdmin->fresh()));
         // The page offers an admin what they may do: remove and re-role only the viewers.
-        $manageable = collect($this->getJson('/@alpha/settings/people')->json('members'))->where('manageable', true)->pluck('name')->all();
-        $this->assertSame([], $manageable, 'no viewer is left to manage');
+        $this->assertSame([null, null, null], $this->actionKeys($this->rows()), 'no viewer is left to act on: the owner, the other admin and themselves have none');
+    }
+
+    public function test_the_tabs_carry_server_counts_that_follow_the_search_and_the_tab_is_in_the_url(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'zed@example.test', 'role' => 'viewer'])->assertCreated();
+        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'amy@example.test', 'role' => 'viewer'])->assertCreated();
+        $page = $this->people();
+        $this->assertSame([['members', 'Members', 2, true], ['invitations', 'Invitations', 2, false]], array_map(fn (array $tab) => [$tab['key'], $tab['label'], $tab['count'], $tab['current']], $page['table']['tabs']));
+        $this->assertSame('/settings/people?tab=invitations', $page['table']['tabs'][1]['url']);
+        // The invitations tab is `?tab=invitations`: its own columns and rows, and the current mark moves.
+        $invitations = $this->people('?tab=invitations');
+        $this->assertSame('invitations', $invitations['tab']);
+        $this->assertSame(['amy@example.test', 'zed@example.test'], array_column($this->people('?tab=invitations&sort=email')['table']['rows'], 'email'));
+        $this->assertSame(['email', 'roles', 'invitedBy', 'sent', 'expires', 'actions'], array_column($invitations['table']['columns'], 'key'));
+        $this->assertSame([false, true], array_column($invitations['table']['tabs'], 'current'));
+        // Counts follow the search: "zed" matches one invitation and no member, and the tab links keep the search.
+        $searched = $this->people('?tab=invitations&filter[search]=zed');
+        $this->assertSame(['zed@example.test'], array_column($searched['table']['rows'], 'email'));
+        $this->assertSame([0, 1], array_column($searched['table']['tabs'], 'count'));
+        $this->assertStringContainsString('filter%5Bsearch%5D=zed', $searched['table']['tabs'][0]['url']);
+        $this->getJson('/@alpha/settings/people?tab=nonsense')->assertStatus(400);
+        // Sorting an invitations column is honoured; a members-only sort is refused there.
+        $this->assertSame(['zed@example.test', 'amy@example.test'], array_column($this->people('?tab=invitations&sort=-email')['table']['rows'], 'email'));
+        $this->getJson('/@alpha/settings/people?tab=invitations&sort=joined')->assertStatus(400);
+        $this->getJson('/@alpha/settings/people?filter[nonsense]=1')->assertStatus(400);
+    }
+
+    public function test_the_empty_states_are_decided_by_the_server_and_the_page_is_capped(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(1);
+        $this->assertSame('first-use', $this->people('?tab=invitations')['table']['emptyState']);
+        $this->assertNull($this->people()['table']['emptyState']);
+        $noResults = $this->people('?filter[search]=zzz');
+        $this->assertSame('no-results', $noResults['table']['emptyState']);
+        $this->assertSame([], $noResults['table']['rows']);
+        $pagination = $this->people('?per_page=1&page=2')['table']['pagination'];
+        $this->assertSame([2, 1, 2, 2, 2, 2], [$pagination['page'], $pagination['perPage'], $pagination['total'], $pagination['from'], $pagination['to'], $pagination['lastPage']]);
+        $this->assertSame(100, $this->people('?per_page=5000')['table']['pagination']['perPage']);
+    }
+
+    public function test_the_table_never_lists_another_workspaces_people_or_invitations(): void
+    {
+        require dirname(__DIR__).'/database/fixture.php';
+        $this->signIn(2);
+        $this->postJson('/@beta/settings/people/invitations', ['email' => 'b-only@example.test', 'role' => 'viewer'])->assertCreated();
+        $this->signOut();
+        $this->signIn(1);
+        $this->assertSame([], $this->rows('?tab=invitations'));
+        $this->assertNotContains('Beta', $this->names($this->rows()));
+        $this->assertSame([2, 0], array_column($this->people()['table']['tabs'], 'count'));
+        $this->getJson('/@alpha/settings/people?filter[search]=b-only')->assertJsonPath('table.tabs.1.count', 0);
     }
 }

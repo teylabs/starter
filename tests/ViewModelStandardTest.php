@@ -236,8 +236,8 @@ final class ViewModelStandardTest extends TestCase
         $this->assertArrayNotHasKey('document_title', $page['props']);
         $this->assertArrayNotHasKey('settings_nav', $page['props']);
         // A partial reload names the props it wants: the client keeps `shell` (and the layout) it already has, for the same viewer and workspace.
-        $partial = $this->get('/@alpha/settings/people', [...$this->inertia(), 'X-Inertia-Partial-Component' => 'Workspace/Settings/People/Page', 'X-Inertia-Partial-Data' => 'members'])->assertOk()->json('props');
-        $this->assertArrayHasKey('members', $partial);
+        $partial = $this->get('/@alpha/settings/people', [...$this->inertia(), 'X-Inertia-Partial-Component' => 'Workspace/Settings/People/Page', 'X-Inertia-Partial-Data' => 'table'])->assertOk()->json('props');
+        $this->assertArrayHasKey('table', $partial);
         $this->assertArrayNotHasKey('shell', $partial);
     }
 

@@ -3,7 +3,7 @@ import { Form, router } from '@inertiajs/vue3';
 import { Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section, Select, TimezoneSelect } from '@kit/ui';
 
 // General settings: Inertia's <Form> (uncontrolled; every control submits a named value) in a FormCard. The save is always there: a user who may not use it
-// sees the form read-only with the reason, never a form with nothing to press. The danger zone below holds Transfer ownership (owner only, password asked
+// sees the form read-only with the reason (the `save` action descriptor), never a form with nothing to press. The danger zone below holds Transfer ownership (owner only, password asked
 // again) and Leave workspace (an owner has to hand the workspace over first, so the button is not there); both ask first, and the server refuses both anyway.
 const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewModel>();
 </script>
@@ -11,7 +11,7 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
     <Page sm>
             <Form :action="save.url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
                 <fieldset :disabled="save.disabled" class="contents">
-                    <FormCard title="General" description="How this workspace is named and which timezone it keeps." submit-label="Save" busy-label="Saving…">
+                    <FormCard title="General" description="How this workspace is named and which timezone it keeps." busy-label="Saving…" :submit="save">
                         <Input type="hidden" name="expected_version" :model-value="String(settings.version)" />
                         <Input type="hidden" name="intent_key" :model-value="intent_key" />
                         <Field id="display-name" name="display_name" label="Display name" :span="4">
@@ -20,7 +20,6 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
                         <Field id="timezone" name="timezone" label="Timezone" :span="4">
                             <TimezoneSelect id="timezone" name="timezone" :model-value="settings.timezone" />
                         </Field>
-                        <template v-if="save.reason" #status><span class="min-h-5 flex-1 text-right text-sm text-muted-foreground" data-form-status data-state="readonly">{{ save.reason }}</span></template>
                     </FormCard>
                 </fieldset>
             </Form>

@@ -13,7 +13,10 @@ import ConfirmDialog from './ConfirmDialog.vue';
  * It is the form's last child; delete never goes here (a separate danger zone).
  */
 type FormLike = { processing: boolean; isDirty: boolean; hasErrors: boolean; recentlySuccessful: boolean; progress?: { percentage?: number } | null; reset: (...fields: string[]) => void; clearErrors?: (...fields: string[]) => void; resetAndClearErrors?: () => void };
-const props = withDefaults(defineProps<{ form?: FormLike; submitLabel?: string; busyLabel?: string; savedLabel?: string; cancelUrl?: string; cancel?: boolean; sticky?: boolean; warnOnLeave?: boolean }>(), { form: undefined, submitLabel: 'Save', busyLabel: 'Saving…', savedLabel: 'Saved', cancelUrl: undefined, cancel: true, sticky: true, warnOnLeave: true });
+// The submit may be the server's action descriptor (`:submit="save"`): its label is the button's, and `disabled` with a `reason` shows the reason in the status
+// slot and disables the button; a form the viewer cannot use is never a form with nothing to press.
+type SubmitAction = { label: string; disabled?: boolean; reason?: string | null };
+const props = withDefaults(defineProps<{ form?: FormLike; submit?: SubmitAction; submitLabel?: string; busyLabel?: string; savedLabel?: string; cancelUrl?: string; cancel?: boolean; sticky?: boolean; warnOnLeave?: boolean }>(), { form: undefined, submit: undefined, submitLabel: 'Save', busyLabel: 'Saving…', savedLabel: 'Saved', cancelUrl: undefined, cancel: true, sticky: true, warnOnLeave: true });
 defineOptions({ inheritAttrs: false });
 
 const context = useFormContext() as FormLike | undefined;
@@ -23,8 +26,11 @@ if (!props.form && !context && import.meta.env?.DEV) {
 }
 
 const processing = computed(() => Boolean(source.value?.processing));
+const locked = computed(() => Boolean(props.submit?.disabled));
+const label = computed(() => props.submit?.label ?? props.submitLabel);
 const progress = computed(() => source.value?.progress?.percentage ?? null);
-const state = computed<'busy' | 'errors' | 'dirty' | 'saved' | 'idle'>(() => {
+const state = computed<'busy' | 'errors' | 'dirty' | 'saved' | 'idle' | 'readonly'>(() => {
+    if (locked.value && props.submit?.reason) return 'readonly';
     if (processing.value) return 'busy';
     if (source.value?.hasErrors) return 'errors';
     if (source.value?.isDirty) return 'dirty';
@@ -33,9 +39,9 @@ const state = computed<'busy' | 'errors' | 'dirty' | 'saved' | 'idle'>(() => {
 });
 const statusText = computed(() => {
     if (state.value === 'busy') return progress.value !== null ? `Uploading… ${Math.round(progress.value)}%` : props.busyLabel;
-    return { errors: 'There are errors in your submission.', dirty: 'Unsaved changes', saved: props.savedLabel, idle: '' }[state.value];
+    return { errors: 'There are errors in your submission.', dirty: 'Unsaved changes', saved: props.savedLabel, idle: '', readonly: props.submit?.reason ?? '' }[state.value];
 });
-const statusClass = computed(() => ({ errors: 'text-destructive', dirty: 'text-muted-foreground', saved: 'text-green-600 dark:text-green-500', busy: 'text-muted-foreground', idle: '' })[state.value]);
+const statusClass = computed(() => ({ errors: 'text-destructive', dirty: 'text-muted-foreground', saved: 'text-green-600 dark:text-green-500', busy: 'text-muted-foreground', idle: '', readonly: 'text-muted-foreground' })[state.value]);
 
 function reset() {
     if (source.value?.resetAndClearErrors) source.value.resetAndClearErrors();
@@ -124,9 +130,9 @@ onBeforeUnmount(() => {
             <Button v-else variant="secondary" type="button" :disabled="processing" data-form-cancel @click="reset">Cancel</Button>
         </template>
         <slot name="submit">
-            <Button type="submit" :disabled="processing" :aria-busy="processing || undefined" data-form-submit v-bind="$attrs">
+            <Button type="submit" :disabled="processing || locked" :aria-busy="processing || undefined" data-form-submit v-bind="$attrs">
                 <span class="grid">
-                    <span :class="['col-start-1 row-start-1', processing && 'invisible']">{{ submitLabel }}</span>
+                    <span :class="['col-start-1 row-start-1', processing && 'invisible']">{{ label }}</span>
                     <span :class="['col-start-1 row-start-1 flex items-center justify-center gap-2', !processing && 'invisible']" aria-hidden="true"><Spinner />{{ busyLabel }}</span>
                 </span>
             </Button>

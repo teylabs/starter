@@ -3,6 +3,7 @@
 require __DIR__.'/FoundationCheck.php';
 use App\Models\User;
 use Composer\InstalledVersions;
+use Composer\Semver\Semver;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -22,7 +23,10 @@ use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
 check('Concierge released native membership is the only membership engine', function (): void {
-    same('0.7.4.0', InstalledVersions::getVersion('tey/concierge'));
+    // The released version the lock pins, whichever it is: it must satisfy composer.json's constraint.
+    $constraint = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/concierge'];
+    same(true, Semver::satisfies((string) InstalledVersions::getPrettyVersion('tey/concierge'), $constraint));
+    same(1, preg_match('/^v\d+\.\d+\.\d+$/', (string) InstalledVersions::getPrettyVersion('tey/concierge')));
     same(false, Schema::hasTable('memberships'));
     same(2, DB::table('concierge_ownerships')->count());
     same(3, DB::table('concierge_memberships')->count());
