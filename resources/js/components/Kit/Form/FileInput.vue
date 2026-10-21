@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // A file chooser: a button that opens the browser's picker and reports the chosen file (`v-model`: File or null). `accept` filters the picker.
-defineProps<{ id: string; accept?: string; disabled?: boolean }>();
+const props = defineProps<{ id: string; accept?: string; disabled?: boolean; autofocus?: boolean }>();
 const model = defineModel<File | null>();
 const input = ref<HTMLInputElement | null>(null);
+onMounted(() => props.autofocus && input.value?.focus());
 function chosen(event: Event) {
     model.value = (event.target as HTMLInputElement).files?.[0] ?? null;
 }
