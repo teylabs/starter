@@ -6,14 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\Concerns\DefaultBrand;
 use Tey\Kit\Brand;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /** The brand variants: the neutral default, config-driven presets, and a `?brand=` switch that works only in a local environment. Synthetic colours only. */
 final class BrandVariantsTest extends TestCase
 {
+    use DefaultBrand;
+
     public function createApplication()
     {
         return require __DIR__.'/application.php';
@@ -23,6 +27,7 @@ final class BrandVariantsTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
+        $this->defaultBrand();
         config(['kit.brand.presets' => [
             'fill-one' => ['accent' => '#2563eb', 'accent_foreground' => '#ffffff', 'accent_strong' => '#1d4ed8', 'accent_dark' => '#60a5fa', 'accent_dark_foreground' => '#09090b'],
             'mono-one' => ['accent' => '#16a34a', 'accent_strong' => '#15803d', 'accent_dark' => '#4ade80', 'style' => 'mono', 'ink' => '#050505'],
@@ -60,15 +65,17 @@ final class BrandVariantsTest extends TestCase
         // Signed in as the tests do; the environment becomes local for the page requests.
         $this->local(true);
         $this->get('/dashboard?brand=fill-one')->assertOk()->assertSee(':root{--primary:#2563eb;--primary-foreground:#ffffff;--ring:#1d4ed8', false)->assertSee('content="#2563eb"', false);
-        // It stays for the session, the environment pill names it, and a second preset replaces it.
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.env', 'local · preset: fill-one');
+        // It stays for the session, and a second preset replaces it.
+        $this->get('/dashboard', $this->inertia())->assertOk();
+        $this->assertSame('fill-one', session('kit.brand_preset'));
         $mono = $this->get('/dashboard?brand=mono-one')->assertOk();
         $mono->assertSee('[data-shell-bar]{--background:#050505', false)->assertDontSee('--primary:#2563eb', false);
         // An unknown name, or none, goes back to the configured brand.
         $this->get('/dashboard?brand=nonsense')->assertOk()->assertDontSee('--brand-marker', false);
         $this->get('/dashboard?brand=fill-one');
         $this->get('/dashboard?brand=')->assertOk()->assertDontSee('--brand-marker', false);
-        $this->get('/dashboard', $this->inertia())->assertJsonPath('props.shell.env', 'local');
+        $this->get('/dashboard', $this->inertia())->assertOk();
+        $this->assertNull(session('kit.brand_preset'));
     }
 
     public function test_the_switch_is_ignored_outside_a_local_environment(): void

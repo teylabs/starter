@@ -10,15 +10,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification as Notifications;
 use Illuminate\Support\Str;
+use Tests\Concerns\DefaultBrand;
 use Tey\Kit\Brand;
 use Tey\Kit\BrandAssets;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /** The brand: one config for the product's identity, the assets made from its logomark, branded mail, the footers and the placeholders. */
 final class BrandTest extends TestCase
 {
+    use DefaultBrand;
+
     public function createApplication()
     {
         return require __DIR__.'/application.php';
@@ -28,8 +32,9 @@ final class BrandTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
-        // Deterministic whatever the developer's .env says.
-        config(['app.name' => 'Product name', 'kit.brand.private' => false]);
+        // Deterministic whatever brand the developer's .env sets: the package's own defaults, every key.
+        $this->defaultBrand();
+        config(['app.name' => 'Product name']);
     }
 
     private function directory(): string
@@ -80,6 +85,11 @@ final class BrandTest extends TestCase
 
     public function test_the_committed_placeholders_are_current_and_linked_in_the_head(): void
     {
+        // The template's placeholders are checked while the app still uses the template's mark and accent. An app's own brand makes its own assets: `kit:brand --check` checks those.
+        $defaults = self::packageBrandDefaults();
+        if (config('kit.brand.logomark') !== $defaults['logomark'] || config('kit.brand.accent') !== $defaults['accent']) {
+            $this->markTestSkipped('This app has its own brand; its generated assets are checked by kit:brand --check.');
+        }
         foreach (BrandAssets::FILES as $file) {
             $this->assertFileExists(public_path($file));
             $this->assertGreaterThan(0, filesize(public_path($file)), $file);
