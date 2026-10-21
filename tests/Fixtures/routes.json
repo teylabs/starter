@@ -100,5 +100,6 @@
     "PUT settings/people/members/{membership} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "PUT storage/{path} ",
     "PUT user/password web,auth:web",
-    "PUT user/profile-information web,auth:web"
+    "PUT user/profile-information web,auth:web",
+    "PUT welcome/{step} web,auth:web"
 ]

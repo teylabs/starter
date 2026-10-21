@@ -29,7 +29,7 @@ const shown = computed(() => preview.value);
                 </Field>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <Link :href="skip.url" :method="skip.method as 'post'" as="button" class="rounded-md px-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-welcome-skip>{{ skip.label }}</Link>
+                <Link v-if="skip" :href="skip.url" :method="skip.method as 'post'" as="button" class="rounded-md px-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-welcome-skip>{{ skip.label }}</Link>
                 <Button :disabled="processing || !chosen" data-welcome-submit>{{ submit.label }}</Button>
             </div>
         </Form>

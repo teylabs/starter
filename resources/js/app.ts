@@ -2,7 +2,7 @@ import { createInertiaApp, router } from '@inertiajs/vue3';
 import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
 import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
-import { initializeTheme } from '@kit/ui';
+import { initializeTheme, syncTimezoneCookie } from '@kit/ui';
 import { toast } from 'vue-sonner';
 import { honourReducedMotion } from '@/lib/reduced-motion';
 import ShellLayout from '@/layouts/ShellLayout.vue';
@@ -49,6 +49,8 @@ createInertiaApp({
 });
 
 initializeTheme();
+// The browser's zone goes to the server in the `tz` cookie, set once and rewritten only when it changes.
+syncTimezoneCookie();
 // A `toast` the server flashes with a redirect (a cleared bad sort, say) is shown as one.
 router.on('flash', (event) => {
     const message = (event.detail.flash as { toast?: { message?: string } } | undefined)?.toast?.message;

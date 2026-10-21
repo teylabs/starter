@@ -7,7 +7,7 @@
     "command": "composer types:generate (exports nested namespaces for the Vue SFC compiler)"
   },
   "generated": {
-    "resources/js/types.generated.d.ts": "a318f62f0b76e77a33986ecf481d6d80cc08b889496278d5910a366eeed08e8b",
+    "resources/js/types.generated.d.ts": "f6fdc7b9b43ba9fa0d6a726c8ff76d5b9928e59c0ca94eaebff1b06eff11c4bc",
     "docs/mcp-capabilities.json": "2980ac42f5379fa6dc8292d3de62b486b1b6602c1d9b730a702cc7ff2275a2b6"
   },
   "host_owned": [

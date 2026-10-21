@@ -404,10 +404,11 @@ readonly title: string,
 readonly heading: string,
 readonly description: string,
 readonly submit: Tey.Kit.Features.Core.Data.Action,
-readonly skip: Tey.Kit.Features.Core.Data.Action,
+readonly skip: Tey.Kit.Features.Core.Data.Action | null,
 readonly value: string | null,
 readonly initials: string,
 readonly max_kb: number,
+readonly save: Tey.Kit.Features.Core.Data.Action | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }

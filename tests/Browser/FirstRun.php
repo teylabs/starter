@@ -1,9 +1,14 @@
 <?php
 
+require_once __DIR__.'/../Concerns/FreshClone.php';
+
 use Illuminate\Contracts\Console\Kernel;
+use Tests\Concerns\FreshClone;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
+use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Concierge\Support\GrantSet;
+use Tey\Kit\Features\SessionUi\UserState;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 // The invitee's first run in a real browser: the invitation creates the account and joins, the FocusShell walks the steps ("Step n of m"), skipping never blocks,
@@ -86,6 +91,29 @@ it('lands a person with no workspace on the no-workspace page', function (): voi
             expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
         }
         $page->navigate('/me/profile')->assertPresent('[data-shell-bar] [data-shell-product-name]')->assertMissing('[data-shell-switcher]')->assertNoJavaScriptErrors();
+    } finally {
+        putenv('APP_ENV='.$environment);
+        app()['env'] = $environment;
+    }
+});
+
+// The browser's zone travels in the `tz` cookie: set by the first full page load, carried by the next request, and saved for an unconfirmed person.
+it('sets the tz cookie on the first load and the server saves the zone from it', function (): void {
+    $environment = getenv('APP_ENV');
+    try {
+        putenv('APP_ENV=local');
+        app()['env'] = 'local';
+        config(['concierge.local_login' => FreshClone::localLogin('local')]);
+        app()->getProvider(LocalAuthServiceProvider::class)->registerRoutes();
+        app('router')->getRoutes()->refreshNameLookups();
+        expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
+        expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
+
+        $page = visit('/login');
+        $zone = $page->script('() => Intl.DateTimeFormat().resolvedOptions().timeZone');
+        expect($page->script('() => document.cookie.split("; ").find((c) => c.startsWith("tz="))'))->toBe('tz='.rawurlencode($zone));
+        $page->click('[data-local-login] button')->assertPathIs('/dashboard')->navigate('/me/profile')->assertNoJavaScriptErrors();
+        expect(UserState::get(1, 'timezone'))->toBe($zone);
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

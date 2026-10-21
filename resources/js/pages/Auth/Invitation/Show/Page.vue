@@ -2,11 +2,12 @@
 import { Form, Link, usePage } from '@inertiajs/vue3';
 import { ArrowRight } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
-import { Button, Field, Input, Page, PasswordInput } from '@kit/ui';
+import { browserTimezone, Button, Field, Input, Page, PasswordInput } from '@kit/ui';
 
 // A workspace invitation link: the workspace, who invited you, then the next step for this state, or a clear reason the link no longer works.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.InvitationViewModel>();
 // The one thing to do next takes the focus on arrival: the name field of the signup form (the email is locked), or the sign-in link.
+const timezone = browserTimezone() ?? '';
 const signIn = ref<{ $el?: HTMLElement } | null>(null);
 onMounted(() => signIn.value?.$el?.focus());
 
@@ -52,6 +53,7 @@ const body = computed(() => {
             <p class="text-sm text-muted-foreground" data-invitation-message :data-state="state">{{ body }}</p>
         </div>
         <Form v-if="state === 'ready'" v-slot="{ processing }" :action="accept_url" method="post" class="mt-6 grid gap-4">
+            <Input type="hidden" name="timezone" :model-value="timezone" />
             <Button class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
             <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">{{ other_email ? 'Switch account' : `Not ${signed_in_as}? Switch account` }}</Link>
             <Link v-if="other_email" href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
@@ -64,6 +66,7 @@ const body = computed(() => {
             <Link ref="signIn" :href="login_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-sign-in">Sign in to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
         </div>
         <Form v-else-if="state === 'register_required'" v-slot="{ processing }" :action="register_url" method="post" :reset-on-success="['password', 'password_confirmation']" class="mt-6 grid gap-4">
+            <Input type="hidden" name="timezone" :model-value="timezone" />
             <Field id="invite-email" label="Email address"><Input id="invite-email" :model-value="invitation?.email" type="email" readonly /></Field>
             <Field id="name" name="name" label="Your name"><Input id="name" name="name" required autofocus autocomplete="name" aria-describedby="name-error" /></Field>
             <Field id="password" name="password" label="Password"><PasswordInput id="password" name="password" required autocomplete="new-password" aria-describedby="password-error" /></Field>

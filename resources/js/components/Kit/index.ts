@@ -4,6 +4,7 @@
 export { default as AppearanceChoice } from './Appearance/AppearanceChoice.vue';
 export { default as AppearanceToggle } from './Appearance/AppearanceToggle.vue';
 export { initializeTheme, useAppearance } from './Appearance/useAppearance';
+export { browserTimezone, syncTimezoneCookie } from './timezone';
 export { default as Alert } from './Feedback/Alert.vue';
 export { alertVariants } from './Feedback/alertVariants';
 export type { AlertTier, AlertVariant } from './Feedback/alertVariants';
