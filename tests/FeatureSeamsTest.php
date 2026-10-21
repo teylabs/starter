@@ -2,25 +2,21 @@
 
 use App\Support\KitMigrationRepository;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
+use Tests\TestCase;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The template on tey/kit reproduces the 0.2.1 app exactly: schema, routes, tools, navigation, scopes, capabilities and error codes. */
 final class FeatureSeamsTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_fresh_schema_equals_the_released_schema(): void
     {
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));

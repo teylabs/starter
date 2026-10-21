@@ -1,30 +1,21 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Token;
+use Tests\TestCase;
 use Tey\Concierge\Concierge;
 use Tey\Concierge\Enums\AccountStatus;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
+require_once __DIR__.'/TestCase.php';
+
 final class McpTransportTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     private function rpc(int $connection, string $method, array $params = [])
     {
         Auth::forgetGuards();

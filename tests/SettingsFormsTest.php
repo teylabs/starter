@@ -2,30 +2,20 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Every form page has a submit control, a user who may save sees the save, and every settings section is a real Inertia page. */
 final class SettingsFormsTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
-
     private function inertia(): array
     {
         return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];

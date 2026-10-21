@@ -2,28 +2,23 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Tests\Concerns\FreshClone;
+use Tests\TestCase;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/FreshClone.php';
 
 /** The sign-in page offers Concierge's one-click local sign-in exactly when Concierge says it is available. */
 final class LocalLoginOfferTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['concierge.local_login.enabled' => true, 'concierge.local_login.account.email' => 'owner@example.com']);
     }
 

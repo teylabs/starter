@@ -1,35 +1,25 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Tests\TestCase;
 use Tey\Concierge\Concierge;
 use Tey\Concierge\Models\Membership;
 use Tey\Concierge\Models\Ownership;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Transferring ownership: the owner only, to an existing active member, with the password confirmed again; the old owner becomes an admin. */
 final class OwnershipTransferTest extends TestCase
 {
     private string $password = '';
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
 
     private function inertia(): array
     {

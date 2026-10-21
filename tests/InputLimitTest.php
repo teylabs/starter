@@ -1,20 +1,16 @@
 <?php
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Input PHP refuses (nested too deep, or past max_input_vars) is a 400 and is not reported as a server error. */
 final class InputLimitTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_the_input_limit_warnings_are_a_bad_request_and_unreported(): void
     {
         $messages = ['parse_str(): Input variable nesting level exceeded 64. To increase the limit change max_input_nesting_level in php.ini.', 'Input variable nesting level exceeded 64. To increase the limit change max_input_nesting_level in php.ini.', 'Input variables exceeded 1000. To increase the limit change max_input_vars in php.ini.'];

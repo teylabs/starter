@@ -1,17 +1,18 @@
 <?php
 
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\Concerns\DefaultBrand;
+use Tests\TestCase;
 use Tey\Kit\Brand;
 use Tey\Kit\Features\Core\Registry;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /**
@@ -21,11 +22,6 @@ require_once __DIR__.'/Concerns/DefaultBrand.php';
 final class HandsFreeDeployTest extends TestCase
 {
     use DefaultBrand;
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
 
     protected function setUp(): void
     {

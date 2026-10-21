@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -10,24 +9,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Tests\TestCase;
 use Tey\Kit\Features\SessionUi\Avatars;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\Models\UserAvatar;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Avatars: upload, replace and remove on /me, validated and stripped, only your own, initials when there is none, never a stale URL. */
 final class AvatarTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         Storage::fake('local');
         Storage::fake('public');
         config(['media-library.disk_name' => 'local']);

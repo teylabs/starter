@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Concerns\DefaultBrand;
+use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Support\GrantSet;
@@ -14,6 +14,7 @@ use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /** The shell's mark is the platform's identity (APP_NAME and a logomark); a workspace's name is only ever in the switcher. */
@@ -21,15 +22,9 @@ final class MarkTest extends TestCase
 {
     use DefaultBrand;
 
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         $this->defaultBrand();
     }
 

@@ -1,13 +1,13 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Tests\Fixtures\RecordsFixtureProvider;
+use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Support\GrantSet;
@@ -15,6 +15,7 @@ use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Every page's document title comes from its breadcrumb label: "{Page} · {Product}", server-rendered, never blank and never a URL. */
 final class PageTitleTest extends TestCase
@@ -29,7 +30,6 @@ final class PageTitleTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['app.name' => 'Product']);
     }
 

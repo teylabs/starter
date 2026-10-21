@@ -2,10 +2,10 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\PermissionRegistrar;
+use Tests\TestCase;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Concierge;
 use Tey\Kit\Features\Core\Principal;
@@ -15,14 +15,10 @@ use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 final class MigrationTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_clean_framework_schema_and_explicit_synthetic_package_onboarding(): void
     {
         $this->assertContains(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql', [':memory:', 'pgsql']);

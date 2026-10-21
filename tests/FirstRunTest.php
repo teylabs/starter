@@ -3,11 +3,11 @@
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
@@ -24,19 +24,14 @@ use Tey\Kit\Features\Workspaces\TenantBoundary;
 use Tey\Kit\Features\Workspaces\WorkspaceUrl;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The first-run path of an invited person: join with the account the invitation is for, the welcome steps in the FocusShell, then the dashboard's greeting and welcome card. */
 final class FirstRunTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         $this->withoutMiddleware(PreventRequestForgery::class);
         $this->app['env'] = 'local';
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));

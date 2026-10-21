@@ -2,28 +2,18 @@
 
 use App\Models\User;
 use Illuminate\Cache\Events\KeyWritten;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** With cache.serializable_classes off, the app caches arrays and scalars only, never objects. */
 final class CacheGuardTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
-
     public function test_the_app_caches_only_arrays_and_scalars(): void
     {
         $this->assertFalse(config('cache.serializable_classes'));

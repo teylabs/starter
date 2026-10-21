@@ -5,8 +5,8 @@ use Composer\InstalledVersions;
 use Composer\Semver\Semver;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
 use Tey\Kit\Blueprint;
 use Tey\Kit\Catalog;
 use Tey\Kit\LifecycleHost;
@@ -14,17 +14,13 @@ use Tey\Kit\Lineages;
 use Tey\Mod\Maintenance\Maintenance;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Adopt every tey/kit feature through the released tey/kit and tey/mod in disposable checkouts of the template's host binding. */
 final class LifecycleTest extends TestCase
 {
     /** @var list<string> */
     private array $roots = [];
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
 
     protected function setUp(): void
     {

@@ -2,33 +2,23 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Kit\Features\Core\Data\NavigationHeader;
 use Tey\Kit\Features\Core\ViewModels\PageViewModel;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The way up one level: every /me page escapes to the workspace the viewer was in, settings sections and top-level pages have none, and nothing is derived from the trail. */
 final class NavigationHeaderTest extends TestCase
 {
     private string $password = '';
-
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
 
     private function inertia(): array
     {

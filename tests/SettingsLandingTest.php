@@ -1,29 +1,24 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Settings is one landing page that lists the sections providers register: workspace ones at /@{workspace}/settings, personal ones at /me. */
 final class SettingsLandingTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['app.name' => 'Product name']);
     }
 

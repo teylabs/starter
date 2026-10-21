@@ -2,19 +2,15 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\TestCase;
+use Tests\TestCase;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The local seed: the owner owns a workspace, whether the database is fresh or the owner arrived first through the one-click sign-in. */
 final class FirstOwnerCommandTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();

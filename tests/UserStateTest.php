@@ -1,21 +1,17 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 use Tey\Kit\Features\SessionUi\Account\SecurityLog;
 use Tey\Kit\Features\SessionUi\UserState;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** What the kit remembers about a person goes with their account, like the security log: with the model, with the database's own foreign key, and only on a force delete. */
 final class UserStateTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_the_state_goes_with_the_account_and_a_soft_delete_keeps_it(): void
     {
         require dirname(__DIR__).'/database/fixture.php';

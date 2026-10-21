@@ -1,22 +1,18 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Kit pages render UI only through `@kit/ui`, and a workspace shows its own name until someone sets a display name. */
 final class KitUiTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_kit_pages_import_ui_only_from_the_kit_alias(): void
     {
         $manifest = json_decode((string) file_get_contents(dirname(__DIR__).'/docs/generation-manifest.json'), true);

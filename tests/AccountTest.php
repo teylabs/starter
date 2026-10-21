@@ -4,7 +4,6 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,27 +13,23 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
+use Tests\TestCase;
 use Tey\Kit\Features\SessionUi\Account\OtherSessions;
 use Tey\Kit\Features\SessionUi\Account\SecurityLog;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\Models\SecurityEvent;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The account pages under /me: profile and email re-verification, password, two-factor authentication, signed-in devices and the security log. */
 final class AccountTest extends TestCase
 {
     private string $password = '';
 
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['app.name' => 'Product name']);
     }
 

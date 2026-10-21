@@ -2,8 +2,8 @@
 
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Actions\ResendInvitation;
 use Tey\Concierge\Concierge;
@@ -14,19 +14,14 @@ use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The invitation email: branded, with who invited you and their words, a specific subject, a preheader and one button, in HTML and plain text. */
 final class InvitationMailTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         $this->withoutMiddleware(PreventRequestForgery::class);
         $this->app['env'] = 'local';
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));

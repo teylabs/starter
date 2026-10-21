@@ -1,20 +1,16 @@
 <?php
 
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\ServiceProvider;
+use Tests\TestCase;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Traps that only show on PostgreSQL or at deploy: an ordering column the table lacks, a root layout the favicon preflight cannot read, caches that `optimize` skips. */
 final class PreDeployTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_the_workspace_model_orders_by_a_column_the_table_has(): void
     {
         // The workspaces table has no timestamps: `oldest()` (Concierge's first local owner uses it) must not ask for created_at, which PostgreSQL refuses.

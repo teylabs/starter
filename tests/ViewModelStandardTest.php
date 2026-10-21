@@ -2,12 +2,12 @@
 
 use App\Models\User;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Kit\Features\Access\Permissions;
 use Tey\Kit\Features\Core\ViewModels\AdHocViewModel;
 use Tey\Kit\Features\Core\ViewModels\PageViewModel;
@@ -16,6 +16,7 @@ use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /**
  * The ViewModel standard: page props come from typed method ViewModels, the shell is one `shell` share, the page's `layout()` carries the section
@@ -24,15 +25,9 @@ require dirname(__DIR__).'/vendor/autoload.php';
  */
 final class ViewModelStandardTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['app.name' => 'Product name']);
     }
 

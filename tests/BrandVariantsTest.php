@@ -1,16 +1,17 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Concerns\DefaultBrand;
+use Tests\TestCase;
 use Tey\Kit\Brand;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /** The brand variants: the neutral default, config-driven presets, and a `?brand=` switch that works only in a local environment. Synthetic colours only. */
@@ -18,15 +19,9 @@ final class BrandVariantsTest extends TestCase
 {
     use DefaultBrand;
 
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         $this->defaultBrand();
         config(['kit.brand.presets' => [
             'fill-one' => ['accent' => '#2563eb', 'accent_foreground' => '#ffffff', 'accent_strong' => '#1d4ed8', 'accent_dark' => '#60a5fa', 'accent_dark_foreground' => '#09090b'],

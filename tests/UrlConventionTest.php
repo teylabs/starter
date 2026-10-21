@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Fixtures\RecordsFixtureProvider;
+use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Support\GrantSet;
@@ -16,6 +16,7 @@ use Tey\Kit\Features\Workspaces\Slugs;
 use Tey\Kit\Features\Workspaces\WorkspaceUrl;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The URL convention: `/@{workspace}/...` pages, short paths, `/me/*`, the root left to the app, and one helper that renders them. */
 final class UrlConventionTest extends TestCase
@@ -26,12 +27,6 @@ final class UrlConventionTest extends TestCase
         require_once __DIR__.'/records_fixture.php';
 
         return starterAppWithRecords();
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
     }
 
     private function signIn(int $id): void

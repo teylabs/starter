@@ -1,11 +1,11 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
@@ -18,19 +18,14 @@ use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The invitation link: a guest sees the workspace and who invited them, then signs in or creates the account the invitation is for (registration stays closed), then accepts. */
 final class InvitationAcceptTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         config(['app.name' => 'Product name']);
     }
 

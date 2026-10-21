@@ -1,12 +1,13 @@
 <?php
 
 use App\Support\McpCapabilities;
-use Illuminate\Foundation\Testing\TestCase;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
+use Tests\TestCase;
 use Tey\Kit\Features\Core\Registry;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /**
  * docs/mcp-capabilities.json validates against the vendored schema (docs/schemas/mcp-capabilities.schema.json), every
@@ -14,11 +15,6 @@ require dirname(__DIR__).'/vendor/autoload.php';
  */
 final class McpCapabilitiesTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     public function test_the_committed_declaration_matches_the_served_tools(): void
     {
         $this->assertSame(McpCapabilities::json(), file_get_contents(base_path(McpCapabilities::PATH)), 'Run php bin/mcp-capabilities.php');

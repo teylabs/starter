@@ -1,25 +1,15 @@
 <?php
 
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Tests\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** Behind the trusted proxy the forwarded scheme is honoured, but only APP_URL's host is: a forged host gets a 400. */
 final class TrustedHostTest extends TestCase
 {
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutVite();
-    }
-
     protected function tearDown(): void
     {
         // The trusted hosts are process-wide: leave none behind for the next test.

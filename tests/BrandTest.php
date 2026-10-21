@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,11 +10,13 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification as Notifications;
 use Illuminate\Support\Str;
 use Tests\Concerns\DefaultBrand;
+use Tests\TestCase;
 use Tey\Kit\Brand;
 use Tey\Kit\BrandAssets;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /** The brand: one config for the product's identity, the assets made from its logomark, branded mail, the footers and the placeholders. */
@@ -23,15 +24,9 @@ final class BrandTest extends TestCase
 {
     use DefaultBrand;
 
-    public function createApplication()
-    {
-        return require __DIR__.'/application.php';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
         // Deterministic whatever brand the developer's .env sets: the package's own defaults, every key.
         $this->defaultBrand();
         config(['app.name' => 'Product name']);

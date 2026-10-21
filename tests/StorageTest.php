@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Filesystem\AwsS3V3Adapter;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as FlysystemAdapter;
+use Tests\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/TestCase.php';
 
 /** The private s3 disk builds on the S3 adapter from Laravel Cloud's bucket variables, and media is stored on it. Nothing is sent. */
 final class StorageTest extends TestCase
