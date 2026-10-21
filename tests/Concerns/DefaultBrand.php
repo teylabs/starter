@@ -9,8 +9,12 @@ namespace Tests\Concerns;
  */
 trait DefaultBrand
 {
+    /** The app's own brand, as configured before the reset: tests that depend on whether the app is branded read this, never the reset config. */
+    protected array $appBrand = [];
+
     protected function defaultBrand(): void
     {
+        $this->appBrand = (array) config('kit.brand');
         config(['kit.brand' => self::packageBrandDefaults()]);
     }
 

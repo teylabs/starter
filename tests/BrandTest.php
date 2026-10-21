@@ -87,7 +87,7 @@ final class BrandTest extends TestCase
     {
         // The template's placeholders are checked while the app still uses the template's mark and accent. An app's own brand makes its own assets: `kit:brand --check` checks those.
         $defaults = self::packageBrandDefaults();
-        if (config('kit.brand.logomark') !== $defaults['logomark'] || config('kit.brand.accent') !== $defaults['accent']) {
+        if (($this->appBrand['logomark'] ?? null) !== $defaults['logomark'] || ($this->appBrand['accent'] ?? null) !== $defaults['accent']) {
             $this->markTestSkipped('This app has its own brand; its generated assets are checked by kit:brand --check.');
         }
         foreach (BrandAssets::FILES as $file) {
