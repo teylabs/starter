@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Page, SectionIcon } from '@kit/ui';
+import { BlockStack, Page, SectionIcon } from '@kit/ui';
 // A settings landing page: the registered sections as cards, grouped and in the registry's order; each card is one link (icon, label, a line saying what it holds).
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
 </script>
 <template>
     <Page md>
+        <BlockStack class="gap-8">
         <p v-if="!groups.length" class="text-sm text-muted-foreground">There is nothing to set up here yet.</p>
-        <section v-for="group in groups" :key="group.label" class="mb-8 last:mb-0" :aria-label="group.label">
-            <h2 class="mb-3 text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
+        <BlockStack v-for="group in groups" :key="group.label" as="section" class="gap-3" :aria-label="group.label">
+            <h2 class="text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
             <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <li v-for="section in group.sections" :key="section.url">
                     <Link :href="section.url" class="flex h-full gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors hover:border-ring hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-settings-card>
@@ -20,6 +21,7 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
                     </Link>
                 </li>
             </ul>
-        </section>
+        </BlockStack>
+        </BlockStack>
     </Page>
 </template>

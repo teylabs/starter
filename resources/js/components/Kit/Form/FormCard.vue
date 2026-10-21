@@ -7,11 +7,11 @@ withDefaults(defineProps<{ title?: string; description?: string; submitLabel?: s
 </script>
 <template>
     <section class="rounded-xl border bg-card text-card-foreground shadow-xs" data-form-card>
-        <header v-if="title" class="border-b px-6 py-4">
+        <header v-if="title" class="px-6 pt-6">
             <h2 class="text-base font-semibold">{{ title }}</h2>
             <p v-if="description" class="mt-1 text-sm text-muted-foreground">{{ description }}</p>
         </header>
-        <div class="grid grid-cols-6 gap-x-4 gap-y-6 p-6 *:col-span-6"><slot /></div>
+        <div :class="['grid grid-cols-6 gap-x-4 gap-y-6 p-6 *:col-span-6', title ? 'pt-5' : '']"><slot /></div>
         <slot name="actions">
             <FormActions :form="form as never" :submit="submit" :submit-label="submitLabel" :busy-label="busyLabel" :saved-label="savedLabel" :cancel-url="cancelUrl" :cancel="cancel" :sticky="sticky" :warn-on-leave="warnOnLeave"><template v-if="$slots.status" #status="slotProps"><slot name="status" v-bind="slotProps" /></template><template v-if="$slots.submit" #submit><slot name="submit" /></template></FormActions>
         </slot>

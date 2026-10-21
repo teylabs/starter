@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { Button, ConfirmDialog, Field, FormCard, Input, Page, PasswordInput, Section } from '@kit/ui';
+import { BlockStack, Button, Dialog, Field, FormCard, Input, Page, PasswordInput, Section } from '@kit/ui';
 
 // Security: two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
 // you are signed in on, and your own security log. Turning two-factor off, regenerating the recovery codes and signing out other sessions each ask first.
@@ -8,8 +8,8 @@ const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.SecurityViewMode
 const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 </script>
 <template>
-    <Page sm>
-            <div class="grid gap-6">
+    <Page md>
+            <BlockStack class="gap-6">
                 <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
 
                 <Section v-if="two_factor.recovery_codes.length" title="Your recovery codes" description="Keep these somewhere safe. Each works once if you lose your authenticator app. They are shown only now.">
@@ -40,9 +40,9 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                         <FormCard title="Cancel setup" description="Turn it off again without finishing." submit-label="Cancel setup" :cancel="false" :sticky="false">
                             <Field id="cancel-password" name="password" label="Your password" :span="3"><PasswordInput id="cancel-password" name="password" required autocomplete="current-password" aria-describedby="cancel-password-error" /></Field>
                             <template #submit>
-                                <ConfirmDialog title="Cancel two-factor setup?" description="The secret is discarded. You can start again any time." confirm-label="Cancel setup" @confirm="submit()">
+                                <Dialog variant="danger" title="Cancel two-factor setup?" description="The secret is discarded. You can start again any time." confirm-label="Cancel setup" @confirm="submit()">
                                     <Button variant="destructive" type="button">Cancel setup</Button>
-                                </ConfirmDialog>
+                                </Dialog>
                             </template>
                         </FormCard>
                     </Form>
@@ -54,9 +54,9 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                         <FormCard title="Recovery codes" description="Make a new set. The old codes stop working." submit-label="Regenerate recovery codes" :cancel="false" :sticky="false">
                             <Field id="codes-password" name="password" label="Your password" :span="3"><PasswordInput id="codes-password" name="password" required autocomplete="current-password" aria-describedby="codes-password-error" /></Field>
                             <template #submit>
-                                <ConfirmDialog title="Regenerate recovery codes?" description="Your current recovery codes stop working. The new ones are shown once." confirm-label="Regenerate recovery codes" @confirm="submit()">
+                                <Dialog variant="danger" title="Regenerate recovery codes?" description="Your current recovery codes stop working. The new ones are shown once." confirm-label="Regenerate recovery codes" @confirm="submit()">
                                     <Button variant="destructive" type="button">Regenerate recovery codes</Button>
-                                </ConfirmDialog>
+                                </Dialog>
                             </template>
                         </FormCard>
                     </Form>
@@ -64,9 +64,9 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                         <FormCard title="Turn off two-factor authentication" description="Signing in goes back to your password alone." submit-label="Turn off" :cancel="false" :sticky="false">
                             <Field id="off-password" name="password" label="Your password" :span="3"><PasswordInput id="off-password" name="password" required autocomplete="current-password" aria-describedby="off-password-error" /></Field>
                             <template #submit>
-                                <ConfirmDialog title="Turn off two-factor authentication?" description="Your account is protected by your password alone until you turn it on again." confirm-label="Turn off" @confirm="submit()">
+                                <Dialog variant="danger" title="Turn off two-factor authentication?" description="Your account is protected by your password alone until you turn it on again." confirm-label="Turn off" @confirm="submit()">
                                     <Button variant="destructive" type="button">Turn off</Button>
-                                </ConfirmDialog>
+                                </Dialog>
                             </template>
                         </FormCard>
                     </Form>
@@ -85,9 +85,9 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                             <FormCard title="Sign out other sessions" description="Every other device is signed out. This one stays." submit-label="Sign out other sessions" :cancel="false" :sticky="false">
                                 <Field id="sessions-password" name="password" label="Your password" :span="3"><PasswordInput id="sessions-password" name="password" required autocomplete="current-password" aria-describedby="sessions-password-error" /></Field>
                                 <template #submit>
-                                    <ConfirmDialog title="Sign out your other sessions?" description="Every other device is signed out straight away. This one stays." confirm-label="Sign out other sessions" @confirm="submit()">
+                                    <Dialog variant="danger" title="Sign out your other sessions?" description="Every other device is signed out straight away. This one stays." confirm-label="Sign out other sessions" @confirm="submit()">
                                         <Button variant="destructive" type="button">Sign out other sessions</Button>
-                                    </ConfirmDialog>
+                                    </Dialog>
                                 </template>
                             </FormCard>
                         </Form>
@@ -103,6 +103,6 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
                         </li>
                     </ul>
                 </Section>
-            </div>
+            </BlockStack>
     </Page>
 </template>

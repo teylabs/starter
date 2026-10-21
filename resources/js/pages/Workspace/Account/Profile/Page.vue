@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Avatar, Button, ConfirmDialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
+import { BlockStack, Avatar, Button, Dialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 // Your profile: your name and email address (Fortify's update; a changed address stays unconfirmed until its link is followed) and your photo. The photo
@@ -18,8 +18,8 @@ const shown2x = computed(() => (preview.value ? null : props.avatar?.url_2x ?? n
 function remove() { router.delete(props.store_url, { preserveScroll: true }); }
 </script>
 <template>
-    <Page sm>
-            <div class="grid gap-6">
+    <Page md>
+            <BlockStack class="gap-6">
                 <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
                 <Form :action="profile_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
                     <FormCard title="Profile" description="Your name and email address." submit-label="Save">
@@ -42,10 +42,10 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
                     </FormCard>
                 </Form>
                 <Section v-if="avatar" title="Remove photo" description="Your photo is deleted and your initials show instead.">
-                    <ConfirmDialog title="Remove your photo?" description="Your photo is deleted. You can upload another any time." confirm-label="Remove photo" @confirm="remove">
+                    <Dialog variant="danger" title="Remove your photo?" description="Your photo is deleted. You can upload another any time." confirm-label="Remove photo" @confirm="remove">
                         <Button variant="destructive" type="button">Remove photo</Button>
-                    </ConfirmDialog>
+                    </Dialog>
                 </Section>
-            </div>
+            </BlockStack>
     </Page>
 </template>
