@@ -412,4 +412,16 @@ final class FirstRunTest extends TestCase
         $this->actingAs($member)->withSession($session)->get('/welcome/workspace-timezone', $this->inertia())->assertNotFound();
         $this->actingAs($member)->withSession($session)->put('/welcome/workspace-timezone', ['timezone' => 'Asia/Tokyo'])->assertNotFound();
     }
+
+    public function test_the_accept_page_names_the_workspace_the_product_the_inviter_and_the_personal_message(): void
+    {
+        $workspace = Workspace::query()->firstOrFail();
+        $owner = app(Concierge::class)->ownerOf($workspace)->user;
+        $token = InviteMember::run($owner, $workspace, 'polish@example.test', new GrantSet(['viewer']), 'Looking forward to working with you.')->token;
+        $page = $this->get('/invitations/'.$token, $this->inertia())->assertOk();
+        $page->assertJsonPath('props.title', 'Join '.$workspace->name.' on '.config('app.name'))->assertJsonPath('props.invitation.inviter', $owner->name)->assertJsonPath('props.invitation.message', 'Looking forward to working with you.')->assertJsonPath('props.state', 'register_required');
+        // No message, no quote.
+        $plain = InviteMember::run($owner, $workspace, 'plain@example.test', new GrantSet(['viewer']))->token;
+        $this->get('/invitations/'.$plain, $this->inertia())->assertJsonPath('props.invitation.message', null);
+    }
 }

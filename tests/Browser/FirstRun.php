@@ -23,7 +23,7 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
         $workspace = Workspace::query()->firstOrFail();
         $token = InviteMember::run(app(Concierge::class)->ownerOf($workspace)->user, $workspace, 'browser.person@example.test', new GrantSet(['viewer']), 'Glad to have you.')->token;
 
-        $page = visit('/invitations/'.$token)->assertSee('Join '.$workspace->name)->assertPresent('[data-guest-card]');
+        $page = visit('/invitations/'.$token)->assertSee('Join '.$workspace->name.' on '.config('app.name'))->assertSee('invited you')->assertPresent('[data-invitation-note]')->assertPresent('[data-guest-card]');
         // The locked email reads as read-only, not as an editable field: a muted surface, the default cursor, in both themes; it is still a native readonly input.
         foreach (['light', 'dark'] as $theme) {
             $page->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');

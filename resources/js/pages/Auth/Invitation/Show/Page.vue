@@ -16,7 +16,9 @@ onMounted(() => signIn.value?.$el?.focus());
 const product = computed(() => (usePage().props.shell as { product?: { name?: string } } | undefined)?.product?.name ?? '');
 const who = computed(() => props.invitation?.inviter ?? 'Someone');
 const where = computed(() => (props.invitation ? `${props.invitation.workspace}${product.value ? ` on ${product.value}` : ''}` : ''));
-const context = computed(() => (props.invitation ? `${who.value} invited you to join ${where.value}.` : ''));
+// The headline of a join state already says what and where, so the line under it only says who.
+const joining = computed(() => ['ready', 'sign_in_required', 'register_required'].includes(props.state));
+const context = computed(() => (props.invitation ? (joining.value ? `${who.value} invited you.` : `${who.value} invited you to join ${where.value}.`) : ''));
 const body = computed(() => {
     const ask = props.invitation?.inviter ? props.invitation.inviter : 'the person who invited you';
     switch (props.state) {
@@ -50,6 +52,10 @@ const body = computed(() => {
         <div class="space-y-2">
             <h1 class="text-xl font-medium" data-invitation-title>{{ title }}</h1>
             <p v-if="context" class="text-sm font-medium" data-invitation-summary>{{ context }}</p>
+            <figure v-if="invitation?.message && joining" class="my-3 border-l-2 pl-3" data-invitation-note>
+                <blockquote class="text-sm">{{ invitation.message }}</blockquote>
+                <figcaption class="mt-1 text-xs text-muted-foreground">{{ who }}</figcaption>
+            </figure>
             <p class="text-sm text-muted-foreground" data-invitation-message :data-state="state">{{ body }}</p>
         </div>
         <Form v-if="state === 'ready'" v-slot="{ processing }" :action="accept_url" method="post" class="mt-6 grid gap-4">
