@@ -9,8 +9,10 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tey\Kit\Brand;
 use Tey\Kit\Features\Core\Registry;
+use Tests\Concerns\DefaultBrand;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/DefaultBrand.php';
 
 /**
  * A hands-free deploy: `php artisan migrate --force` and `php artisan optimize`, nothing else. The role and permission syncs run when migrations end (or when there was nothing to
@@ -18,6 +20,8 @@ require dirname(__DIR__).'/vendor/autoload.php';
  */
 final class HandsFreeDeployTest extends TestCase
 {
+    use DefaultBrand;
+
     public function createApplication()
     {
         return require __DIR__.'/application.php';
@@ -26,6 +30,7 @@ final class HandsFreeDeployTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->defaultBrand();
         // The syncs skip under unit tests unless a test opts in; these tests do.
         config(['kit.deploy.sync_in_tests' => true]);
         Cache::flush();
