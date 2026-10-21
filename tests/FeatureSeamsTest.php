@@ -96,7 +96,7 @@ final class FeatureSeamsTest extends TestCase
             }
         }
         $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-        $this->assertCount(13, $kit);
+        $this->assertCount(14, $kit);
         $this->assertSame([], array_diff($kit, $ran));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
         $this->assertSame($ran, DB::table('migrations')->orderBy('id')->pluck('migration')->all());
@@ -127,6 +127,8 @@ final class FeatureSeamsTest extends TestCase
         $schema['sessions'] = ['columns' => [['id', 'varchar', 1, null, 1], ['user_id', 'integer', 0, null, 0], ['ip_address', 'varchar', 0, null, 0], ['user_agent', 'text', 0, null, 0], ['payload', 'text', 1, null, 0], ['last_activity', 'integer', 1, null, 0]], 'indexes' => [[0, 'c', ['last_activity']], [0, 'c', ['user_id']], [1, 'pk', ['id']]], 'foreign_keys' => []];
         $schema['password_reset_tokens'] = ['columns' => [['email', 'varchar', 1, null, 1], ['token', 'varchar', 1, null, 0], ['created_at', 'datetime', 0, null, 0]], 'indexes' => [[1, 'pk', ['email']]], 'foreign_keys' => []];
         $schema['kit_security_events'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-security-events.json'), true);
+        // What the kit remembers about a person: timezone, onboarding steps and dismissed welcome cards.
+        $schema['kit_user_state'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-user-state.json'), true);
         // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.
         $schema['workspaces']['columns'][] = ['slug', 'varchar', 0, null, 0];
         $schema['workspaces']['indexes'][] = [1, 'c', ['slug']];

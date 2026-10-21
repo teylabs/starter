@@ -30,7 +30,7 @@ it('renders a signed-in page outside a workspace in the FocusShell at phone and 
             ->assertNoJavaScriptErrors();
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {
-                $page->resize($width, $height)->script('(theme) => document.documentElement.classList.toggle("dark", theme === "dark")', $theme);
+                $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
                 $overflow = $page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth');
                 expect($overflow)->toBeLessThanOrEqual(0);
                 // The account cluster stays inside the viewport.

@@ -65,6 +65,12 @@ final class SettingsFormsTest extends TestCase
 
                 continue;
             }
+            // A welcome step is a card inside the FocusShell with its own submit and skip: no FormActions bar either.
+            if (str_contains($name, '/pages/Welcome/')) {
+                $this->assertStringNotContainsString('<FormActions', $template, $name.' is a card step: its own submit and skip, not the FormActions bar');
+
+                continue;
+            }
             if ($count > 0) {
                 $forms += $count;
                 $this->assertSame($count, preg_match_all('/<(FormCard|FormActions)\b/', $template), $name.' has a <Form> without its FormCard or FormActions');

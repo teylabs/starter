@@ -53,6 +53,7 @@ hideable: boolean,
 hiddenByDefault: boolean,
 align: string | null,
 srOnlyLabel: boolean,
+sortBy: string | null,
 };
 export type TableData = {
 rows: Record<string, any>[],
@@ -225,6 +226,20 @@ url: string,
 },
 kind: undefined,
 };
+export type WelcomeCardData = {
+title: string,
+body: string,
+dismiss: Tey.Kit.Features.Core.Data.Action | null,
+checklist: {
+id: string,
+label: string,
+hint: string,
+url: string,
+state: string,
+}[],
+done: number,
+total: number,
+};
 }
 export namespace ViewModels {
 export type ChallengeViewModel = {
@@ -247,6 +262,8 @@ readonly title: string,
 readonly workspace: string,
 readonly next_label: string,
 readonly next_url: string,
+readonly greeting: string,
+readonly welcome: Tey.Kit.Features.SessionUi.Data.WelcomeCardData | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type ErrorViewModel = {
@@ -369,6 +386,17 @@ readonly two_factor_url: string,
 readonly recovery_codes_url: string,
 readonly sessions_url: string,
 readonly notice: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type WelcomeStepViewModel = {
+readonly title: string,
+readonly heading: string,
+readonly description: string,
+readonly submit: Tey.Kit.Features.Core.Data.Action,
+readonly skip: Tey.Kit.Features.Core.Data.Action,
+readonly value: string | null,
+readonly initials: string,
+readonly max_kb: number,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }

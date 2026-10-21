@@ -93,7 +93,8 @@ final class InvitationAcceptTest extends TestCase
         $this->withCookie(config('session.cookie'), app('session')->getId());
         $this->assertSame('ready', $this->page($token)['state']);
         $accepted = $this->postJson('/invitations/'.$token)->assertCreated()->assertJsonPath('outcome', 'joined')->assertJsonPath('workspace_id', 1)->json();
-        $this->assertStringEndsWith('/dashboard', $accepted['redirect']);
+        // A new member goes through the welcome steps before their first dashboard.
+        $this->assertStringEndsWith('/welcome', $accepted['redirect']);
         $membership = Membership::query()->where('workspace_id', 1)->where('user_id', $user->id)->firstOrFail();
         $this->assertSame(MembershipStatus::Active, $membership->status);
         $this->assertSame(['admin'], app(Concierge::class)->roleNames($membership));
@@ -116,7 +117,8 @@ final class InvitationAcceptTest extends TestCase
         $this->signIn(2);
         $this->assertSame('ready', $this->page($token)['state']);
         $this->postJson('/invitations/'.$token)->assertCreated();
-        $this->assertTrue($this->get('/@alpha/dashboard', $this->inertia())->isOk());
+        // Joined through an invitation: the first dashboard visit goes through the welcome steps.
+        $this->get('/@alpha/dashboard', $this->inertia())->assertRedirect('/welcome');
     }
 
     public function test_the_wrong_account_cannot_accept(): void

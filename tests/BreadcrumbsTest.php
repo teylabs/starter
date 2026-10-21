@@ -109,7 +109,7 @@ final class BreadcrumbsTest extends TestCase
         $checked = [];
         foreach (Route::getRoutes() as $route) {
             $action = $route->getActionName();
-            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'Moved') && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'AvatarImage')) {
+            if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'DemoLogin') && ! str_contains($action, 'Moved') && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'AvatarImage')) {
                 $this->assertNotNull($registry->get($route), $route->uri().' declares no breadcrumb');
                 $checked[] = $route->uri();
             }
@@ -150,7 +150,7 @@ final class BreadcrumbsTest extends TestCase
         $checked = 0;
         foreach (Route::getRoutes() as $route) {
             $action = $route->getActionName();
-            if (! in_array('GET', $route->methods(), true) || str_contains($action, 'PeopleModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage')) {
+            if (! in_array('GET', $route->methods(), true) || str_contains($action, 'PeopleModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage') || str_contains($action, 'DemoLogin')) {
                 continue;
             }
             $crumb = $registry->get($route);
