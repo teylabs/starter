@@ -63,3 +63,31 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
         app()['env'] = $environment;
     }
 });
+
+// Someone who left lands on the no-workspace page in the FocusShell, and the account pages name the product where the switcher would be.
+it('lands a person with no workspace on the no-workspace page', function (): void {
+    $environment = getenv('APP_ENV');
+    try {
+        putenv('APP_ENV=local');
+        app()['env'] = 'local';
+        expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
+        expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
+        expect(app(Kernel::class)->call('kit:first-run-demo', ['--fork' => 'left']))->toBe(0);
+        preg_match('#https?://\S+/demo-login/\d+\?\S+#', app(Kernel::class)->output(), $link);
+
+        $page = visit($link[0])->assertPathIs('/no-workspace')
+            ->assertPresent('[data-focus-shell] [data-no-workspace]')
+            ->assertSeeIn('[data-no-workspace-explanation]', "You're not in a workspace yet.")
+            ->assertMissing('[data-test="create-workspace"]')
+            ->assertMissing('[data-shell-bar]')
+            ->assertNoJavaScriptErrors();
+        foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
+            $page->resize($width, $height);
+            expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
+        }
+        $page->navigate('/me/profile')->assertPresent('[data-shell-bar] [data-shell-product-name]')->assertMissing('[data-shell-switcher]')->assertNoJavaScriptErrors();
+    } finally {
+        putenv('APP_ENV='.$environment);
+        app()['env'] = $environment;
+    }
+});

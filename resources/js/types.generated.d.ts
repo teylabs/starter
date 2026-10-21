@@ -310,6 +310,15 @@ email: string,
 } | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
+export type NoWorkspaceViewModel = {
+readonly title: string,
+readonly email: string,
+readonly invitations: Array<any>,
+readonly explanation: string,
+readonly create: Tey.Kit.Features.Core.Data.Action | null,
+readonly account: Tey.Kit.Features.Core.Data.Action,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
 export type PasswordViewModel = {
 readonly title: string,
 readonly update_url: string,

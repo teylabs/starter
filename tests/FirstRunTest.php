@@ -5,6 +5,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
@@ -262,5 +263,39 @@ final class FirstRunTest extends TestCase
         $this->assertFalse(config('concierge.invitations.match_email'));
         $config = require dirname(__DIR__).'/config/concierge.php';
         $this->assertFalse($config['invitations']['match_email']);
+    }
+
+    public function test_a_person_with_no_workspace_lands_on_the_focus_page_and_never_gets_a_403(): void
+    {
+        $workspace = Workspace::query()->firstOrFail();
+        $owner = app(Concierge::class)->ownerOf($workspace)->user;
+        $this->assertSame(0, app(Kernel::class)->call('kit:first-run-demo', ['--fork' => 'left']));
+        $left = User::query()->where('email', 'left+1@example.test')->firstOrFail();
+        $this->assertSame(0, Workspace::query()->memberOf($left)->count());
+        // An invitation sent to them meanwhile.
+        InviteMember::run($owner, $workspace, 'left+1@example.test', new GrantSet(['viewer']), 'Come back.');
+        $this->actingAs($left);
+
+        // Every way in lands there: the list, the old workspace's own address, the page itself. Nothing is a 403.
+        $this->get('/me/workspaces', $this->inertia())->assertRedirect('/no-workspace');
+        $this->get('/no-workspace')->assertOk();
+        $page = $this->get('/no-workspace', $this->inertia())->assertOk();
+        $page->assertJsonPath('component', 'Provision/NoWorkspace/Page')->assertJsonPath('props.shell.kind', 'focus');
+        $this->assertSame("You're not in a workspace yet. Ask your admin to invite left+1@example.test.", $page->json('props.explanation'));
+        $this->assertSame(['workspace' => $workspace->name, 'inviter' => $owner->name], Arr::only($page->json('props.invitations.0'), ['workspace', 'inviter']));
+        $this->assertSame('Come back.', $page->json('props.invitations.0.message'));
+        // invite_only: no create action. Self-serve would offer one.
+        $this->assertNull($page->json('props.create'));
+        config(['kit.workspaces.provisioning' => 'self_serve']);
+        $this->assertSame('Create a workspace', $this->get('/no-workspace', $this->inertia())->json('props.create.label'));
+        config(['kit.workspaces.provisioning' => 'invite_only']);
+        // The shell around the account pages has no workspace and no switcher, so it names the product where the switcher would be.
+        $account = $this->get('/me/profile', $this->inertia())->assertOk()->json('props.shell');
+        $this->assertNull($account['workspace']);
+        $this->assertNull($account['switcher']);
+        $this->assertSame(config('app.name'), $account['product']['name']);
+        // A person with a workspace is sent to their list instead.
+        $this->actingAs($owner);
+        $this->get('/no-workspace')->assertRedirect('/me/workspaces');
     }
 }

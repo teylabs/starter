@@ -30,6 +30,8 @@ provide('kit.shell', true);
                     <Link :href="props.shell.product.url" :aria-label="props.shell.product.name" class="flex h-(--shell-mark-height) max-w-[min(var(--shell-mark-max-width),7rem)] shrink-0 items-center rounded-md px-1 focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none sm:max-w-(--shell-mark-max-width)" data-shell-wordmark>
                         <slot name="mark"><img v-if="props.shell.product.logomark" :src="props.shell.product.logomark" alt="" class="h-full w-auto max-w-full object-contain brightness-(--shell-mark-brightness) invert-(--shell-mark-invert)" /><span v-else class="flex size-6 items-center justify-center rounded-md bg-shell-bar-foreground/10 text-xs font-semibold" aria-hidden="true">{{ props.shell.product.name.slice(0, 1) }}</span></slot>
                     </Link>
+                    <!-- With no workspace there is nothing to switch: the product's name stands where the switcher would, with no caret (the server decides: no workspace and no switcher). -->
+                    <span v-if="!props.shell.workspace && !props.shell.switcher" class="min-w-0 flex-1 truncate text-sm font-medium lg:flex-none" data-shell-product-name>{{ props.shell.product.name }}</span>
                     <!-- The workspace switcher is always there: with one workspace its menu is just Workspace settings (when the server sends it), with two or more it lists them too. -->
                     <WorkspaceSwitcher v-if="props.shell.workspace || props.shell.switcher" :workspace="props.shell.workspace" :switcher="props.shell.switcher" :account="props.shell.account" class="min-w-0 flex-1 lg:max-w-72 lg:flex-none" />
                     <div class="ml-3 hidden shrink-0 items-center gap-0.5 lg:flex">

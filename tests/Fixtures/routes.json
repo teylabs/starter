@@ -39,6 +39,7 @@
     "GET|HEAD me/profile web,auth:web,concierge.active",
     "GET|HEAD me/security web,auth:web,concierge.active",
     "GET|HEAD me/workspaces web,auth:web,concierge.active",
+    "GET|HEAD no-workspace web,auth:web",
     "GET|HEAD oauth/authorize web,auth:web,concierge.active",
     "GET|HEAD oauth/device web",
     "GET|HEAD oauth/device/authorize web,auth:web",
