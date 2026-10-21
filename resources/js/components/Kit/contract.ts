@@ -4,8 +4,15 @@
 /** A labelled field: `name` reads its error from Inertia's <Form> context (`error` passes one), `span` (1 to 6 of the card's columns, from `sm` up) sets its width. */
 export interface FieldProps { id: string; label: string; name?: string; description?: string; error?: string; span?: 1 | 2 | 3 | 4 | 5 | 6 }
 
-/** A text input (`v-model`: string | number). `invalid` sets the error state; other attributes (id, readonly, required, maxlength, aria-*) pass through. */
+/** A text input (`v-model`: string | number). `invalid` sets the error state; `autofocus` focuses it on arrival (never a read-only one); other attributes (id, readonly, required, maxlength, aria-*) pass through. */
 export interface InputProps { invalid?: boolean }
+
+/**
+ * An inline message in the page's content (slots: default body, `actions`). `variant`: info (default), success, warning, danger, primary, brand, muted; `tier`: pale (default) or
+ * solid; `title` is one short line; `icon` is on by default (by variant), `false` hides it. `live`: none (default, already on the page at load), status (polite, appears after
+ * something the person did) or alert (assertive, blocks them; sparingly). `dismiss` is a server descriptor and `dismissible` shows the close button: only for what can be ignored.
+ */
+export interface AlertProps { variant?: 'info' | 'success' | 'warning' | 'danger' | 'primary' | 'brand' | 'muted'; tier?: 'pale' | 'solid'; title?: string; icon?: boolean; live?: 'none' | 'status' | 'alert'; dismissible?: boolean; dismiss?: { url: string; method?: 'post' | 'put' | 'patch' | 'delete' } | null }
 
 /** A multi-line input (`v-model`: string), as Input. */
 export interface TextareaProps { invalid?: boolean }

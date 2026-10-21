@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { BlockStack, Avatar, Button, Dialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
+import { Alert, BlockStack, Avatar, Button, Dialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 // Your profile: your name and email address (Fortify's update; a changed address stays unconfirmed until its link is followed) and your photo. The photo
@@ -20,7 +20,7 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
 <template>
     <Page md>
             <BlockStack class="gap-6">
-                <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
+                <Alert v-if="notice" variant="info" live="status" data-account-notice>{{ notice }}</Alert>
                 <Form :action="profile_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
                     <FormCard title="Profile" description="Your name and email address." submit-label="Save">
                         <Field id="profile-name" name="name" label="Name" :span="3"><Input id="profile-name" name="name" :model-value="name" required autocomplete="name" aria-describedby="profile-name-error" /></Field>

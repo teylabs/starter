@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { BlockStack, Field, FormCard, Page, PasswordInput } from '@kit/ui';
+import { Alert, BlockStack, Field, FormCard, Page, PasswordInput } from '@kit/ui';
 
 // Change your password (Fortify's update). Your other sessions are signed out afterwards.
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.PasswordViewModel>();
@@ -8,7 +8,7 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.PasswordViewModel>();
 <template>
     <Page md>
             <BlockStack class="gap-6">
-                <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
+                <Alert v-if="notice" variant="info" live="status" data-account-notice>{{ notice }}</Alert>
                 <Form :action="update_url" method="put" :options="{ preserveScroll: true }" :reset-on-success="['current_password', 'password', 'password_confirmation']">
                     <FormCard title="Change password" description="Choose a new password. Your other sessions are signed out." submit-label="Update password" busy-label="Updating…">
                         <Field id="current-password" name="current_password" label="Current password"><PasswordInput id="current-password" name="current_password" required autocomplete="current-password" aria-describedby="current-password-error" /></Field>

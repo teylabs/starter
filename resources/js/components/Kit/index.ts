@@ -4,6 +4,9 @@
 export { default as AppearanceChoice } from './Appearance/AppearanceChoice.vue';
 export { default as AppearanceToggle } from './Appearance/AppearanceToggle.vue';
 export { initializeTheme, useAppearance } from './Appearance/useAppearance';
+export { default as Alert } from './Feedback/Alert.vue';
+export { alertVariants } from './Feedback/alertVariants';
+export type { AlertTier, AlertVariant } from './Feedback/alertVariants';
 export { default as Avatar } from './Layout/Avatar.vue';
 export { default as BlockStack } from './Layout/BlockStack.vue';
 export { default as Toolbar } from './Layout/Toolbar.vue';

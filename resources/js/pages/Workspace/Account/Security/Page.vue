@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { BlockStack, Button, Dialog, Field, FormCard, Input, Page, PasswordInput, Section } from '@kit/ui';
+import { Alert, BlockStack, Button, Dialog, Field, FormCard, Input, Page, PasswordInput, Section } from '@kit/ui';
 
 // Security: two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
 // you are signed in on, and your own security log. Turning two-factor off, regenerating the recovery codes and signing out other sessions each ask first.
@@ -10,7 +10,7 @@ const at = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle:
 <template>
     <Page md>
             <BlockStack class="gap-6">
-                <p v-if="notice" class="rounded-md border border-border bg-muted px-4 py-3 text-sm" role="status" data-account-notice>{{ notice }}</p>
+                <Alert v-if="notice" variant="info" live="status" data-account-notice>{{ notice }}</Alert>
 
                 <Section v-if="two_factor.recovery_codes.length" title="Your recovery codes" description="Keep these somewhere safe. Each works once if you lose your authenticator app. They are shown only now.">
                     <ul class="grid gap-1 font-mono text-sm sm:grid-cols-2" data-recovery-codes>
