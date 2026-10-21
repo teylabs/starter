@@ -45,9 +45,9 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $page->assertPresent('[data-tab="members"][aria-current="page"]')->assertSee('Vera Viewer');
 
         // The invite dialog: Form + FormActions; the invitation lands, the dialog closes and the server count moves.
-        $page->click('[data-invite]')->assertPresent('[data-dialog]')->assertSee('Invite member');
-        $page->type('#invite-email', 'new.person@example.test')->click('Send invitation');
-        $page->assertMissing('[data-dialog]')->assertPresent('[data-invite-link]');
+        $page->click('[data-invite]')->assertPresent('[data-form-modal]')->assertSee('Invite member');
+        $page->type('#invite-email', 'new.person@example.test')->click('[data-form-submit]');
+        $page->assertMissing('[data-form-modal]');
         expect($count('invitations'))->toBe('1');
         $page->click('[data-tab="invitations"]')->assertSee('new.person@example.test')->assertQueryStringHas('tab', 'invitations');
         // Revoke is behind the menu or a lone destructive button, and asks first.
@@ -69,8 +69,8 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $page->navigate('/settings/people')->assertSee($owner->name);
         $actionsOn = fn (string $name): int => (int) $page->script('() => [...document.querySelectorAll("[data-row]")].find((row) => row.textContent.includes("'.$name.'"))?.querySelectorAll("[data-row-actions] button").length ?? -1');
         expect($actionsOn($owner->name))->toBe(0);
-        $page->click('[data-row]:has-text("Vera") [data-action="change-role"]')->assertPresent('[data-dialog]')->assertSee('Change role for');
-        $page->click('[data-dialog] [data-form-cancel], [data-dialog] button:has-text("Cancel")');
+        $page->click('[data-row]:has-text("Vera") [data-action="change-role"]')->assertPresent('[data-form-modal]')->assertSee('Change role for');
+        $page->click('[data-modal-cancel]')->assertMissing('[data-form-modal]');
         $page->click('[data-row]:has-text("Vera") [data-row-menu]')->click('[data-action="remove"]')->assertPresent('[data-confirm-dialog]')->assertSee('They lose access to this workspace straight away.');
         $page->click('[data-confirm-action]')->assertDontSee('Vera Viewer')->assertNoJavaScriptErrors();
 

@@ -3,7 +3,7 @@ import { Link, router, useFormContext } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Spinner from '@/components/ui/spinner/Spinner.vue';
 import Button from './Button.vue';
-import ConfirmDialog from './ConfirmDialog.vue';
+import Dialog from '@/components/Kit/Overlay/Dialog.vue';
 
 /*
  * The bar at the foot of a form: the form's status, then Cancel, then the submit button, right-aligned. It reads the form from Inertia's <Form> context
@@ -139,5 +139,5 @@ onBeforeUnmount(() => {
         </slot>
     </div>
     <div ref="sentinel" aria-hidden="true" class="h-px" data-form-sentinel />
-    <ConfirmDialog v-model:open="askLeave" title="Leave this page?" description="You have unsaved changes. If you leave, they are lost." confirm-label="Leave" cancel-label="Stay" :destructive="false" @confirm="leave" />
+    <Dialog v-model:open="askLeave" title="Leave this page?" description="You have unsaved changes. If you leave, they are lost." confirm-label="Leave" cancel-label="Stay" @confirm="leave" />
 </template>

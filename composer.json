@@ -7,6 +7,7 @@
         "php": "^8.4",
         "glhd/gretel": "^1.10",
         "inertiajs/inertia-laravel": "^3.0",
+        "inertiaui/modal": "^3.1",
         "laravel/fortify": "^1.41",
         "laravel/framework": "^13.17",
         "laravel/mcp": "^1.0",
@@ -51,7 +52,8 @@
             "@php bin/check.php ConciergeCheck"
         ],
         "setup": "@php bin/setup.php",
-        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php tests/Browser/FormActions.php tests/Browser/AuthCards.php tests/Browser/Account.php tests/Browser/People.php",
+        "test:brand-env": "sh bin/fake-brand-env.sh",
+        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php tests/Browser/FormActions.php tests/Browser/AuthCards.php tests/Browser/Account.php tests/Browser/People.php tests/Browser/Shell.php tests/Browser/Modals.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

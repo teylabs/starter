@@ -3,7 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Button from '@/components/Kit/Form/Button.vue';
-import ConfirmDialog from '@/components/Kit/Form/ConfirmDialog.vue';
+import Dialog from '@/components/Kit/Overlay/Dialog.vue';
 
 // One row's actions, as the server decided them: nothing here checks a permission, an action that is not in the list is not shown. One or two plain actions
 // show inline; three or more become the first inline plus a menu. A destructive action is a menu item whenever another action exists (a lone one is a button), and
@@ -53,6 +53,6 @@ function confirmed() {
                 <DropdownMenuItem v-for="action in menu" :key="action.key ?? action.label" :class="action.destructive ? 'text-destructive focus:text-destructive' : ''" :data-action="action.key" @select="perform(action)">{{ action.label }}</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-        <ConfirmDialog v-if="shown" v-model:open="asked" :title="shown.title" :description="shown.description" :confirm-label="shown.label" @confirm="confirmed" />
+        <Dialog variant="danger" v-if="shown" v-model:open="asked" :title="shown.title" :description="shown.description" :confirm-label="shown.label" @confirm="confirmed" />
     </div>
 </template>

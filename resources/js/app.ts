@@ -1,7 +1,9 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
 import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
 import { initializeTheme } from '@kit/ui';
+import { honourReducedMotion } from '@/lib/reduced-motion';
 import AppLayout from '@/layouts/AppLayout.vue';
 import GuestLayout from '@/layouts/GuestLayout.vue';
 
@@ -37,7 +39,10 @@ createInertiaApp({
         return sublayout ? [shell, sublayout] : shell;
     },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) });
+        // Server-driven modals (inertiaui/modal): the package mounts them itself, so no slot is needed in a layout.
+        withInertiaModal(app as never);
+        app
             .use(plugin)
             .directive('focus', { mounted: (element: HTMLElement, binding) => { if (binding.value !== false) element.focus(); } })
             .mount(el);
@@ -45,3 +50,6 @@ createInertiaApp({
 });
 
 initializeTheme();
+// Not the browser's native <dialog>: it sits in the top layer, above every <Dialog> that a modal opens over itself.
+putConfig({ useNativeDialog: false });
+honourReducedMotion();

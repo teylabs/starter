@@ -27,7 +27,7 @@ type Table = {
     pagination: { page: number; perPage: number; total: number; from: number | null; to: number | null; lastPage: number };
     emptyState: 'first-use' | 'no-results' | null;
 };
-const props = withDefaults(defineProps<{ table: Table; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[] }>(), { itemKey: 'id', stickyHeader: true, searchLabel: 'Search', intercept: () => [] });
+const props = withDefaults(defineProps<{ table: Table; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[]; toolbar?: boolean }>(), { itemKey: 'id', stickyHeader: true, searchLabel: 'Search', intercept: () => [], toolbar: true });
 const emit = defineEmits<{ act: [row: Row, action: Action] }>();
 
 // ---- visits: the URL is the state ------------------------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ const pageUrl = (page: number) => {
     page > 1 ? query.set('page', String(page)) : query.delete('page');
     return `${window.location.pathname}${query.size ? `?${query}` : ''}`;
 };
-const showToolbar = computed(() => props.table.emptyState !== 'first-use');
+const showToolbar = computed(() => props.toolbar && props.table.emptyState !== 'first-use');
 </script>
 <template>
     <section class="grid gap-4" data-data-table>
