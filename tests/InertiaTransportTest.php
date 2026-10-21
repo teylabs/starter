@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,8 +37,10 @@ final class InertiaTransportTest extends TestCase
         RecordsFixtureProvider::install();
         $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
         $this->get('/login', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
-            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.shell.user', null)
-            ->assertJsonPath('props.shell.switcher.choices', [])->assertJsonPath('props.shell.navigation', []);
+            ->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.shell.product.name', config('app.name'))
+            ->assertJsonStructure(['props' => ['shell' => ['product', 'footer']]]);
+        // The GuestShell carries the product and the footer only: no ShellData-only field.
+        $this->assertSame(['footer', 'product'], array_keys(Arr::sortRecursive($this->get('/login', $inertia)->json('props.shell'))));
         $password = Str::random(40);
         User::findOrFail(1)->update(['password' => Hash::make($password)]);
         $this->postJson('/login', ['email' => 'actor1@example.test', 'password' => $password])->assertOk();
@@ -63,7 +66,7 @@ final class InertiaTransportTest extends TestCase
         $this->get('/@alpha/records', $inertia)->assertOk()->assertJsonCount(1, 'props.records');
         // Another workspace's record is not found, never shown.
         $this->get('/@alpha/records/2', $inertia)->assertNotFound();
-        $settings = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Settings/General/Page')->assertJsonPath('props.can_write', true)->json('props');
+        $settings = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Settings/General/Page')->assertJsonPath('props.save.disabled', false)->json('props');
         $payload = ['display_name' => 'Inertia Alpha', 'timezone' => 'America/Toronto', 'expected_version' => $settings['settings']['version'], 'intent_key' => $settings['intent_key']];
         $this->put('/@alpha/settings/general', $payload, $inertia)->assertStatus(303)->assertRedirect('/settings/general');
         $payload['intent_key'] = 'stale-inertia';
@@ -85,7 +88,7 @@ final class InertiaTransportTest extends TestCase
         $this->postJson('/login', ['email' => 'actor3@example.test', 'password' => $password])->assertOk();
         $this->withCookie(config('session.cookie'), app('session')->getId());
         Auth::forgetGuards();
-        $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('props.can_write', false);
+        $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('props.save.disabled', true)->assertJsonPath('props.save.reason', "You don't have permission to change these settings.");
         $this->get('/@alpha/records', $inertia)->assertOk();
         $this->post('/@alpha/records', ['title' => 'forged owner'], $inertia)->assertForbidden()->assertJsonPath('component', 'Workspace/Error/Page');
         $this->assertSame('Beta private', DB::table('fixture_records')->where('workspace_id', 2)->value('title'));

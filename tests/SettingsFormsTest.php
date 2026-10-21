@@ -166,10 +166,10 @@ final class SettingsFormsTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
         $this->signIn(1);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.can_write', true);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save.disabled', false)->assertJsonPath('props.save.reason', null);
         $this->postJson('/logout')->assertNoContent();
         $this->signIn(3);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.can_write', false);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.save.disabled', true);
     }
 
     public function test_every_registered_settings_section_is_an_inertia_page_whose_component_exists(): void

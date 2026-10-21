@@ -20,10 +20,10 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
 <template>
     <Page lg>
             <div class="grid gap-6">
-                <Form :action="invite_url" method="post" :options="{ preserveScroll: true }" reset-on-success>
-                    <fieldset :disabled="!can_manage" class="contents">
+                <Form :action="invite.url" method="post" :options="{ preserveScroll: true }" reset-on-success>
+                    <fieldset :disabled="invite.disabled" class="contents">
                         <FormCard title="Invite someone" description="They get a link to join this workspace with the role you choose." submit-label="Send invitation" busy-label="Sending…" :cancel="false" :sticky="false">
-                            <p v-if="!can_manage" class="col-span-6 text-sm text-muted-foreground">You don't have permission to invite people.</p>
+                            <p v-if="invite.reason" class="col-span-6 text-sm text-muted-foreground">{{ invite.reason }}</p>
                             <p v-if="invite_link" class="col-span-6 text-sm" role="status" data-invite-link>Invitation link (send it to them; it is shown once): <code class="break-all">{{ invite_link }}</code></p>
                             <Field id="invite-email" name="email" label="Email address" :span="4"><Input id="invite-email" name="email" type="email" required aria-describedby="invite-email-error" /></Field>
                             <Field id="invite-role" name="role" label="Role" :span="2"><Select id="invite-role" name="role" :model-value="roles[0]?.value" :options="roleOptions" /></Field>
@@ -46,13 +46,13 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
                                 <span class="truncate text-sm text-muted-foreground">{{ member.email }}</span>
                             </span>
                             <span class="w-36">
-                                <Select v-if="member.manageable && roles.length" :id="`role-${member.id}`" :model-value="member.role" :options="roleOptions" @update:model-value="changeRole(member.update_url, String($event))" />
+                                <Select v-if="member.change_role" :id="`role-${member.id}`" :model-value="member.role" :options="roleOptions" @update:model-value="changeRole(member.change_role.url, String($event))" />
                                 <span v-else class="text-sm">{{ member.role_label }}</span>
                             </span>
                             <span class="w-28 text-sm text-muted-foreground">{{ joined(member.joined_at) }}</span>
-                            <span v-if="member.manageable">
-                                <ConfirmDialog :title="`Remove ${member.name}?`" description="They lose access to this workspace straight away. You can invite them again later." confirm-label="Remove member" @confirm="remove(member.destroy_url)">
-                                    <Button variant="destructive" type="button">Remove</Button>
+                            <span v-if="member.remove?.confirm">
+                                <ConfirmDialog :title="member.remove.confirm.title" :description="member.remove.confirm.description" :confirm-label="member.remove.confirm.label" @confirm="remove(member.remove.url)">
+                                    <Button variant="destructive" type="button">{{ member.remove.label }}</Button>
                                 </ConfirmDialog>
                             </span>
                         </li>
@@ -66,10 +66,10 @@ const joined = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(u
                                 <span class="truncate text-sm font-medium">{{ invitation.email }}</span>
                                 <span class="text-sm text-muted-foreground">{{ invitation.role_label }} · {{ invitation.expired ? 'expired' : 'expires' }} {{ joined(invitation.expires_at) }}<template v-if="invitation.invited_by"> · invited by {{ invitation.invited_by }}</template></span>
                             </span>
-                            <span v-if="can_manage" class="flex gap-2">
-                                <Button variant="secondary" type="button" @click="resend(invitation.resend_url)">Resend</Button>
-                                <ConfirmDialog :title="`Revoke the invitation to ${invitation.email}?`" description="The link stops working. You can invite them again later." confirm-label="Revoke invitation" @confirm="revoke(invitation.revoke_url)">
-                                    <Button variant="destructive" type="button">Revoke</Button>
+                            <span v-if="invitation.resend && invitation.revoke?.confirm" class="flex gap-2">
+                                <Button variant="secondary" type="button" @click="resend(invitation.resend.url)">{{ invitation.resend.label }}</Button>
+                                <ConfirmDialog :title="invitation.revoke.confirm.title" :description="invitation.revoke.confirm.description" :confirm-label="invitation.revoke.confirm.label" @confirm="revoke(invitation.revoke.url)">
+                                    <Button variant="destructive" type="button">{{ invitation.revoke.label }}</Button>
                                 </ConfirmDialog>
                             </span>
                         </li>

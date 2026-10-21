@@ -75,7 +75,7 @@ final class OwnershipTransferTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         // The page offers it to the owner, with the other verified members to choose from.
-        $page = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.is_owner', true)->assertJsonPath('props.transfer_url', '/settings/ownership')->assertJsonPath('props.leave_url', null)->json('props');
+        $page = $this->get('/@alpha/settings/general', $this->inertia())->assertOk()->assertJsonPath('props.transfer.url', '/settings/ownership')->assertJsonPath('props.leave.disabled', true)->assertJsonPath('props.leave.reason', 'Transfer ownership before you leave.')->json('props');
         $this->assertSame([(string) $this->membership(1, 3)->id], array_column($page['heirs'], 'value'));
         $this->transfer(3)->assertOk()->assertJsonPath('owner_membership_id', $this->membership(1, 3)->id);
         $this->assertSame(['owner'], $this->roles(3));
@@ -86,12 +86,12 @@ final class OwnershipTransferTest extends TestCase
         // The password confirmation does not linger: the same session cannot transfer again without it.
         $this->assertNull(session('auth.password_confirmed_at'));
         // The former owner is an admin now: no transfer, and the new owner is protected from them.
-        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', false)->assertJsonPath('props.heirs', []);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.transfer', null)->assertJsonPath('props.heirs', []);
         $this->transfer(3)->assertForbidden();
         $this->deleteJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id)->assertForbidden();
         $this->signOut();
         $this->signIn(3);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', true);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.transfer.url', '/settings/ownership');
         $this->deleteJson('/@alpha/settings/people/members/'.$this->membership(1, 1)->id)->assertOk();
     }
 
@@ -113,7 +113,7 @@ final class OwnershipTransferTest extends TestCase
         $this->signOut();
         // An admin, who may manage viewers, still cannot take ownership; nor can a viewer.
         $this->signIn(3);
-        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.is_owner', false)->assertJsonPath('props.heirs', []);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.transfer', null)->assertJsonPath('props.heirs', []);
         $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 3)->id, 'password' => $this->password])->assertForbidden();
         $this->putJson('/@alpha/settings/ownership', ['membership' => $this->membership(1, 1)->id, 'password' => $this->password])->assertForbidden();
         $this->assertSame(['owner'], $this->roles(1));
@@ -141,13 +141,13 @@ final class OwnershipTransferTest extends TestCase
         $this->signIn(1);
         $leave = '/me/workspaces/alpha/membership';
         // The owner has no Leave on the chooser or General, and the server refuses it with the reason.
-        $this->getJson('/me/workspaces')->assertOk()->assertJsonPath('workspaces.0.leave_url', null);
+        $this->getJson('/me/workspaces')->assertOk()->assertJsonPath('workspaces.0.leave.disabled', true);
         $this->deleteJson($leave)->assertUnprocessable()->assertJsonValidationErrors('leave');
         $this->assertTrue(Membership::query()->where('workspace_id', 1)->where('user_id', 1)->exists());
         // After the transfer the former owner (an admin now) is offered Leave in both places, and leaving removes access.
         $this->transfer(3)->assertOk();
-        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.leave_url', $leave);
-        $this->getJson('/me/workspaces')->assertJsonPath('workspaces.0.leave_url', $leave);
+        $this->get('/@alpha/settings/general', $this->inertia())->assertJsonPath('props.leave.url', $leave)->assertJsonPath('props.leave.disabled', false)->assertJsonPath('props.leave.method', 'delete');
+        $this->getJson('/me/workspaces')->assertJsonPath('workspaces.0.leave.url', $leave)->assertJsonPath('workspaces.0.leave.disabled', false);
         $this->delete($leave)->assertRedirect('/me/workspaces')->assertStatus(303);
         $this->get('/@alpha/settings/general', $this->inertia())->assertNotFound();
     }

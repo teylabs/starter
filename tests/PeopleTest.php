@@ -73,13 +73,15 @@ final class PeopleTest extends TestCase
             ->assertJsonPath('props.title', 'People')->assertJsonPath('props.layout.breadcrumbs.2.label', 'People')->assertJsonPath('props.layout.documentTitle', 'People · Settings · Product name')->json('props');
         $this->assertSame(['Alpha', 'Viewer'], array_column($page['members'], 'name'));
         $this->assertSame(['Owner', 'Viewer'], array_column($page['members'], 'role_label'));
-        $this->assertSame([false, true], array_column($page['members'], 'manageable'), 'the owner cannot be managed; the viewer can');
+        $this->assertSame([null, 'put'], array_map(fn (array $member) => $member['change_role']['method'] ?? null, $page['members']), 'the owner cannot be managed; the viewer can');
+        $this->assertSame([null, 'delete'], array_map(fn (array $member) => $member['remove']['method'] ?? null, $page['members']));
         $this->assertSame([true, false], array_column($page['members'], 'is_you'));
         $this->assertNull($page['members'][0]['avatar']);
         $this->assertNotNull($page['members'][1]['joined_at']);
         // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
         $this->assertSame(['admin', 'viewer'], array_column($page['roles'], 'value'));
-        $this->assertTrue($page['can_manage']);
+        $this->assertFalse($page['invite']['disabled']);
+        $this->assertSame('post', $page['invite']['method']);
         $this->post('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'admin'], ['Accept' => 'application/json'])->assertCreated();
         $this->assertSame([['new@example.test', 'Admin']], array_map(fn (array $invitation): array => [$invitation['email'], $invitation['role_label']], $this->people()['invitations']));
         // Search and sort are the server's, through the query string.
@@ -103,7 +105,7 @@ final class PeopleTest extends TestCase
         $this->assertSame(MembershipStatus::Active, $this->membership(1, 1)->fresh()->status);
         $keys = array_column($this->get('/@alpha/settings', $this->inertia())->json('props.groups.0.sections'), 'key');
         $this->assertNotContains('people', $keys);
-        $this->assertFalse($this->get('/@alpha/settings/general', $this->inertia())->json('props.can.workspace\.members\.manage') ?? false);
+        $this->assertArrayNotHasKey('can', $this->get('/@alpha/settings/general', $this->inertia())->json('props'));
     }
 
     public function test_invite_resend_and_revoke(): void
@@ -171,9 +173,11 @@ final class PeopleTest extends TestCase
         $this->signOut();
         $this->signIn(3);
         $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
-        $this->assertSame([false, false], array_column($page['members'], 'manageable'), 'an admin cannot manage the owner, or themselves');
+        $this->assertSame([null, null], array_column($page['members'], 'change_role'), 'an admin cannot manage the owner, or themselves');
+        $this->assertSame([null, null], array_column($page['members'], 'remove'));
         $this->assertSame(['viewer'], array_column($page['roles'], 'value'), 'an admin grants viewer only');
-        $this->assertTrue($page['can_manage']);
+        $this->assertFalse($page['invite']['disabled']);
+        $this->assertSame('post', $page['invite']['method']);
         $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
         $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
         $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));

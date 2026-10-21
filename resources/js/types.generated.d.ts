@@ -3,6 +3,18 @@ export namespace Kit {
 export namespace Features {
 export namespace Core {
 export namespace Data {
+export type Action = {
+label: string,
+url: string,
+method: string,
+disabled: boolean,
+reason: string | null,
+confirm: {
+title: string,
+description: string,
+label: string,
+} | null,
+};
 export type Breadcrumb = {
 label: string,
 url: string | null,
@@ -55,6 +67,21 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 }
 export namespace SessionUi {
 export namespace Data {
+export type GuestShellData = {
+product: {
+name: string,
+url: string,
+logomark: string | null,
+},
+footer: {
+identity: string,
+credit: string,
+links: {
+label: string,
+url: string,
+}[],
+},
+};
 export type ShellData = {
 product: {
 name: string,
@@ -178,9 +205,8 @@ role: string,
 role_label: string,
 joined_at: string | null,
 is_you: boolean,
-manageable: boolean,
-update_url: string,
-destroy_url: string,
+change_role: Tey.Kit.Features.Core.Data.Action | null,
+remove: Tey.Kit.Features.Core.Data.Action | null,
 }[],
 readonly invitations: {
 id: string,
@@ -190,15 +216,14 @@ role_label: string,
 expires_at: string,
 expired: boolean,
 invited_by: string | null,
-resend_url: string,
-revoke_url: string,
+resend: Tey.Kit.Features.Core.Data.Action | null,
+revoke: Tey.Kit.Features.Core.Data.Action | null,
 }[],
 readonly roles: {
 value: string,
 label: string,
 }[],
-readonly can_manage: boolean,
-readonly invite_url: string,
+readonly invite: Tey.Kit.Features.Core.Data.Action,
 readonly search: string,
 readonly sort: string,
 readonly invite_link: string | null,
@@ -285,16 +310,14 @@ export namespace ViewModels {
 export type EditSettingsViewModel = {
 readonly title: string,
 readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
-readonly can_write: boolean,
-readonly update_url: string,
+readonly save: Tey.Kit.Features.Core.Data.Action,
 readonly intent_key: string,
-readonly is_owner: boolean,
+readonly transfer: Tey.Kit.Features.Core.Data.Action | null,
 readonly heirs: {
 value: string,
 label: string,
 }[],
-readonly transfer_url: string,
-readonly leave_url: string | null,
+readonly leave: Tey.Kit.Features.Core.Data.Action | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
@@ -306,7 +329,7 @@ readonly title: string,
 readonly workspaces: {
 id: number,
 name: string,
-leave_url: string | null,
+leave: Tey.Kit.Features.Core.Data.Action | null,
 }[],
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };

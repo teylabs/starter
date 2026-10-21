@@ -9,8 +9,8 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
 </script>
 <template>
     <Page sm>
-            <Form :action="props.update_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
-                <fieldset :disabled="!can_write" class="contents">
+            <Form :action="save.url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success>
+                <fieldset :disabled="save.disabled" class="contents">
                     <FormCard title="General" description="How this workspace is named and which timezone it keeps." submit-label="Save" busy-label="Saving…">
                         <Input type="hidden" name="expected_version" :model-value="String(settings.version)" />
                         <Input type="hidden" name="intent_key" :model-value="intent_key" />
@@ -20,31 +20,31 @@ const props = defineProps<Tey.Kit.Features.Settings.ViewModels.EditSettingsViewM
                         <Field id="timezone" name="timezone" label="Timezone" :span="4">
                             <TimezoneSelect id="timezone" name="timezone" :model-value="settings.timezone" />
                         </Field>
-                        <template v-if="!can_write" #status><span class="min-h-5 flex-1 text-right text-sm text-muted-foreground" data-form-status data-state="readonly">You don't have permission to change these settings.</span></template>
+                        <template v-if="save.reason" #status><span class="min-h-5 flex-1 text-right text-sm text-muted-foreground" data-form-status data-state="readonly">{{ save.reason }}</span></template>
                     </FormCard>
                 </fieldset>
             </Form>
-            <Form v-if="is_owner" v-slot="{ submit }" :action="transfer_url" method="put" :options="{ preserveScroll: true }" reset-on-success>
+            <Form v-if="transfer" v-slot="{ submit }" :action="transfer.url" method="put" :options="{ preserveScroll: true }" reset-on-success>
                 <FormCard title="Transfer ownership" description="Pass ownership to another member. They become the owner and you become an admin. Confirm with your password." :cancel="false" :sticky="false">
-                    <p v-if="!heirs.length" class="text-sm text-muted-foreground">There is no other verified member to pass ownership to yet.</p>
+                    <p v-if="transfer.reason" class="text-sm text-muted-foreground">{{ transfer.reason }}</p>
                     <template v-else>
                         <Field id="transfer-member" name="membership" label="New owner" :span="6"><Select id="transfer-member" name="membership" :options="heirs" placeholder="Choose a member" /></Field>
                         <Field id="transfer-password" name="password" label="Your password" :span="6"><PasswordInput id="transfer-password" name="password" required autocomplete="current-password" aria-describedby="transfer-password-error" /></Field>
                     </template>
-                    <template v-if="heirs.length" #submit>
-                        <ConfirmDialog title="Transfer ownership?" description="They become the owner and you become an admin. Only the new owner can undo this." confirm-label="Transfer ownership" @confirm="submit()">
-                            <Button variant="destructive" type="button" data-test="transfer-ownership">Transfer ownership</Button>
+                    <template v-if="transfer.confirm && !transfer.disabled" #submit>
+                        <ConfirmDialog :title="transfer.confirm.title" :description="transfer.confirm.description" :confirm-label="transfer.confirm.label" @confirm="submit()">
+                            <Button variant="destructive" type="button" data-test="transfer-ownership">{{ transfer.label }}</Button>
                         </ConfirmDialog>
                     </template>
                 </FormCard>
             </Form>
-            <Section title="Leave workspace" class="mt-6">
-                <p v-if="is_owner" class="text-sm text-muted-foreground" data-test="leave-owner">Transfer ownership before you leave.</p>
-                <template v-else-if="leave_url">
+            <Section v-if="leave" title="Leave workspace" class="mt-6">
+                <p v-if="leave.disabled" class="text-sm text-muted-foreground" data-test="leave-owner">{{ leave.reason }}</p>
+                <template v-else-if="leave.confirm">
                     <p class="mb-3 text-sm text-muted-foreground">You lose access to this workspace straight away. An admin can invite you again.</p>
                     <p v-if="($page.props.errors as Record<string, string>).leave" class="mb-3 text-sm text-destructive" role="alert">{{ ($page.props.errors as Record<string, string>).leave }}</p>
-                    <ConfirmDialog title="Leave this workspace?" description="You lose access straight away. An admin can invite you again." confirm-label="Leave workspace" @confirm="router.delete(leave_url!)">
-                        <Button variant="destructive" type="button" data-test="leave-workspace">Leave workspace</Button>
+                    <ConfirmDialog :title="leave.confirm.title" :description="leave.confirm.description" :confirm-label="leave.confirm.label" @confirm="router.delete(leave.url)">
+                        <Button variant="destructive" type="button" data-test="leave-workspace">{{ leave.label }}</Button>
                     </ConfirmDialog>
                 </template>
             </Section>

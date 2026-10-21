@@ -13,8 +13,9 @@ import WorkspaceShell from '@/pages/Workspace/Layout.vue';
  */
 defineOptions({ inheritAttrs: false });
 
-const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
-const shell = computed(() => page.props.shell);
+const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData | Tey.Kit.Features.SessionUi.Data.GuestShellData }>();
+// A guest (a sign-out in another tab, an error page) gets the GuestShell, which has no navigation: the app shell needs the full ShellData.
+const shell = computed(() => (page.props.shell && 'navigation' in page.props.shell ? page.props.shell : undefined));
 </script>
 
 <template>
