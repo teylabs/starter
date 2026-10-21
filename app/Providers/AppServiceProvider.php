@@ -30,6 +30,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // The template's own cache, tey/mod's discovery, warms and clears with `php artisan optimize` and `optimize:clear`.
+        $this->optimizes('mod:cache', 'mod:clear', 'mod');
         $this->loadMigrationsFrom(InstalledVersions::getInstallPath('laravel/passport').'/database/migrations');
         $this->commands([FirstOwnerCommand::class]);
         // The kit's sign-in page takes the status and the local offer as extra props; this overrides session-ui's loginView with them. Concierge decides
