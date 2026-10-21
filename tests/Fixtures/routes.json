@@ -48,6 +48,7 @@
     "GET|HEAD settings/people/members/{membership} web,auth:web,concierge.active,Tey\\Kit\\Features\\Workspaces\\Http\\Middleware\\ResolveWorkspace",
     "GET|HEAD storage/{path} ",
     "GET|HEAD two-factor-challenge web,guest:web",
+    "GET|HEAD up ",
     "GET|HEAD user/confirm-password web,auth:web",
     "GET|HEAD user/confirmed-password-status web,auth:web",
     "GET|HEAD user/two-factor-qr-code web,auth:web,password.confirm",

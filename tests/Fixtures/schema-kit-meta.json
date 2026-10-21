@@ -1,0 +1,35 @@
+{
+    "columns": [
+        [
+            "key",
+            "varchar",
+            1,
+            null,
+            1
+        ],
+        [
+            "value",
+            "text",
+            1,
+            null,
+            0
+        ],
+        [
+            "updated_at",
+            "datetime",
+            0,
+            null,
+            0
+        ]
+    ],
+    "indexes": [
+        [
+            1,
+            "pk",
+            [
+                "key"
+            ]
+        ]
+    ],
+    "foreign_keys": []
+}

@@ -124,14 +124,21 @@ jobs:
           openssl rsa -in oauth-private.pem -pubout -out oauth-public.pem 2>/dev/null
           { echo 'PASSPORT_PRIVATE_KEY<<PEM'; cat oauth-private.pem; echo PEM; echo 'PASSPORT_PUBLIC_KEY<<PEM'; cat oauth-public.pem; echo PEM; } >> "$GITHUB_ENV"
           rm oauth-private.pem oauth-public.pem
-      # docs/deploy.md's order. concierge:owners needs an existing workspace and starter:smoke doesn't exist yet (#32).
+      # docs/deploy.md: a deploy is these two lines; the role and permission syncs run when the migrations end.
       - run: npm ci && npm run build
-      - run: php artisan standards:preflight --skip=install.tables
-      - run: php artisan migrate --force
-      - run: php artisan kit:permissions:sync
-      - run: php artisan standards:preflight
-      - run: php artisan breadcrumbs:cache
-      - run: php artisan optimize
+      - run: php artisan migrate --force && php artisan optimize
+      - name: Assert what the deploy did (roles, grants, kit caches, /up)
+        run: |
+          php artisan tinker --execute='
+            $roles = Spatie\Permission\Models\Role::query()->pluck("name")->sort()->values()->all();
+            if ($roles !== ["admin", "owner", "viewer"]) { throw new RuntimeException("roles not synced: ".json_encode($roles)); }
+            if (Illuminate\Support\Facades\DB::table("role_has_permissions")->count() === 0) { throw new RuntimeException("no default grants"); }
+            if (Illuminate\Support\Facades\DB::table("kit_meta")->where("key", "catalog_fingerprint")->doesntExist()) { throw new RuntimeException("no catalog fingerprint"); }
+            foreach (["bootstrap/cache/config.php", "bootstrap/cache/routes-v7.php"] as $cache) { if (! is_file(base_path($cache))) { throw new RuntimeException("not cached: ".$cache); } }
+            if (! app(Glhd\\Gretel\\Support\\Cache::class)->exists()) { throw new RuntimeException("breadcrumbs not cached"); }
+            $status = app(Illuminate\Contracts\Http\Kernel::class)->handle(Illuminate\Http\Request::create("/up"))->getStatusCode();
+            if ($status !== 200) { throw new RuntimeException("/up answered ".$status); }
+          '
 
   node:
     name: Node

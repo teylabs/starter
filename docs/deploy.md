@@ -1,27 +1,19 @@
 # Deploy
 
-Laravel Cloud builds the app (`composer install --no-dev`, then `npm ci && npm run build`), then runs its deploy commands in order, and stops at the first that fails. Use this order:
+Laravel Cloud builds the app (`composer install --no-dev`, then `npm ci && npm run build`), then runs its deploy commands in order, and stops at the first that fails. A deploy is two lines:
 
 ```sh
-set -e
-php artisan standards:preflight --skip=install.tables
 php artisan migrate --force
-php artisan kit:permissions:sync
-php artisan standards:preflight
-php artisan concierge:owners --workspace=<key> --no-interaction
-php artisan breadcrumbs:cache
 php artisan optimize
-php artisan starter:smoke
 ```
 
-- **`standards:preflight --skip=install.tables` gates the deploy**, after the asset build and with the database reachable, before anything migrates. tey/standards' blocking checks (the app key, debug off in production, the database config and the `install.*` group: every configured mail transport, disk, queue, cache and session driver, PHP extension and secret is actually installed, and the Vite manifest exists) exit 1 and stop the deploy. `install.tables` is skipped here because the tables it checks don't exist before the first migrate; the skip is printed and logged.
-- **`migrate --force` comes next**, before anything caches. A cached config or route built before the schema is current can boot code that expects tables or columns that do not exist yet.
-- **`kit:permissions:sync` follows the migration.** It creates the permissions the kit's features declare and grants each its default roles, once: a default someone removed is not granted again. It is safe on every deploy and exits non-zero only when a default role is missing (`concierge:sync-roles` creates the roles; `starter:first-owner` runs both).
-- **`standards:preflight`, in full, follows the migration**, so `install.tables` now checks that the session, cache, queue and failed-job tables the config uses exist, and a passing run clears the skip. Warning-level checks (mail sender, favicon and the like) are reported and logged as `PREFLIGHT SUMMARY` but never block.
-- **`concierge:owners --workspace=<key>`** keeps the owner named in `CONCIERGE_OWNERS` on that workspace. It is safe on every deploy: it never removes a user or an ownership, and it refuses (non-zero) a missing or unknown workspace, several owners for one workspace, or a different existing owner. It never creates the workspace; your app does. Preview with `--dry-run`, or read `--json`. A new owner gets a set-password link through the password broker, which needs mail and a password-reset route: neither is in the template yet (#24), so until then create the owner with your own reviewed process.
-- **`breadcrumbs:cache`** comes before any route cache: glhd/gretel's breadcrumbs are declared beside the routes, and the cached routes need them cached first. `optimize` runs it too (gretel registers it), so the line is explicit only where the route cache is run on its own.
-- **`optimize`**, and any other cache commands (`config:cache`, `route:cache`, `view:cache`, `event:cache`), come after migrations.
-- **`starter:smoke`** runs last, against the deployed, cached app. The command is tracked in #32 and does not exist yet; leave the line out until it ships.
+That is all. Roles and permissions follow the migration by themselves, so there is no sync line to remember and nothing to run per release.
+
+- **`php artisan migrate --force`** migrates, and when the migrations end (or when there was nothing to migrate) the kit syncs the roles, then the permissions the features declare. The sync is gated by a fingerprint of the catalog (the configured roles and every registered permission with its default roles) kept in `kit_meta`: an unchanged catalog writes nothing, a changed one (a release that adds a permission and no migration) is picked up by the deploy's own migrate, and a fresh database always syncs. A rollback does not sync, and a failing sync fails the migrate, so the deploy stops. Permissions are created once with their default roles: a default someone removed is not granted again.
+- **`php artisan optimize`** comes after the migration and builds every cache: config, routes, views, events, glhd/gretel's breadcrumbs, laravel-data's and the discovered structures, laravel-settings' and tey/mod's discovery. Each registers itself with `optimize` (and `optimize:clear`), so there are no cache lines of their own.
+- **`/up` is the health check**, for monitoring only. Besides Laravel's own, it fails (500) on a missing `APP_KEY`, a missing table the kit needs (and `sessions` with `SESSION_DRIVER=database`) and, in production, `APP_DEBUG` on or unresolved brand placeholders. A pass is remembered for thirty seconds. Nothing deploys on it; a failing `/up` is an alert, not a gate.
+- **`php artisan kit:preflight`** is optional. It is tey/standards' full preflight, with a non-zero exit on a misconfigured production, for a pipeline that wants a blocking gate (run it before or after the two lines). The standard deploy does not need it.
+- **`concierge:owners --workspace=<key>`** keeps the owner named in `CONCIERGE_OWNERS` on that workspace, if the app uses it. It is safe on every deploy: it never removes a user or an ownership, and it refuses (non-zero) a missing or unknown workspace.
 
 ## TLS
 
@@ -29,7 +21,7 @@ TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded schem
 
 ## CI
 
-The **Deploy order (PostgreSQL)** job runs this order on every pull request: a `--no-dev` install in production mode with throwaway secrets, the asset build, the gate preflight, `migrate --force` against a fresh PostgreSQL 17, the full preflight and `optimize`. It leaves out `concierge:owners`, which needs an existing workspace, and `starter:smoke`, which doesn't exist yet.
+The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, and `/up` answers 200.
 
 ## Avatars and media
 
