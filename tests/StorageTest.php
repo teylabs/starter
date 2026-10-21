@@ -3,9 +3,11 @@
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as FlysystemAdapter;
+use Tests\Concerns\Template;
 use Tests\TestCase;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/Template.php';
 require_once __DIR__.'/TestCase.php';
 
 /** The private s3 disk builds on the S3 adapter from Laravel Cloud's bucket variables, and media is stored on it. Nothing is sent. */
@@ -53,6 +55,8 @@ final class StorageTest extends TestCase
         $this->assertSame('local', config('media-library.disk_name'));
         $this->assertSame('local', config('filesystems.disks.local.driver'));
         $this->assertSame('private', config('filesystems.disks.s3.visibility'));
-        $this->assertStringContainsString('MEDIA_DISK=local', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        if (Template::isTemplate()) {
+            $this->assertStringContainsString('MEDIA_DISK=local', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        }
     }
 }

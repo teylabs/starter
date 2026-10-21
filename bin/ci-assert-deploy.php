@@ -37,7 +37,7 @@ foreach (['bootstrap/cache/config.php', 'bootstrap/cache/routes-v7.php'] as $cac
 if (! app(Cache::class)->exists()) {
     $fail('breadcrumbs not cached');
 }
-$status = app(Illuminate\Contracts\Http\Kernel::class)->handle(Request::create('/up'))->getStatusCode();
+$status = app(Illuminate\Contracts\Http\Kernel::class)->handle(Request::create(rtrim((string) config('app.url'), '/').'/up'))->getStatusCode();
 if ($status !== 200) {
     $fail('/up answered '.$status);
 }

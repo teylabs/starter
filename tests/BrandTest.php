@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification as Notifications;
 use Illuminate\Support\Str;
 use Tests\Concerns\DefaultBrand;
+use Tests\Concerns\Template;
 use Tests\TestCase;
 use Tey\Kit\Brand;
 use Tey\Kit\BrandAssets;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/Template.php';
 require_once __DIR__.'/TestCase.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
 
@@ -80,16 +82,25 @@ final class BrandTest extends TestCase
 
     public function test_the_committed_placeholders_are_current_and_linked_in_the_head(): void
     {
-        // The template's placeholders are checked while the app still uses the template's mark and accent. An app's own brand makes its own assets: `kit:brand --check` checks those.
-        $defaults = self::packageBrandDefaults();
-        if (($this->appBrand['logomark'] ?? null) !== $defaults['logomark'] || ($this->appBrand['accent'] ?? null) !== $defaults['accent']) {
-            $this->markTestSkipped('This app has its own brand; its generated assets are checked by kit:brand --check.');
+        // In the template the committed placeholders must match a fresh render. In an app they are its own; kit:brand --check checks their freshness.
+        if (! Template::isTemplate()) {
+            // An app: its own assets exist and are linked; their freshness is kit:brand --check's job, run with the app's real brand.
+            foreach (BrandAssets::FILES as $file) {
+                $this->assertFileExists(public_path($file));
+                $this->assertGreaterThan(0, filesize(public_path($file)), $file);
+            }
+            $this->assertStringContainsString('rel="icon" href="'.asset('favicon.svg').'" type="image/svg+xml"', $this->get('/login')->assertOk()->getContent());
+
+            return;
         }
         foreach (BrandAssets::FILES as $file) {
             $this->assertFileExists(public_path($file));
             $this->assertGreaterThan(0, filesize(public_path($file)), $file);
         }
-        if (BrandAssets::renderer() !== null) {
+        // In the template run with an app brand in the environment (composer test:brand-env), the committed files are still the template's.
+        $defaults = self::packageBrandDefaults();
+        $templateBrand = ($this->appBrand['logomark'] ?? null) === $defaults['logomark'] && ($this->appBrand['accent'] ?? null) === $defaults['accent'];
+        if ($templateBrand && BrandAssets::renderer() !== null) {
             // Not the social image: its text uses whichever font the machine has.
             $rendered = BrandAssets::fromConfig()->render();
             foreach (['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'mail-mark.png'] as $file) {
@@ -200,7 +211,9 @@ final class BrandTest extends TestCase
         $this->assertNotContains('brand.legal_name', Brand::placeholders());
         $this->assertNotContains('brand.terms_url', Brand::placeholders());
         $this->assertNotContains('brand.privacy_email', Brand::placeholders());
-        $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        if (Template::isTemplate()) {
+            $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        }
     }
 
     public function test_the_web_footer_is_identity_credit_and_legal_links_without_a_copyright_sign(): void

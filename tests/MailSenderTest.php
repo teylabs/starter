@@ -2,14 +2,19 @@
 
 use Dotenv\Dotenv;
 use PHPUnit\Framework\TestCase;
+use Tests\Concerns\Template;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/Template.php';
 
 /** The template's .env.example names the mail sender after the app, so a renamed app does not send as "Example". */
 final class MailSenderTest extends TestCase
 {
     public function test_the_mail_sender_follows_the_app_name(): void
     {
+        if (! Template::isTemplate()) {
+            $this->markTestSkipped('Checks the template\'s own .env.example; an app sets its own sender.');
+        }
         // The example's own values, with the app renamed, in a fresh process: the environment the app boots in. (This process has
         // already loaded the developer's own .env, which would win over anything set here.)
         $contents = (string) file_get_contents(dirname(__DIR__).'/.env.example');

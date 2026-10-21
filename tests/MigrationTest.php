@@ -5,6 +5,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\PermissionRegistrar;
+use Tests\Concerns\Template;
 use Tests\TestCase;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Concierge;
@@ -15,6 +16,7 @@ use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/Template.php';
 require_once __DIR__.'/TestCase.php';
 
 final class MigrationTest extends TestCase
@@ -62,7 +64,9 @@ final class MigrationTest extends TestCase
             'update_concierge_invitations_with_message',
         ], $migrations);
         // A fresh install keeps sessions in the database, with the table in place: the security page lists devices out of the box.
-        $this->assertSame('database', Dotenv\Dotenv::parse((string) file_get_contents(base_path('.env.example')))['SESSION_DRIVER'] ?? null);
+        if (Template::isTemplate()) {
+            $this->assertSame('database', Dotenv\Dotenv::parse((string) file_get_contents(base_path('.env.example')))['SESSION_DRIVER'] ?? null);
+        }
         $this->assertTrue(Schema::hasTable('sessions'));
         $this->assertStringContainsString('artisan migrate', (string) file_get_contents(base_path('bin/setup.php')));
         $this->assertSame(0, app(Kernel::class)->call('migrate', ['--force' => true]));
