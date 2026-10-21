@@ -68,7 +68,8 @@ final class KitUiTest extends TestCase
         // Every page roots in <Page>; the default is full, for lists, tables and grids that grow with data. A page whose content does not
         // grow (forms, settings sections, detail and confirmation pages, empty states, account and guest pages) declares a focused width
         // (`<Page sm>`). Add a page to $full only when it is a full data page.
-        $full = ['resources/js/pages/Workspace/Dashboard/Page.vue'];
+        // The placeholder takes the width the real page will have from its registration (full by default), so it binds every width instead of declaring one.
+        $full = ['resources/js/pages/Workspace/Dashboard/Page.vue', 'resources/js/pages/Workspace/Placeholder/Page.vue'];
         $checked = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js/pages', FilesystemIterator::SKIP_DOTS)) as $file) {
             $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);

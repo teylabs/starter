@@ -40,8 +40,8 @@ final class SettingsLandingTest extends TestCase
     {
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
-        $general = ['key' => 'general', 'label' => 'General', 'description' => 'The workspace display name and timezone.', 'icon' => 'sliders-horizontal', 'url' => '/settings/general'];
-        $people = ['key' => 'people', 'label' => 'People', 'description' => 'Who belongs to this workspace, their roles, and who is invited.', 'icon' => 'users', 'url' => '/settings/people'];
+        $general = ['key' => 'general', 'label' => 'General', 'description' => 'The workspace display name and timezone.', 'icon' => 'sliders-horizontal', 'badge' => null, 'url' => '/settings/general'];
+        $people = ['key' => 'people', 'label' => 'People', 'description' => 'Who belongs to this workspace, their roles, and who is invited.', 'icon' => 'users', 'badge' => null, 'url' => '/settings/people'];
         $this->get('/@alpha/settings', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
             // One "Workspace" group for the workspace's sections (a group never repeats a lone item's label); each carries its lucide icon.
             ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $people]]]);
@@ -57,7 +57,7 @@ final class SettingsLandingTest extends TestCase
         $this->postJson('/logout')->assertNoContent();
         $this->signIn(3);
         $this->get('/@alpha/settings', $this->inertia())->assertOk()
-            ->assertJsonPath('props.groups.1.sections', [$general, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
+            ->assertJsonPath('props.groups.1.sections', [$general, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'badge' => null, 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
     }
 
     public function test_each_section_has_its_own_page_in_both_url_forms(): void
@@ -82,7 +82,7 @@ final class SettingsLandingTest extends TestCase
         require dirname(__DIR__).'/database/fixture.php';
         $this->signIn(1);
         $this->get('/me', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
-            ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'url' => '/me/workspaces']]]])
+            ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'badge' => null, 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'badge' => null, 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'badge' => null, 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'badge' => null, 'url' => '/me/workspaces']]]])
             ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Account', 'url' => '/me', 'current' => true, 'home' => false]]);
         $this->getJson('/me')->assertOk()->assertJsonPath('sections.3.key', 'workspaces');
         $this->postJson('/logout')->assertNoContent();

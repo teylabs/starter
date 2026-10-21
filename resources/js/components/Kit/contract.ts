@@ -14,6 +14,9 @@ export interface InputProps { invalid?: boolean }
  */
 export interface AlertProps { variant?: 'info' | 'success' | 'warning' | 'danger' | 'primary' | 'brand' | 'muted'; tier?: 'pale' | 'solid'; title?: string; icon?: boolean; live?: 'none' | 'status' | 'alert'; dismissible?: boolean; dismiss?: { url: string; method?: 'post' | 'put' | 'patch' | 'delete' } | null }
 
+/** A page that is not built yet: `description` says what it will do, `milestone` (words only) renders "Planned for {milestone}", `links` are descriptors. A plain region, no live role. */
+export interface PlaceholderProps { description: string; milestone?: string | null; links?: { label: string; url: string }[] }
+
 /** A multi-line input (`v-model`: string), as Input. */
 export interface TextareaProps { invalid?: boolean }
 

@@ -15,7 +15,7 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
                     <Link :href="section.url" class="flex h-full gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors hover:border-ring hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-settings-card>
                         <span class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"><SectionIcon :name="section.icon" /></span>
                         <span class="flex min-w-0 flex-col">
-                            <span class="text-sm font-medium">{{ section.label }}</span>
+                            <span class="flex items-center gap-2 text-sm font-medium">{{ section.label }}<span v-if="section.badge" class="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground" data-planned-tag>{{ section.badge }}</span></span>
                             <span class="text-sm text-muted-foreground">{{ section.description }}</span>
                         </span>
                     </Link>

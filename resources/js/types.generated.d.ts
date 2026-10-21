@@ -338,6 +338,14 @@ label: string,
 readonly invite_link: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
+export type PlaceholderViewModel = {
+readonly title: string,
+readonly description: string,
+readonly milestone: string | null,
+readonly links: undefined[],
+readonly width: string | null,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
 export type ProfileViewModel = {
 readonly title: string,
 readonly name: string,
@@ -364,6 +372,7 @@ key: string,
 label: string,
 description: string,
 icon: string,
+badge: string | null,
 url: string,
 }[],
 }[],

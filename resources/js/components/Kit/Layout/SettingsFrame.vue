@@ -7,7 +7,7 @@ import SectionIcon from './SectionIcon.vue';
  * one being shown marked aria-current, and the page in the default slot on the right. On a phone the sidebar is a list at the top. It reads the page's
  * `layout.navigation` (decided on the server, current state included); with none there is no sidebar and the content stands alone.
  */
-type Item = { label: string; url: string; current: boolean; icon?: string | null };
+type Item = { label: string; url: string; current: boolean; icon?: string | null; badge?: string | null };
 type Group = { label: string | null; items: Item[] };
 const page = usePage<{ layout?: { navigation: Group[] } }>();
 </script>
@@ -21,6 +21,7 @@ const page = usePage<{ layout?: { navigation: Group[] } }>();
                         <Link :href="item.url" :aria-current="item.current ? 'page' : undefined" class="flex min-h-9 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-[current=page]:bg-accent aria-[current=page]:font-medium aria-[current=page]:text-foreground">
                             <SectionIcon :name="item.icon ?? undefined" class="size-4" />
                             {{ item.label }}
+                            <span v-if="item.badge" class="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground" data-planned-tag>{{ item.badge }}</span>
                         </Link>
                     </li>
                 </ul>
