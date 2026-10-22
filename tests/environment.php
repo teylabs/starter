@@ -17,7 +17,9 @@ if ($selected === 'pgsql' && (getenv('DB_DATABASE') ?: '') === '') {
 $token = getenv('TEST_TOKEN') ?: '';
 // Each PostgreSQL worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use.
 if ($token !== '' && $selected === 'pgsql') {
-    $database = getenv('DB_DATABASE').'_w'.preg_replace('/[^a-zA-Z0-9_]/', '_', $token);
+    $suffix = '_w'.preg_replace('/[^a-zA-Z0-9_]/', '_', $token);
+    // A worker boots this file more than once: add the suffix only once.
+    $database = str_ends_with((string) getenv('DB_DATABASE'), $suffix) ? (string) getenv('DB_DATABASE') : getenv('DB_DATABASE').$suffix;
     $dsn = 'pgsql:host='.(getenv('DB_HOST') ?: '127.0.0.1').';port='.(getenv('DB_PORT') ?: '5432').';dbname=postgres';
     $pdo = new PDO($dsn, getenv('DB_USERNAME') ?: 'root', getenv('DB_PASSWORD') ?: '');
     $exists = $pdo->prepare('select 1 from pg_database where datname = ?');
