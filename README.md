@@ -20,19 +20,19 @@ From a fresh clone (or `laravel new app --using=tey/starter` once the template i
 
 ```sh
 vendor/bin/pint --test
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 composer test:browser
 npm run typecheck && npm run build && npm test
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `phpunit` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
+The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `pest` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
 
 ```sh
 createdb starter_test   # a disposable database: the tests wipe it
 export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 ```
 

@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Tests\TestCase;
 use Tey\Concierge\Actions\AcceptInvitation;
 use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Concierge;
@@ -17,337 +16,319 @@ use Tey\Concierge\Support\GrantSet;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
-require dirname(__DIR__).'/vendor/autoload.php';
-require_once __DIR__.'/TestCase.php';
-
-/** Settings › People: the members and open invitations, invite, change role, remove, resend and revoke, with Concierge's rules enforced on the server. */
-final class PeopleTest extends TestCase
+beforeEach(function () {
+    config(['app.name' => 'Product name']);
+});
+function peopleInertia(): array
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        config(['app.name' => 'Product name']);
-    }
+    return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
+}
+function peopleSignIn(int $id): void
+{
+    Auth::forgetGuards();
+    $password = Str::random(40);
+    User::findOrFail($id)->update(['password' => Hash::make($password)]);
+    test()->postJson('/login', ['email' => 'actor'.$id.'@example.test', 'password' => $password])->assertOk();
+    test()->withCookie(config('session.cookie'), app('session')->getId());
+    Auth::forgetGuards();
+}
+function peopleSignOut(): void
+{
+    test()->postJson('/logout')->assertNoContent();
+    test()->flushSession();
+}
+function peopleMembership(int $workspace, int $user): Membership
+{
+    return Membership::query()->where('workspace_id', $workspace)->where('user_id', $user)->firstOrFail();
+}
+function peoplePeople(string $query = ''): array
+{
+    return test()->getJson('/@alpha/settings/people'.$query)->assertOk()->json();
+}
+/** @return list<array<string, mixed>> */
+function peopleRows(string $query = ''): array
+{
+    return peoplePeople($query)['table']['rows'];
+}
+function peopleNames(array $rows): array
+{
+    return array_column(array_column($rows, 'member'), 'name');
+}
+/** @return list<?string> the keys of the actions a row carries, by row */
+function peopleActionKeys(array $rows): array
+{
+    return array_map(fn (array $row) => implode(',', array_column($row['actions'], 'key')) ?: null, $rows);
+}
+test('the owner sees the members and the pending invitations', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    $page = $this->get('/@alpha/settings/people', peopleInertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')
+        ->assertJsonPath('props.title', 'People')->assertJsonPath('props.layout.breadcrumbs.2.label', 'People')->assertJsonPath('props.layout.documentTitle', 'People · Settings · Product name')->json('props');
+    $rows = $page['table']['rows'];
+    expect($page['tab'])->toBe('members');
+    expect(peopleNames($rows))->toBe(['Alpha', 'Viewer']);
+    expect(array_map(fn (array $row) => $row['roles'][0]['label'], $rows))->toBe(['Owner', 'Viewer']);
+    expect(peopleActionKeys($rows))->toBe([null, 'change-role,transfer-ownership,remove'], 'the owner has no actions; the viewer can be re-roled, made owner and removed (Concierge decides, by rank)');
+    expect(array_map(fn (array $row) => $row['member']['is_you'], $rows))->toBe([true, false]);
+    expect($rows[0]['member']['avatar'])->toBeNull();
+    expect($rows[1]['joined'])->not->toBeNull();
+    expect(array_column($rows[1]['actions'], 'method'))->toBe(['put', 'post', 'delete']);
+    expect($rows[1]['actions'][0]['confirm'])->toBeNull('a role change does not ask');
+    expect($rows[1]['actions'][2]['confirm']['label'])->toBe('Remove member', 'removing asks first');
+    expect($rows[1]['actions'][2]['destructive'])->toBeTrue();
 
-    private function inertia(): array
-    {
-        return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
-    }
+    // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
+    expect(array_column($page['roles'], 'value'))->toBe(['admin', 'viewer']);
+    expect($page['invite']['label'])->toBe('Invite member');
+    expect($page['invite']['method'])->toBe('get');
+    $this->post('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'admin'], ['Accept' => 'application/json'])->assertCreated();
+    $invitations = peoplePeople('?tab=invitations');
+    expect(array_map(fn (array $row): array => [$row['email'], $row['roles'][0]['label']], $invitations['table']['rows']))->toBe([['new@example.test', 'Admin']]);
+    expect(peopleActionKeys($invitations['table']['rows']))->toBe(['resend,revoke']);
 
-    private function signIn(int $id): void
-    {
-        Auth::forgetGuards();
-        $password = Str::random(40);
-        User::findOrFail($id)->update(['password' => Hash::make($password)]);
-        $this->postJson('/login', ['email' => 'actor'.$id.'@example.test', 'password' => $password])->assertOk();
-        $this->withCookie(config('session.cookie'), app('session')->getId());
-        Auth::forgetGuards();
-    }
+    // Search and sort are the server's, through the query string, and come back in the table.
+    $this->getJson('/@alpha/settings/people?filter[search]=view')->assertJsonCount(1, 'table.rows')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.search', 'view');
+    $this->getJson('/@alpha/settings/people?sort=-name')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.sort.direction', 'desc');
+    $this->getJson('/@alpha/settings/people?sort=password')->assertStatus(400);
 
-    private function signOut(): void
-    {
-        $this->postJson('/logout')->assertNoContent();
-        $this->flushSession();
-    }
+    // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
+    $keys = array_column($this->get('/@alpha/settings', peopleInertia())->json('props.groups.0.sections'), 'key');
+    expect($keys)->toBe(['general', 'people']);
+});
+test('a viewer is refused and does not see the section', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(3);
+    $this->getJson('/@alpha/settings/people')->assertForbidden();
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'x@example.test', 'role' => 'viewer'])->assertForbidden();
+    $owner = peopleMembership(1, 1);
+    $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
+    $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
+    expect(peopleMembership(1, 1)->fresh()->status)->toBe(MembershipStatus::Active);
+    $keys = array_column($this->get('/@alpha/settings', peopleInertia())->json('props.groups.0.sections'), 'key');
+    expect($keys)->not->toContain('people');
+    $this->assertArrayNotHasKey('can', $this->get('/@alpha/settings/general', peopleInertia())->json('props'));
+});
+test('invite resend and revoke', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'New@Example.test', 'role' => 'viewer'])->assertCreated()->assertJsonPath('email', 'new@example.test');
 
-    private function membership(int $workspace, int $user): Membership
-    {
-        return Membership::query()->where('workspace_id', $workspace)->where('user_id', $user)->firstOrFail();
-    }
+    // Already pending, already a member, an unknown or ungrantable role, and a bad address are all refused.
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'viewer'])->assertUnprocessable()->assertJsonValidationErrors('email');
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'actor3@example.test', 'role' => 'viewer'])->assertUnprocessable()->assertJsonValidationErrors('email');
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'owner'])->assertForbidden();
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'nonsense'])->assertForbidden();
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'not-an-email', 'role' => 'viewer'])->assertUnprocessable();
+    $id = peopleRows('?tab=invitations')[0]['id'];
 
-    private function people(string $query = ''): array
-    {
-        return $this->getJson('/@alpha/settings/people'.$query)->assertOk()->json();
-    }
+    // Resend is Concierge's: a fresh link, after its cooldown.
+    $resent = $this->putJson('/@alpha/settings/people/invitations/'.$id);
+    expect([200, 403])->toContain($resent->getStatusCode());
+    $this->deleteJson('/@alpha/settings/people/invitations/'.$id)->assertOk()->assertJsonPath('revoked', true);
+    expect(peopleRows('?tab=invitations'))->toBe([]);
+    expect(Invitation::query()->where('public_id', $id)->firstOrFail()->status)->toBe(InvitationStatus::Revoked);
 
-    /** @return list<array<string, mixed>> */
-    private function rows(string $query = ''): array
-    {
-        return $this->people($query)['table']['rows'];
-    }
+    // An invitation of another workspace is not found here.
+    peopleSignOut();
+    peopleSignIn(2);
+    $this->postJson('/@beta/settings/people/invitations', ['email' => 'b@example.test', 'role' => 'viewer'])->assertCreated();
+    $other = Invitation::query()->where('workspace_id', 2)->firstOrFail();
+    peopleSignOut();
+    peopleSignIn(1);
+    $this->deleteJson('/@alpha/settings/people/invitations/'.$other->public_id)->assertNotFound();
+});
+test('change role and remove', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    $viewer = peopleMembership(1, 3);
+    $url = '/@alpha/settings/people/members/'.$viewer->id;
+    $this->putJson($url, ['role' => 'admin'])->assertOk()->assertJsonPath('role', 'admin');
+    expect(array_map(fn (array $row) => $row['roles'][0]['label'], peopleRows()))->toBe(['Owner', 'Admin']);
+    $this->putJson($url, ['role' => 'owner'])->assertForbidden();
+    $this->putJson($url, ['role' => 'nonsense'])->assertForbidden();
+    $this->putJson($url, [])->assertUnprocessable();
 
-    private function names(array $rows): array
-    {
-        return array_column(array_column($rows, 'member'), 'name');
-    }
+    // A membership of another workspace is not found here.
+    $this->putJson('/@alpha/settings/people/members/'.peopleMembership(2, 2)->id, ['role' => 'viewer'])->assertNotFound();
+    $this->deleteJson($url)->assertOk()->assertJsonPath('removed', true);
+    expect($viewer->fresh()->status)->toBe(MembershipStatus::Removed);
+    expect(peopleNames(peopleRows()))->toBe(['Alpha']);
 
-    /** @return list<?string> the keys of the actions a row carries, by row */
-    private function actionKeys(array $rows): array
-    {
-        return array_map(fn (array $row) => implode(',', array_column($row['actions'], 'key')) ?: null, $rows);
-    }
+    // The removed user no longer reaches the workspace.
+    peopleSignOut();
+    peopleSignIn(3);
+    expect([403, 404])->toContain($this->getJson('/@alpha/settings/people')->getStatusCode());
+});
+test('the last owner cannot be removed or demoted and ranks are respected', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    $owner = peopleMembership(1, 1);
 
-    public function test_the_owner_sees_the_members_and_the_pending_invitations(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $page = $this->get('/@alpha/settings/people', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')
-            ->assertJsonPath('props.title', 'People')->assertJsonPath('props.layout.breadcrumbs.2.label', 'People')->assertJsonPath('props.layout.documentTitle', 'People · Settings · Product name')->json('props');
-        $rows = $page['table']['rows'];
-        $this->assertSame('members', $page['tab']);
-        $this->assertSame(['Alpha', 'Viewer'], $this->names($rows));
-        $this->assertSame(['Owner', 'Viewer'], array_map(fn (array $row) => $row['roles'][0]['label'], $rows));
-        $this->assertSame([null, 'change-role,transfer-ownership,remove'], $this->actionKeys($rows), 'the owner has no actions; the viewer can be re-roled, made owner and removed (Concierge decides, by rank)');
-        $this->assertSame([true, false], array_map(fn (array $row) => $row['member']['is_you'], $rows));
-        $this->assertNull($rows[0]['member']['avatar']);
-        $this->assertNotNull($rows[1]['joined']);
-        $this->assertSame(['put', 'post', 'delete'], array_column($rows[1]['actions'], 'method'));
-        $this->assertNull($rows[1]['actions'][0]['confirm'], 'a role change does not ask');
-        $this->assertSame('Remove member', $rows[1]['actions'][2]['confirm']['label'], 'removing asks first');
-        $this->assertTrue($rows[1]['actions'][2]['destructive']);
-        // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
-        $this->assertSame(['admin', 'viewer'], array_column($page['roles'], 'value'));
-        $this->assertSame('Invite member', $page['invite']['label']);
-        $this->assertSame('get', $page['invite']['method']);
-        $this->post('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'admin'], ['Accept' => 'application/json'])->assertCreated();
-        $invitations = $this->people('?tab=invitations');
-        $this->assertSame([['new@example.test', 'Admin']], array_map(fn (array $row): array => [$row['email'], $row['roles'][0]['label']], $invitations['table']['rows']));
-        $this->assertSame(['resend,revoke'], $this->actionKeys($invitations['table']['rows']));
-        // Search and sort are the server's, through the query string, and come back in the table.
-        $this->getJson('/@alpha/settings/people?filter[search]=view')->assertJsonCount(1, 'table.rows')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.search', 'view');
-        $this->getJson('/@alpha/settings/people?sort=-name')->assertJsonPath('table.rows.0.member.name', 'Viewer')->assertJsonPath('table.sort.direction', 'desc');
-        $this->getJson('/@alpha/settings/people?sort=password')->assertStatus(400);
-        // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
-        $keys = array_column($this->get('/@alpha/settings', $this->inertia())->json('props.groups.0.sections'), 'key');
-        $this->assertSame(['general', 'people'], $keys);
-    }
+    // The owner cannot manage their own membership, so the only owner can neither leave nor be demoted through the list.
+    $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
+    $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
+    expect(app(Concierge::class)->roleNames($owner->fresh()))->toBe(['owner']);
+    expect($owner->fresh()->status)->toBe(MembershipStatus::Active);
 
-    public function test_a_viewer_is_refused_and_does_not_see_the_section(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(3);
-        $this->getJson('/@alpha/settings/people')->assertForbidden();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'x@example.test', 'role' => 'viewer'])->assertForbidden();
-        $owner = $this->membership(1, 1);
-        $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
-        $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
-        $this->assertSame(MembershipStatus::Active, $this->membership(1, 1)->fresh()->status);
-        $keys = array_column($this->get('/@alpha/settings', $this->inertia())->json('props.groups.0.sections'), 'key');
-        $this->assertNotContains('people', $keys);
-        $this->assertArrayNotHasKey('can', $this->get('/@alpha/settings/general', $this->inertia())->json('props'));
+    // An admin manages people below them: Concierge's rank rules still stop them touching the owner (or another admin).
+    $this->putJson('/@alpha/settings/people/members/'.peopleMembership(1, 3)->id, ['role' => 'admin'])->assertOk();
+    peopleSignOut();
+    peopleSignIn(3);
+    $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
+    expect(peopleActionKeys($page['table']['rows']))->toBe([null, null], 'an admin has no action on the owner, or on themselves');
+    expect(array_column($page['roles'], 'value'))->toBe(['viewer'], 'an admin grants viewer only');
+    expect($page['invite']['method'])->toBe('get');
+    $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
+    $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
+    expect(app(Concierge::class)->roleNames($owner->fresh()))->toBe(['owner']);
+    expect($owner->fresh()->status)->toBe(MembershipStatus::Active);
+});
+test('an admin can invite and remove a viewer but not change an owner or another admin', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    foreach ([4 => 'admin', 5 => 'viewer'] as $id => $role) {
+        User::create(['id' => $id, 'name' => 'Person '.$id, 'email' => 'actor'.$id.'@example.test', 'email_verified_at' => now()]);
+        $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor'.$id.'@example.test', new GrantSet([$role]));
+        AcceptInvitation::run(User::findOrFail($id), $invite->token);
     }
+    peopleSignIn(1);
+    $this->putJson('/@alpha/settings/people/members/'.peopleMembership(1, 3)->id, ['role' => 'admin'])->assertOk();
+    peopleSignOut();
+    peopleSignIn(3);
 
-    public function test_invite_resend_and_revoke(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'New@Example.test', 'role' => 'viewer'])->assertCreated()->assertJsonPath('email', 'new@example.test');
-        // Already pending, already a member, an unknown or ungrantable role, and a bad address are all refused.
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'new@example.test', 'role' => 'viewer'])->assertUnprocessable()->assertJsonValidationErrors('email');
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'actor3@example.test', 'role' => 'viewer'])->assertUnprocessable()->assertJsonValidationErrors('email');
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'owner'])->assertForbidden();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'o@example.test', 'role' => 'nonsense'])->assertForbidden();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'not-an-email', 'role' => 'viewer'])->assertUnprocessable();
-        $id = $this->rows('?tab=invitations')[0]['id'];
-        // Resend is Concierge's: a fresh link, after its cooldown.
-        $resent = $this->putJson('/@alpha/settings/people/invitations/'.$id);
-        $this->assertContains($resent->getStatusCode(), [200, 403], 'resent, or held by the cooldown');
-        $this->deleteJson('/@alpha/settings/people/invitations/'.$id)->assertOk()->assertJsonPath('revoked', true);
-        $this->assertSame([], $this->rows('?tab=invitations'));
-        $this->assertSame(InvitationStatus::Revoked, Invitation::query()->where('public_id', $id)->firstOrFail()->status);
-        // An invitation of another workspace is not found here.
-        $this->signOut();
-        $this->signIn(2);
-        $this->postJson('/@beta/settings/people/invitations', ['email' => 'b@example.test', 'role' => 'viewer'])->assertCreated();
-        $other = Invitation::query()->where('workspace_id', 2)->firstOrFail();
-        $this->signOut();
-        $this->signIn(1);
-        $this->deleteJson('/@alpha/settings/people/invitations/'.$other->public_id)->assertNotFound();
+    // An admin invites a viewer, and removes one.
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'fresh@example.test', 'role' => 'viewer'])->assertCreated();
+    $viewer = peopleMembership(1, 5);
+    $this->deleteJson('/@alpha/settings/people/members/'.$viewer->id)->assertOk();
+    expect($viewer->fresh()->status)->toBe(MembershipStatus::Removed);
+
+    // They cannot grant admin or owner, change the owner, or manage another admin (equal rank).
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'admin'])->assertForbidden();
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'owner'])->assertForbidden();
+    $owner = peopleMembership(1, 1);
+    $otherAdmin = peopleMembership(1, 4);
+    foreach ([$owner, $otherAdmin] as $target) {
+        $this->putJson('/@alpha/settings/people/members/'.$target->id, ['role' => 'viewer'])->assertForbidden();
+        $this->deleteJson('/@alpha/settings/people/members/'.$target->id)->assertForbidden();
     }
+    expect(app(Concierge::class)->roleNames($owner->fresh()))->toBe(['owner']);
+    expect(app(Concierge::class)->roleNames($otherAdmin->fresh()))->toBe(['admin']);
 
-    public function test_change_role_and_remove(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $viewer = $this->membership(1, 3);
-        $url = '/@alpha/settings/people/members/'.$viewer->id;
-        $this->putJson($url, ['role' => 'admin'])->assertOk()->assertJsonPath('role', 'admin');
-        $this->assertSame(['Owner', 'Admin'], array_map(fn (array $row) => $row['roles'][0]['label'], $this->rows()));
-        $this->putJson($url, ['role' => 'owner'])->assertForbidden();
-        $this->putJson($url, ['role' => 'nonsense'])->assertForbidden();
-        $this->putJson($url, [])->assertUnprocessable();
-        // A membership of another workspace is not found here.
-        $this->putJson('/@alpha/settings/people/members/'.$this->membership(2, 2)->id, ['role' => 'viewer'])->assertNotFound();
-        $this->deleteJson($url)->assertOk()->assertJsonPath('removed', true);
-        $this->assertSame(MembershipStatus::Removed, $viewer->fresh()->status);
-        $this->assertSame(['Alpha'], $this->names($this->rows()));
-        // The removed user no longer reaches the workspace.
-        $this->signOut();
-        $this->signIn(3);
-        $this->assertContains($this->getJson('/@alpha/settings/people')->getStatusCode(), [403, 404]);
-    }
+    // The page offers an admin what they may do: remove and re-role only the viewers.
+    expect(peopleActionKeys(peopleRows()))->toBe([null, null, null], 'no viewer is left to act on: the owner, the other admin and themselves have none');
+});
+test('the tabs carry server counts that follow the search and the tab is in the url', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'zed@example.test', 'role' => 'viewer'])->assertCreated();
+    $this->postJson('/@alpha/settings/people/invitations', ['email' => 'amy@example.test', 'role' => 'viewer'])->assertCreated();
+    $page = peoplePeople();
+    expect(array_map(fn (array $tab) => [$tab['key'], $tab['label'], $tab['count'], $tab['current']], $page['table']['tabs']))->toBe([['members', 'Members', 2, true], ['invitations', 'Invitations', 2, false]]);
+    expect($page['table']['tabs'][1]['url'])->toBe('/settings/people?tab=invitations');
 
-    public function test_the_last_owner_cannot_be_removed_or_demoted_and_ranks_are_respected(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $owner = $this->membership(1, 1);
-        // The owner cannot manage their own membership, so the only owner can neither leave nor be demoted through the list.
-        $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
-        $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
-        $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
-        $this->assertSame(MembershipStatus::Active, $owner->fresh()->status);
-        // An admin manages people below them: Concierge's rank rules still stop them touching the owner (or another admin).
-        $this->putJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id, ['role' => 'admin'])->assertOk();
-        $this->signOut();
-        $this->signIn(3);
-        $page = $this->getJson('/@alpha/settings/people')->assertOk()->json();
-        $this->assertSame([null, null], $this->actionKeys($page['table']['rows']), 'an admin has no action on the owner, or on themselves');
-        $this->assertSame(['viewer'], array_column($page['roles'], 'value'), 'an admin grants viewer only');
-        $this->assertSame('get', $page['invite']['method']);
-        $this->deleteJson('/@alpha/settings/people/members/'.$owner->id)->assertForbidden();
-        $this->putJson('/@alpha/settings/people/members/'.$owner->id, ['role' => 'viewer'])->assertForbidden();
-        $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
-        $this->assertSame(MembershipStatus::Active, $owner->fresh()->status);
-    }
+    // The invitations tab is `?tab=invitations`: its own columns and rows, and the current mark moves.
+    $invitations = peoplePeople('?tab=invitations');
+    expect($invitations['tab'])->toBe('invitations');
+    expect(array_column(peoplePeople('?tab=invitations&sort=email')['table']['rows'], 'email'))->toBe(['amy@example.test', 'zed@example.test']);
+    expect(array_column($invitations['table']['columns'], 'key'))->toBe(['email', 'roles', 'invitedBy', 'sent', 'expires', 'actions']);
+    expect(array_column($invitations['table']['tabs'], 'current'))->toBe([false, true]);
 
-    public function test_an_admin_can_invite_and_remove_a_viewer_but_not_change_an_owner_or_another_admin(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        foreach ([4 => 'admin', 5 => 'viewer'] as $id => $role) {
-            User::create(['id' => $id, 'name' => 'Person '.$id, 'email' => 'actor'.$id.'@example.test', 'email_verified_at' => now()]);
-            $invite = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor'.$id.'@example.test', new GrantSet([$role]));
-            AcceptInvitation::run(User::findOrFail($id), $invite->token);
-        }
-        $this->signIn(1);
-        $this->putJson('/@alpha/settings/people/members/'.$this->membership(1, 3)->id, ['role' => 'admin'])->assertOk();
-        $this->signOut();
-        $this->signIn(3);
-        // An admin invites a viewer, and removes one.
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'fresh@example.test', 'role' => 'viewer'])->assertCreated();
-        $viewer = $this->membership(1, 5);
-        $this->deleteJson('/@alpha/settings/people/members/'.$viewer->id)->assertOk();
-        $this->assertSame(MembershipStatus::Removed, $viewer->fresh()->status);
-        // They cannot grant admin or owner, change the owner, or manage another admin (equal rank).
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'admin'])->assertForbidden();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'second@example.test', 'role' => 'owner'])->assertForbidden();
-        $owner = $this->membership(1, 1);
-        $otherAdmin = $this->membership(1, 4);
-        foreach ([$owner, $otherAdmin] as $target) {
-            $this->putJson('/@alpha/settings/people/members/'.$target->id, ['role' => 'viewer'])->assertForbidden();
-            $this->deleteJson('/@alpha/settings/people/members/'.$target->id)->assertForbidden();
-        }
-        $this->assertSame(['owner'], app(Concierge::class)->roleNames($owner->fresh()));
-        $this->assertSame(['admin'], app(Concierge::class)->roleNames($otherAdmin->fresh()));
-        // The page offers an admin what they may do: remove and re-role only the viewers.
-        $this->assertSame([null, null, null], $this->actionKeys($this->rows()), 'no viewer is left to act on: the owner, the other admin and themselves have none');
-    }
+    // Counts follow the search: "zed" matches one invitation and no member, and the tab links keep the search.
+    $searched = peoplePeople('?tab=invitations&filter[search]=zed');
+    expect(array_column($searched['table']['rows'], 'email'))->toBe(['zed@example.test']);
+    expect(array_column($searched['table']['tabs'], 'count'))->toBe([0, 1]);
+    $this->assertStringContainsString('filter%5Bsearch%5D=zed', $searched['table']['tabs'][0]['url']);
+    $this->getJson('/@alpha/settings/people?tab=nonsense')->assertStatus(400);
 
-    public function test_the_tabs_carry_server_counts_that_follow_the_search_and_the_tab_is_in_the_url(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'zed@example.test', 'role' => 'viewer'])->assertCreated();
-        $this->postJson('/@alpha/settings/people/invitations', ['email' => 'amy@example.test', 'role' => 'viewer'])->assertCreated();
-        $page = $this->people();
-        $this->assertSame([['members', 'Members', 2, true], ['invitations', 'Invitations', 2, false]], array_map(fn (array $tab) => [$tab['key'], $tab['label'], $tab['count'], $tab['current']], $page['table']['tabs']));
-        $this->assertSame('/settings/people?tab=invitations', $page['table']['tabs'][1]['url']);
-        // The invitations tab is `?tab=invitations`: its own columns and rows, and the current mark moves.
-        $invitations = $this->people('?tab=invitations');
-        $this->assertSame('invitations', $invitations['tab']);
-        $this->assertSame(['amy@example.test', 'zed@example.test'], array_column($this->people('?tab=invitations&sort=email')['table']['rows'], 'email'));
-        $this->assertSame(['email', 'roles', 'invitedBy', 'sent', 'expires', 'actions'], array_column($invitations['table']['columns'], 'key'));
-        $this->assertSame([false, true], array_column($invitations['table']['tabs'], 'current'));
-        // Counts follow the search: "zed" matches one invitation and no member, and the tab links keep the search.
-        $searched = $this->people('?tab=invitations&filter[search]=zed');
-        $this->assertSame(['zed@example.test'], array_column($searched['table']['rows'], 'email'));
-        $this->assertSame([0, 1], array_column($searched['table']['tabs'], 'count'));
-        $this->assertStringContainsString('filter%5Bsearch%5D=zed', $searched['table']['tabs'][0]['url']);
-        $this->getJson('/@alpha/settings/people?tab=nonsense')->assertStatus(400);
-        // Sorting an invitations column is honoured; a members-only sort is refused there.
-        $this->assertSame(['zed@example.test', 'amy@example.test'], array_column($this->people('?tab=invitations&sort=-email')['table']['rows'], 'email'));
-        $this->getJson('/@alpha/settings/people?tab=invitations&sort=joined')->assertStatus(400);
-        $this->getJson('/@alpha/settings/people?filter[nonsense]=1')->assertStatus(400);
-    }
+    // Sorting an invitations column is honoured; a members-only sort is refused there.
+    expect(array_column(peoplePeople('?tab=invitations&sort=-email')['table']['rows'], 'email'))->toBe(['zed@example.test', 'amy@example.test']);
+    $this->getJson('/@alpha/settings/people?tab=invitations&sort=joined')->assertStatus(400);
+    $this->getJson('/@alpha/settings/people?filter[nonsense]=1')->assertStatus(400);
+});
+test('the empty states are decided by the server and the page is capped', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    expect(peoplePeople('?tab=invitations')['table']['emptyState'])->toBe('first-use');
+    expect(peoplePeople()['table']['emptyState'])->toBeNull();
+    $noResults = peoplePeople('?filter[search]=zzz');
+    expect($noResults['table']['emptyState'])->toBe('no-results');
+    expect($noResults['table']['rows'])->toBe([]);
+    $pagination = peoplePeople('?per_page=1&page=2')['table']['pagination'];
+    expect([$pagination['page'], $pagination['perPage'], $pagination['total'], $pagination['from'], $pagination['to'], $pagination['lastPage']])->toBe([2, 1, 2, 2, 2, 2]);
+    expect(peoplePeople('?per_page=5000')['table']['pagination']['perPage'])->toBe(100);
+});
+test('the table never lists another workspaces people or invitations', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(2);
+    $this->postJson('/@beta/settings/people/invitations', ['email' => 'b-only@example.test', 'role' => 'viewer'])->assertCreated();
+    peopleSignOut();
+    peopleSignIn(1);
+    expect(peopleRows('?tab=invitations'))->toBe([]);
+    expect(peopleNames(peopleRows()))->not->toContain('Beta');
+    expect(array_column(peoplePeople()['table']['tabs'], 'count'))->toBe([2, 0]);
+    $this->getJson('/@alpha/settings/people?filter[search]=b-only')->assertJsonPath('table.tabs.1.count', 0);
+});
+test('the invite and change role modals are server routes with the pages authorisation', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
 
-    public function test_the_empty_states_are_decided_by_the_server_and_the_page_is_capped(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $this->assertSame('first-use', $this->people('?tab=invitations')['table']['emptyState']);
-        $this->assertNull($this->people()['table']['emptyState']);
-        $noResults = $this->people('?filter[search]=zzz');
-        $this->assertSame('no-results', $noResults['table']['emptyState']);
-        $this->assertSame([], $noResults['table']['rows']);
-        $pagination = $this->people('?per_page=1&page=2')['table']['pagination'];
-        $this->assertSame([2, 1, 2, 2, 2, 2], [$pagination['page'], $pagination['perPage'], $pagination['total'], $pagination['from'], $pagination['to'], $pagination['lastPage']]);
-        $this->assertSame(100, $this->people('?per_page=5000')['table']['pagination']['perPage']);
-    }
+    // Opened directly, the modal URL renders People with the modal's data on it; fetched as a modal it is the modal page alone.
+    $direct = $this->get('/@alpha/settings/people/invitations', peopleInertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')->assertJsonPath('props._inertiaui_modal.component', 'Workspace/Settings/People/Invite/Page');
+    expect($direct->json('props._inertiaui_modal.baseUrl'))->toBe('/settings/people');
+    $modal = $this->get('/@alpha/settings/people/invitations', [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Invite/Page');
+    expect(array_column($modal->json('props.roles'), 'value'))->toBe(['admin', 'viewer']);
+    expect([$modal->json('props.submit.label'), $modal->json('props.submit.method')])->toBe(['Send invitation', 'post']);
 
-    public function test_the_table_never_lists_another_workspaces_people_or_invitations(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(2);
-        $this->postJson('/@beta/settings/people/invitations', ['email' => 'b-only@example.test', 'role' => 'viewer'])->assertCreated();
-        $this->signOut();
-        $this->signIn(1);
-        $this->assertSame([], $this->rows('?tab=invitations'));
-        $this->assertNotContains('Beta', $this->names($this->rows()));
-        $this->assertSame([2, 0], array_column($this->people()['table']['tabs'], 'count'));
-        $this->getJson('/@alpha/settings/people?filter[search]=b-only')->assertJsonPath('table.tabs.1.count', 0);
-    }
+    // The opener is the server's descriptor: a GET to the same URL the invitation is posted to.
+    expect(peoplePeople()['invite']['method'])->toBe('get');
 
-    public function test_the_invite_and_change_role_modals_are_server_routes_with_the_pages_authorisation(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        // Opened directly, the modal URL renders People with the modal's data on it; fetched as a modal it is the modal page alone.
-        $direct = $this->get('/@alpha/settings/people/invitations', $this->inertia())->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Page')->assertJsonPath('props._inertiaui_modal.component', 'Workspace/Settings/People/Invite/Page');
-        $this->assertSame('/settings/people', $direct->json('props._inertiaui_modal.baseUrl'));
-        $modal = $this->get('/@alpha/settings/people/invitations', [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/Invite/Page');
-        $this->assertSame(['admin', 'viewer'], array_column($modal->json('props.roles'), 'value'));
-        $this->assertSame(['Send invitation', 'post'], [$modal->json('props.submit.label'), $modal->json('props.submit.method')]);
-        // The opener is the server's descriptor: a GET to the same URL the invitation is posted to.
-        $this->assertSame('get', $this->people()['invite']['method']);
-        // Change role: the member's current role, the roles the viewer may give, and the PUT the existing endpoint takes.
-        $viewer = $this->membership(1, 3);
-        $role = $this->get('/@alpha/settings/people/members/'.$viewer->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/ChangeRole/Page');
-        $this->assertSame(['viewer', 'put'], [$role->json('props.role'), $role->json('props.submit.method')]);
-        // Refusals are the page's own: the owner's row has no role change, another workspace's member is not found, a viewer cannot open either modal.
-        $this->get('/@alpha/settings/people/members/'.$this->membership(1, 1)->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
-        $this->get('/@alpha/settings/people/members/'.$this->membership(2, 2)->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertNotFound();
-        $this->signOut();
-        $this->signIn(3);
-        $this->get('/@alpha/settings/people/invitations', [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
-        $this->get('/@alpha/settings/people/members/'.$viewer->id, [...$this->inertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
-    }
+    // Change role: the member's current role, the roles the viewer may give, and the PUT the existing endpoint takes.
+    $viewer = peopleMembership(1, 3);
+    $role = $this->get('/@alpha/settings/people/members/'.$viewer->id, [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertOk()->assertJsonPath('component', 'Workspace/Settings/People/ChangeRole/Page');
+    expect([$role->json('props.role'), $role->json('props.submit.method')])->toBe(['viewer', 'put']);
 
-    public function test_every_sortable_column_toggles_ascending_and_descending_on_each_tab_from_its_own_descriptor(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        foreach (['members', 'invitations'] as $tab) {
-            $columns = $this->people('?tab='.$tab)['table']['columns'];
-            $sortable = array_values(array_filter($columns, fn (array $column): bool => $column['sortable']));
-            $this->assertNotEmpty($sortable, $tab.' has sortable columns');
-            foreach ($sortable as $column) {
-                // The table sends the descriptor's own sort value, so what it sends is always allowed.
-                $param = $column['sortBy'] ?? $column['key'];
-                foreach ([$param, '-'.$param] as $sort) {
-                    $table = $this->getJson('/@alpha/settings/people?tab='.$tab.'&sort='.$sort)->assertOk()->json('table');
-                    $this->assertSame($column['key'], $table['sort']['column'], $tab.' '.$sort);
-                    $this->assertSame(str_starts_with($sort, '-') ? 'desc' : 'asc', $table['sort']['direction'], $tab.' '.$sort);
-                }
+    // Refusals are the page's own: the owner's row has no role change, another workspace's member is not found, a viewer cannot open either modal.
+    $this->get('/@alpha/settings/people/members/'.peopleMembership(1, 1)->id, [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
+    $this->get('/@alpha/settings/people/members/'.peopleMembership(2, 2)->id, [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertNotFound();
+    peopleSignOut();
+    peopleSignIn(3);
+    $this->get('/@alpha/settings/people/invitations', [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
+    $this->get('/@alpha/settings/people/members/'.$viewer->id, [...peopleInertia(), 'X-InertiaUI-Modal' => 'x'])->assertForbidden();
+});
+test('every sortable column toggles ascending and descending on each tab from its own descriptor', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+    foreach (['members', 'invitations'] as $tab) {
+        $columns = peoplePeople('?tab='.$tab)['table']['columns'];
+        $sortable = array_values(array_filter($columns, fn (array $column): bool => $column['sortable']));
+        expect($sortable)->not->toBeEmpty($tab.' has sortable columns');
+        foreach ($sortable as $column) {
+            // The table sends the descriptor's own sort value, so what it sends is always allowed.
+            $param = $column['sortBy'] ?? $column['key'];
+            foreach ([$param, '-'.$param] as $sort) {
+                $table = $this->getJson('/@alpha/settings/people?tab='.$tab.'&sort='.$sort)->assertOk()->json('table');
+                expect($table['sort']['column'])->toBe($column['key'], $tab.' '.$sort);
+                expect($table['sort']['direction'])->toBe(str_starts_with($sort, '-') ? 'desc' : 'asc', $tab.' '.$sort);
             }
         }
-        // The Member column is sorted by the server's "name", not its own key.
-        $this->assertSame('name', collect($this->people()['table']['columns'])->firstWhere('key', 'member')['sortBy']);
     }
 
-    public function test_a_bad_sort_or_filter_never_reaches_the_client_as_a_raw_400(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        // An Inertia visit goes back to the page without the bad parameter, and flashes a toast; the cleared page then loads.
-        $this->get('/@alpha/settings/people?tab=invitations&sort=bogus', $this->inertia())->assertRedirect('/@alpha/settings/people?tab=invitations')->assertStatus(303);
-        $this->get('/@alpha/settings/people?filter%5Bbogus%5D=1', $this->inertia())->assertStatus(303);
-        $this->get('/@alpha/settings/people', $this->inertia())->assertOk();
-        // JSON keeps a readable 400; a plain browser request gets the kit's error page with the status, not Symfony's bare default.
-        $this->getJson('/@alpha/settings/people?sort=bogus')->assertStatus(400)->assertJsonPath('error', 'invalid_query');
-        $html = $this->get('/@alpha/settings/people?sort=bogus', ['Accept' => 'text/html'])->assertStatus(400);
-        $this->assertMatchesRegularExpression('#Workspace\\\\?/Error\\\\?/Page#', $html->getContent());
-        $missing = $this->get('/this-page-does-not-exist', ['Accept' => 'text/html'])->assertNotFound();
-        $this->assertMatchesRegularExpression('#Workspace\\\\?/Error\\\\?/Page#', $missing->getContent(), 'a missing page is the kit error page');
-        $this->assertStringNotContainsString('Symfony', $missing->getContent());
-    }
-}
+    // The Member column is sorted by the server's "name", not its own key.
+    expect(collect(peoplePeople()['table']['columns'])->firstWhere('key', 'member')['sortBy'])->toBe('name');
+});
+test('a bad sort or filter never reaches the client as a raw 400', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    peopleSignIn(1);
+
+    // An Inertia visit goes back to the page without the bad parameter, and flashes a toast; the cleared page then loads.
+    $this->get('/@alpha/settings/people?tab=invitations&sort=bogus', peopleInertia())->assertRedirect('/@alpha/settings/people?tab=invitations')->assertStatus(303);
+    $this->get('/@alpha/settings/people?filter%5Bbogus%5D=1', peopleInertia())->assertStatus(303);
+    $this->get('/@alpha/settings/people', peopleInertia())->assertOk();
+
+    // JSON keeps a readable 400; a plain browser request gets the kit's error page with the status, not Symfony's bare default.
+    $this->getJson('/@alpha/settings/people?sort=bogus')->assertStatus(400)->assertJsonPath('error', 'invalid_query');
+    $html = $this->get('/@alpha/settings/people?sort=bogus', ['Accept' => 'text/html'])->assertStatus(400);
+    expect($html->getContent())->toMatch('#Workspace\\\\?/Error\\\\?/Page#');
+    $missing = $this->get('/this-page-does-not-exist', ['Accept' => 'text/html'])->assertNotFound();
+    expect($missing->getContent())->toMatch('#Workspace\\\\?/Error\\\\?/Page#', 'a missing page is the kit error page');
+    $this->assertStringNotContainsString('Symfony', $missing->getContent());
+});

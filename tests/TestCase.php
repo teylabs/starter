@@ -22,4 +22,16 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         $this->withoutVite();
     }
+
+    /** Forget the cookies a test has set on its next requests. */
+    public function forgetCookies(): void
+    {
+        $this->defaultCookies = [];
+        $this->unencryptedCookies = [];
+    }
+
+    public function defaultCookie(string $name): mixed
+    {
+        return $this->defaultCookies[$name] ?? null;
+    }
 }

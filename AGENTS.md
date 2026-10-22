@@ -15,14 +15,16 @@ Guidance for contributors and coding agents working in this repository.
 ```sh
 composer install --no-interaction
 vendor/bin/pint --test
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 npm ci && npm run typecheck && npm run build && npm test
 composer test:browser
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `phpunit` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
+The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `pest` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
+
+`vendor/bin/pest --parallel` also works: on PostgreSQL each worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
 
 ## Conventions
 

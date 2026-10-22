@@ -14,7 +14,7 @@ PHP, on 8.4 and 8.5 (SQLite memory), and on 8.4 against a PostgreSQL 17 service 
 
 ```sh
 composer install --no-interaction
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 ```
 
@@ -29,12 +29,12 @@ npm test
 
 ### PostgreSQL locally
 
-`TEST_DB_CONNECTION` selects the test database for both `phpunit` and `composer fixture:check`: `sqlite` (the default, in memory) or `pgsql`. With `pgsql`, the connection comes from `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`. `DB_DATABASE` must be set for the run, never taken from `.env`, because each app boot wipes it. Each run prints the database in use (`Test database: ...` on stderr, and `database` in the focused checks' JSON). `DB_CONNECTION` alone does not switch the tests. With Herd's PostgreSQL:
+`TEST_DB_CONNECTION` selects the test database for both `pest` and `composer fixture:check`: `sqlite` (the default, in memory) or `pgsql`. With `pgsql`, the connection comes from `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`. `DB_DATABASE` must be set for the run, never taken from `.env`, because each app boot wipes it. Each run prints the database in use (`Test database: ...` on stderr, and `database` in the focused checks' JSON). `DB_CONNECTION` alone does not switch the tests. With Herd's PostgreSQL:
 
 ```sh
 createdb starter_test
 export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 ```
 
@@ -49,7 +49,7 @@ Run all of these before opening a pull request. `composer types:generate` regene
 Run one file while working:
 
 ```sh
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
+vendor/bin/pest tests/TransportTest.php
 ```
 
 | File | Covers |
@@ -80,3 +80,5 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php tests/TransportTest.php
 ## Not covered
 
 These checks use the HTTP kernel with synthetic data, plus one browser smoke test (desktop Chromium, sign-in and the app shell). No responsive, keyboard, accessibility, visual-diff or cookie-policy acceptance; HTTPS is checked only through a local TLS proxy, not a real certificate or platform. On PostgreSQL the released-schema comparison is skipped (the fixture is a SQLite dump); there is no concurrency check. No jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published template upgrade. Say so rather than implying coverage.
+
+`vendor/bin/pest --parallel` also works: on PostgreSQL each worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.

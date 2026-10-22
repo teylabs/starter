@@ -6,92 +6,78 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Tests\TestCase;
 use Tey\Kit\Features\Core\Data\NavigationHeader;
 use Tey\Kit\Features\Core\ViewModels\PageViewModel;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
-require dirname(__DIR__).'/vendor/autoload.php';
-require_once __DIR__.'/TestCase.php';
-
-/** The way up one level: every /me page escapes to the workspace the viewer was in, settings sections and top-level pages have none, and nothing is derived from the trail. */
-final class NavigationHeaderTest extends TestCase
+function navigationHeaderInertia(): array
 {
-    private string $password = '';
-
-    private function inertia(): array
-    {
-        return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
-    }
-
-    private function signIn(int $id): void
-    {
-        Auth::forgetGuards();
-        $this->password = Str::random(40);
-        User::findOrFail($id)->update(['password' => Hash::make($this->password)]);
-        $this->postJson('/login', ['email' => 'actor'.$id.'@example.test', 'password' => $this->password])->assertOk();
-        $this->withCookie(config('session.cookie'), app('session')->getId());
-        Auth::forgetGuards();
-    }
-
-    private function signOut(): void
-    {
-        $this->postJson('/logout')->assertNoContent();
-        $this->flushSession();
-        $this->defaultCookies = [];
-        $this->unencryptedCookies = [];
-        Auth::forgetGuards();
-    }
-
-    public function test_account_pages_escape_to_the_workspace_and_other_pages_have_no_strip_unless_declared(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->assertSame(0, app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]));
-        $this->signIn(1);
-        $header = fn (string $url): ?array => $this->get($url, $this->inertia())->assertOk()->json('props.layout.navigationHeader');
-        // Top level: the dashboard and the settings landing page sit directly under the home.
-        $this->assertNull($header('/@alpha/dashboard'));
-        $this->assertNull($header('/@alpha/settings'));
-        // Settings sections have no strip; every /me page is an escape to the workspace the viewer was in; nothing is derived from the trail.
-        foreach (['/@alpha/settings/general', '/@alpha/settings/people'] as $url) {
-            $this->assertNull($header($url), $url);
-        }
-        $workspace = Workspace::findOrFail(1)->name;
-        foreach (['/me', '/me/profile', '/me/password', '/me/security'] as $url) {
-            $this->assertSame('Back to '.$workspace, $header($url)['label'], $url);
-        }
-        // The switcher names the workspace on an account page too: there is no account mode.
-        $shell = $this->get('/me/profile', $this->inertia())->json('props.shell');
-        $this->assertSame(Workspace::findOrFail(1)->name, $shell['workspace']['name']);
-        $this->assertArrayNotHasKey('mode', $shell);
-    }
-
-    public function test_a_nested_resource_page_declares_its_parent_explicitly_through_its_view_model(): void
-    {
-        require dirname(__DIR__).'/database/fixture.php';
-        $this->signIn(1);
-        $this->get('/@alpha/dashboard', $this->inertia())->assertOk();
-        $declared = new class extends PageViewModel
-        {
-            public function title(): string
-            {
-                return 'A member';
-            }
-
-            protected function navigationHeader(): ?NavigationHeader
-            {
-                return new NavigationHeader('Back to People', '/settings/people');
-            }
-        };
-        $plain = new class extends PageViewModel
-        {
-            public function title(): string
-            {
-                return 'A page';
-            }
-        };
-        $this->assertSame(['label' => 'Back to People', 'url' => '/settings/people'], $declared->layout()->navigationHeader?->toArray());
-        $this->assertNull($plain->layout()->navigationHeader, 'nothing is derived: a page with no declaration has no strip');
-    }
+    return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
 }
+function navigationHeaderSignIn(int $id): void
+{
+    Auth::forgetGuards();
+    test()->password = Str::random(40);
+    User::findOrFail($id)->update(['password' => Hash::make(test()->password)]);
+    test()->postJson('/login', ['email' => 'actor'.$id.'@example.test', 'password' => test()->password])->assertOk();
+    test()->withCookie(config('session.cookie'), app('session')->getId());
+    Auth::forgetGuards();
+}
+function navigationHeaderSignOut(): void
+{
+    test()->postJson('/logout')->assertNoContent();
+    test()->flushSession();
+    test()->forgetCookies();
+    Auth::forgetGuards();
+}
+test('account pages escape to the workspace and other pages have no strip unless declared', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    expect(app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]))->toBe(0);
+    navigationHeaderSignIn(1);
+    $header = fn (string $url): ?array => $this->get($url, navigationHeaderInertia())->assertOk()->json('props.layout.navigationHeader');
+
+    // Top level: the dashboard and the settings landing page sit directly under the home.
+    expect($header('/@alpha/dashboard'))->toBeNull();
+    expect($header('/@alpha/settings'))->toBeNull();
+
+    // Settings sections have no strip; every /me page is an escape to the workspace the viewer was in; nothing is derived from the trail.
+    foreach (['/@alpha/settings/general', '/@alpha/settings/people'] as $url) {
+        expect($header($url))->toBeNull($url);
+    }
+    $workspace = Workspace::findOrFail(1)->name;
+    foreach (['/me', '/me/profile', '/me/password', '/me/security'] as $url) {
+        expect($header($url)['label'])->toBe('Back to '.$workspace, $url);
+    }
+
+    // The switcher names the workspace on an account page too: there is no account mode.
+    $shell = $this->get('/me/profile', navigationHeaderInertia())->json('props.shell');
+    expect($shell['workspace']['name'])->toBe(Workspace::findOrFail(1)->name);
+    $this->assertArrayNotHasKey('mode', $shell);
+});
+test('a nested resource page declares its parent explicitly through its view model', function () {
+    require dirname(__DIR__).'/database/fixture.php';
+    navigationHeaderSignIn(1);
+    $this->get('/@alpha/dashboard', navigationHeaderInertia())->assertOk();
+    $declared = new class extends PageViewModel
+    {
+        public function title(): string
+        {
+            return 'A member';
+        }
+
+        protected function navigationHeader(): ?NavigationHeader
+        {
+            return new NavigationHeader('Back to People', '/settings/people');
+        }
+    };
+    $plain = new class extends PageViewModel
+    {
+        public function title(): string
+        {
+            return 'A page';
+        }
+    };
+    expect($declared->layout()->navigationHeader?->toArray())->toBe(['label' => 'Back to People', 'url' => '/settings/people']);
+    expect($plain->layout()->navigationHeader)->toBeNull('nothing is derived: a page with no declaration has no strip');
+});
