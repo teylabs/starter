@@ -23,8 +23,15 @@ function requestClose() {
     if (unsaved.value) asking.value = true;
     else emit('close');
 }
+// Discard closes the confirmation first; the modal closes only once the confirmation has handed focus back inside it, so the modal's own trap returns focus to its opener.
+let discarding = false;
 function discard() {
+    discarding = true;
     asking.value = false;
+}
+function confirmationClosed() {
+    if (!discarding) return;
+    discarding = false;
     emit('close');
 }
 const keep = ref<{ $el: HTMLElement }>();
@@ -40,7 +47,7 @@ defineExpose({ requestClose, titleId });
             </div>
             <div class="flex shrink-0 items-center gap-2">
                 <slot name="actions" />
-                <Button v-if="showCloseButton" variant="secondary" type="button" aria-label="Close" class="size-9 px-0" data-modal-close @click="requestClose"><X class="size-4" aria-hidden="true" /></Button>
+                <Button v-if="showCloseButton" variant="secondary" type="button" aria-label="Close" class="size-9 px-0 max-sm:size-11" data-modal-close @click="requestClose"><X class="size-4" aria-hidden="true" /></Button>
             </div>
         </header>
         <div ref="body" class="grid min-h-0 gap-4 overflow-y-auto px-6 pb-4" data-modal-body><slot /></div>
@@ -48,6 +55,6 @@ defineExpose({ requestClose, titleId });
             <template #actions><Button variant="secondary" type="button" data-modal-cancel @click="requestClose">{{ cancelLabel }}</Button></template>
         </FormActions>
         <div v-else-if="$slots.footer" class="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-border px-6 py-3"><slot name="footer" :close="requestClose" /></div>
-        <Dialog variant="danger" v-model:open="asking" title="Discard your changes?" :description="confirmMessage" confirm-label="Discard &amp; close" cancel-label="Keep editing" @confirm="discard" />
+        <Dialog variant="danger" v-model:open="asking" title="Discard your changes?" :description="confirmMessage" confirm-label="Discard &amp; close" cancel-label="Keep editing" @confirm="discard" @closed="confirmationClosed" />
     </div>
 </template>

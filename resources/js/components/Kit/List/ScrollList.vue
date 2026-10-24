@@ -31,7 +31,8 @@ const { list, items, stream, region, mounted, generation, loading, error, announ
             <template #next="{ hasNext, loadingNext }">
                 <div v-if="hasNext || error" class="grid justify-items-center gap-2 py-3">
                     <p v-if="error" role="alert" class="text-sm text-muted-foreground">Couldn't load more. Retry.</p>
-                    <Button v-if="hasNext" type="button" variant="secondary" data-load-more :disabled="loadingNext || loading" @click="fetchNext">{{ loadingNext ? 'Loading…' : error ? 'Retry' : 'Load more' }}</Button>
+                    <!-- aria-disabled, never disabled: a disabled button drops keyboard focus to the page when auto-load fires under it. Activation is ignored while busy. -->
+                    <Button v-if="hasNext" type="button" variant="secondary" data-load-more :aria-disabled="loadingNext || loading || undefined" @click="loadingNext || loading || fetchNext()">{{ loadingNext ? 'Loading…' : error ? 'Retry' : 'Load more' }}</Button>
                 </div>
             </template>
         </InfiniteScroll>

@@ -71,7 +71,7 @@ export interface FormCardProps extends FormActionsProps { title?: string; descri
 /** A group of fields inside a FormCard, with a legend and a line under it. */
 export interface FormFieldsetProps { legend: string; description?: string }
 
-/** The kit's Dialog: a confirmation or a prompt (static; never a form), `variant` danger (icon circle, destructive action) or neutral; `action` is a server action the dialog performs. The trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without one. Slots: icon, title, body, footer. Bottom-aligned on phones. */
+/** The kit's Dialog: a confirmation or a prompt (static; never a form), `variant` danger (icon circle, destructive action) or neutral; `action` is a server action the dialog performs. The trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without one; `@closed` fires after it has closed and returned focus. Slots: icon, title, body, footer. Bottom-aligned on phones. */
 export interface DialogProps { title: string; description?: string; confirmLabel?: string; cancelLabel?: string; variant?: 'danger' | 'neutral'; action?: { url: string; method: string } }
 
 

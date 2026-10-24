@@ -55,13 +55,33 @@ onMounted(() => {
 const position = computed(() => (slideover.value ? undefined : props.placement === 'drawer' || (phone.value && !fullScreen.value) ? 'bottom' : 'center'));
 const panelClasses = computed(() => ['overflow-hidden border border-border bg-background text-foreground shadow-lg sm:rounded-xl', fullScreen.value ? 'max-sm:-m-4 max-sm:w-[calc(100%+2rem)] max-sm:rounded-none max-sm:border-0' : 'max-sm:-mx-4 max-sm:-mb-4 max-sm:w-[calc(100%+2rem)] max-sm:rounded-t-xl max-sm:border-b-0'].join(' '));
 
+// Focus returns to the opener: the package does not, so once the panel has left and focus has fallen to the page, the element focused when it opened gets it back.
+let opener: HTMLElement | null = null;
+const remember = () => (opener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null);
+function returnFocus() {
+    const target = opener;
+    opener = null;
+    const started = Date.now();
+    const settle = () => {
+        if (!target?.isConnected) return;
+        const active = document.activeElement;
+        if (!active || active === document.body) return target.focus({ preventScroll: true });
+        // Still inside the leaving panel: wait for it to go; anywhere else, the viewer moved focus on purpose.
+        if (active.closest('.im-modal-content, [role="dialog"]') && Date.now() - started < 1500) setTimeout(settle, 50);
+    };
+    setTimeout(settle, 50);
+}
+if (server) onMounted(remember);
+onBeforeUnmount(() => { if (server) returnFocus(); });
+
 // Local use: `open` shows and hides the package's named modal; its own close (Escape, Close, Cancel) sets it back.
 let handle: { close: () => void } | null = null;
 const opened = (instance: unknown) => (handle = instance as { close: () => void });
 watch(() => open.value, async (now) => {
     if (server) return;
     if (now && !handle) {
-        opened(await visitModal(`#${localName}`, { onClose: () => { handle = null; open.value = false; emit('closed'); } }));
+        remember();
+        opened(await visitModal(`#${localName}`, { onClose: () => { handle = null; open.value = false; returnFocus(); emit('closed'); } }));
     } else if (!now && handle) {
         handle.close();
     }

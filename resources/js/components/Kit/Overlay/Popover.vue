@@ -26,9 +26,30 @@ function focusPanel(event: Event) {
     event.preventDefault();
     nextTick(() => document.querySelector<HTMLElement>('[data-kit-popover]')?.focus());
 }
-// The kit Modal labels its own dialog; once it has entered, start focus at the top of the working.
-watch(sheetOpen, value => { if (value) nextTick(() => requestAnimationFrame(() => { sheet.value?.focus({ preventScroll: true }); const body = sheet.value?.closest('[data-modal-body]'); if (body) body.scrollTop = 0; })); });
-function returnFocus() { nextTick(() => opener.value?.focus()); }
+// The phone sheet: once the kit Modal renders it, its dialog is labelled by the modal's title ("Working for <label>"), and focus starts at the top of the working only after
+// the modal has entered (the package's own trap moves focus when its enter transition ends, which would otherwise win).
+let entered: MutationObserver | undefined;
+function focusSheet() {
+    sheet.value?.focus({ preventScroll: true });
+    const body = sheet.value?.closest('[data-modal-body]');
+    if (body) body.scrollTop = 0;
+}
+watch(sheet, (panel) => {
+    entered?.disconnect();
+    if (!panel) return;
+    const titleId = panel.closest('[data-modal]')?.getAttribute('aria-labelledby');
+    if (titleId) panel.closest('[role="dialog"]')?.setAttribute('aria-labelledby', titleId);
+    const content = panel.closest('[data-inertiaui-modal-entered]');
+    if (!content || content.getAttribute('data-inertiaui-modal-entered') === 'true') return void requestAnimationFrame(focusSheet);
+    entered = new MutationObserver(() => {
+        if (content.getAttribute('data-inertiaui-modal-entered') !== 'true') return;
+        entered?.disconnect();
+        requestAnimationFrame(focusSheet);
+    });
+    entered.observe(content, { attributes: true, attributeFilter: ['data-inertiaui-modal-entered'] });
+}, { flush: 'post' });
+onBeforeUnmount(() => entered?.disconnect());
+function returnFocus() { entered?.disconnect(); nextTick(() => opener.value?.focus()); }
 function close() { open.value = false; if (!phone.value) returnFocus(); }
 </script>
 <template>

@@ -156,8 +156,9 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                     </thead>
                     <tbody class="max-sm:grid max-sm:gap-3 max-sm:p-3">
                         <tr v-for="row in tanstack.getRowModel().rows" :key="row.id" class="border-b border-border last:border-b-0 max-sm:grid max-sm:gap-1 max-sm:rounded-lg max-sm:border max-sm:p-3 max-sm:last:border-b" data-row>
-                            <td v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4 py-3 align-middle first:sticky first:left-0 first:bg-background max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:px-0 max-sm:py-1 max-sm:first:static" :class="align(meta(cell.column))" :data-cell="cell.column.id">
-                                <span class="hidden text-xs text-muted-foreground max-sm:not-first:inline" :class="meta(cell.column).srOnlyLabel ? 'max-sm:hidden' : ''">{{ meta(cell.column).label }}</span>
+                            <td v-for="(cell, index) in row.getVisibleCells()" :key="cell.id" class="px-4 py-3 align-middle first:sticky first:left-0 first:bg-background max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:px-0 max-sm:py-1 max-sm:first:static" :class="align(meta(cell.column))" :data-cell="cell.column.id">
+                                <!-- The phone card's field label: shown for every visible column after the first (the card's title) unless the column hides its label (actions). -->
+                                <span class="hidden text-xs text-muted-foreground" :class="index > 0 && !meta(cell.column).srOnlyLabel ? 'max-sm:inline' : ''" data-cell-label>{{ meta(cell.column).label }}</span>
                                 <template v-if="meta(cell.column).srOnlyLabel">
                                     <slot name="row-actions" :row="row.original"><RowActions :actions="row.original.actions ?? []" :label="`Actions for row ${row.index + 1}`" :intercept="intercept" @act="(action) => emit('act', row.original, action)" /></slot>
                                 </template>
