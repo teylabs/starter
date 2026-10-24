@@ -43,7 +43,7 @@ it('signs the first owner in with one click and reaches the app shell', function
 
         $page->click('[data-local-login] button')
             ->assertPathIs('/')
-            ->assertTitle('Dashboard · '.config('app.name'))
+            ->assertTitle(config('app.name'))
             // The trail is chrome, a sub-bar inside the header; it is outside <Page>. The heading sits in the page's column, with the content.
             ->assertPresent('[data-shell-subbar] [data-shell-breadcrumbs]')
             ->assertPresent('[data-shell-content] [data-slot="page"] [data-slot="page-header"] h1')
