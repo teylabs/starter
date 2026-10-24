@@ -53,9 +53,9 @@ test('an invitee signs up walks the welcome steps and lands on the dashboard wit
 
     // Skipping never blocks: the flow ends on the dashboard of the workspace they joined.
     $this->post('/welcome/photo/skip')->assertRedirect('/welcome');
-    $this->get('/welcome')->assertRedirect(url(WorkspaceUrl::to($workspace, 'dashboard', 'session-ui', request())));
+    $this->get('/welcome')->assertRedirect(url(WorkspaceUrl::to($workspace, '', 'session-ui', request())));
 
-    $dashboard = $this->get(WorkspaceUrl::to($workspace, 'dashboard', 'session-ui', request()), firstRunInertia())->assertOk();
+    $dashboard = $this->get(WorkspaceUrl::to($workspace, '', 'session-ui', request()), firstRunInertia())->assertOk();
     expect($dashboard->json('props.greeting'))->toStartWith('Good ');
     expect($dashboard->json('props.greeting'))->toEndWith(', Nora');
     expect(UserState::has((int) User::query()->where('email', 'new.person@example.test')->value('id'), 'onboarding.done'))->toBeTrue();
@@ -68,7 +68,7 @@ test('an invitee signs up walks the welcome steps and lands on the dashboard wit
 
     // Dismissing it removes the card for good, on every device.
     $this->delete('/me/welcome/'.$workspace->id)->assertRedirect();
-    $after = $this->get(WorkspaceUrl::to($workspace, 'dashboard', 'session-ui', request()), firstRunInertia())->assertOk();
+    $after = $this->get(WorkspaceUrl::to($workspace, '', 'session-ui', request()), firstRunInertia())->assertOk();
     $after->assertJsonPath('props.welcome', null);
 });
 test('the demo command prints a fresh link each time and only runs locally', function () {
@@ -161,7 +161,7 @@ test('someone who joined but skipped the welcome steps is sent through them befo
     $workspace = Workspace::query()->firstOrFail();
     expect(app(Kernel::class)->call('kit:first-run-demo', ['--fork' => 'already-member']))->toBe(0);
     $user = User::query()->where('email', 'member+1@example.test')->firstOrFail();
-    $dashboard = WorkspaceUrl::to($workspace, 'dashboard', 'session-ui', request());
+    $dashboard = WorkspaceUrl::to($workspace, '', 'session-ui', request());
 
     // Joined through an invitation, never saw the steps: the first dashboard visit sends them there, and the steps end back on the dashboard.
     $this->actingAs($user)->get($dashboard, firstRunInertia())->assertRedirect('/welcome');
@@ -278,7 +278,7 @@ test('the browsers zone is a validated cookie that refreshes until confirmed', f
     $workspace = Workspace::query()->firstOrFail();
     $person = User::query()->forceCreate(['name' => 'Zoned', 'email' => 'zoned@example.test', 'password' => bcrypt('x'), 'email_verified_at' => now()]);
     $id = (int) $person->getKey();
-    $url = WorkspaceUrl::to($workspace, 'dashboard', 'session-ui', request());
+    $url = WorkspaceUrl::to($workspace, '', 'session-ui', request());
     $get = fn (?string $zone) => $this->actingAs($person)->flushSession()->{$zone === null ? 'get' : 'withUnencryptedCookie'}(...($zone === null ? [$url] : ['tz', $zone]))->get($url);
     $state = fn () => UserState::get($id, 'timezone');
 

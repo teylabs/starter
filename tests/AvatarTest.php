@@ -48,7 +48,7 @@ test('upload replace and remove', function () {
     expect(array_slice(getimagesize($media->getPath('thumb2x')), 0, 2))->toBe([192, 192]);
 
     // The shell shows it.
-    $this->get('/dashboard', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', $first['url'])->assertJsonPath('props.shell.user.avatar_url_2x', $first['url_2x']);
+    $this->get('/', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', $first['url'])->assertJsonPath('props.shell.user.avatar_url_2x', $first['url_2x']);
 
     // Replacing keeps one avatar, at a new URL, and deletes the old file.
     $oldPath = $media->getPath();
@@ -57,7 +57,7 @@ test('upload replace and remove', function () {
     $this->assertNotSame($first['url'], $second['url']);
     expect(Media::query()->where('collection_name', 'avatar')->count())->toBe(1);
     $this->assertFileDoesNotExist($oldPath);
-    $this->get('/dashboard', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', $second['url']);
+    $this->get('/', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', $second['url']);
 
     // Removing it leaves no file, no media and no URL: initials again.
     $current = avatarOriginal(1)->getPath();
@@ -65,7 +65,7 @@ test('upload replace and remove', function () {
     expect(Media::query()->count())->toBe(0);
     $this->assertFileDoesNotExist($current);
     expect(Avatars::urls(1))->toBeNull();
-    $this->get('/dashboard', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', null)->assertJsonPath('props.shell.user.initials', 'AL');
+    $this->get('/', avatarInertia())->assertJsonPath('props.shell.user.avatar_url', null)->assertJsonPath('props.shell.user.initials', 'AL');
 });
 test('type size and pixel limits refuse the upload', function () {
     require dirname(__DIR__).'/database/fixture.php';

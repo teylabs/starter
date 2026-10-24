@@ -19,7 +19,7 @@ it('renders a signed-in page outside a workspace in the FocusShell at phone and 
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/invitations/'.str_repeat('a', 40))
             ->assertPresent('[data-focus-shell] [data-focus-header] [data-focus-product]')
             ->assertPresent('[data-focus-account] [data-focus-switch]')

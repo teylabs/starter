@@ -29,8 +29,8 @@ test('inertia session pages share real operations and fresh navigation', functio
     Auth::forgetGuards();
 
     // One workspace: the list has nothing to choose, so it opens the workspace at its first page.
-    $this->get('/me/workspaces', $inertia)->assertRedirect('/dashboard');
-    $this->get('/', $inertia)->assertRedirect('/me/workspaces');
+    $this->get('/me/workspaces', $inertia)->assertRedirect('/');
+    $this->get('/', $inertia)->assertOk();
     $this->get('/@alpha/records', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
         ->assertJsonPath('component', 'Workspace/Record/Index/Page')->assertJsonPath('props.records.0.title', 'Alpha private')->assertJsonCount(1, 'props.records')
         ->assertJsonPath('props.shell.workspace.id', 1)->assertJsonCount(1, 'props.shell.switcher.choices')->assertJsonCount(3, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.0.label', 'Dashboard')->assertJsonPath('props.shell.navigation.1.label', 'Records')
@@ -62,7 +62,7 @@ test('inertia session pages share real operations and fresh navigation', functio
     config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.records' => true]]);
     Feature::define('workspace.records', fn (): bool => false);
     $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonCount(2, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.1.label', 'Settings')
-        ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.switcher.choices.0.url', '/dashboard');
+        ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.switcher.choices.0.url', '/');
 
     // A capability that is off is absent: a 404, not a 403.
     $this->get('/@alpha/records', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page');

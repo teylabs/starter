@@ -213,11 +213,11 @@ test('the web footer is identity credit and legal links without a copyright sign
     $this->withCookie(config('session.cookie'), app('session')->getId());
     Auth::forgetGuards();
     $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
-    $this->get('/dashboard', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy'], ['label' => 'Privacy requests', 'url' => 'mailto:privacy@example.com']]]);
+    $this->get('/', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy'], ['label' => 'Privacy requests', 'url' => 'mailto:privacy@example.com']]]);
 
     // A client build overrides the credit line; the identity can differ from the product name.
     config(['kit.brand.credit_verb' => 'Made', 'kit.brand.credit_org' => 'A Studio', 'kit.brand.credit_for' => 'Client Co', 'kit.brand.identity' => 'Client Co Platform']);
-    $this->get('/dashboard', $inertia)->assertJsonPath('props.shell.footer.identity', 'Client Co Platform')->assertJsonPath('props.shell.footer.credit', 'Made by A Studio, for Client Co');
+    $this->get('/', $inertia)->assertJsonPath('props.shell.footer.identity', 'Client Co Platform')->assertJsonPath('props.shell.footer.credit', 'Made by A Studio, for Client Co');
     $this->assertDoesNotMatchRegularExpression('/<(p|span|a)[^>]*>[^<]*©/u', (string) file_get_contents(resource_path('js/components/Shell/ShellFooter.vue')));
 });
 test('the default accent is neutral and a configured accent overrides it', function () {

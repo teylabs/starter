@@ -100,7 +100,7 @@ test('an existing person signs in then accepts', function () {
     $this->postJson('/invitations/'.$token)->assertCreated();
 
     // Joined through an invitation: the first dashboard visit goes through the welcome steps.
-    $this->get('/@alpha/dashboard', invitationAcceptInertia())->assertRedirect('/welcome');
+    $this->get('/@alpha', invitationAcceptInertia())->assertRedirect('/welcome');
 });
 test('the wrong account cannot accept', function () {
     require dirname(__DIR__).'/database/fixture.php';

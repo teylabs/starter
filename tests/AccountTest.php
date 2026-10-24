@@ -258,7 +258,7 @@ test('the security log records sign ins and failures and is only yours', functio
     expect(SecurityEvent::query()->whereIn('id', array_keys($log) === [] ? [0] : SecurityEvent::query()->where('user_id', 1)->pluck('id'))->pluck('user_id')->unique()->values()->all())->toBe([1]);
 
     // No route reads another user's log, and nothing about it reaches a workspace page.
-    $this->get('/@alpha/dashboard', accountInertia())->assertJsonMissingPath('props.events');
+    $this->get('/@alpha', accountInertia())->assertJsonMissingPath('props.events');
     expect(SecurityEvent::query()->whereNull('user_id')->count())->toBe(0);
 });
 test('signing in still works when the log table is missing', function () {

@@ -34,4 +34,18 @@ export { default as TimezoneSelect } from './Form/TimezoneSelect.vue';
 export { default as RowActions } from './Table/RowActions.vue';
 export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 export { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+export { default as NumberInput } from './Form/NumberInput.vue';
+export { numberFormat } from './Form/number';
+export type { NumberKind, NumberOptions } from './Form/number';
+export { default as Repeater } from './Form/Repeater.vue';
+export type { RepeaterRow } from './Form/repeaterState';
+export { default as ScrollList } from './List/ScrollList.vue';
+export { useScrollList } from './List/useScrollList';
+export type { ListAction, ListItem, ScrollPayload } from './List/useScrollList';
 export type * from './contract';
+// Computed values with their working (ComputedValue.md). Popover stays internal to ComputedValue and is not exported.
+export { default as ComputedValue } from './Explanation/ComputedValue.vue';
+export { default as ComputedValueRoot } from './Explanation/ComputedValueRoot.vue';
+export { default as ComputedValueScope } from './Explanation/ComputedValueScope.vue';
+export { default as ComputedValueToggle } from './Explanation/ComputedValueToggle.vue';
+export type * from './Explanation/explanation.generated';

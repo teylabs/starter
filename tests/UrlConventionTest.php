@@ -115,19 +115,19 @@ test('links flip from short to full when a second workspace appears', function (
 
     // One workspace: the shell's links, the page's own URLs and the redirects after a write are short; nothing is switchable.
     $page = $this->get('/records', $inertia)->assertOk()
-        ->assertJsonPath('props.shell.navigation.0.url', '/dashboard')->assertJsonPath('props.shell.navigation.1.url', '/records')->assertJsonPath('props.shell.navigation.2.label', 'Settings')->assertJsonPath('props.shell.navigation.2.url', '/settings')
-        ->assertJsonPath('props.shell.workspace.url', '/dashboard')->assertJsonCount(1, 'props.shell.switcher.choices')
+        ->assertJsonPath('props.shell.navigation.0.url', '/')->assertJsonPath('props.shell.navigation.1.url', '/records')->assertJsonPath('props.shell.navigation.2.label', 'Settings')->assertJsonPath('props.shell.navigation.2.url', '/settings')
+        ->assertJsonPath('props.shell.workspace.url', '/')->assertJsonCount(1, 'props.shell.switcher.choices')
         ->assertJsonPath('props.create_url', '/records')->json('props');
     expect(array_values($page['actions'])[0]['url'])->toStartWith('/records/');
-    $this->get('/me/workspaces', $inertia)->assertRedirect('/dashboard');
+    $this->get('/me/workspaces', $inertia)->assertRedirect('/');
     $this->post('/records', ['title' => 'Short'], $inertia)->assertRedirect('/records');
 
     // A second workspace appears mid-session: nothing else changes, but the switcher has choices and every link is the full form.
     urlConventionAddSecondWorkspace();
     $page = $this->get('/@alpha/records', $inertia)->assertOk()
-        ->assertJsonPath('props.shell.navigation.0.url', '/@alpha/dashboard')->assertJsonPath('props.shell.navigation.1.url', '/@alpha/records')->assertJsonPath('props.shell.navigation.2.url', '/@alpha/settings')
-        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.url', '/@alpha/dashboard')
-        ->assertJsonPath('props.shell.switcher.choices.1.url', '/@beta/dashboard')->assertJsonPath('props.create_url', '/@alpha/records')->json('props');
+        ->assertJsonPath('props.shell.navigation.0.url', '/@alpha')->assertJsonPath('props.shell.navigation.1.url', '/@alpha/records')->assertJsonPath('props.shell.navigation.2.url', '/@alpha/settings')
+        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.url', '/@alpha')
+        ->assertJsonPath('props.shell.switcher.choices.1.url', '/@beta')->assertJsonPath('props.create_url', '/@alpha/records')->json('props');
     expect(array_values($page['actions'])[0]['url'])->toStartWith('/@alpha/records/');
     $this->get('/me/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page');
     $this->post('/@alpha/records', ['title' => 'Full'], $inertia)->assertRedirect('/@alpha/records');

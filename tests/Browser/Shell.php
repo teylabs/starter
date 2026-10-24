@@ -28,7 +28,7 @@ function shellSignIn(): mixed
     expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
     ConciergeModels::user()::query()->where('email', config('concierge.local_login.account.email'))->firstOrFail()->forceFill(['password' => Hash::make('shell-test-pass-1')])->save();
 
-    return visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+    return visit('/login')->click('[data-local-login] button')->assertPathIs('/');
 }
 
 /** The page script that normalises any CSS colour to [r, g, b, a] through a canvas, then runs `$body` with `norm` and `$` in scope. */
@@ -179,7 +179,7 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         $second = app(AcceptWorkspaceInvitation::class)->handle(new Principal((int) $other->id), InviteTenant::run($owner, $other->email)->token)['workspace_id'];
         Workspace::query()->whereKey($second)->update(['name' => 'Second workspace']);
         AcceptInvitation::run($owner, InviteMember::run($other, Workspace::findOrFail($second), $owner->email, new GrantSet(['viewer']))->token);
-        $page->resize(1440, 900)->navigate('/dashboard');
+        $page->resize(1440, 900)->navigate('/');
         $page->assertPresent('[data-shell-switcher]')->assertSee('Local workspace');
         $page->click('[data-shell-switcher]')->assertSee('Second workspace')->assertSee('Workspace settings');
     });

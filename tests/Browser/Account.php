@@ -24,7 +24,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $user = ConciergeModels::user()::query()->where('email', config('concierge.local_login.account.email'))->firstOrFail();
         $user->forceFill(['password' => Hash::make('account-test-pass-1')])->save();
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/me/security')->assertSee('Two-factor authentication')->assertSee('Security log')->assertNoJavaScriptErrors();
         // The devices section says why it cannot list devices here.
         $page->assertPresent('[data-sessions-unsupported]')->assertSee('SESSION_DRIVER=database');
@@ -65,7 +65,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->assertPathIs('/me/profile');
         expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile', 'Profile']);
         // Leaving the section for one without a sidebar drops the sublayout and the item does not linger.
-        $page->navigate('/dashboard')->assertMissing('[data-settings-sidebar]');
+        $page->navigate('/')->assertMissing('[data-settings-sidebar]');
 
         // Password page and profile page render on the same pieces.
         $page->navigate('/me/password')->assertPresent('[data-form-card] [data-form-actions]')->assertSee('Update password')->assertNoJavaScriptErrors();

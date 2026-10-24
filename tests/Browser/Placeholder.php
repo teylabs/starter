@@ -25,7 +25,7 @@ it('renders a placeholder page and a planned settings section', function (): voi
         app(PlaceholderRoutes::class)->register();
         app('router')->getRoutes()->refreshNameLookups();
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/orders')->assertSeeIn('[data-slot="placeholder"]', 'Not built yet')->assertSeeIn('[data-placeholder-milestone]', 'Planned for the Orders release')
             ->assertPresent('[data-slot="placeholder"] a')->assertMissing('form, [role="status"]')->assertNoJavaScriptErrors();
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {

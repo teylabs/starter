@@ -40,6 +40,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_02_000201_create_permission_tables',
         '0001_01_02_000202_create_kit_operators_table',
         '0001_01_02_000203_add_slug_to_kit_workspaces_table',
+        '0001_01_02_000204_constrain_audit_events_workspace_id',
         '0001_01_02_000300_create_kit_access_tables',
         '0001_01_02_000301_create_kit_permission_defaults_table',
         '0001_01_02_000302_create_kit_capability_overrides_table',

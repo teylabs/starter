@@ -20,7 +20,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/settings/general')->assertPresent('form:first-of-type [data-form-actions]');
         $status = fn (): array => $page->script('() => { const s = document.querySelector("[data-form-status]"); return [s.dataset.state, s.textContent.trim(), s.className]; }');
         // Every state seen, whenever it happens: recorded as the DOM changes.
@@ -44,7 +44,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
         expect($unload())->toBeFalse();
 
         // Leaving while dirty asks (the kit's dialog, not window.confirm); Stay keeps the page and the edit.
-        $page->type('#display-name', 'Kept edit')->click('[data-shell-nav] a[href="/dashboard"]')->assertPresent('[data-confirm-dialog]');
+        $page->type('#display-name', 'Kept edit')->click('[data-shell-nav] a[href="/"]')->assertPresent('[data-confirm-dialog]');
         $page->click('[data-confirm-dialog] button:first-of-type')->assertMissing('[data-confirm-dialog]')->assertPathIs('/settings/general');
         expect($page->script('() => document.querySelector("#display-name").value'))->toBe('Kept edit');
         // Submitting does not prompt: busy, then saved, and the page keeps the new value.

@@ -66,15 +66,15 @@ test('off is a 404 and the page is not in the navigation and on restores it', fu
     $workspace = capabilityWorkspace();
     $navigation = fn () => array_column($this->get('/@alpha/settings', capabilityInertia())->assertOk()->json('props.shell.navigation'), 'label');
     expect($navigation())->toContain('Dashboard');
-    $this->get('/@alpha/dashboard', capabilityInertia())->assertOk();
+    $this->get('/@alpha', capabilityInertia())->assertOk();
 
     capabilityInside(fn () => app(Capabilities::class)->setForWorkspace('workspace.dashboard', $workspace, false));
-    $this->get('/@alpha/dashboard', capabilityInertia())->assertNotFound();
-    $this->getJson('/@alpha/dashboard')->assertNotFound();
+    $this->get('/@alpha', capabilityInertia())->assertNotFound();
+    $this->getJson('/@alpha')->assertNotFound();
     expect($navigation())->not->toContain('Dashboard');
 
     capabilityInside(fn () => app(Capabilities::class)->setForWorkspace('workspace.dashboard', $workspace, null));
-    $this->get('/@alpha/dashboard', capabilityInertia())->assertOk();
+    $this->get('/@alpha', capabilityInertia())->assertOk();
     expect($navigation())->toContain('Dashboard');
 });
 test('a settings capability that is off hides its sections and its pages', function () {

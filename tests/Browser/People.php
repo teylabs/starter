@@ -34,7 +34,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
             AcceptInvitation::run($user, InviteMember::run($owner, $workspace, $email, new GrantSet(['viewer']))->token);
         }
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/settings/people')->assertSee('Members')->assertSee('Vera Viewer')->assertPresent('[data-data-table]')->assertNoJavaScriptErrors();
         $count = fn (string $tab): string => (string) $page->script('() => document.querySelector(`[data-tab="'.$tab.'"] [data-tab-count]`).textContent.trim()');
         expect([$count('members'), $count('invitations')])->toBe(['3', '0']);

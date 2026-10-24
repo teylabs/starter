@@ -33,7 +33,7 @@ test('titles are the breadcrumb label and the product', function () {
     RecordsFixtureProvider::install();
     $this->get('/login')->assertOk()->assertSee('<title inertia>Sign in · Product</title>', false);
     pageTitleSignIn(1);
-    foreach (['/dashboard' => 'Dashboard · Product', '/settings' => 'Settings · Product', '/records' => 'Records · Product', '/me' => 'Account · Product', '/settings/general' => 'General · Settings · Product', '/records/1' => 'Alpha private · Records · Product'] as $path => $title) {
+    foreach (['/' => 'Product', '/settings' => 'Settings · Product', '/records' => 'Records · Product', '/me' => 'Account · Product', '/settings/general' => 'General · Settings · Product', '/records/1' => 'Alpha private · Records · Product'] as $path => $title) {
         // The prop, for client-side visits, and the server-rendered <title>, so the first paint has it and no URL flashes.
         $this->get($path, pageTitleInertia())->assertOk()->assertJsonPath('props.layout.documentTitle', $title);
         $this->get($path)->assertOk()->assertSee('<title inertia>'.e($title).'</title>', false);

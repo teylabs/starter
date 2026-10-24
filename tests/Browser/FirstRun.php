@@ -47,7 +47,7 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
         }
         $page->click('[data-welcome-skip]')
-            ->assertPathBeginsWith('/dashboard')
+            ->assertPathIs('/')
             ->assertSeeIn('[data-slot="page-heading"]', 'Good')
             ->assertSeeIn('[data-welcome-title]', 'Welcome to')->assertSeeIn('[data-welcome-title]', 'Bea')->assertPresent('[data-welcome-card] [role="progressbar"]')
             ->assertSeeIn('[data-welcome-card]', 'Your workspace for '.$workspace->name.' is ready.')
@@ -112,7 +112,7 @@ it('sets the tz cookie on the first load and the server saves the zone from it',
         $page = visit('/login');
         $zone = $page->script('() => Intl.DateTimeFormat().resolvedOptions().timeZone');
         expect($page->script('() => document.cookie.split("; ").find((c) => c.startsWith("tz="))'))->toBe('tz='.rawurlencode($zone));
-        $page->click('[data-local-login] button')->assertPathIs('/dashboard')->navigate('/me/profile')->assertNoJavaScriptErrors();
+        $page->click('[data-local-login] button')->assertPathIs('/')->navigate('/me/profile')->assertNoJavaScriptErrors();
         expect(UserState::get(1, 'timezone'))->toBe($zone);
     } finally {
         putenv('APP_ENV='.$environment);

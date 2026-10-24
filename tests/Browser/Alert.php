@@ -21,7 +21,7 @@ it('shows the account notice as a polite, readable, undismissable alert', functi
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
         Route::middleware('web')->get('/_flash-notice', fn () => redirect('/me/password')->with('account_notice', 'Your password was changed.'));
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/_flash-notice')->assertPathIs('/me/password')
             ->assertPresent('[data-account-notice][data-slot="alert"][data-variant="info"][data-tier="pale"][role="status"]')
             ->assertSeeIn('[data-account-notice]', 'Your password was changed.')

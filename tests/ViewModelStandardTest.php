@@ -201,7 +201,7 @@ test('http freshness each visit carries its own navigation heading title and tra
     expect(collect($people['navigation'][0]['items'])->firstWhere('current', true)['label'])->toBe('People');
     expect($people['title'])->toBe('People');
     expect(array_column($people['breadcrumbs'], 'label'))->toBe(['Product name', 'Settings', 'People']);
-    $dashboard = $visit('/@alpha/dashboard');
+    $dashboard = $visit('/@alpha');
     expect($dashboard['navigation'])->toBe([]);
     expect(array_column($dashboard['breadcrumbs'], 'label'))->toBe(['Product name', 'Dashboard']);
 
@@ -230,14 +230,14 @@ test('the shell and layout run within a query budget and checks run once per req
 
         return count(DB::getQueryLog());
     };
-    $this->get('/@alpha/dashboard', viewModelStandardInertia())->assertOk();
-    $before = $queries('/@alpha/dashboard');
+    $this->get('/@alpha', viewModelStandardInertia())->assertOk();
+    $before = $queries('/@alpha');
 
     // Workspaces the viewer does not belong to add nothing: the shell reads the viewer's memberships, never every workspace.
     foreach (range(10, 40) as $id) {
         Workspace::query()->forceCreate(['id' => $id, 'name' => 'Other '.$id, 'slug' => 'other-'.$id, 'admitted' => true]);
     }
-    expect($queries('/@alpha/dashboard'))->toBe($before, 'more workspaces, no more queries');
+    expect($queries('/@alpha'))->toBe($before, 'more workspaces, no more queries');
 
     // A policy or capability check is decided once per user, permission and workspace in a request.
     $permissions = app(Permissions::class);

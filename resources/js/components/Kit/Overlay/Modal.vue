@@ -18,11 +18,8 @@ import ModalPanel from '@/components/Kit/Overlay/ModalPanel.vue';
  * bottom sheet, and lg, xl, full and slideovers are full screen. Confirmations and prompts are <Dialog>, not this.
  */
 const props = withDefaults(defineProps<{ title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; confirmMessage?: string }>(), {
-    description: undefined,
     size: 'lg',
     placement: 'center',
-    as: undefined,
-    submit: undefined,
     dirty: false,
     busyLabel: 'Saving…',
     cancelLabel: 'Cancel',
@@ -36,10 +33,10 @@ const emit = defineEmits<{ closed: [] }>();
 const injected = inject<{ value: unknown } | null>('modalContext', null);
 const server = Boolean(injected?.value);
 const localName = `kit-modal-${useId()}`;
-const modal = ref<InstanceType<typeof PackageModal>>();
+// The package ships no declaration for its Modal component, so its instance is typed here by the one method used.
+const modal = ref<{ close: () => void } | null>(null);
 const checks = new Set<() => boolean>();
 provide('kit.modal-guard', { register: (check: () => boolean) => checks.add(check), unregister: (check: () => boolean) => checks.delete(check) });
-const panel = ref<InstanceType<typeof ModalPanel>>();
 
 const widths: Record<string, string> = { sm: 'md', md: 'lg', lg: '2xl', xl: '4xl', full: '7xl' };
 const maxWidth = computed(() => widths[props.size]);
@@ -76,12 +73,12 @@ defineExpose({ close });
 <template>
     <PackageModal ref="modal" v-bind="server ? {} : { name: localName }" :close-button="false" close-explicitly :slideover="slideover" :max-width="maxWidth" padding-classes="" :panel-classes="panelClasses" :position="position">
         <Form v-if="formMode" v-slot="{ isDirty }" :action="submit!.url" :method="submit!.method as 'post'" :options="{ preserveScroll: true }" class="contents" data-form-modal @success="close()">
-            <ModalPanel ref="panel" :title="title" :description="description" :form-mode="true" :submit="submit" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="isDirty || dirty" :full-screen="fullScreen" :checks="checks" @close="close()">
+            <ModalPanel :title="title" :description="description" :form-mode="true" :submit="submit" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="isDirty || dirty" :full-screen="fullScreen" :checks="checks" @close="close()">
                 <template #actions><slot name="actions" /></template>
                 <slot />
             </ModalPanel>
         </Form>
-        <ModalPanel v-else ref="panel" :title="title" :description="description" :form-mode="false" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="dirty" :full-screen="fullScreen" :checks="checks" data-modal @close="close()">
+        <ModalPanel v-else :title="title" :description="description" :form-mode="false" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="dirty" :full-screen="fullScreen" :checks="checks" data-modal @close="close()">
             <template #actions><slot name="actions" /></template>
             <slot />
             <template v-if="$slots.footer" #footer="{ close: ask }"><slot name="footer" :close="ask" /></template>

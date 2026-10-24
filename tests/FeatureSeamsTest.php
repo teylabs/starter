@@ -17,7 +17,10 @@ test('fresh schema equals the released schema', function () {
     }
 
     // Notes is an opt-in kit example: a fresh starter has no notes tables.
-    expect(featureSeamsSchema())->toBe(featureSeamsReleased(withNotes: false));
+    // A fresh install has core's index on audit_events.workspace_id under the workspaces foreign key; the 0.2.1 dump had the key alone.
+    $released = featureSeamsReleased(withNotes: false);
+    $released['audit_events']['indexes'] = [[0, 'c', ['workspace_id']]];
+    expect(featureSeamsSchema())->toBe($released);
 });
 test('databases migrated by 0 2 move onto the kit migrations with their schema and data', function () {
     expect(app(Kernel::class)->call('migrate', ['--force' => true, '--path' => 'tests/Fixtures/v0.2.1-migrations']))->toBe(0);
@@ -31,7 +34,7 @@ test('databases migrated before the split keep their schema and data', function 
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
     expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class]);
-    expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => 'dashboard', 'group' => 'workspace', 'order' => -10, 'active' => null, 'slot' => 'primary']]);
+    expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary']]);
     $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings'];
     expect($registry->tokenScopes())->toBe($scopes);
     expect(Passport::scopeIds())->toBe(array_keys($scopes));
@@ -81,7 +84,7 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(16);
+    expect($kit)->toHaveCount(17);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);

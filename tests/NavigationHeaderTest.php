@@ -38,7 +38,7 @@ test('account pages escape to the workspace and other pages have no strip unless
     $header = fn (string $url): ?array => $this->get($url, navigationHeaderInertia())->assertOk()->json('props.layout.navigationHeader');
 
     // Top level: the dashboard and the settings landing page sit directly under the home.
-    expect($header('/@alpha/dashboard'))->toBeNull();
+    expect($header('/@alpha'))->toBeNull();
     expect($header('/@alpha/settings'))->toBeNull();
 
     // Settings sections have no strip; every /me page is an escape to the workspace the viewer was in; nothing is derived from the trail.
@@ -58,7 +58,7 @@ test('account pages escape to the workspace and other pages have no strip unless
 test('a nested resource page declares its parent explicitly through its view model', function () {
     require dirname(__DIR__).'/database/fixture.php';
     navigationHeaderSignIn(1);
-    $this->get('/@alpha/dashboard', navigationHeaderInertia())->assertOk();
+    $this->get('/@alpha', navigationHeaderInertia())->assertOk();
     $declared = new class extends PageViewModel
     {
         public function title(): string

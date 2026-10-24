@@ -49,7 +49,7 @@ function actionDescriptorsWalk(mixed $value, string $path, array &$found): void
 test('no response carries a can map or permission flag and denied actions are null or explained', function () {
     require dirname(__DIR__).'/database/fixture.php';
     expect(app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]))->toBe(0);
-    $pages = ['/@alpha/dashboard', '/@alpha/settings', '/@alpha/settings/general', '/@alpha/settings/people', '/@alpha/settings/connections', '/me', '/me/profile', '/me/workspaces'];
+    $pages = ['/@alpha', '/@alpha/settings', '/@alpha/settings/general', '/@alpha/settings/people', '/@alpha/settings/connections', '/me', '/me/profile', '/me/workspaces'];
     $found = [];
 
     // The guest pages, then the owner and the viewer.
@@ -69,7 +69,7 @@ test('no response carries a can map or permission flag and denied actions are nu
     // Role-denied is null, never disabled: General has no danger zone at all, Make owner is a row action for the owner, and the owner has no Leave.
     $this->assertArrayNotHasKey('transfer', $owner);
     $this->assertArrayNotHasKey('leave', $owner);
-    expect($this->get('/@alpha/dashboard', actionDescriptorsInertia())->json('props.shell.workspace.leave'))->toBeNull();
+    expect($this->get('/@alpha', actionDescriptorsInertia())->json('props.shell.workspace.leave'))->toBeNull();
     $rows = $this->get('/@alpha/settings/people', actionDescriptorsInertia())->json('props.table.rows');
     expect(array_map(fn (array $row) => array_column($row['actions'], 'key'), $rows))->toBe([[], ['change-role', 'transfer-ownership', 'remove']]);
     actionDescriptorsSignOut();
@@ -82,7 +82,7 @@ test('no response carries a can map or permission flag and denied actions are nu
     }
     $viewer = $this->get('/@alpha/settings/general', actionDescriptorsInertia())->assertOk()->json('props');
     expect($viewer['save'])->toBeNull('a viewer whose role can only read has no Save: the page is read-only, nothing is greyed out');
-    $leave = $this->get('/@alpha/dashboard', actionDescriptorsInertia())->json('props.shell.workspace.leave');
+    $leave = $this->get('/@alpha', actionDescriptorsInertia())->json('props.shell.workspace.leave');
     expect($leave['disabled'])->toBeFalse();
     expect($leave['method'])->toBe('delete');
     expect($found)->toBe([], 'no can map, can_* flag, permissions list or role flag in any page or shared prop');
@@ -116,7 +116,7 @@ test('an admin variant has no owner actions and every row action check is batche
     actionDescriptorsSignOut();
     actionDescriptorsSignIn(3);
     $found = [];
-    foreach (['/@alpha/dashboard', '/@alpha/settings', '/@alpha/settings/general', '/@alpha/settings/people', '/me/workspaces'] as $url) {
+    foreach (['/@alpha', '/@alpha/settings', '/@alpha/settings/general', '/@alpha/settings/people', '/me/workspaces'] as $url) {
         $response = $this->get($url, actionDescriptorsInertia());
         if ($response->getStatusCode() === 200) {
             actionDescriptorsWalk($response->json('props'), $url, $found);
@@ -126,7 +126,7 @@ test('an admin variant has no owner actions and every row action check is batche
     $general = $this->get('/@alpha/settings/general', actionDescriptorsInertia())->assertOk()->json('props');
     expect($general['save']['disabled'])->toBeFalse('an admin may change the settings');
     $this->assertArrayNotHasKey('transfer', $general);
-    $leave = $this->get('/@alpha/dashboard', actionDescriptorsInertia())->json('props.shell.workspace.leave');
+    $leave = $this->get('/@alpha', actionDescriptorsInertia())->json('props.shell.workspace.leave');
     expect([$leave['method'], $leave['disabled']])->toBe(['delete', false], 'an admin can leave');
     $people = $this->get('/@alpha/settings/people', actionDescriptorsInertia())->assertOk()->json('props');
     expect($people['invite']['label'])->toBe('Invite member');

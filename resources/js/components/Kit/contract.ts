@@ -94,3 +94,19 @@ export interface ToolbarProps { as?: string; asChild?: boolean; overflow?: 'wrap
  * `size` sm | md | lg | xl | full; `slideover`; bottom sheet (sm, md) or full screen (the rest) on phones.
  */
 export interface ModalProps { title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; confirmMessage?: string }
+
+/**
+ * A repeating group of rows posted as native bracket paths (`name[0][field]`). `rows` carry string ids and a server-supplied `template` (without an id) is cloned for each added row, which gets a `new:` id. Deletion is staged in the form, never a request. `removable` is `true`, `false` or a server descriptor `{ label, rowIds }` that decides which ids show a remove control (visibility only: save must re-authorize). `limits` bound the row count. `errors` default to the Inertia form's. Reordering is by move buttons. One nested Repeater is supported.
+ * Slots: `row` ({ row, index, name(field), errors }), `row-title`, `row-actions`, `row-menu`, `before-rows`, `empty`. Event: `change` (the stable row ids in order). `columns` switches to an input-grid layout (one header row, one cell per column; narrow containers stack); `gridClass`, `headerClass` and `rowClass` shape it, `flush` removes the card padding. `actionsInMenu` moves row actions and Remove into a menu. `externalAdd` hides the built-in add button; the page calls the exposed `add(overrides?)` itself.
+ */
+export interface RepeaterProps<T extends { id: string } = { id: string }> { name: string; rows: T[]; template?: Omit<T, 'id'>; limits?: { min?: number; max?: number }; addLabel: string; itemLabel: string; reorderable?: boolean; actionsInMenu?: boolean; removable?: boolean | { label: string; rowIds: string[] }; errors?: Record<string, string>; flush?: boolean; externalAdd?: boolean; columns?: string[]; gridClass?: string; headerClass?: string; rowClass?: string }
+
+/**
+ * An exact-number input. The visible field is labelled and unnamed; a hidden control carries `name` and the canonical string (money in integer minor units, decimals at a fixed `scale`, integers as digits; empty stays empty). Excess precision is invalid, never rounded, and blocks submission. `min`, `max` and `step` are canonical strings and client hints only: check them again on the server. `locale` comes from the host (default en-CA; Latin digits only). Inside a Repeater row it reads its error from the row. Event: `canonical` (the exact string).
+ */
+export interface NumberInputProps { name: string; label: string; kind?: 'money' | 'decimal' | 'integer'; id?: string; currency?: string; locale?: string; scale?: number; signed?: boolean; grouping?: boolean; defaultValue?: string; min?: string; max?: string; step?: string; unit?: string; suffix?: string; placeholder?: string; error?: string; disabled?: boolean; required?: boolean }
+
+/**
+ * A scrolling list over a server `ScrollListViewModel` prop named `listKey` (Inertia infinite scroll, cursor paging). The default row draws a `ListItemData` (title, link, description, meta, badges, actions through RowActions); the `row` slot ({ item }) draws a richer one. "Load more" is always present while there is more; a failed load keeps the rows and offers Retry. Cursor-only, fixed selection, count-free: no sorts, segments, totals, polling, page or simple modes.
+ */
+export interface ScrollListProps { listKey: string; title: string; density?: 'default' | 'compact' }

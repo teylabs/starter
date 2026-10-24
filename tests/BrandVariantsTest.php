@@ -45,19 +45,19 @@ test('the switch chooses a preset for the session and clears it in a local envir
 
     // Signed in as the tests do; the environment becomes local for the page requests.
     brandVariantsLocal(true);
-    $this->get('/dashboard?brand=fill-one')->assertOk()->assertSee(':root{--primary:#2563eb;--primary-foreground:#ffffff;--ring:#1d4ed8', false)->assertSee('content="#2563eb"', false);
+    $this->get('/?brand=fill-one')->assertOk()->assertSee(':root{--primary:#2563eb;--primary-foreground:#ffffff;--ring:#1d4ed8', false)->assertSee('content="#2563eb"', false);
 
     // It stays for the session, and a second preset replaces it.
-    $this->get('/dashboard', brandVariantsInertia())->assertOk();
+    $this->get('/', brandVariantsInertia())->assertOk();
     expect(session('kit.brand_preset'))->toBe('fill-one');
-    $mono = $this->get('/dashboard?brand=mono-one')->assertOk();
+    $mono = $this->get('/?brand=mono-one')->assertOk();
     $mono->assertSee('[data-shell-bar]{--background:#050505', false)->assertDontSee('--primary:#2563eb', false);
 
     // An unknown name, or none, goes back to the configured brand.
-    $this->get('/dashboard?brand=nonsense')->assertOk()->assertDontSee('--brand-marker', false);
-    $this->get('/dashboard?brand=fill-one');
-    $this->get('/dashboard?brand=')->assertOk()->assertDontSee('--brand-marker', false);
-    $this->get('/dashboard', brandVariantsInertia())->assertOk();
+    $this->get('/?brand=nonsense')->assertOk()->assertDontSee('--brand-marker', false);
+    $this->get('/?brand=fill-one');
+    $this->get('/?brand=')->assertOk()->assertDontSee('--brand-marker', false);
+    $this->get('/', brandVariantsInertia())->assertOk();
     expect(session('kit.brand_preset'))->toBeNull();
 });
 test('the switch is ignored outside a local environment', function () {

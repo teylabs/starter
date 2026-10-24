@@ -81,7 +81,7 @@ test('the settings dropdown is gone', function () {
     settingsLandingSignIn(1);
 
     // The shell carries no settings menu and the nav no settings slot.
-    $this->get('/dashboard', settingsLandingInertia())->assertOk()->assertJsonMissingPath('props.layout.settings');
+    $this->get('/', settingsLandingInertia())->assertOk()->assertJsonMissingPath('props.layout.settings');
     $this->assertFileDoesNotExist(base_path('resources/js/pages/Workspace/Partials/SettingsMenu.vue'));
     foreach (['Layout.vue', 'Partials/ShellDrawer.vue', 'Partials/PrimaryNav.vue'] as $file) {
         $this->assertStringNotContainsString('SettingsMenu', file_get_contents(base_path('resources/js/pages/Workspace/'.$file)), $file);
@@ -103,7 +103,7 @@ test('a section page carries the sidebar with the current section marked', funct
         expect($nav[0]['items'][0]['icon'])->toBe('sliders-horizontal');
     }
     $this->get('/settings', settingsLandingInertia())->assertJsonPath('props.layout.navigation', []);
-    $this->get('/dashboard', settingsLandingInertia())->assertJsonPath('props.layout.navigation', []);
+    $this->get('/', settingsLandingInertia())->assertJsonPath('props.layout.navigation', []);
 
     // A viewer's navigation lists only what the viewer may open.
     app(Registry::class)->settingsSection('workspace', 'owner-only', 'Owner only', 'Needs write access.', 'settings.write', 'Workspace', 30);

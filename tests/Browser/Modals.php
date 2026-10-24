@@ -44,7 +44,7 @@ it('opens, validates, submits and closes the form modals over People', function 
             AcceptInvitation::run($user, InviteMember::run($owner, Workspace::query()->firstOrFail(), $user->email, new GrantSet(['viewer']))->token);
         }
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->resize(1440, 900)->navigate('/settings/people')->assertSee('People');
         $count = fn (string $tab): string => (string) $page->script('() => document.querySelector(`[data-tab="'.$tab.'"] [data-tab-count]`).textContent.trim()');
 
@@ -120,7 +120,7 @@ it('works locally with v-model:open: the same Modal and Dialog', function (): vo
         expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
         app('router')->middleware(['web', 'auth:web', 'concierge.active'])->get('/_test/local-modal', fn () => Inertia\Inertia::render('Workspace/Examples/LocalModal/Page', ['title' => 'Local modal']));
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/dashboard');
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->resize(1440, 900)->navigate('/_test/local-modal')->assertPresent('[data-open-local]');
         $page->click('[data-open-local]')->assertSee('A local modal')->assertSee('Local content.');
         $page->click('[data-local-done]')->assertDontSee('A local modal');

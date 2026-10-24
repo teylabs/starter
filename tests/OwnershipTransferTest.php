@@ -65,7 +65,7 @@ test('the owner passes ownership and becomes an admin', function () {
     $make = collect($make)->firstWhere('key', 'transfer-ownership');
     expect([$make['label'], $make['url']])->toBe(['Make owner', '/settings/ownership']);
     expect($make['confirm'])->not->toBeNull();
-    $this->get('/@alpha/dashboard', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave', null);
+    $this->get('/@alpha', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave', null);
     ownershipTransferTransfer(3)->assertOk()->assertJsonPath('owner_membership_id', ownershipTransferMembership(1, 3)->id);
     expect(ownershipTransferRoles(3))->toBe(['owner']);
     expect(ownershipTransferRoles(1))->toBe(['admin']);
@@ -127,14 +127,14 @@ test('an owner cannot leave until ownership moves and a member can leave', funct
     $leave = '/me/workspaces/alpha/membership';
 
     // The owner has no Leave in the switcher menu or on the chooser (absent, not disabled), and the server refuses it with the reason.
-    $this->get('/@alpha/dashboard', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave', null);
+    $this->get('/@alpha', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave', null);
     $this->getJson('/me/workspaces')->assertOk()->assertJsonPath('workspaces.0.leave', null);
     $this->deleteJson($leave)->assertUnprocessable()->assertJsonValidationErrors('leave');
     expect(Membership::query()->where('workspace_id', 1)->where('user_id', 1)->exists())->toBeTrue();
 
     // After the transfer the former owner (an admin now) is offered Leave in both places, and leaving removes access.
     ownershipTransferTransfer(3)->assertOk();
-    $this->get('/@alpha/dashboard', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave.url', $leave)->assertJsonPath('props.shell.workspace.leave.method', 'delete')->assertJsonPath('props.shell.workspace.leave.disabled', false);
+    $this->get('/@alpha', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave.url', $leave)->assertJsonPath('props.shell.workspace.leave.method', 'delete')->assertJsonPath('props.shell.workspace.leave.disabled', false);
     $this->getJson('/me/workspaces')->assertJsonPath('workspaces.0.leave.url', $leave)->assertJsonPath('workspaces.0.leave.disabled', false);
     $this->delete($leave)->assertRedirect('/me/workspaces')->assertStatus(303);
     $this->get('/@alpha/settings/general', ownershipTransferInertia())->assertNotFound();

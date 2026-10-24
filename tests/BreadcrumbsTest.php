@@ -70,16 +70,16 @@ test('the trail to a record page in both url forms', function () {
     $this->get('/records', breadcrumbsInertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Records', 'url' => '/records', 'current' => true, 'home' => false]]);
 
     // The dashboard and settings are siblings under home, not nested.
-    $this->get('/dashboard', breadcrumbsInertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Dashboard', 'url' => '/dashboard', 'current' => true, 'home' => false]]);
+    $this->get('/', breadcrumbsInertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [[...$home, 'current' => true]]);
     $this->get('/settings', breadcrumbsInertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$home, ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false]]);
 
     // Two workspaces: the same trail, in the full form; home is "/" and is named by the workspace.
     breadcrumbsAddSecondWorkspace();
-    $alpha = ['label' => 'Alpha', 'url' => '/', 'current' => false, 'home' => true];
+    $alpha = ['label' => 'Alpha', 'url' => '/@alpha', 'current' => false, 'home' => true];
     $this->get('/@alpha/records/1', breadcrumbsInertia())->assertOk()
         ->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Records', 'url' => '/@alpha/records', 'current' => false, 'home' => false], ['label' => 'Alpha private', 'url' => '/@alpha/records/1', 'current' => true, 'home' => false]]);
     $this->get('/records/1', breadcrumbsInertia())->assertOk()
-        ->assertJsonPath('props.layout.breadcrumbs.0.url', '/')->assertJsonPath('props.layout.breadcrumbs.1.url', '/@alpha/records');
+        ->assertJsonPath('props.layout.breadcrumbs.0.url', '/@alpha')->assertJsonPath('props.layout.breadcrumbs.1.url', '/@alpha/records');
 
     // The personal page is rooted at home too, with no workspace in its own links.
     $this->get('/me/workspaces', breadcrumbsInertia())->assertOk()->assertJsonPath('props.layout.breadcrumbs', [$alpha, ['label' => 'Account', 'url' => '/me', 'current' => false, 'home' => false], ['label' => 'Workspaces', 'url' => '/me/workspaces', 'current' => true, 'home' => false]]);
@@ -98,7 +98,7 @@ test('every page route has a breadcrumb', function () {
     }
 
     // Every kit page, in both URL forms, and the personal one.
-    foreach (['@{workspace}/dashboard', 'dashboard', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
+    foreach (['@{workspace}', '/', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
         expect($checked)->toContain($uri);
     }
 });
@@ -108,7 +108,7 @@ test('the current crumb is a real link to its own url', function () {
     breadcrumbsSignIn(1);
 
     // The last crumb carries its own URL (a link, not plain text) and is marked current; the ancestors are not.
-    foreach (['/dashboard', '/settings', '/settings/general', '/records', '/records/1', '/me'] as $path) {
+    foreach (['/', '/settings', '/settings/general', '/records', '/records/1', '/me'] as $path) {
         $crumbs = $this->get($path, breadcrumbsInertia())->assertOk()->json('props.layout.breadcrumbs');
         $last = end($crumbs);
         expect($last['current'])->toBeTrue($path);
