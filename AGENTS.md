@@ -8,7 +8,7 @@ Guidance for contributors and coding agents working in this repository.
 - Fail closed, and restore tenant, permission and settings context in `finally` blocks.
 - Keep capabilities, entitlements, membership and admission distinct.
 - State missing Inertia, protocol, lifecycle or platform coverage explicitly rather than implying it.
-- Run local tests with `composer test` (`pest --tia`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; CI, PARATEST and PEST_TIA bypass the guard.
+- Run local tests with `composer test` (`pest --tia`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; CI, PARATEST or PEST_TIA set to a non-empty value bypasses the guard (an empty `CI=` does not). TIA diffs against `main`, or `TIA_DEFAULT_BRANCH` when set.
 - Never edit a file a kit feature owns (`database/migrations/kit/**`, the kit's pages): CI checks them against `kit:add`.
 
 ## Gates

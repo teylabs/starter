@@ -31,10 +31,17 @@ pest()->extend(StorageCase::class)->in(...$tests($storage));
 pest()->extend(TestCase::class)->in(...array_values(array_diff(glob(__DIR__.'/*Test.php'), $tests([...$records, ...$storage, ...$plain]))));
 
 // Runtime coverage cannot prove client behaviour or discover every dynamic dependency, so files it cannot see re-run the suite.
-pest()->tia()->defaultBranch('main')->directory('.phpunit.cache/tia')->watch([
+// database/** covers the factories and seeders. The arch tests read source and workflow files rather than executing them, so coverage never links them;
+// the application-free checks are re-run on any change under tests/ (the guard and helpers they load are not covered files).
+$arch = ['FeatureGraph', 'HandsFreeDeploy', 'KitUi', 'Lifecycle', 'SettingsForms', 'ViewModelStandard'];
+$tia = pest()->tia()->defaultBranch(TiaGuard::defaultBranch(getenv()))->directory('.phpunit.cache/tia')->watch([
     'config/**' => 'tests',
     'routes/**' => 'tests',
     'resources/js/**' => 'tests',
     'resources/css/**' => 'tests',
     'database/**' => 'tests',
 ]);
+foreach ([...$tests($arch), ...$tests($plain)] as $index => $file) {
+    $target = 'tests/'.basename($file);
+    $tia->watch($index < count($arch) ? ['app/**' => $target, '.github/workflows/**' => $target] : ['tests/**' => $target]);
+}
