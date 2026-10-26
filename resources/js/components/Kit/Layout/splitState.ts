@@ -1,4 +1,5 @@
 import type { Method } from '@inertiajs/core';
+import { http } from '@inertiajs/vue3';
 
 /**
  * SplitPane's storage for Reka's Splitter (its `storage` option): the layout state only, never files or form contents. Reading prefers the server's `state`, then a
@@ -36,11 +37,10 @@ export function splitStorage(options: { key: string; scope: string; state?: stri
 
 /**
  * A standalone request through Inertia's HTTP client (not a page visit, so it stays separate from the form's): the host's `http` interceptors and
- * client apply, and the client sends Laravel's XSRF token. A non-2xx response or a network failure resolves false. Imported on first save, so the storage loads without Inertia.
+ * client apply, and the client sends Laravel's XSRF token. A non-2xx response or a network failure resolves false.
  */
 export const sendPreference: SplitSend = async (preference, body) => {
     try {
-        const { http } = await import('@inertiajs/vue3');
         const response = await http.getClient().request({ method: preference.method.toLowerCase() as Method, url: preference.url, data: body, headers: { Accept: 'application/json' } });
         return response.status >= 200 && response.status < 300;
     } catch {

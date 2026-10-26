@@ -4,6 +4,7 @@
 
 ### Changed
 
+- The starter pins `tey/kit` ^0.4.1 (kit#117). The kit-owned `Layout/splitState.ts` is resynced from `kit:add`: it imports `http` from `@inertiajs/vue3` statically, which clears Vite's INEFFECTIVE_DYNAMIC_IMPORT warning. No other kit-owned file changed, and the mcp feature has no host-owned middleware change.
 - `vite build` prints no chunk-size warning: `vite.config.ts` splits the TanStack and UI vendor libraries into their own chunks instead of one 546 kB `Kit` chunk. `chunkSizeWarningLimit` is unchanged.
 - The starter pins `tey/standards` ^0.10.1 (was ^0.7). The non-blocking preflight level is `advisory` (JSON `level`, was `warning`), a non-interactive preflight prints only failed and advisory rows plus a summary, and `install.sessions` blocks a deployed Passport app on a cookie or unset `SESSION_DRIVER`. `.env.example`, `.env.production.example` and the production rehearsal CI jobs already set `SESSION_DRIVER=database`, and `docs/deploy.md` now names the check.
 - The starter pins `tey/kit` ^0.3.2. The kit-owned `DataTable.vue` is resynced from `kit:add`: a table's row count shows on a single page and only the page links wait for a second one. The dashboard greeting's workspace-timezone fix ships in the package, so there is no file to resync for it.
