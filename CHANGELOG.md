@@ -9,6 +9,9 @@
 
 ### Fixed
 
+- An empty `CI=` no longer bypasses the local TIA guard: `CI`, `PARATEST` and `PEST_TIA` count only when non-empty.
+- TIA's base branch is the host's: `TIA_DEFAULT_BRANCH` (default `main`) instead of a hard-coded `main`.
+- The TIA watch map re-runs the source-reading arch tests on `app/**` and `.github/workflows/**`, and the application-free checks on `tests/**`. Factories and seeders were already covered by `database/**`.
 - The browser test reads the expected fonts from the active kit set, so `composer test:browser` passes whichever `KIT_FONTS` an app uses. CI also runs it with `instrument-inter` (#54)
 
 ## v0.3.2
