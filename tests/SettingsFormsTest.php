@@ -85,7 +85,7 @@ test('every kit input that a form can hold submits a native named value', functi
     $this->assertStringContainsString('type="hidden" :name="name" :value="model ?? \'\'"', $select);
     $this->assertStringContainsString("new Event('input', { bubbles: true })", $select);
     $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'TimezoneSelect.vue'));
-    $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'Checkbox.vue'));
+    $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'InputCheckbox.vue'));
     foreach (['Input', 'Textarea', 'PasswordInput', 'FileInput'] as $native) {
         $this->assertStringContainsString('<', (string) file_get_contents($root.$native.'.vue'));
         // Attributes (name, value, required) fall through to the native control: no inheritAttrs lock that drops them.

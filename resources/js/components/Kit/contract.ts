@@ -104,7 +104,9 @@ export interface RepeaterProps<T extends { id: string } = { id: string }> { name
 /**
  * An exact-number input. The visible field is labelled and unnamed; a hidden control carries `name` and the canonical string (money in integer minor units, decimals at a fixed `scale`, integers as digits; empty stays empty). Excess precision is invalid, never rounded, and blocks submission. `min`, `max` and `step` are canonical strings and client hints only: check them again on the server. `locale` comes from the host (default en-CA; Latin digits only). Inside a Repeater row it reads its error from the row. Event: `canonical` (the exact string).
  */
-export interface NumberInputProps { name: string; label: string; kind?: 'money' | 'decimal' | 'integer'; id?: string; currency?: string; locale?: string; scale?: number; signed?: boolean; grouping?: boolean; defaultValue?: string; min?: string; max?: string; step?: string; unit?: string; suffix?: string; placeholder?: string; error?: string; disabled?: boolean; required?: boolean }
+export interface InputNumberProps { name: string; label: string; kind?: 'money' | 'decimal' | 'integer'; id?: string; currency?: string; locale?: string; scale?: number; signed?: boolean; grouping?: boolean; defaultValue?: string; min?: string; max?: string; step?: string; unit?: string; suffix?: string; placeholder?: string; error?: string; disabled?: boolean; required?: boolean }
+/** @deprecated Use InputNumberProps; removed in 0.4. */
+export type NumberInputProps = InputNumberProps;
 
 /**
  * A scrolling list over a server `ScrollListViewModel` prop named `listKey` (Inertia infinite scroll, cursor paging). The default row draws a `ListItemData` (title, link, description, meta, badges, actions through RowActions); the `row` slot ({ item }) draws a richer one. "Load more" is always present while there is more; a failed load keeps the rows and offers Retry. Cursor-only, fixed selection, count-free: no sorts, segments, totals, polling, page or simple modes.

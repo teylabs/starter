@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- The kit's form inputs take their 0.3 names: `NumberInput` is `InputNumber` and `Checkbox` is `InputCheckbox` (`resources/js/components/Kit/Form/`, exported from `@kit/ui`). The Login and Connections pages use `InputCheckbox`. The old names stay as deprecated aliases until kit 0.4, and `Select` is deprecated in favour of `InputSelect`. Upgrading: rename your own `NumberInput`, `NumberInputProps` and `Checkbox` imports before kit 0.4.
+
 ### Fixed
 
 - The browser test reads the expected fonts from the active kit set, so `composer test:browser` passes whichever `KIT_FONTS` an app uses. CI also runs it with `instrument-inter` (#54)

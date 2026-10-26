@@ -13,7 +13,9 @@ export { default as Avatar } from './Layout/Avatar.vue';
 export { default as BlockStack } from './Layout/BlockStack.vue';
 export { default as Toolbar } from './Layout/Toolbar.vue';
 export { default as Button } from './Form/Button.vue';
-export { default as Checkbox } from './Form/Checkbox.vue';
+export { default as InputCheckbox } from './Form/InputCheckbox.vue';
+/** @deprecated Use InputCheckbox; removed in 0.4. */
+export { default as Checkbox } from './Form/InputCheckbox.vue';
 export { default as DataTable } from './Table/DataTable.vue';
 export { default as Dialog } from './Overlay/Dialog.vue';
 export { default as Modal } from './Overlay/Modal.vue';
@@ -28,13 +30,16 @@ export { default as PasswordInput } from './Form/PasswordInput.vue';
 export { default as SectionIcon } from './Layout/SectionIcon.vue';
 export { default as SettingsFrame } from './Layout/SettingsFrame.vue';
 export { default as Section } from './Form/Section.vue';
+/** @deprecated Use InputSelect, the kit's rich select; Select stays until 0.4. */
 export { default as Select } from './Form/Select.vue';
 export { default as Textarea } from './Form/Textarea.vue';
 export { default as TimezoneSelect } from './Form/TimezoneSelect.vue';
 export { default as RowActions } from './Table/RowActions.vue';
 export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 export { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-export { default as NumberInput } from './Form/NumberInput.vue';
+export { default as InputNumber } from './Form/InputNumber.vue';
+/** @deprecated Use InputNumber; removed in 0.4. */
+export { default as NumberInput } from './Form/InputNumber.vue';
 export { numberFormat } from './Form/number';
 export type { NumberKind, NumberOptions } from './Form/number';
 export { default as Repeater } from './Form/Repeater.vue';
