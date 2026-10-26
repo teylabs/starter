@@ -36,7 +36,7 @@ Everything the platform does not inject is set by hand. Each line says how to ch
 | `MAIL_MAILER=resend`, `RESEND_KEY` | The Resend API key. The starter requires `resend/resend-php`; any other mailer needs its own package, and preflight names it when it is missing. | preflight `install.mail`, `install.secrets` |
 | `MEDIA_DISK=s3` and the `AWS_*` bucket variables | The one private bucket (Cloud injects them for an attached bucket) | preflight `install.filesystems` |
 | `KIT_BRAND_*` and `APP_NAME` | Your own name, logomark, accent and the four mail addresses (updates@, support@, hello@, privacy@) | `/up` answers 200 (it refuses the template's stand-ins in production) |
-| `CACHE_STORE`, `SESSION_DRIVER`, `QUEUE_CONNECTION` | `database` for the first two (the tables are migrations); `sync`, or `database` with a worker | preflight `install.tables`, `install.drivers` |
+| `CACHE_STORE`, `SESSION_DRIVER`, `QUEUE_CONNECTION` | `database` for the first two (the tables are migrations); `sync`, or `database` with a worker | preflight `install.tables`, `install.drivers`. With Passport installed, `install.sessions` blocks the deploy on `cookie` or an unset `SESSION_DRIVER`: set `SESSION_DRIVER=database` explicitly, since OAuth consent outgrows a 4KB cookie |
 | `CONCIERGE_OWNERS` | The workspace owner's email, if the app uses `concierge:owners` | `php artisan concierge:owners --workspace=<key>` |
 
 ## TLS
