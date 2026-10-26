@@ -2,7 +2,7 @@
 
 > Built for the Tey Labs fleet. Public but unsupported: no support, no stability promise, use at your own risk.
 
-The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with every kit feature added: workspace membership and invitations, versioned settings and Notes shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Maintained packages own their jobs; no production application or database is copied.
+The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with every kit feature added: workspace membership and invitations, versioned settings shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Maintained packages own their jobs; no production application or database is copied.
 
 PHP 8.4 or 8.5 and Node 22 are required.
 
@@ -20,19 +20,19 @@ From a fresh clone (or `laravel new app --using=tey/starter` once the template i
 
 ```sh
 vendor/bin/pint --test
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 composer test:browser
 npm run typecheck && npm run build && npm test
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `phpunit` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
+The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `pest` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
 
 ```sh
 createdb starter_test   # a disposable database: the tests wipe it
 export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 ```
 
@@ -51,7 +51,7 @@ MIT, see [LICENSE](LICENSE). The UI primitives and sign-in page come from Larave
 ## Docs
 
 - [Architecture](docs/architecture.md): tey/kit, the packages and the job each owns
-- [Operations](docs/operations.md): settings and Notes, versions, intent keys, audit
+- [Operations](docs/operations.md): settings, versions, intent keys, audit
 - [Transports](docs/transports.md): session/Inertia and MCP/OAuth, scopes, consent
 - [Lifecycle](docs/lifecycle.md): install, kit features, migrations from 0.2 and updates
 - [Deploy](docs/deploy.md): the Laravel Cloud deploy commands, in order

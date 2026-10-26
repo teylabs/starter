@@ -2,8 +2,17 @@
 
 ## Unreleased
 
+### Changed
+
+- The starter pins the released kit: `tey/kit` ^0.3.1 (with tey/mod 0.11.1, recorded in `config/kit-executor.json`, and tey/concierge ^0.8.2) instead of a kit main commit. The kit-owned files are resynced from `kit:add`: LockedForm, EditOnly and useLocked, the native-fieldset FormFieldset, SplitPane and the Pane parts, BulkDrop, and the updated ActionBar and inputs. The feature graph guard lets a feature use the kit's library code outside Features (`Tey\Kit\Mail\…`, `Tey\Kit\Brand`), which the invitation email needs for `FluentMailMessage`. The cursor guard lets a LockedForm's read-only Select trigger use the default cursor.
+- The starter follows kit main (5619adf): tey/kit is required as `dev-main` at that commit instead of a local path repository, with tey/mod 0.11 and tey/concierge 0.8.2. The kit-owned files are regenerated from `kit:add` of every feature, which now includes `shell` (in `config/kit.php`). That brings the page-action, menu and InputSelect components, the shell's GuestShell, SubNav and Wordmark partials, `resources/js/types/kit-shell.d.ts` and the entitlements migration. Vite and `tsconfig.json` alias `@kit/shell` to the shell's Partials barrel, `tsconfig.json` adds `DOM.Iterable`, and reka-ui is 2.11.0, the version InputSelect is verified on. `config/kit-executor.json` records Mod v0.11.0. The tests follow: the feature graph has Shell, seven lineages, the entitlements schema and migration, the `kitUi` and `environment` shared props, and the mark checked through the Wordmark partial.
+- The kit's form inputs take their 0.3 names: `NumberInput` is `InputNumber` and `Checkbox` is `InputCheckbox` (`resources/js/components/Kit/Form/`, exported from `@kit/ui`). The Login and Connections pages use `InputCheckbox`. The old names stay as deprecated aliases until kit 0.4, and `Select` is deprecated in favour of `InputSelect`. Upgrading: rename your own `NumberInput`, `NumberInputProps` and `Checkbox` imports before kit 0.4.
+
 ### Fixed
 
+- An empty `CI=` no longer bypasses the local TIA guard: `CI`, `PARATEST` and `PEST_TIA` count only when non-empty.
+- TIA's base branch is the host's: `TIA_DEFAULT_BRANCH` (default `main`) instead of a hard-coded `main`.
+- The TIA watch map re-runs the source-reading arch tests on `app/**` and `.github/workflows/**`, and the application-free checks on `tests/**`. Factories and seeders were already covered by `database/**`.
 - The browser test reads the expected fonts from the active kit set, so `composer test:browser` passes whichever `KIT_FONTS` an app uses. CI also runs it with `instrument-inter` (#54)
 
 ## v0.3.2

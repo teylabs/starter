@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Wordmark from '@/components/Shell/Wordmark.vue';
 
@@ -13,11 +13,12 @@ withDefaults(
     { title: '', description: '', wide: false, showHeading: false },
 );
 
-const page = usePage<{ layout?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
-const product = computed(() => page.props.layout?.brand ?? '');
+const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.GuestShellData; layout?: { documentTitle: string } }>();
+const product = computed(() => page.props.shell?.product.name ?? '');
 </script>
 
 <template>
+    <Head :title="page.props.layout?.documentTitle" />
     <div
         class="flex min-h-svh flex-col bg-muted/40 text-foreground"
         :class="

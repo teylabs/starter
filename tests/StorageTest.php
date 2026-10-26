@@ -1,54 +1,39 @@
 <?php
 
 use Illuminate\Filesystem\AwsS3V3Adapter;
-use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as FlysystemAdapter;
+use Tests\Concerns\Template;
+use Tests\StorageCase;
 
-require dirname(__DIR__).'/vendor/autoload.php';
+require_once __DIR__.'/Concerns/Template.php';
 
-/** The private s3 disk builds on the S3 adapter from Laravel Cloud's bucket variables, and media is stored on it. Nothing is sent. */
-final class StorageTest extends TestCase
-{
-    private const BUCKET = ['AWS_ACCESS_KEY_ID' => 'synthetic-key', 'AWS_SECRET_ACCESS_KEY' => 'synthetic-secret', 'AWS_DEFAULT_REGION' => 'auto', 'AWS_BUCKET' => 'synthetic-bucket', 'AWS_ENDPOINT' => 'https://synthetic.r2.example.test', 'AWS_URL' => 'https://synthetic.r2.example.test/synthetic-bucket', 'AWS_USE_PATH_STYLE_ENDPOINT' => 'true'];
-
-    public function createApplication()
-    {
-        foreach (self::BUCKET as $key => $value) {
-            putenv($key.'='.$value);
-            $_ENV[$key] = $_SERVER[$key] = $value;
-        }
-
-        return require __DIR__.'/application.php';
+afterEach(function () {
+    foreach (array_keys(StorageCase::BUCKET) as $key) {
+        putenv($key);
+        unset($_ENV[$key], $_SERVER[$key]);
     }
+});
+test('the private s3 disk builds on the s3 adapter', function () {
+    $disk = Storage::disk('s3');
+    expect($disk)->toBeInstanceOf(AwsS3V3Adapter::class);
+    expect($disk->getAdapter())->toBeInstanceOf(FlysystemAdapter::class);
+    $client = $disk->getClient();
+    expect($disk->getConfig()['bucket'])->toBe('synthetic-bucket');
+    expect($disk->getConfig()['visibility'])->toBe('private');
+    expect($client->getConfig('use_path_style_endpoint'))->toBeTrue();
+    expect($client->getRegion())->toBe('auto');
+    expect((string) $client->getEndpoint())->toBe('https://synthetic.r2.example.test');
 
-    protected function tearDown(): void
-    {
-        foreach (array_keys(self::BUCKET) as $key) {
-            putenv($key);
-            unset($_ENV[$key], $_SERVER[$key]);
-        }
-        parent::tearDown();
+    // Path-style: the bucket is the first path segment, not a subdomain.
+    expect($disk->temporaryUrl('media/1.txt', now()->addMinutes(5)))->toStartWith('https://synthetic.r2.example.test/synthetic-bucket/media/1.txt?');
+});
+test('media is on the private local disk by default and a private bucket when the disk is s3', function () {
+    // Development stores avatars on the private `local` disk; production sets MEDIA_DISK=s3 and the bucket's variables (see docs/deploy.md).
+    expect(config('media-library.disk_name'))->toBe('local');
+    expect(config('filesystems.disks.local.driver'))->toBe('local');
+    expect(config('filesystems.disks.s3.visibility'))->toBe('private');
+    if (Template::isTemplate()) {
+        $this->assertStringContainsString('MEDIA_DISK=local', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
     }
-
-    public function test_the_private_s3_disk_builds_on_the_s3_adapter(): void
-    {
-        $disk = Storage::disk('s3');
-        $this->assertInstanceOf(AwsS3V3Adapter::class, $disk);
-        $this->assertInstanceOf(FlysystemAdapter::class, $disk->getAdapter());
-        $client = $disk->getClient();
-        $this->assertSame('synthetic-bucket', $disk->getConfig()['bucket']);
-        $this->assertSame('private', $disk->getConfig()['visibility']);
-        $this->assertTrue($client->getConfig('use_path_style_endpoint'));
-        $this->assertSame('auto', $client->getRegion());
-        $this->assertSame('https://synthetic.r2.example.test', (string) $client->getEndpoint());
-        // Path-style: the bucket is the first path segment, not a subdomain.
-        $this->assertStringStartsWith('https://synthetic.r2.example.test/synthetic-bucket/media/1.txt?', $disk->temporaryUrl('media/1.txt', now()->addMinutes(5)));
-    }
-
-    public function test_media_is_stored_on_the_private_disk(): void
-    {
-        $this->assertSame('s3', config('media-library.disk_name'));
-        $this->assertSame('private', config('filesystems.disks.'.config('media-library.disk_name').'.visibility'));
-    }
-}
+});

@@ -2,13 +2,17 @@
 
 require __DIR__.'/application.php';
 require dirname(__DIR__).'/database/fixture.php';
+require_once __DIR__.'/Fixtures/RecordsFixture.php';
 use Illuminate\Support\Facades\DB;
-use Tey\Kit\Features\Notes\Models\Note;
+use Tests\Fixtures\Record;
+use Tests\Fixtures\RecordsFixtureProvider;
 use Tey\Kit\Features\Settings\WorkspaceSettings;
 use Tey\Kit\Features\Workspaces\TenantBoundary;
 
+RecordsFixtureProvider::install();
+
 $boundary = app(TenantBoundary::class);
-$held = $boundary->run(1, fn () => Note::query()->firstOrFail());
+$held = $boundary->run(1, fn () => Record::query()->firstOrFail());
 try {
     $boundary->run(2, function () use ($held): void {
         $held->workspace_id = 2;
@@ -21,14 +25,14 @@ try {
         throw $e;
     }
 }
-if (DB::table('notes')->count() !== 2) {
+if (DB::table('fixture_records')->count() !== 2) {
     throw new RuntimeException('Foreign row changed');
 }
 echo "PASS forged tenant deletion refused without row loss\n";
 
 foreach (['save', 'delete'] as $method) {
     foreach (['workspace', 'identity', 'persisted-owner'] as $forgery) {
-        $held = $boundary->run(1, fn () => Note::query()->firstOrFail());
+        $held = $boundary->run(1, fn () => Record::query()->firstOrFail());
         try {
             $boundary->run($forgery === 'workspace' ? 2 : 1, function () use ($held, $method, $forgery): void {
                 if ($forgery === 'workspace') {
@@ -38,7 +42,7 @@ foreach (['save', 'delete'] as $method) {
                     $held->id = 2;
                 }
                 if ($forgery === 'persisted-owner') {
-                    DB::table('notes')->where('id', 1)->update(['workspace_id' => 2]);
+                    DB::table('fixture_records')->where('id', 1)->update(['workspace_id' => 2]);
                 }
                 $held->body = 'must not persist';
                 $held->$method();
@@ -49,9 +53,9 @@ foreach (['save', 'delete'] as $method) {
                 throw $e;
             }
         } finally {
-            DB::table('notes')->where('id', 1)->update(['workspace_id' => 1]);
+            DB::table('fixture_records')->where('id', 1)->update(['workspace_id' => 1]);
         }
-        if (DB::table('notes')->orderBy('id')->pluck('body')->all() !== ['Alpha private', 'Beta private']) {
+        if (DB::table('fixture_records')->orderBy('id')->pluck('title')->all() !== ['Alpha private', 'Beta private']) {
             throw new RuntimeException('Foreign rows changed');
         }
         echo "PASS $method refuses $forgery forgery without row change\n";
@@ -80,7 +84,8 @@ $boundary->run(1, function () use ($heldSettings): void {
     $heldSettings->display_name = 'Alpha after tenant switch';
     $heldSettings->save();
 });
-if ($boundary->run(2, fn () => WorkspaceSettings::current()->display_name) !== 'Beta') {
+// Workspace 2's display name is unset (it shows the workspace's own name); the held mapper must not have written Alpha's.
+if ($boundary->run(2, fn () => WorkspaceSettings::current()->display_name) !== '') {
     throw new RuntimeException('Held mapper wrote foreign settings');
 }
 echo "PASS held settings save restores mapper owner after an intervening tenant\n";

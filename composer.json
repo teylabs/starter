@@ -7,6 +7,7 @@
         "php": "^8.4",
         "glhd/gretel": "^1.10",
         "inertiajs/inertia-laravel": "^3.0",
+        "inertiaui/modal": "^3.1",
         "laravel/fortify": "^1.41",
         "laravel/framework": "^13.17",
         "laravel/mcp": "^1.0",
@@ -15,13 +16,15 @@
         "laravel/pennant": "^1.0",
         "league/flysystem-aws-s3-v3": "^3.29",
         "lorisleiva/laravel-actions": "^2.12",
+        "resend/resend-php": "^1.17",
         "spatie/laravel-data": "^4.23",
         "spatie/laravel-medialibrary": "^11.13",
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
-        "tey/concierge": "^0.7.4",
-        "tey/kit": "^0.1.5",
+        "tey/concierge": "^0.8.2",
+        "tey/kit": "^0.3.1",
+        "tey/mod": "^0.11",
         "tey/standards": "^0.7"
     },
     "require-dev": {
@@ -34,6 +37,7 @@
         "opis/json-schema": "^2.4",
         "pestphp/pest": "^5.0",
         "pestphp/pest-plugin-browser": "^5.1",
+        "pestphp/pest-plugin-drift": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
         "spatie/laravel-typescript-transformer": "^3.3"
     },
@@ -51,7 +55,9 @@
             "@php bin/check.php ConciergeCheck"
         ],
         "setup": "@php bin/setup.php",
-        "test:browser": "@php vendor/bin/pest --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php",
+        "test": "@php vendor/bin/pest --tia",
+        "test:brand-env": "sh bin/fake-brand-env.sh",
+        "test:browser": "@php vendor/bin/pest --no-tia --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php tests/Browser/FormActions.php tests/Browser/AuthCards.php tests/Browser/Account.php tests/Browser/People.php tests/Browser/Shell.php tests/Browser/Modals.php tests/Browser/Focus.php tests/Browser/FirstRun.php tests/Browser/Alert.php tests/Browser/Placeholder.php",
         "types:generate": "@php bin/generate-types.php",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

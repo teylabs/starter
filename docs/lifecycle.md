@@ -22,8 +22,8 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 `config/kit.php` adopts every feature (`features`). The kit's installed records (`.mod-maintenance/`) name the checkout's absolute path, so the template ships none and gitignores them. To let `kit:update` manage the files later, record them once in your own checkout, claiming each file after review:
 
 ```sh
-php artisan kit:add core workspaces access settings session-ui mcp notes --claim=<path> ...      # preview
-php artisan kit:add core workspaces access settings session-ui mcp notes --claim=<path> ... --apply --expected-plan=<plan>
+php artisan kit:add core workspaces access settings session-ui mcp --claim=<path> ...      # preview
+php artisan kit:add core workspaces access settings session-ui mcp --claim=<path> ... --apply --expected-plan=<plan>
 ```
 
 then set `features` to `null` so the installed records decide. The preview lists every file it can claim; an edited file is a conflict and is never claimed. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.

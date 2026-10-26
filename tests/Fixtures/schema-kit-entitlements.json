@@ -1,0 +1,72 @@
+{
+    "columns": [
+        [
+            "id",
+            "integer",
+            1,
+            null,
+            1
+        ],
+        [
+            "workspace_id",
+            "integer",
+            1,
+            null,
+            0
+        ],
+        [
+            "entitlement",
+            "varchar",
+            1,
+            null,
+            0
+        ],
+        [
+            "included",
+            "tinyint(1)",
+            1,
+            null,
+            0
+        ],
+        [
+            "limits",
+            "text",
+            0,
+            null,
+            0
+        ],
+        [
+            "created_at",
+            "datetime",
+            0,
+            null,
+            0
+        ],
+        [
+            "updated_at",
+            "datetime",
+            0,
+            null,
+            0
+        ]
+    ],
+    "indexes": [
+        [
+            1,
+            "c",
+            [
+                "workspace_id",
+                "entitlement"
+            ]
+        ]
+    ],
+    "foreign_keys": [
+        [
+            "workspace_id",
+            "workspaces",
+            "id",
+            "NO ACTION",
+            "CASCADE"
+        ]
+    ]
+}

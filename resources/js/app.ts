@@ -1,14 +1,29 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
+import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
 import { createApp, h, type DefineComponent } from 'vue';
 import '../css/app.css';
-import { initializeTheme } from '@/composables/useAppearance';
-import AppLayout from '@/layouts/AppLayout.vue';
-import GuestLayout from '@/layouts/GuestLayout.vue';
+import { initializeTheme, syncTimezoneCookie } from '@kit/ui';
+import { toast } from 'vue-sonner';
+import { honourReducedMotion } from '@/lib/reduced-motion';
+import ShellLayout from '@/layouts/ShellLayout.vue';
 
-// Pages live at ./pages/<Resource>/<Action>/Page.vue and declare no layout: sign-in pages get the guest shell,
-// everything else the app shell, fed by the backend's shared `layout` props. tey/kit's own folder Layout.vue
-// (pages/Workspace/Layout.vue) is its unstyled starting point and is not used.
+
+// Pages live at ./pages/<Resource>/<Section>/Page.vue and declare no layout: the shell is the server's pick (`shell.kind`: guest, focus or app, fed by the
+// backend's shared `shell`), and a page inside a folder that has a Layout.vue (pages/Workspace/Settings, pages/Workspace/Account) is wrapped in that one too,
+// the nearest one up its own resource folder. Those sublayouts are imported eagerly so moving between siblings keeps the same instance mounted. A Layout.vue at
+// the pages root or directly in `Workspace` (the kit's own shell component, not a layout to use) is never picked.
 const pages = import.meta.glob<DefineComponent>('./pages/**/Page.vue');
+const sublayouts = import.meta.glob<DefineComponent>('./pages/*/*/**/Layout.vue', { eager: true, import: 'default' });
+
+function nearestPageLayout(name: string): DefineComponent | null {
+    const folders = name.split('/').slice(0, -1);
+    for (let depth = folders.length; depth >= 2; depth--) {
+        const layout = sublayouts[`./pages/${folders.slice(0, depth).join('/')}/Layout.vue`];
+        if (layout) return layout;
+    }
+
+    return null;
+}
 
 createInertiaApp({
     resolve: async (name) => {
@@ -16,9 +31,17 @@ createInertiaApp({
         if (!page) throw new Error(`Unknown page: ${name}`);
         return page();
     },
-    layout: (name) => (name.startsWith('Auth/') ? GuestLayout : AppLayout),
+    layout: (name) => {
+        const sublayout = nearestPageLayout(name);
+
+        // The server names the shell per request (`shell.kind`): app, guest or focus.
+        return sublayout ? [ShellLayout, sublayout] : ShellLayout;
+    },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) });
+        // Server-driven modals (inertiaui/modal): the package mounts them itself, so no slot is needed in a layout.
+        withInertiaModal(app as never);
+        app
             .use(plugin)
             .directive('focus', { mounted: (element: HTMLElement, binding) => { if (binding.value !== false) element.focus(); } })
             .mount(el);
@@ -26,3 +49,13 @@ createInertiaApp({
 });
 
 initializeTheme();
+// The browser's zone goes to the server in the `tz` cookie, set once and rewritten only when it changes.
+syncTimezoneCookie();
+// A `toast` the server flashes with a redirect (a cleared bad sort, say) is shown as one.
+router.on('flash', (event) => {
+    const message = (event.detail.flash as { toast?: { message?: string } } | undefined)?.toast?.message;
+    if (message) toast(message);
+});
+// Not the browser's native <dialog>: it sits in the top layer, above every <Dialog> that a modal opens over itself.
+putConfig({ useNativeDialog: false });
+honourReducedMotion();

@@ -8,6 +8,7 @@ Guidance for contributors and coding agents working in this repository.
 - Fail closed, and restore tenant, permission and settings context in `finally` blocks.
 - Keep capabilities, entitlements, membership and admission distinct.
 - State missing Inertia, protocol, lifecycle or platform coverage explicitly rather than implying it.
+- Run local tests with `composer test` (`pest --tia`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; CI, PARATEST or PEST_TIA set to a non-empty value bypasses the guard (an empty `CI=` does not). TIA diffs against `main`, or `TIA_DEFAULT_BRANCH` when set.
 - Never edit a file a kit feature owns (`database/migrations/kit/**`, the kit's pages): CI checks them against `kit:add`.
 
 ## Gates
@@ -15,14 +16,16 @@ Guidance for contributors and coding agents working in this repository.
 ```sh
 composer install --no-interaction
 vendor/bin/pint --test
-vendor/bin/phpunit --bootstrap vendor/autoload.php tests
+vendor/bin/pest
 composer fixture:check
 npm ci && npm run typecheck && npm run build && npm test
 composer test:browser
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `phpunit` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
+The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `pest` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
+
+`vendor/bin/pest --parallel` also works: on PostgreSQL each worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
 
 ## Conventions
 
@@ -31,3 +34,4 @@ The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, 
 - Work on a branch and open a draft pull request. Never push to `main`, merge, tag or release.
 - Every PR names its issue with `Closes #N`.
 - Never commit private project names, internal tooling references or local paths. `bin/privacy-check.sh` runs in CI.
+- No hand-written CSS rules: styling is Tailwind utilities on the markup. The one documented exception is `resources/css/kit.css`, the kit's own base stylesheet (the pointer cursor on clickable things and not-allowed on disabled ones, with a `kit-cursor-native` opt-out on `<html>`); an app does not add rules beside it.

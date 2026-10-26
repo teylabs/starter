@@ -10,13 +10,13 @@ use Tey\Concierge\Actions\InviteMember;
 use Tey\Concierge\Actions\InviteTenant;
 use Tey\Concierge\Support\GrantSet;
 use Tey\Kit\Features\Core\Principal;
-use Tey\Kit\Features\Notes\Models\Note;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 use Tey\Kit\Features\Workspaces\Operations\AcceptWorkspaceInvitation;
 
 Schema::create('workspaces', function (Blueprint $t): void {
     $t->id();
     $t->string('name');
+    $t->string('slug', 63)->nullable()->unique();
     $t->unsignedBigInteger('provisioning_invitation_id')->nullable()->unique();
     $t->unsignedInteger('settings_version')->default(1);
     $t->boolean('admitted')->default(true);
@@ -27,14 +27,11 @@ Schema::create('users', function (Blueprint $t): void {
     $t->string('email')->unique();
     $t->timestamp('email_verified_at')->nullable();
     $t->string('password')->nullable();
+    $t->text('two_factor_secret')->nullable();
+    $t->text('two_factor_recovery_codes')->nullable();
+    $t->timestamp('two_factor_confirmed_at')->nullable();
     $t->rememberToken();
     $t->timestamps();
-});
-Schema::create('notes', function (Blueprint $t): void {
-    $t->id();
-    $t->foreignId('workspace_id')->constrained();
-    $t->string('body', 2000);
-    $t->unsignedInteger('version')->default(1);
 });
 Schema::create('settings', function (Blueprint $t): void {
     $t->id();
@@ -88,15 +85,6 @@ Schema::create('settings_intents', function (Blueprint $t): void {
     $t->json('result');
     $t->unique(['workspace_id', 'actor_id', 'intent_key']);
 });
-Schema::create('note_intents', function (Blueprint $t): void {
-    $t->id();
-    $t->foreignId('workspace_id')->constrained();
-    $t->unsignedBigInteger('actor_id');
-    $t->string('intent_key');
-    $t->string('fingerprint');
-    $t->json('result');
-    $t->unique(['workspace_id', 'actor_id', 'intent_key']);
-});
 Schema::create('audit_events', function (Blueprint $t): void {
     $t->id();
     $t->unsignedBigInteger('actor_id');
@@ -106,12 +94,30 @@ Schema::create('audit_events', function (Blueprint $t): void {
     $t->timestamp('created_at');
 });
 
+Schema::create('password_reset_tokens', function (Blueprint $t): void {
+    $t->string('email')->primary();
+    $t->string('token');
+    $t->timestamp('created_at')->nullable();
+});
+// Avatars are media on the user row.
+(require base_path('database/migrations/0001_01_01_000001_create_media_table.php'))->up();
+// The database cache store's tables and the database queue's.
+(require base_path('database/migrations/0001_01_01_000005_create_cache_table.php'))->up();
+(require base_path('database/migrations/0001_01_01_000006_create_jobs_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000500_create_kit_security_events_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php'))->up();
+(require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
+(require base_path('database/migrations/kit/access/0001_01_02_000302_create_kit_capability_overrides_table.php'))->up();
+(require base_path('database/migrations/kit/core/0001_01_02_000101_create_kit_meta_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000502_create_kit_user_state_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
-foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php'] as $migration) {
+foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php'] as $migration) {
     (require base_path('vendor/tey/concierge/database/migrations/'.$migration))->up();
 }
 app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]);
+app(Kernel::class)->call('kit:permissions:sync', ['--no-interaction' => true]);
 foreach ([1 => 'Alpha', 2 => 'Beta', 3 => 'Viewer', 99 => 'Platform operator'] as $id => $name) {
     User::create(['id' => $id, 'name' => $name, 'email' => 'actor'.$id.'@example.test', 'email_verified_at' => now()]);
 }
@@ -121,7 +127,6 @@ foreach ([1, 2] as $id) {
     $owner = User::findOrFail($id);
     $issued = InviteTenant::run($platform, $owner->email);
     $accepted = app(AcceptWorkspaceInvitation::class)->handle(new Principal($id), $issued->token);
-    Workspace::findOrFail($accepted['workspace_id'])->execute(fn () => Note::create(['body' => $owner->name.' private']));
 }
 $viewer = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor3@example.test', new GrantSet(['viewer']));
 AcceptInvitation::run(User::findOrFail(3), $viewer->token);

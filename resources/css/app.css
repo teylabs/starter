@@ -2,10 +2,34 @@
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
+/* The kit's own base styles (the pointer cursor, with an opt-out; see kit.css). */
+@import './kit.css';
 
 @source '../views';
+/* inertiaui/modal's own markup (its backdrop, panel and positioning classes) lives in its package. */
+@source '../../node_modules/@inertiaui/modal-vue/src';
 
 @custom-variant dark (&:is(.dark *));
+
+/* The brand's colour scale: a neutral zinc until the brand sets an accent, which <x-kit::brand /> turns into this scale at runtime. Static, so the variables are always emitted. */
+@theme static {
+    --color-brand-50: var(--color-zinc-50);
+    --color-brand-100: var(--color-zinc-100);
+    --color-brand-200: var(--color-zinc-200);
+    --color-brand-300: var(--color-zinc-300);
+    --color-brand-400: var(--color-zinc-400);
+    --color-brand-500: var(--color-zinc-500);
+    --color-brand-600: var(--color-zinc-600);
+    --color-brand-700: var(--color-zinc-700);
+    --color-brand-800: var(--color-zinc-800);
+    --color-brand-900: var(--color-zinc-900);
+    --color-brand-950: var(--color-zinc-950);
+}
+
+/* The app shell's widest measure (2560px); a host overrides it with one `--container-2k` in its own @theme. */
+@theme {
+    --container-2k: 160rem;
+}
 
 @theme inline {
     /* --font-sans, --font-serif, --font-mono and --font-display-weight come from <x-kit::fonts /> (KIT_FONTS) in
@@ -17,6 +41,16 @@
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+
+    /* The app shell's surfaces (see :root). The header bar is solid; the breadcrumb sub-bar is its own, translucent strip; controls on the bar read from the bar's foreground. */
+    --color-shell-bar: var(--shell-bar);
+    --color-shell-bar-foreground: var(--shell-bar-foreground);
+    --color-shell-bar-border: var(--shell-bar-border);
+    --color-shell-band: var(--shell-band);
+    --color-shell-band-foreground: var(--shell-band-foreground);
+    --color-shell-band-border: var(--shell-band-border);
+    --color-shell-subbar: var(--shell-subbar);
+    --color-shell-subbar-border: var(--shell-subbar-border);
 
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
@@ -58,18 +92,7 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
-    /* Brand and warning are Tailwind's default indigo and amber. */
-    --color-brand-50: var(--color-indigo-50);
-    --color-brand-100: var(--color-indigo-100);
-    --color-brand-200: var(--color-indigo-200);
-    --color-brand-300: var(--color-indigo-300);
-    --color-brand-400: var(--color-indigo-400);
-    --color-brand-500: var(--color-indigo-500);
-    --color-brand-600: var(--color-indigo-600);
-    --color-brand-700: var(--color-indigo-700);
-    --color-brand-800: var(--color-indigo-800);
-    --color-brand-900: var(--color-indigo-900);
-    --color-brand-950: var(--color-indigo-950);
+    /* Warning is Tailwind's default amber. */
     --color-warning-50: var(--color-amber-50);
     --color-warning-100: var(--color-amber-100);
     --color-warning-200: var(--color-amber-200);
@@ -136,6 +159,31 @@
     --sidebar-border: hsl(0 0% 91%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(0 0% 98%);
+
+    /* The shell. An app overrides these in its own CSS (or per brand): `--shell-bar` (a neutral near-black, in light and dark, opaque by default; give it an alpha and a `--shell-bar-blur` for a translucent header)
+       and `--shell-bar-foreground` for the text and controls on it, `--shell-mark-brightness` and `--shell-mark-invert` (1 and 0 for a mark that already reads on the bar), `--shell-subbar` (the breadcrumb strip: translucent, so content scrolls under it) with its blur and hairline,
+       and the mark slot: `--shell-mark-height` (fixed) and `--shell-mark-max-width` (the cap; narrower on phones), inside which the logomark scales with object-contain. */
+    /* The layers, low to high. Page content (sticky form footers, z-5) < the shell's sticky header and sub-bar (--z-header) < the modal stack (inertiaui/modal's own z-20 to z-40,
+       which lays out inside its own context) < menus, selects and popovers (--z-dropdown) < dialogs (--z-dialog, which a modal can open over itself) < toasts (--z-toast). */
+    --z-header: 10;
+    --z-dropdown: 50;
+    --z-dialog: 60;
+    --z-toast: 70;
+    --shell-bar: hsl(240 10% 3.9%);
+    --shell-bar-foreground: hsl(0 0% 98%);
+    --shell-bar-border: hsl(240 4% 16%);
+    --shell-mark-brightness: 0;
+    --shell-mark-invert: 1;
+    --shell-bar-blur: 0px;
+    /* The context band (account settings, later impersonation or staging): tinted with the brand accent, a neutral zinc until an app sets one. */
+    --shell-band: color-mix(in oklab, var(--color-brand-500) 12%, var(--background));
+    --shell-band-foreground: var(--foreground);
+    --shell-band-border: color-mix(in oklab, var(--color-brand-500) 22%, var(--background));
+    --shell-subbar: hsl(0 0% 96% / 0.7);
+    --shell-subbar-border: hsl(0 0% 0% / 0.08);
+    --shell-subbar-blur: 8px;
+    --shell-mark-height: 1.5rem;
+    --shell-mark-max-width: 10rem;
 }
 
 .dark {
@@ -172,6 +220,8 @@
     --sidebar-border: hsl(0 0% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(240 5.9% 10%);
+    --shell-subbar: hsl(0 0% 0% / 0.7);
+    --shell-subbar-border: hsl(0 0% 100% / 0.08);
 }
 
 @layer base {

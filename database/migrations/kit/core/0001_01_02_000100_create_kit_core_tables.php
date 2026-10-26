@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('audit_events', function (Blueprint $t): void {
             $t->id();
             $t->unsignedBigInteger('actor_id');
-            $t->foreignId('workspace_id')->constrained();
+            // Core migrates alone: the workspaces feature adds the foreign key to `workspaces` when it is adopted.
+            $t->unsignedBigInteger('workspace_id')->index();
             $t->string('event');
             $t->json('details');
             $t->timestamp('created_at');

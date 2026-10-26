@@ -1,19 +1,33 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
+import { Button, Field, Input, InputCheckbox, Page, PasswordInput } from '@kit/ui';
+
+// Registration is closed. `status` and `localLogin` are the view model's: an app that offers a one-click local sign-in passes the offer (null elsewhere).
+// A guest card is not a settings form: no sticky FormActions bar, one full-width primary button, everything aligned to the card's left edge.
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.LoginViewModel>();
-const form = useForm({ email: '', password: '', remember: false });
-function submit() { form.post('/login', { onFinish: () => form.reset('password') }); }
 </script>
 <template>
     <Head :title="title" />
-    <main>
-        <h1>{{ title }}</h1>
-        <p>Use your invited account. Registration is closed.</p>
-        <form @submit.prevent="submit">
-            <label for="email">Email</label><input id="email" v-model="form.email" type="email" autocomplete="username" required :aria-invalid="Boolean(form.errors.email)" aria-describedby="email-error" /><p id="email-error" role="alert">{{ form.errors.email }}</p>
-            <label for="password">Password</label><input id="password" v-model="form.password" type="password" autocomplete="current-password" required :aria-invalid="Boolean(form.errors.password)" aria-describedby="password-error" /><p id="password-error" role="alert">{{ form.errors.password }}</p>
-            <label><input v-model="form.remember" type="checkbox" /> Remember me</label>
-            <button type="submit" :disabled="form.processing">{{ form.processing ? 'Signing in…' : 'Sign in' }}</button>
-        </form>
-    </main>
+    <Page xs :heading="false">
+        <div class="space-y-2">
+            <h1 class="text-xl font-medium">Sign in to your account</h1>
+            <p class="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
+        </div>
+        <p v-if="status" class="mt-4 text-sm font-medium text-green-600">{{ status }}</p>
+        <Form v-if="localLogin" v-slot="{ errors, processing }" :action="localLogin.url" method="post" class="mt-6 grid gap-2" data-local-login>
+            <Button variant="secondary" class="w-full" :disabled="processing">Sign in as {{ localLogin.email }}</Button>
+            <p v-if="errors.local_login" role="alert" class="text-sm text-destructive">{{ errors.local_login }}</p>
+            <p class="text-xs text-muted-foreground">One-click sign-in, offered only locally</p>
+        </Form>
+        <Form v-slot="{ processing }" action="/login" method="post" :reset-on-success="['password']" class="mt-6 grid gap-4">
+            <Field id="email" name="email" label="Email address">
+                <Input id="email" name="email" type="email" required autocomplete="email" placeholder="email@example.com" aria-describedby="email-error" />
+            </Field>
+            <Field id="password" name="password" label="Password">
+                <PasswordInput id="password" name="password" required autocomplete="current-password" placeholder="Password" aria-describedby="password-error" />
+            </Field>
+            <InputCheckbox id="remember" name="remember" value="1">Remember me</InputCheckbox>
+            <Button class="w-full" :disabled="processing" data-test="login-button">{{ processing ? 'Signing in…' : 'Sign in' }}</Button>
+        </Form>
+    </Page>
 </template>
