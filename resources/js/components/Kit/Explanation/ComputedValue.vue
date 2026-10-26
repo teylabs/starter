@@ -15,9 +15,9 @@ const emit = defineEmits<{ 'update:open': [value: boolean]; copy: [event: { id: 
                     <button v-bind="state.triggerAttrs" class="min-h-11 rounded-sm text-left tabular-nums underline decoration-dotted underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring"><slot name="value" :display="state.display">{{ state.display }}</slot><span aria-hidden="true" class="ml-1">{{ state.open ? '▴' : '▾' }}</span></button>
                     <div v-if="state.open" v-bind="state.panelAttrs" class="mt-2 grid gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground"><WorkingPanel :node="node!" :fallback="state.fallback" @copy="state.copyWorking" /><slot name="note" :node="node" /></div>
                 </template>
-                <Popover v-else :open="state.open" :title="`Working for ${label}`" @update:open="state.setOpen($event)">
-                    <template #trigger="surface"><button v-bind="{ ...state.triggerAttrs, onClick: undefined }" class="min-h-11 rounded-sm tabular-nums underline decoration-dotted underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring"><slot name="value" :display="state.display">{{ state.display }}</slot><span aria-hidden="true" class="ml-1">▾</span></button></template>
-                    <div v-bind="state.panelAttrs"><WorkingPanel :node="node!" :fallback="state.fallback" @copy="state.copyWorking" /><slot name="note" :node="node" /></div>
+                <Popover v-else :open="state.open" :title="`Working for ${label}`" width="lg" :messages="{ close: 'Close working' }" @update:open="state.setOpen($event)">
+                    <template #trigger><button v-bind="state.popoverTriggerAttrs" class="min-h-11 rounded-sm tabular-nums underline decoration-dotted underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring"><slot name="value" :display="state.display">{{ state.display }}</slot><span aria-hidden="true" class="ml-1">▾</span></button></template>
+                    <div v-bind="{ ...state.panelAttrs, role: undefined, 'aria-labelledby': undefined }"><WorkingPanel :node="node!" :fallback="state.fallback" @copy="state.copyWorking" /><slot name="note" :node="node" /></div>
                 </Popover>
             </template>
             <p v-else><span :aria-label="label" class="tabular-nums">{{ state.display }}</span> <span class="text-sm text-muted-foreground">{{ state.reason }}</span></p>

@@ -17,13 +17,14 @@ import ModalPanel from '@/components/Kit/Overlay/ModalPanel.vue';
  * asks first through <Dialog> ("Keep editing" / "Discard & close"; `confirm-message` words it). `size` is sm, md, lg, xl or full; `placement` is center (the default), slideover (from the side) or drawer (a bottom sheet at every width); `as="form"` (with `submit`) makes the panel a form. On a phone sm and md are a
  * bottom sheet, and lg, xl, full and slideovers are full screen. Confirmations and prompts are <Dialog>, not this.
  */
-const props = withDefaults(defineProps<{ title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; confirmMessage?: string }>(), {
+const props = withDefaults(defineProps<{ title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; initialFocus?: 'field' | 'body'; confirmMessage?: string }>(), {
     size: 'lg',
     placement: 'center',
     dirty: false,
     busyLabel: 'Saving…',
     cancelLabel: 'Cancel',
     showCloseButton: true,
+    initialFocus: 'field',
     confirmMessage: 'You have unsaved changes. Are you sure you want to close without saving?',
 });
 const open = defineModel<boolean>('open');
@@ -93,12 +94,12 @@ defineExpose({ close });
 <template>
     <PackageModal ref="modal" v-bind="server ? {} : { name: localName }" :close-button="false" close-explicitly :slideover="slideover" :max-width="maxWidth" padding-classes="" :panel-classes="panelClasses" :position="position">
         <Form v-if="formMode" v-slot="{ isDirty }" :action="submit!.url" :method="submit!.method as 'post'" :options="{ preserveScroll: true }" class="contents" data-form-modal @success="close()">
-            <ModalPanel :title="title" :description="description" :form-mode="true" :submit="submit" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="isDirty || dirty" :full-screen="fullScreen" :checks="checks" @close="close()">
+            <ModalPanel :title="title" :description="description" :form-mode="true" :submit="submit" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :initial-focus="initialFocus" :confirm-message="confirmMessage" :dirty="isDirty || dirty" :full-screen="fullScreen" :checks="checks" @close="close()">
                 <template #actions><slot name="actions" /></template>
                 <slot />
             </ModalPanel>
         </Form>
-        <ModalPanel v-else :title="title" :description="description" :form-mode="false" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :confirm-message="confirmMessage" :dirty="dirty" :full-screen="fullScreen" :checks="checks" data-modal @close="close()">
+        <ModalPanel v-else :title="title" :description="description" :form-mode="false" :busy-label="busyLabel" :cancel-label="cancelLabel" :show-close-button="showCloseButton" :initial-focus="initialFocus" :confirm-message="confirmMessage" :dirty="dirty" :full-screen="fullScreen" :checks="checks" data-modal @close="close()">
             <template #actions><slot name="actions" /></template>
             <slot />
             <template v-if="$slots.footer" #footer="{ close: ask }"><slot name="footer" :close="ask" /></template>

@@ -370,7 +370,8 @@
             "binding": "one approved workspace connection per token"
         },
         "scopes": {
-            "mcp:use": "Use workspace MCP",
+            "mcp:use": "Act as you in the workspaces you approve, with what your role there allows",
+            "mcp:act": "Act as you in the workspaces you approve",
             "settings.read": "Read workspace settings",
             "settings.write": "Update workspace settings"
         }

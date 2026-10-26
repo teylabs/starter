@@ -6,6 +6,7 @@ import Modal from '@/components/Kit/Overlay/Modal.vue';
 import PaneScroll from './PaneScroll.vue';
 import PaneToggle from './PaneToggle.vue';
 import { splitStorage } from './splitState';
+import { useStickyWhenFits } from './useStickyWhenFits';
 
 /*
  * Work beside its context: `main` on the left, `aside` on the right, on Reka's Splitter (keyboard resize in 5-point steps, limits, collapsible). Below `breakpoint` the aside
@@ -34,6 +35,8 @@ function returnFocus() {
 }
 onBeforeUnmount(() => focusObserver?.disconnect());
 defineExpose({ show });
+// `stickyAside`: the aside sticks only while it fits below the shell header; taller, it scrolls with the page and never has a scrollbar of its own.
+const { el: asideEl, sticky: asideSticky } = useStickyWhenFits(!!props.stickyAside);
 const storage = splitStorage({ key: props.storageKey, scope: props.storageScope, state: props.state, preference: props.preference, saved: value => { saved.value = value; } });
 // Literal class names, so the host's Tailwind finds them.
 const xl = props.breakpoint === 'xl';
@@ -54,7 +57,7 @@ const stacked = xl ? 'max-xl:!block' : 'max-lg:!block';
             <SplitterResizeHandle :aria-label="`Resize ${label.toLowerCase()} pane`" :class="['w-8 shrink-0 rounded focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', desktopOnly]"><span aria-hidden="true" class="mx-auto block h-full w-px bg-border" /></SplitterResizeHandle>
             <SplitterPanel id="aside" ref="panel" :default-size="asideSize" :min-size="20" :max-size="75" collapsible :collapsed-size="compact ? 3 : 0" :class="['min-h-0 min-w-0', stickyAside && '!overflow-visible', mobile === 'sheet' && desktopOnly]" @collapse="collapsed = true" @expand="collapsed = false">
                 <div v-if="compact && collapsed" class="flex justify-center pt-1"><PaneToggle :label="label" :collapsed="collapsed" @click="toggle" /></div>
-                <div v-show="!compact || !collapsed" :class="stickyAside ? 'sticky top-[7.5rem] h-[calc(100dvh-13rem)] min-w-0' : 'h-full min-h-0 min-w-0'"><PaneScroll :chain="stickyAside"><slot name="aside" :sheet="false" :collapsed="collapsed" :toggle="toggle" /></PaneScroll></div>
+                <div v-show="!compact || !collapsed" ref="asideEl" :class="stickyAside ? ['min-w-0', asideSticky && 'sticky top-[7.5rem]'] : 'h-full min-h-0 min-w-0'"><PaneScroll v-if="!stickyAside"><slot name="aside" :sheet="false" :collapsed="collapsed" :toggle="toggle" /></PaneScroll><slot v-else name="aside" :sheet="false" :collapsed="collapsed" :toggle="toggle" /></div>
             </SplitterPanel>
         </SplitterGroup>
         <Modal v-if="mobile === 'sheet'" v-model:open="sheet" :title="label" placement="drawer" size="lg" @closed="returnFocus"><slot name="aside" :sheet="true" :collapsed="false" :toggle="() => { sheet = false; }" /></Modal>
