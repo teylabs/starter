@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "de2d029c60c9ab53b9050fa845661c7c",
+    "content-hash": "9d64e37540a13d50a7e1fbb40473aec7",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.3.1",
+            "version": "v0.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "4eb60fb821939d0d08031babeac6be5e61dacbbe"
+                "reference": "6d281905c8fbfdebcf895a286063e5faecebf94e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/4eb60fb821939d0d08031babeac6be5e61dacbbe",
-                "reference": "4eb60fb821939d0d08031babeac6be5e61dacbbe",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/6d281905c8fbfdebcf895a286063e5faecebf94e",
+                "reference": "6d281905c8fbfdebcf895a286063e5faecebf94e",
                 "shasum": ""
             },
             "require": {
@@ -10108,7 +10108,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.3.1"
+                "source": "https://github.com/teylabs/kit/tree/v0.3.2"
             },
             "funding": [
                 {
@@ -10116,7 +10116,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-26T13:52:35+00:00"
+            "time": "2026-10-26T15:32:44+00:00"
         },
         {
             "name": "tey/mod",

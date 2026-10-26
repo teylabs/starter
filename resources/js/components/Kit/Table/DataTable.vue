@@ -168,9 +168,9 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                     </tbody>
                 </table>
             </div>
-            <div v-if="table.pagination.lastPage > 1" class="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-sm text-muted-foreground" data-table-pagination>
+            <div v-if="table.pagination.total > 0" class="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-sm text-muted-foreground" data-table-pagination>
                 <span>{{ table.pagination.from }}–{{ table.pagination.to }} of {{ table.pagination.total }}</span>
-                <nav aria-label="Pages" class="flex items-center gap-1">
+                <nav v-if="table.pagination.lastPage > 1" aria-label="Pages" class="flex items-center gap-1">
                     <Link v-if="table.pagination.page > 1" :href="pageUrl(table.pagination.page - 1)" preserve-scroll preserve-state class="rounded-md px-2 py-1 hover:bg-muted" rel="prev">Previous</Link>
                     <Link v-for="number in pages" :key="number" :href="pageUrl(number)" preserve-scroll preserve-state class="hidden rounded-md px-2 py-1 hover:bg-muted sm:inline" :class="number === table.pagination.page ? 'font-semibold text-foreground' : ''" :aria-current="number === table.pagination.page ? 'page' : undefined">{{ number }}</Link>
                     <Link v-if="table.pagination.page < table.pagination.lastPage" :href="pageUrl(table.pagination.page + 1)" preserve-scroll preserve-state class="rounded-md px-2 py-1 hover:bg-muted" rel="next">Next</Link>
