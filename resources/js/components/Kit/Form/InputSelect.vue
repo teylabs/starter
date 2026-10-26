@@ -5,12 +5,14 @@ import { computed, nextTick, onBeforeUnmount, ref, useAttrs, useId, watch } from
 import { ComboboxAnchor, ComboboxContent, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxLabel, ComboboxPortal, ComboboxRoot, ComboboxTrigger, ComboboxViewport } from 'reka-ui';
 import { chipKey, chosenFirst as orderChosenFirst, filterGroups, flatOptions, fold, interpolate, moveHighlight, resultsMessage, searchEnabled, searchReady, selectAll, selectMessages, showCreate, toggleValue, valuesOf } from './inputSelect';
 import type { InputSelectMessages, InputSelectOption, InputSelectOptions, InputSelectValue } from './inputSelect';
+import { useLocked } from './useLocked';
 
 // The kit's one select (InputSelect.md): one value or many, searchable, grouped, local or remote, on Reka's Combobox (never Reka's Select, which is modal).
 // The list is non-modal. Reka's ComboboxContent always hides the rest of the page from assistive technology (useHideOthers) and offers no prop to stop it; its only
 // exception, undocumented, is a root inside a closed popover, so the root is wrapped in one (`popover` never shown, `display: contents`). Verified on reka-ui 2.11.0:
 // re-run the "nothing outside is aria-hidden or inert" render check on every Reka bump. Selection is the component's own (every item's select is prevented), so the model is fully controlled.
 // Caller attributes land on the input; `id` and `aria-*` there win, as for every kit input. Strings come from the kit's `ui` lang file (`kitUi`), then `messages`.
+// Read-only comes from the `readonly` prop or a locked LockedForm (the LockedForm spec): it stays a focusable combobox with `aria-readonly`, shows the chosen label (or "None"), and opens nothing; no chevron, no clear. A caller's own `disabled` still wins.
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(defineProps<{
     modelValue?: InputSelectValue | InputSelectValue[] | null; options?: InputSelectOptions; multiple?: boolean; name?: string; placeholder?: string; searchable?: boolean | null;
@@ -26,6 +28,8 @@ defineSlots<{
 }>();
 const attrs = useAttrs();
 const uid = useId();
+const lock = useLocked();
+const readOnly = computed(() => props.readonly || (lock.locked && !props.disabled));
 const inputId = computed(() => (attrs.id as string | undefined) ?? `${uid}-input`);
 
 const shared = computed(() => {
@@ -43,8 +47,8 @@ const byValue = computed(() => new Map(all.value.map(option => [option.value, op
 const chosen = computed(() => values.value.map(value => byValue.value.get(value)).filter((option): option is InputSelectOption => !!option));
 // `creatable` needs typed text, so automatic search is on with it.
 const searchOn = computed(() => (props.creatable && props.searchable === null) || searchEnabled(props.searchable, props.options, props.filter));
-const canClear = computed(() => (props.clearable ?? props.multiple) && !props.readonly && !props.disabled && values.value.length > 0);
-const interactive = computed(() => !props.disabled && !props.readonly);
+const canClear = computed(() => (props.clearable ?? props.multiple) && !readOnly.value && !props.disabled && values.value.length > 0);
+const interactive = computed(() => !props.disabled && !readOnly.value);
 
 // The text in the field: what was typed, else (single) the chosen label. `typed` turns on with the first keystroke and off on close or a choice.
 const open = ref(false);
@@ -212,7 +216,7 @@ function onKeydown(event: KeyboardEvent) {
         event.stopPropagation();
         event.preventDefault();
     };
-    if (props.readonly) {
+    if (readOnly.value) {
         if (!['Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Shift'].includes(event.key) && !event.metaKey && !event.ctrlKey) own();
         return;
     }
@@ -318,7 +322,7 @@ const inputAttrs = computed(() => {
 const autocomplete = computed(() => (searchOn.value ? 'list' : 'none'));
 const fieldClass = computed(() => [
     'relative flex w-full min-h-11 flex-wrap items-center gap-1 rounded-md border bg-background py-1 ps-3 pe-14 text-base shadow-xs transition-[color,box-shadow] sm:min-h-9 sm:text-sm',
-    props.readonly ? 'border-border bg-muted shadow-none focus-within:ring-2 focus-within:ring-ring' : props.invalid ? 'border-destructive focus-within:ring-2 focus-within:ring-destructive' : 'border-input hover:border-ring/60 focus-within:ring-2 focus-within:ring-ring',
+    readOnly.value ? 'border-border bg-muted shadow-none focus-within:ring-2 focus-within:ring-ring' : props.invalid ? 'border-destructive focus-within:ring-2 focus-within:ring-destructive' : 'border-input hover:border-ring/60 focus-within:ring-2 focus-within:ring-ring',
     props.disabled && 'cursor-not-allowed opacity-60',
     attrs.class as string | undefined,
 ]);
@@ -350,20 +354,20 @@ const fieldClass = computed(() => [
                     </li>
                 </ul>
                 <span v-else-if="countMode" class="inline-flex items-center rounded-sm border border-border bg-muted px-2 py-0.5 text-xs text-foreground">{{ interpolate(text.count, { count: chosen.length }) }}</span>
-                <span v-if="readonly && chosen.length === 0" class="text-muted-foreground">{{ text.none }}</span>
+                <span v-if="readOnly && chosen.length === 0" class="text-muted-foreground">{{ text.none }}</span>
                 <ComboboxInput
                     ref="input"
                     v-model="fieldText"
                     v-bind="inputAttrs"
                     :id="inputId"
-                    :readonly="readonly || undefined"
-                    :aria-readonly="readonly || undefined"
+                    :readonly="readOnly || undefined"
+                    :aria-readonly="readOnly || undefined"
                     :aria-invalid="(attrs['aria-invalid'] as string | undefined) ?? (invalid || undefined)"
                     :aria-autocomplete="autocomplete"
                     :required="(nativeRequired && values.length === 0) || undefined"
-                    :placeholder="placeholderShown && !readonly ? placeholder : undefined"
+                    :placeholder="placeholderShown && !readOnly ? placeholder : undefined"
                     autocomplete="off"
-                    :class="['min-w-16 flex-1 bg-transparent py-1 text-base text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed sm:py-0.5 sm:text-sm sm:leading-6', readonly && 'cursor-default', readonly && chosen.length === 0 && 'sr-only']"
+                    :class="['min-w-16 flex-1 bg-transparent py-1 text-base text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed sm:py-0.5 sm:text-sm sm:leading-6', readOnly && 'cursor-default', readOnly && chosen.length === 0 && 'sr-only']"
                     @focus="chip = null"
                 />
                 <div v-if="interactive" class="absolute inset-y-0 end-0 flex items-center gap-0.5 pe-2.5">

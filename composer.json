@@ -23,7 +23,8 @@
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
         "tey/concierge": "^0.8.2",
-        "tey/kit": "dev-main#5619adf7d60f6e9ffa89fca311e59de11038c4e9",
+        "tey/kit": "^0.3.1",
+        "tey/mod": "^0.11",
         "tey/standards": "^0.7"
     },
     "require-dev": {

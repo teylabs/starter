@@ -25,6 +25,11 @@ export { default as FileInput } from './Form/FileInput.vue';
 export { default as FormActions } from './Form/FormActions.vue';
 export { default as FormCard } from './Form/FormCard.vue';
 export { default as FormFieldset } from './Form/FormFieldset.vue';
+// A form someone may read but not change (LockedForm.md): the wrapper, the renderless EditOnly for caller-owned edit actions, and the context every kit control reads.
+export { default as LockedForm } from './Form/LockedForm.vue';
+export { default as EditOnly } from './Form/EditOnly.vue';
+export { useLocked } from './Form/useLocked';
+export type { LockedState } from './Form/locked';
 export { default as Input } from './Form/Input.vue';
 export { default as PasswordInput } from './Form/PasswordInput.vue';
 export { default as SectionIcon } from './Layout/SectionIcon.vue';
@@ -76,3 +81,11 @@ export { default as DropdownAction } from './Menu/DropdownAction.vue';
 export { default as DropdownDelete } from './Menu/DropdownDelete.vue';
 export { default as DropdownModalLink } from './Menu/DropdownModalLink.vue';
 export { default as ButtonDropdown } from './Action/ButtonDropdown.vue';
+// Split work and its context (SplitPane.md) and the one dropzone (BulkDrop.md §9).
+export { default as SplitPane } from './Layout/SplitPane.vue';
+export { default as PaneScroll } from './Layout/PaneScroll.vue';
+export { default as PaneTabs } from './Layout/PaneTabs.vue';
+export { default as PaneToggle } from './Layout/PaneToggle.vue';
+export type { SplitPreference } from './Layout/splitState';
+export { default as BulkDrop } from './Form/BulkDrop.vue';
+export { captureDrop, capturePaste, checkSelection, describeProblem, setCaptureFiles } from './Form/captureFiles';

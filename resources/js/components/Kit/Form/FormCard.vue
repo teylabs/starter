@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import FormActions from './FormActions.vue';
+import { provideNoticeOwner, useLockedNotice } from './useLocked';
 
 // A card for a form: an optional title and description, a six-column grid for the fields (each Field takes a `span`), fieldsets inside it, and the
 // FormActions bar in its footer. The submit and Cancel wording pass through (`submit-label`, `busy-label`, `cancel`, `cancel-url`); `actions` replaces the bar.
+// Inside a locked LockedForm the footer is the notice (and the reason) instead: no submit, no Cancel, no status, no sticky bar and no leave-page warning.
 withDefaults(defineProps<{ title?: string; description?: string; submitLabel?: string; busyLabel?: string; savedLabel?: string; cancelUrl?: string; cancel?: boolean; sticky?: boolean; warnOnLeave?: boolean; form?: object; submit?: { label: string; disabled?: boolean; reason?: string | null } }>(), { title: undefined, description: undefined, submitLabel: 'Save', busyLabel: 'Saving…', savedLabel: 'Saved', cancelUrl: undefined, cancel: true, sticky: true, warnOnLeave: true, form: undefined, submit: undefined });
+provideNoticeOwner();
+const lock = useLockedNotice();
 </script>
 <template>
     <section class="rounded-xl border bg-card text-card-foreground shadow-xs" data-form-card>
@@ -12,7 +16,11 @@ withDefaults(defineProps<{ title?: string; description?: string; submitLabel?: s
             <p v-if="description" class="mt-1 text-sm text-muted-foreground">{{ description }}</p>
         </header>
         <div :class="['grid grid-cols-6 gap-x-4 gap-y-6 p-6 *:col-span-6', title ? 'pt-5' : '']"><slot /></div>
-        <slot name="actions">
+        <div v-if="lock.locked" :id="lock.id" class="border-t px-4 py-3 text-sm text-muted-foreground sm:px-6" data-form-notice>
+            <p>{{ lock.notice }}</p>
+            <p v-if="lock.reason" class="mt-1" data-form-notice-reason>{{ lock.reason }}</p>
+        </div>
+        <slot v-else name="actions">
             <FormActions :form="form as never" :submit="submit" :submit-label="submitLabel" :busy-label="busyLabel" :saved-label="savedLabel" :cancel-url="cancelUrl" :cancel="cancel" :sticky="sticky" :warn-on-leave="warnOnLeave"><template v-if="$slots.status" #status="slotProps"><slot name="status" v-bind="slotProps" /></template><template v-if="$slots.submit" #submit><slot name="submit" /></template></FormActions>
         </slot>
     </section>
