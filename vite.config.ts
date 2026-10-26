@@ -11,4 +11,12 @@ const kitUi = decodeURIComponent(new URL('./resources/js/components/Kit/index.ts
 // The shell Layout takes UserMenu and WorkspaceSwitcher only through `@kit/shell`, the generated Partials barrel; point it at your own module to replace them (or use the Layout's slots).
 const kitShell = decodeURIComponent(new URL('./resources/js/pages/Workspace/Partials/index.ts', import.meta.url).pathname);
 
-export default defineConfig({ resolve: { alias: { '@kit/ui': kitUi, '@kit/shell': kitShell } }, plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } })] });
+// The vendor libraries each get a long-cacheable chunk, so no single chunk crosses Vite's 500 kB warning.
+const vendorGroups = [
+    { name: 'vendor-vue', test: /node_modules\/(@vue|vue|@vueuse)\// },
+    { name: 'vendor-inertia', test: /node_modules\/@inertiajs\// },
+    { name: 'vendor-tanstack', test: /node_modules\/@tanstack\// },
+    { name: 'vendor-ui', test: /node_modules\/(reka-ui|@floating-ui|@internationalized|lucide|@lucide|vue-sonner|@inertiaui)\// },
+];
+
+export default defineConfig({ build: { rolldownOptions: { output: { codeSplitting: { groups: vendorGroups } } } }, resolve: { alias: { '@kit/ui': kitUi, '@kit/shell': kitShell } }, plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } })] });
