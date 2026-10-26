@@ -23,6 +23,14 @@ export interface TextareaProps { invalid?: boolean }
 /** A select (`v-model`: string): `options` are values with labels; `id` goes on the trigger. */
 export interface SelectProps { id?: string; name?: string; options: { value: string; label: string }[]; placeholder?: string; disabled?: boolean; invalid?: boolean }
 
+/**
+ * The kit's one rich select (`v-model`: a value or `null`, or an array with `multiple`), on Reka's Combobox and non-modal. `options` are `{ value, label, description?, disabled? }` or groups `{ label, options }`.
+ * `searchable` `null` turns search on past 8 options; `filter="remote"` leaves filtering to the caller (`search`, after `debounce` ms and `minSearchLength` characters; `''` on close). `clearable` is on with `multiple`;
+ * `selectAll`, `chosenFirst` and `creatable` (`create`, with the typed text) are opt-in; `maxChips` swaps chips for a count. With `name` it submits hidden `name` / `name[]` inputs. `readonly` stays a focusable combobox.
+ * Default strings come from the kit's `ui` lang file (`select.*`, shared as `kitUi`); `messages` overrides them per use. Slots: `option`, `chip`, `empty`, `loading`. Other attributes (id, aria-*) land on the input.
+ */
+export interface InputSelectProps { modelValue?: string | number | null | (string | number)[]; options?: { value: string | number; label: string; description?: string; disabled?: boolean }[] | { label: string; options: { value: string | number; label: string; description?: string; disabled?: boolean }[] }[]; multiple?: boolean; name?: string; placeholder?: string; searchable?: boolean | null; clearable?: boolean | null; selectAll?: boolean; chosenFirst?: boolean; creatable?: boolean; disabled?: boolean; readonly?: boolean; invalid?: boolean; loading?: boolean; filter?: 'local' | 'remote'; debounce?: number; minSearchLength?: number; messages?: Record<string, string>; maxChips?: number | null; nativeRequired?: boolean }
+
 /** A timezone select (`v-model`: an IANA zone name): Select over the zones the browser knows. */
 export interface TimezoneSelectProps { id?: string; name?: string; disabled?: boolean; invalid?: boolean }
 
@@ -104,9 +112,52 @@ export interface RepeaterProps<T extends { id: string } = { id: string }> { name
 /**
  * An exact-number input. The visible field is labelled and unnamed; a hidden control carries `name` and the canonical string (money in integer minor units, decimals at a fixed `scale`, integers as digits; empty stays empty). Excess precision is invalid, never rounded, and blocks submission. `min`, `max` and `step` are canonical strings and client hints only: check them again on the server. `locale` comes from the host (default en-CA; Latin digits only). Inside a Repeater row it reads its error from the row. Event: `canonical` (the exact string).
  */
-export interface NumberInputProps { name: string; label: string; kind?: 'money' | 'decimal' | 'integer'; id?: string; currency?: string; locale?: string; scale?: number; signed?: boolean; grouping?: boolean; defaultValue?: string; min?: string; max?: string; step?: string; unit?: string; suffix?: string; placeholder?: string; error?: string; disabled?: boolean; required?: boolean }
+export interface InputNumberProps { name: string; label: string; kind?: 'money' | 'decimal' | 'integer'; id?: string; currency?: string; locale?: string; scale?: number; signed?: boolean; grouping?: boolean; defaultValue?: string; min?: string; max?: string; step?: string; unit?: string; suffix?: string; placeholder?: string; error?: string; disabled?: boolean; required?: boolean }
+/** @deprecated Use InputNumberProps; removed in 0.4. */
+export type NumberInputProps = InputNumberProps;
 
 /**
  * A scrolling list over a server `ScrollListViewModel` prop named `listKey` (Inertia infinite scroll, cursor paging). The default row draws a `ListItemData` (title, link, description, meta, badges, actions through RowActions); the `row` slot ({ item }) draws a richer one. "Load more" is always present while there is more; a failed load keeps the rows and offers Retry. Cursor-only, fixed selection, count-free: no sorts, segments, totals, polling, page or simple modes.
  */
 export interface ScrollListProps { listKey: string; title: string; density?: 'default' | 'compact' }
+
+/**
+ * A centred pill of page actions and status: `mode` auto (inline under short content, floating while long content scrolls, settling at its container's end), float or inline.
+ * `reveal` is a selector whose absence from view sets `v-model:revealed` (also the default slot's `{ revealed }`), so the host repeats header actions only then. The slot takes
+ * ActionBar (every action is a server descriptor, so on phones it overflows into the ⌄ menu) and STATUS only (text, the save state), never a control of its own: it cannot
+ * overflow and would clip, so a button or link slotted directly warns in development. It reads no store. It provides the inverse tone and pill shape (`provideSurface` / `useSurface`) to the controls inside. FloatingToolbarDot separates groups.
+ */
+export interface FloatingToolbarProps { mode?: 'auto' | 'float' | 'inline'; reveal?: string; label?: string; revealed?: boolean }
+
+/**
+ * Server action descriptors as button groups: declared `group`/`menu` (layoutActions: menu-bearing groups last), else the placement rule (placeActions). Dialog intent opens the
+ * route modal, document intent a new tab, ordinary GETs navigate; other actions are emitted (`@action`) for the host to run. `busy` blocks all but a standalone document link;
+ * `dialogOpen` holds menu focus for the host's dialog; `primary` fills each group's leading segment.
+ */
+export interface ActionBarProps { actions: import('./Action/actionPlacement').ActionDescriptor[]; busy?: boolean; dialogOpen?: boolean; primary?: boolean }
+/** ButtonGroup (ButtonGroup.md): raw `button`/`a`/`Link` children in the default slot, styled by the group; menu entries in `menu`; `label` names the trigger; `offset` is [skid, gap]. */
+export interface ButtonGroupProps { label?: string | null; offset?: [number, number] }
+
+/**
+ * The one header for a section, widget, card or pane: `title` as a heading at `level` (default 2), `count` (zero shown, null hidden), `badge` and `avatar` descriptors, `meta` and
+ * `description`; the `status` slot and the descriptor `actions` (ActionBar) on the other side. `@action` emits the original descriptor, matched by key.
+ */
+export interface SectionHeaderProps { title: string; count?: number | null; actions?: import('./Action/actionPlacement').ActionDescriptor[]; level?: 1 | 2 | 3 | 4 | 5 | 6; badge?: { label: string; variant: string } | null; meta?: string | null; description?: string | null; avatar?: { initials: string; src?: string | null; src2x?: string | null } | null }
+
+/**
+ * The menu family (Dropdown.md, DropdownItem.md and the DropdownLink/Confirm/Action/Delete/ModalLink specs, ButtonDropdown.md). Menus: `Dropdown` (`type="button"` for the labelled trigger, else an icon one; `label`, `alignLeft`, `horizontal`, `chevron`, `spin`,
+ * `colorClasses`, `menuClasses`; slots default, `header`, `buttontext`, `trigger`; attributes land on the trigger) and `ButtonDropdown` (`label`, `offset` [skid, gap]; slots default, `menu`, `menuheader`). Items must sit inside a kit menu. As specced, `active` (DropdownItem,
+ * DropdownLink) and `noun` (DropdownConfirm) do nothing, and DropdownLink's button form is always `type="submit"`.
+ */
+export interface DropdownProps { alignLeft?: boolean; horizontal?: boolean; type?: string; label?: string; colorClasses?: string; chevron?: boolean; spin?: boolean; menuClasses?: string }
+export interface ButtonDropdownProps { label?: string | null; offset?: [number, number] }
+/** DropdownItem: `as` "button" (a native button), "a" (a plain anchor) or anything else (an Inertia link; `inertia` with "button" makes an Inertia link rendered as a button); slots default, `icon`, `caption`, `wrapper` ({ close }). */
+export interface DropdownItemProps { href?: string; as?: string | object | null; inertia?: boolean; active?: boolean }
+export interface DropdownLinkProps { href?: string; as?: string | object | null; active?: boolean }
+/** DropdownConfirm: confirming runs `onConfirmed` or an Inertia visit to `href` (`method`), then closes the dialog and the menu; `variant="danger"` for the destructive button. Slots default, `icon`, `caption`, `title`, `confirmation`. */
+export interface DropdownConfirmProps { href?: string; method?: string; onConfirmed?: () => unknown; confirmLabel?: string; variant?: string; noun?: string }
+/** DropdownDelete: confirming sends an Inertia DELETE to `href`; emits `confirming`, `success`, `error`. Slots default, `description`, `title`, `message`, `caption` (`context` is its default). */
+export interface DropdownDeleteProps { href?: string; noun?: string; context?: string; deleteLabel?: string; preserveState?: boolean; preserveScroll?: boolean; onSuccess?: (page: unknown) => void }
+/** DropdownAction: an entry from a server action; with `confirmationMessage` it asks first. `icon` is a CSS class for an `<i>`. */
+export interface DropdownActionProps { action: { url: string; method?: string; label: string; icon?: string; description?: string; variant?: string; confirmationMessage?: string } }
+export interface DropdownModalLinkProps { href: string }

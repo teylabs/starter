@@ -1,6 +1,8 @@
 /*
  * The kit's base styles: the one stylesheet the kit owns. It is the single documented exception to "no hand-written CSS rules" (those are Tailwind utilities on the markup): the web
  * feel for the cursor. Every clickable thing shows the pointer, a disabled one shows not-allowed, and a component that names a cursor itself (a utility) wins over this base layer.
+ * The one other rule: on a phone, an open modal or sheet spans the whole viewport. The package's scroll lock reserves a scrollbar gutter on <html>, which narrows the modal's fixed container by
+ * the scrollbar's width (15px with classic scrollbars) and left a 390px phone's sheet at 375px; the gutter has nothing to guard there, so it is released while a modal is open.
  * An app that wants the native arrow puts `kit-cursor-native` on <html>. Import it after Tailwind: `@import './kit.css';`.
  */
 @layer base {
@@ -13,4 +15,37 @@
             @apply cursor-not-allowed;
         }
     }
+
+    @media (max-width: 639px) {
+        html:has(.im-modal-container) {
+            scrollbar-gutter: auto !important;
+        }
+    }
+}
+
+/*
+ * Tokens for ButtonGroup: `paper` (its background) and the neutral outline tier (ring and dividers, text, the chevron, the trigger's hover wash). The defaults below are the
+ * values the group always had, so the default theme looks the same (none of the shadcn surface tokens equals them, so they stay as aliases; the menu panel uses popover); a theme overrides them, and a surface (the FloatingToolbar pill) sets them on its own element.
+ */
+:root {
+    --kit-paper: #fff;
+    --kit-outline: oklch(87.2% 0.01 258.338);
+    --kit-outline-foreground: oklch(37.3% 0.034 259.733);
+    --kit-outline-muted: oklch(70.7% 0.022 261.325);
+    --kit-outline-wash: oklch(98.5% 0.002 247.839);
+}
+
+.dark {
+    --kit-paper: color-mix(in oklab, #fff 10%, transparent);
+    --kit-outline: oklch(37.3% 0.034 259.733);
+    --kit-outline-foreground: oklch(92.8% 0.006 264.531);
+    --kit-outline-wash: color-mix(in oklab, #fff 20%, transparent);
+}
+
+@theme inline {
+    --color-paper: var(--kit-paper);
+    --color-outline: var(--kit-outline);
+    --color-outline-foreground: var(--kit-outline-foreground);
+    --color-outline-muted: var(--kit-outline-muted);
+    --color-outline-wash: var(--kit-outline-wash);
 }

@@ -209,7 +209,7 @@ test('http freshness each visit carries its own navigation heading title and tra
     $security = $visit('/me/security');
     expect(collect($security['navigation'][0]['items'])->firstWhere('current', true)['label'])->toBe('Security');
     $page = $this->get('/me/security', viewModelStandardInertia())->json();
-    expect($page['sharedProps'])->toBe(['errors', 'shell']);
+    expect($page['sharedProps'])->toBe(['errors', 'kitUi', 'environment', 'shell']);
     $this->assertArrayNotHasKey('can', $page['props']);
     $this->assertArrayNotHasKey('breadcrumbs', $page['props']);
     $this->assertArrayNotHasKey('document_title', $page['props']);

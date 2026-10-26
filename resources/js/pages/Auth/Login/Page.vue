@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import { Button, Checkbox, Field, Input, Page, PasswordInput } from '@kit/ui';
+import { Button, Field, Input, InputCheckbox, Page, PasswordInput } from '@kit/ui';
 
 // Registration is closed. `status` and `localLogin` are the view model's: an app that offers a one-click local sign-in passes the offer (null elsewhere).
 // A guest card is not a settings form: no sticky FormActions bar, one full-width primary button, everything aligned to the card's left edge.
@@ -26,7 +26,7 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.LoginViewModel>();
             <Field id="password" name="password" label="Password">
                 <PasswordInput id="password" name="password" required autocomplete="current-password" placeholder="Password" aria-describedby="password-error" />
             </Field>
-            <Checkbox id="remember" name="remember" value="1">Remember me</Checkbox>
+            <InputCheckbox id="remember" name="remember" value="1">Remember me</InputCheckbox>
             <Button class="w-full" :disabled="processing" data-test="login-button">{{ processing ? 'Signing in…' : 'Sign in' }}</Button>
         </Form>
     </Page>

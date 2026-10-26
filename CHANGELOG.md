@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- The starter follows kit main (5619adf): tey/kit is required as `dev-main` at that commit instead of a local path repository, with tey/mod 0.11 and tey/concierge 0.8.2. The kit-owned files are regenerated from `kit:add` of every feature, which now includes `shell` (in `config/kit.php`). That brings the page-action, menu and InputSelect components, the shell's GuestShell, SubNav and Wordmark partials, `resources/js/types/kit-shell.d.ts` and the entitlements migration. Vite and `tsconfig.json` alias `@kit/shell` to the shell's Partials barrel, `tsconfig.json` adds `DOM.Iterable`, and reka-ui is 2.11.0, the version InputSelect is verified on. `config/kit-executor.json` records Mod v0.11.0. The tests follow: the feature graph has Shell, seven lineages, the entitlements schema and migration, the `kitUi` and `environment` shared props, and the mark checked through the Wordmark partial.
+- The kit's form inputs take their 0.3 names: `NumberInput` is `InputNumber` and `Checkbox` is `InputCheckbox` (`resources/js/components/Kit/Form/`, exported from `@kit/ui`). The Login and Connections pages use `InputCheckbox`. The old names stay as deprecated aliases until kit 0.4, and `Select` is deprecated in favour of `InputSelect`. Upgrading: rename your own `NumberInput`, `NumberInputProps` and `Checkbox` imports before kit 0.4.
+
 ### Fixed
 
 - The browser test reads the expected fonts from the active kit set, so `composer test:browser` passes whichever `KIT_FONTS` an app uses. CI also runs it with `instrument-inter` (#54)

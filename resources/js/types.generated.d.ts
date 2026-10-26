@@ -16,6 +16,11 @@ label: string,
 } | null,
 key: string | null,
 destructive: boolean,
+intent: string | null,
+group: string | null,
+menu: boolean,
+icon: string | null,
+newTab: boolean | null,
 };
 export type Breadcrumb = {
 label: string,
@@ -85,6 +90,47 @@ count: number,
 current: boolean,
 };
 }
+export namespace Lists {
+export type ListEmptyData = {
+variant: string,
+title: string,
+description: string,
+action: Tey.Kit.Features.Core.Data.Action | null,
+};
+export type ListErrorData = {
+message: string,
+retry: Tey.Kit.Features.Core.Data.Action | null,
+};
+export type ListItemData = {
+id: string,
+title: string,
+url: string | null,
+description: string | null,
+meta: {
+icon: string | null,
+label: string,
+url: string | null,
+}[],
+badges: {
+label: string,
+variant: string,
+}[],
+variant: string | null,
+group: {
+key: string,
+label: string,
+} | null,
+actions: Tey.Kit.Features.Core.Data.Action[],
+};
+export type ScrollListData = {
+key: string,
+title: string,
+state: string,
+data: Tey.Kit.Features.Core.Lists.ListItemData[],
+empty: Tey.Kit.Features.Core.Lists.ListEmptyData | null,
+error: Tey.Kit.Features.Core.Lists.ListErrorData | null,
+};
+}
 }
 export namespace Mcp {
 export namespace Data {
@@ -125,6 +171,10 @@ product: {
 name: string,
 url: string,
 logomark: string | null,
+logomark_dark: string | null,
+wordmark: string | null,
+wordmark_dark: string | null,
+lockup: boolean,
 },
 user: {
 name: string,
@@ -149,72 +199,10 @@ product: {
 name: string,
 url: string,
 logomark: string | null,
-},
-footer: {
-identity: string,
-credit: string,
-links: {
-label: string,
-url: string,
-}[],
-},
-kind: undefined,
-};
-export type ShellData = {
-account: {
-label: string,
-url: string,
-current: boolean,
-},
-product: {
-name: string,
-url: string,
-logomark: string | null,
-},
-workspace: {
-id: number,
-name: string,
-url: string | null,
-settings: Tey.Kit.Features.Core.Data.Action | null,
-all: Tey.Kit.Features.Core.Data.Action | null,
-leave: Tey.Kit.Features.Core.Data.Action | null,
-} | null,
-switcher: {
-current: {
-id: number,
-name: string,
-} | null,
-choices: {
-id: number,
-name: string,
-url: string | null,
-current: boolean,
-}[],
-} | null,
-navigation: {
-label: string,
-url: string,
-current: boolean,
-group: string,
-}[],
-user: {
-name: string,
-email: string,
-initials: string,
-avatar_url: string | null,
-avatar_url_2x: string | null,
-items: {
-label: string,
-url: string,
-current: boolean,
-group: string,
-}[],
-} | null,
-links: {
-home: string,
-switcher: string,
-sign_in: string,
-sign_out: string | null,
+logomark_dark: string | null,
+wordmark: string | null,
+wordmark_dark: string | null,
+lockup: boolean,
 },
 footer: {
 identity: string,
@@ -342,7 +330,7 @@ export type PlaceholderViewModel = {
 readonly title: string,
 readonly description: string,
 readonly milestone: string | null,
-readonly links: undefined[],
+readonly links: Tey.Kit.Features.Core.Data.Action[],
 readonly width: string | null,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
@@ -443,6 +431,88 @@ readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
 readonly save: Tey.Kit.Features.Core.Data.Action | null,
 readonly intent_key: string,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+}
+}
+export namespace Shell {
+export namespace Data {
+export type ShellData = {
+account: {
+label: string,
+url: string,
+current: boolean,
+},
+product: {
+name: string,
+url: string,
+logomark: string | null,
+logomark_dark: string | null,
+wordmark: string | null,
+wordmark_dark: string | null,
+lockup: boolean,
+},
+workspace: {
+id: number,
+name: string,
+url: string | null,
+settings: Tey.Kit.Features.Core.Data.Action | null,
+all: Tey.Kit.Features.Core.Data.Action | null,
+leave: Tey.Kit.Features.Core.Data.Action | null,
+} | null,
+switcher: {
+current: {
+id: number,
+name: string,
+} | null,
+choices: {
+id: number,
+name: string,
+url: string | null,
+current: boolean,
+}[],
+} | null,
+navigation: {
+label: string,
+url: string,
+current: boolean,
+group: string,
+}[],
+user: {
+name: string,
+email: string,
+initials: string,
+avatar_url: string | null,
+avatar_url_2x: string | null,
+items: {
+label: string,
+url: string,
+current: boolean,
+group: string,
+}[],
+} | null,
+links: {
+home: string,
+switcher: string,
+sign_in: string,
+sign_out: string | null,
+},
+footer: {
+identity: string,
+credit: string,
+links: {
+label: string,
+url: string,
+}[],
+},
+kind: undefined,
+subNavigation: {
+label: string,
+items: {
+label: string,
+url: string,
+current: boolean,
+}[],
+} | null,
 };
 }
 }

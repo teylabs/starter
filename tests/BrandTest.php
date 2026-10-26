@@ -90,8 +90,11 @@ test('the committed placeholders are current and linked in the head', function (
     if ($templateBrand && BrandAssets::renderer() !== null) {
         // Not the social image: its text uses whichever font the machine has.
         $rendered = BrandAssets::fromConfig()->render();
-        foreach (['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'mail-mark.png'] as $file) {
-            expect(hash('sha256', (string) file_get_contents(public_path($file))))->toBe(hash('sha256', $rendered[$file]), $file.' is stale: run php artisan kit:brand');
+        // The SVG is text, so it must match byte for byte. Raster bytes depend on the machine's ImageMagick or librsvg build, so the
+        // rasters must match the render's format and size; a changed mark or accent still shows in the SVG.
+        expect(hash('sha256', (string) file_get_contents(public_path('favicon.svg'))))->toBe(hash('sha256', $rendered['favicon.svg']), 'favicon.svg is stale: run php artisan kit:brand');
+        foreach (['favicon.ico', 'apple-touch-icon.png', 'mail-mark.png'] as $file) {
+            expect(array_slice((array) getimagesize(public_path($file)), 0, 3))->toBe(array_slice((array) getimagesizefromstring($rendered[$file]), 0, 3), $file.' is stale: run php artisan kit:brand');
         }
     }
     $head = $this->get('/login')->assertOk()->getContent();

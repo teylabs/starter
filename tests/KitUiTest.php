@@ -102,7 +102,7 @@ test('hand rolled controls live only in kit components', function () {
             }
             $source = (string) file_get_contents($file->getPathname());
             $relative = substr($file->getPathname(), strlen($root) + 1);
-            // Pages and the shell use the kit's controls (Input, Checkbox, Button, PasswordInput, the toggles), never raw form elements.
+            // Pages and the shell use the kit's controls (Input, InputCheckbox, Button, PasswordInput, the toggles), never raw form elements.
             $this->assertDoesNotMatchRegularExpression('/<(input|button|select|textarea|label)\b/', $source, $relative.' has a raw form element: use the kit component');
             // Pressed state and key handling belong to Reka, inside kit components, not hand-rolled in a page or the shell.
             $this->assertDoesNotMatchRegularExpression('/aria-pressed|@keydown|@keyup|@keypress|onKey(down|up)/', $source, $relative.' hand-rolls pressed state or key handling');

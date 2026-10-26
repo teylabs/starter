@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
+import { UserMenu, WorkspaceSwitcher } from '@kit/shell';
 import { provide } from 'vue';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
 import ShellDrawer from './Partials/ShellDrawer.vue';
-import UserMenu from './Partials/UserMenu.vue';
-import WorkspaceSwitcher from './Partials/WorkspaceSwitcher.vue';
+import SubNav from './Partials/SubNav.vue';
+import Wordmark from './Partials/Wordmark.vue';
 
 /*
  * The shell for pages under pages/Workspace: a header, never a sidebar. The product symbol (the platform's logomark, never a workspace's; no name text) and the workspace switcher sit at the left (always, from the server's `shell.workspace` and `shell.switcher`; the shell decides nothing), then the workspace's pages with one active mark (Settings is one of them, a landing page), then the user menu on the right. Below `lg` a drawer holds the same items. The app
- * owns its mark (`mark` slot), what the account menu adds (`extra`), header controls (`actions`, in the header and the drawer), the footer and the width (`widthClass`); the
- * chrome comes from the server's `layout` props.
+ * owns its mark (`mark` slot), what the account menu adds (`extra`), the switcher and user menu themselves (`workspace-switcher`, `user-menu`: the kit's partials by default, with the same props), header controls (`actions`, in the header and the drawer), controls that stay in the bar at every width
+ * (`bar`, rendered once and never in the drawer: a compact control such as a search opener, which shrinks before the switcher and the drawer button do), the footer and the
+ * width (`widthClass`); the chrome comes from the server's `layout` props. A module's pages (the server's `shell.subNavigation`) show as the SubNav strip under the header.
  */
-const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.SessionUi.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
+const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData; widthClass?: string }>(), { widthClass: 'max-w-7xl' });
 // The document title comes from the page's `layout` (composed on the server), never set per page.
-const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null } }>();
+const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null }; environment?: { label: string; colour: string } | null }>();
 // Pages in this shell render their heading (the layout's `title`) and actions inside their <Page>, so it aligns with the content column.
 provide('kit.shell', true);
 </script>
@@ -24,25 +26,39 @@ provide('kit.shell', true);
     <div class="flex min-h-svh flex-col bg-background text-foreground">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
         <div v-if="props.shell.user" class="sticky top-0 z-(--z-header)" data-shell-top>
+            <!-- Outside production (the server decides; null there): a 2px edge in the environment's colour, with its name for a screen reader. It takes no space beyond its 2px. -->
+            <div v-if="page.props.environment" class="h-0.5 w-full" :style="{ backgroundColor: page.props.environment.colour }" data-environment-edge><span class="sr-only">{{ page.props.environment.label }} environment</span></div>
             <header class="border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground backdrop-blur-(--shell-bar-blur)" data-shell-bar>
                 <div :class="['mx-auto flex h-16 min-w-0 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
-                    <!-- The mark slot holds the product SYMBOL only (no name text; the name is in the document title, the guest card and the footer): a fixed box (--shell-mark-height, capped by --shell-mark-max-width), the logomark scaling inside it. -->
-                    <Link :href="props.shell.product.url" :aria-label="props.shell.product.name" class="flex h-(--shell-mark-height) max-w-[min(var(--shell-mark-max-width),7rem)] shrink-0 items-center rounded-md px-1 focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none sm:max-w-(--shell-mark-max-width)" data-shell-wordmark>
-                        <slot name="mark"><img v-if="props.shell.product.logomark" :src="props.shell.product.logomark" alt="" class="h-full w-auto max-w-full object-contain brightness-(--shell-mark-brightness) invert-(--shell-mark-invert)" /><span v-else class="flex size-6 items-center justify-center rounded-md bg-shell-bar-foreground/10 text-xs font-semibold" aria-hidden="true">{{ props.shell.product.name.slice(0, 1) }}</span></slot>
-                    </Link>
+                    <!-- The product lockup (Partials/Wordmark, shared with the GuestShell); the mark slot replaces its symbol. -->
+                    <Wordmark :product="props.shell.product"><template v-if="$slots.mark" #default><slot name="mark" /></template></Wordmark>
                     <!-- With no workspace there is nothing to switch: the product's name stands where the switcher would, with no caret (the server decides: no workspace and no switcher). -->
-                    <span v-if="!props.shell.workspace && !props.shell.switcher" class="min-w-0 flex-1 truncate text-sm font-medium lg:flex-none" data-shell-product-name>{{ props.shell.product.name }}</span>
+                    <span v-if="!props.shell.workspace && !props.shell.switcher && !props.shell.product.lockup" class="min-w-0 flex-1 truncate text-sm font-medium lg:flex-none" data-shell-product-name>{{ props.shell.product.name }}</span>
                     <!-- The workspace switcher is always there: with one workspace its menu is just Workspace settings (when the server sends it), with two or more it lists them too. -->
-                    <WorkspaceSwitcher v-if="props.shell.workspace || props.shell.switcher" :workspace="props.shell.workspace" :switcher="props.shell.switcher" :account="props.shell.account" class="min-w-0 flex-1 lg:max-w-72 lg:flex-none" />
+                    <!-- The `workspace-switcher` slot replaces it; its props are the switcher's own, plus the bar's sizing `class`. -->
+                    <template v-if="props.shell.workspace || props.shell.switcher">
+                        <slot name="workspace-switcher" :workspace="props.shell.workspace" :switcher="props.shell.switcher" :account="props.shell.account" :class="['flex-1 lg:max-w-72 lg:flex-none', $slots.bar ? 'min-w-24' : 'min-w-0']">
+                            <WorkspaceSwitcher :workspace="props.shell.workspace" :switcher="props.shell.switcher" :account="props.shell.account" :class="['flex-1 lg:max-w-72 lg:flex-none', $slots.bar ? 'min-w-24' : 'min-w-0']" />
+                        </slot>
+                    </template>
                     <div class="ml-3 hidden shrink-0 items-center gap-0.5 lg:flex">
                         <PrimaryNav :navigation="props.shell.navigation" :label="props.shell.workspace?.name ?? props.shell.product.name" />
                     </div>
-                    <div class="ml-auto flex shrink-0 items-center gap-2">
+                    <!-- The bar slot: one live copy at every width, so its state, focus and listeners survive crossing lg. It may shrink; the controls after it do not. -->
+                    <div v-if="$slots.bar" class="ml-auto flex min-w-0 items-center gap-2" data-shell-bar-slot>
+                        <slot name="bar" />
+                    </div>
+                    <div :class="['flex shrink-0 items-center gap-2', $slots.bar ? '' : 'ml-auto']">
                         <div class="hidden items-center gap-2 lg:flex">
                             <slot name="actions" />
-                            <UserMenu v-if="props.shell.user && props.shell.links.sign_out" :user="props.shell.user" :sign-out-url="props.shell.links.sign_out">
-                                <template #extra><slot name="extra" /></template>
-                            </UserMenu>
+                            <!-- The `user-menu` slot replaces it, with the menu's own props. -->
+                            <template v-if="props.shell.user && props.shell.links.sign_out">
+                                <slot name="user-menu" :user="props.shell.user" :sign-out-url="props.shell.links.sign_out">
+                                    <UserMenu :user="props.shell.user" :sign-out-url="props.shell.links.sign_out">
+                                        <template #extra><slot name="extra" /></template>
+                                    </UserMenu>
+                                </slot>
+                            </template>
                         </div>
                         <div class="lg:hidden">
                             <ShellDrawer :shell="props.shell">
@@ -57,6 +73,12 @@ provide('kit.shell', true);
                 <div :class="['mx-auto flex h-10 min-w-0 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <Breadcrumbs />
                 </div>
+            </div>
+        </div>
+        <!-- The active module's pages: a strip under the header that scrolls with the page, in the subbar's tones and the content measure. -->
+        <div v-if="props.shell.user && props.shell.subNavigation?.items.length" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground">
+            <div :class="['mx-auto min-w-0 px-4 sm:px-6 lg:px-8', props.widthClass]">
+                <SubNav :label="props.shell.subNavigation.label" :items="props.shell.subNavigation.items" />
             </div>
         </div>
         <!-- A nested page's way up one level (the page's `layout.navigationHeader`): a strip under the header and breadcrumbs that scrolls with the page, tinted from --shell-band. -->

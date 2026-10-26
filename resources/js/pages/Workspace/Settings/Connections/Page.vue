@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { BlockStack, Button, Checkbox, DataTable, Field, FormCard, Input, Page, Section, Select } from '@kit/ui';
+import { BlockStack, Button, DataTable, Field, FormCard, Input, InputCheckbox, Page, Section, Select } from '@kit/ui';
 import { computed, ref } from 'vue';
 
 // AI assistants: connect assistants like Claude or ChatGPT to this workspace over MCP. The server sends the address and the "add an assistant" cards (a one-click link, a
@@ -32,7 +32,7 @@ const date = (iso: unknown) => (typeof iso === 'string' && iso ? new Date(iso).t
                     <div class="col-span-6 grid gap-3">
                         <template v-for="scope in scopes" :key="scope.key">
                             <template v-if="scope.required"><Input type="hidden" name="scopes[]" :model-value="scope.key" /><p class="text-sm text-muted-foreground">{{ scope.description }} (always included)</p></template>
-                            <Checkbox v-else :id="`scope-${scope.key}`" name="scopes[]" :value="scope.key">{{ scope.description }}</Checkbox>
+                            <InputCheckbox v-else :id="`scope-${scope.key}`" name="scopes[]" :value="scope.key">{{ scope.description }}</InputCheckbox>
                         </template>
                     </div>
                 </FormCard>

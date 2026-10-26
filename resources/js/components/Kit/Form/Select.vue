@@ -3,6 +3,7 @@ import { Check, ChevronDown } from '@lucide/vue';
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { SelectContent, SelectItem, SelectItemIndicator, SelectItemText, SelectPortal, SelectRoot, SelectTrigger, SelectValue, SelectViewport } from 'reka-ui';
 
+// Deprecated: use InputSelect, the kit's rich select. Select stays, unchanged, until 0.4 (its props don't map one to one: `autofocus`, and InputSelect turns search on past 8 options).
 // A select on Reka UI: `options` are values with labels; `id` goes on the trigger and `name` makes it submit a native named value, through a hidden input (so it works inside an uncontrolled <Form>), so a Field's label points at it.
 const props = defineProps<{ id?: string; name?: string; options: { value: string; label: string }[]; placeholder?: string; disabled?: boolean; invalid?: boolean; autofocus?: boolean }>();
 // `autofocus` focuses the trigger when the page arrives.

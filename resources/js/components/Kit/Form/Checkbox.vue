@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { Checkbox as BaseCheckbox } from '@/components/ui/checkbox';
+// Deprecated: Checkbox is now InputCheckbox. This alias passes its attributes, v-model and label slot through, and is removed in 0.4.
+import type { Component } from 'vue';
+import InputCheckbox from './InputCheckbox.vue';
 
-// A checkbox with its label beside it, in the default slot.
-defineProps<{ id: string; name?: string; value?: string; disabled?: boolean }>();
-const model = defineModel<boolean>();
+defineOptions({ inheritAttrs: false });
+// Typed as a plain component: the props arrive through $attrs, so they are checked where InputCheckbox is used, not here.
+const target: Component = InputCheckbox;
 </script>
 <template>
-    <div class="flex items-center gap-2">
-        <BaseCheckbox :id="id" v-model="model" :name="name" :value="value" :disabled="disabled" />
-        <label :for="id" class="text-sm leading-none"><slot /></label>
-    </div>
+    <component :is="target" v-bind="$attrs"><slot /></component>
 </template>

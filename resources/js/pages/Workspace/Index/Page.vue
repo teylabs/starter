@@ -5,7 +5,7 @@ import { Button, Dialog, Page } from '@kit/ui';
 const props = defineProps<Tey.Kit.Features.Workspaces.ViewModels.IndexWorkspaceViewModel>();
 // Each workspace opens at its first page; the shell already carries the link and what the user may reach (the switcher's choices, or the one workspace the bar names). Leave is there for everyone but the owner,
 // who has to transfer ownership first; it asks before it acts.
-const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.ShellData }>();
+const page = usePage<{ shell?: Tey.Kit.Features.Shell.Data.ShellData }>();
 const choices = computed(() => page.props.shell?.switcher?.choices ?? (page.props.shell?.workspace ? [{ ...page.props.shell.workspace, current: true }] : []));
 const leaveFor = (id: number) => props.workspaces.find((workspace) => workspace.id === id)?.leave ?? null;
 </script>
