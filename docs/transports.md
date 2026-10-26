@@ -36,7 +36,8 @@ Tokens expire after one hour. A connection is bound to one token, so refreshing 
 
 | Scope | Allows |
 | --- | --- |
-| `mcp:use` | Use the MCP server (required on every token) |
+| `mcp:use` | Act as you in the workspaces you approve, with what your role there allows (required on every token) |
+| `mcp:act` | Act as you in the workspaces you approve |
 | `settings.read`, `settings.write` | Read and update settings |
 
 A request is allowed only if the ability is in both the token's scopes and the connection's approved scopes, and the user's role and the workspace capability allow it.

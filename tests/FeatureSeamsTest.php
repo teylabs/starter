@@ -35,7 +35,7 @@ test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
     expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary']]);
-    $scopes = ['mcp:use' => 'Use workspace MCP', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings'];
+    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings'];
     expect($registry->tokenScopes())->toBe($scopes);
     expect(Passport::scopeIds())->toBe(array_keys($scopes));
     expect($registry->workspaceCapabilities())->toBe(['workspace.settings', 'workspace.dashboard']);
@@ -84,7 +84,7 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(18);
+    expect($kit)->toHaveCount(19);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -114,6 +114,9 @@ function featureSeamsReleased(bool $withNotes): array
 
     // The kit's own bookkeeping table: the fingerprint the deploy's role and permission syncs are gated by.
     $schema['kit_meta'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-meta.json'), true);
+
+    // The kit's MCP intent ledger (0.4): one remembered result per actor, connection and intent key.
+    $schema['kit_mcp_intents'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-mcp-intents.json'), true);
 
     // A capability switched for one person in one workspace.
     $schema['kit_capability_overrides'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-capability-overrides.json'), true);

@@ -44,6 +44,8 @@ watch(available, value => { if (value) scope?.register(key, { open, request, con
 onBeforeUnmount(() => scope?.unregister(key));
 const inline = computed(() => props.placement !== 'overlay' || Boolean(scope?.intent.value));
 const triggerAttrs = computed(() => ({ id: triggerId, type: 'button' as const, 'aria-expanded': open.value, 'aria-controls': panelId, 'aria-label': `${open.value ? 'Hide' : 'Show'} working for ${props.label}: ${display.value}`, onClick: toggle, onKeydown: escape }));
+// Inside a Popover, Reka owns the trigger's id, aria-controls and click: the keys are left out, since a bound undefined would still win over Reka's.
+const popoverTriggerAttrs = computed(() => { const { id: _id, 'aria-controls': _controls, onClick: _click, ...rest } = triggerAttrs.value; return rest; });
 const panelAttrs = { id: panelId, role: 'region', 'aria-labelledby': triggerId, onKeydown: escape };
 </script>
-<template><slot :node="node" :display="display" :available="available" :reason="reason" :open="open" :inline="inline" :trigger-id="triggerId" :panel-id="panelId" :trigger-attrs="triggerAttrs" :panel-attrs="panelAttrs" :toggle="toggle" :close="close" :set-open="request" :copy-working="copyWorking" :fallback="fallback" :status="status" /></template>
+<template><slot :node="node" :display="display" :available="available" :reason="reason" :open="open" :inline="inline" :trigger-id="triggerId" :panel-id="panelId" :trigger-attrs="triggerAttrs" :popover-trigger-attrs="popoverTriggerAttrs" :panel-attrs="panelAttrs" :toggle="toggle" :close="close" :set-open="request" :copy-working="copyWorking" :fallback="fallback" :status="status" /></template>

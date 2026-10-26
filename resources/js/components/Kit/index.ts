@@ -19,6 +19,9 @@ export { default as Checkbox } from './Form/InputCheckbox.vue';
 export { default as DataTable } from './Table/DataTable.vue';
 export { default as Dialog } from './Overlay/Dialog.vue';
 export { default as Modal } from './Overlay/Modal.vue';
+// A non-modal popover anchored to a trigger (Popover.md); a bottom sheet on phones.
+export { default as Popover } from './Overlay/Popover.vue';
+export type { PopoverDismiss, PopoverMessages, PopoverWidth } from './Overlay/popover';
 export { default as Field } from './Form/Field.vue';
 export { default as Page } from './Layout/Page.vue';
 export { default as FileInput } from './Form/FileInput.vue';
@@ -55,7 +58,7 @@ export { default as ScrollList } from './List/ScrollList.vue';
 export { useScrollList } from './List/useScrollList';
 export type { ListAction, ListItem, ScrollPayload } from './List/useScrollList';
 export type * from './contract';
-// Computed values with their working (ComputedValue.md). Popover stays internal to ComputedValue and is not exported.
+// Computed values with their working (ComputedValue.md).
 export { default as ComputedValue } from './Explanation/ComputedValue.vue';
 export { default as ComputedValueRoot } from './Explanation/ComputedValueRoot.vue';
 export { default as ComputedValueScope } from './Explanation/ComputedValueScope.vue';

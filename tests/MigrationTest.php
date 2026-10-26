@@ -52,6 +52,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_02_000502_create_kit_user_state_table',
         '0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table',
         '0001_01_02_000600_create_kit_mcp_tables',
+        '0001_01_02_000601_create_kit_mcp_intents_table',
         '2016_06_01_000001_create_oauth_auth_codes_table',
         '2016_06_01_000002_create_oauth_access_tokens_table',
         '2016_06_01_000003_create_oauth_refresh_tokens_table',

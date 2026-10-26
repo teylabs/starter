@@ -31,6 +31,15 @@ export interface SelectProps { id?: string; name?: string; options: { value: str
  */
 export interface InputSelectProps { modelValue?: string | number | null | (string | number)[]; options?: { value: string | number; label: string; description?: string; disabled?: boolean }[] | { label: string; options: { value: string | number; label: string; description?: string; disabled?: boolean }[] }[]; multiple?: boolean; name?: string; placeholder?: string; searchable?: boolean | null; clearable?: boolean | null; selectAll?: boolean; chosenFirst?: boolean; creatable?: boolean; disabled?: boolean; readonly?: boolean; invalid?: boolean; loading?: boolean; filter?: 'local' | 'remote'; debounce?: number; minSearchLength?: number; messages?: Record<string, string>; maxChips?: number | null; nativeRequired?: boolean }
 
+/**
+ * The kit's one non-modal surface: contextual detail anchored to a trigger, on Reka's Popover (`v-model:open`, uncontrolled when unbound). Contextual detail only: text, values, short lists, links. A form goes in a `Modal`, a question in a `Dialog`.
+ * `title` is a visible heading and names the panel; `label` names it with no heading; with neither it is named by the trigger. `side` (bottom), `align` (start), `offset` (8px) and `width` (`auto`, `sm` 256px, `md` 320px, `lg` 480px or `trigger`, capped at
+ * the viewport minus 32px) place it; Reka does the collision handling, so keep it clear of a fixed bar with `collisionBoundary` or `collisionPadding`. Below 640px (`sheet`, on by default) it renders in `Modal` as a bottom sheet.
+ * Slots: `trigger` (`{ open, close }`; one native button, to which it adds aria-expanded, aria-controls and aria-haspopup), `anchor`, `title`, `default` and `footer` (`{ close }`). `dismiss` reports `escape`, `outside`, `close` or `navigate` when the user closes it,
+ * never when the parent does. An Inertia navigation closes it. The close button is named by the kit's `ui` lang file (`popover.close`); `messages` overrides it. Attributes land on the panel.
+ */
+export interface PopoverProps { title?: string; label?: string; side?: 'top' | 'right' | 'bottom' | 'left'; align?: 'start' | 'center' | 'end'; offset?: number; width?: 'auto' | 'sm' | 'md' | 'lg' | 'trigger'; closeButton?: boolean; collisionPadding?: number; collisionBoundary?: Element | Element[] | null; sheet?: boolean; messages?: { close?: string } }
+
 /** A timezone select (`v-model`: an IANA zone name): Select over the zones the browser knows. */
 export interface TimezoneSelectProps { id?: string; name?: string; disabled?: boolean; invalid?: boolean }
 
@@ -112,7 +121,7 @@ export interface ToolbarProps { as?: string; asChild?: boolean; overflow?: 'wrap
  * A fixed header, a scrolling body and a footer; with `submit` (the server's action) it is a form with FormActions as the sticky footer. Closing asks first with unsaved edits; the backdrop never closes it.
  * `size` sm | md | lg | xl | full; `slideover`; bottom sheet (sm, md) or full screen (the rest) on phones.
  */
-export interface ModalProps { title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; confirmMessage?: string }
+export interface ModalProps { title: string; description?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; placement?: 'center' | 'slideover' | 'drawer'; as?: 'form' | 'div'; submit?: { label: string; url: string; method: string }; dirty?: boolean; busyLabel?: string; cancelLabel?: string; showCloseButton?: boolean; initialFocus?: 'field' | 'body'; confirmMessage?: string }
 
 /**
  * A repeating group of rows posted as native bracket paths (`name[0][field]`). `rows` carry string ids and a server-supplied `template` (without an id) is cloned for each added row, which gets a `new:` id. Deletion is staged in the form, never a request. `removable` is `true`, `false` or a server descriptor `{ label, rowIds }` that decides which ids show a remove control (visibility only: save must re-authorize). `limits` bound the row count. `errors` default to the Inertia form's. Reordering is by move buttons. One nested Repeater is supported.

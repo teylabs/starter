@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d64e37540a13d50a7e1fbb40473aec7",
+    "content-hash": "1d81698ba7315f03a4b3c3a8dba52aeb",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4761,16 +4761,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "2.3.6",
+            "version": "2.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "1427af4647235b4a73b13940b1f1258d3584f36e"
+                "reference": "3fcdcf021e840f1ec9383152e3603fc790c7c15b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/1427af4647235b4a73b13940b1f1258d3584f36e",
-                "reference": "1427af4647235b4a73b13940b1f1258d3584f36e",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/3fcdcf021e840f1ec9383152e3603fc790c7c15b",
+                "reference": "3fcdcf021e840f1ec9383152e3603fc790c7c15b",
                 "shasum": ""
             },
             "require": {
@@ -4802,9 +4802,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.6"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.7"
             },
-            "time": "2026-09-27T20:07:45+00:00"
+            "time": "2026-10-26T17:24:37+00:00"
         },
         {
             "name": "pragmarx/google2fa",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.3.2",
+            "version": "v0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "6d281905c8fbfdebcf895a286063e5faecebf94e"
+                "reference": "eaf2cd4a7333c959a8990485a1c480737a462bda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/6d281905c8fbfdebcf895a286063e5faecebf94e",
-                "reference": "6d281905c8fbfdebcf895a286063e5faecebf94e",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/eaf2cd4a7333c959a8990485a1c480737a462bda",
+                "reference": "eaf2cd4a7333c959a8990485a1c480737a462bda",
                 "shasum": ""
             },
             "require": {
@@ -10085,6 +10085,7 @@
                 "laravel/pennant": "^1.0",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
+                "spatie/laravel-typescript-transformer": "^3.3",
                 "tey/concierge": "^0.8.2"
             },
             "type": "library",
@@ -10108,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.3.2"
+                "source": "https://github.com/teylabs/kit/tree/v0.4.0"
             },
             "funding": [
                 {
@@ -10116,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-26T15:32:44+00:00"
+            "time": "2026-10-26T19:09:54+00:00"
         },
         {
             "name": "tey/mod",
