@@ -12,6 +12,8 @@ const FEATURE_GRAPH_REQUIRES = [
 ];
 /** Library features use no host class; everything else under Tey\Kit\ belongs to the composition root or the lifecycle. */
 const FEATURE_GRAPH_PREFIX = 'Tey\\Kit\\';
+/** Kit library code outside Features that any feature may use: a namespace prefix ends in a backslash, anything else names one class. */
+const FEATURE_GRAPH_KIT_LIBRARY = ['Tey\\Kit\\Mail\\', 'Tey\\Kit\\Brand'];
 test('the graph is acyclic and names known features', function () {
     foreach (array_keys(FEATURE_GRAPH_REQUIRES) as $feature) {
         expect(featureGraphClosure($feature, []))->not->toContain($feature);
@@ -46,6 +48,7 @@ test('the checks catch violations', function () {
     $app = featureGraphLibrary();
     expect(featureGraphPhpViolations($app.'/SessionUi/Operations/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\SessionUi\\Operations;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nuse Tey\\Kit\\Features\\Access\\Access;\nfinal class Bad { public function a() { return [\\Tey\\Kit\\Features\\FeaturesServiceProvider::class, \\Tey\\Kit\\Lineages::class, \\App\\Models\\User::class, Models\\Note::class]; } }"))->toBe(['SessionUi/Operations/Bad.php uses Tey\\Kit\\Features\\Mcp\\Context', 'SessionUi/Operations/Bad.php uses Tey\\Kit\\Features\\FeaturesServiceProvider', 'SessionUi/Operations/Bad.php uses Tey\\Kit\\Lineages', 'SessionUi/Operations/Bad.php uses App\\Models\\User']);
     expect(featureGraphPhpViolations($app.'/SessionUi/Integrations/Mcp/Good.php', "<?php\nnamespace Tey\\Kit\\Features\\SessionUi\\Integrations\\Mcp;\nuse Tey\\Kit\\Features\\Mcp\\Context;\nfinal class Good {}"))->toBe([]);
+    expect(featureGraphPhpViolations($app.'/SessionUi/Notifications/Mail.php', "<?php\nnamespace Tey\\Kit\\Features\\SessionUi\\Notifications;\nuse Tey\\Kit\\Mail\\FluentMailMessage;\nuse Tey\\Kit\\Brand;\nuse Tey\\Kit\\BrandAssets;\nfinal class Mail {}"))->toBe(['SessionUi/Notifications/Mail.php uses Tey\\Kit\\BrandAssets']);
     expect(featureGraphPhpViolations($app.'/Core/Bad.php', "<?php\nnamespace Tey\\Kit\\Features\\Core;\nuse Tey\\Kit\\Features\\Workspaces\\Models\\Workspace;\nfinal class Bad {}"))->toBe(['Core/Bad.php uses Tey\\Kit\\Features\\Workspaces\\Models\\Workspace']);
     $js = dirname(__DIR__).'/resources/js/pages';
     expect(featureGraphJsViolations($js, $js.'/Workspace/Settings/General/Page.vue', "<script setup lang=\"ts\">\nimport Layout from '../../Layout.vue';\nimport NoteEditor from '../../Note/Index/Partials/NoteEditor.vue';\nimport Field from './Partials/Field.vue';\n</script>"))->toBe(['Workspace/Settings/General/Page.vue imports ../../Layout.vue', 'Workspace/Settings/General/Page.vue imports ../../Note/Index/Partials/NoteEditor.vue']);
@@ -111,6 +114,9 @@ function featureGraphPhpViolations(string $path, string $source): array
         if (! str_starts_with($name, FEATURE_GRAPH_PREFIX) && ! str_starts_with($name, 'App\\')) {
             continue;
         }
+        if (featureGraphKitLibrary($name)) {
+            continue;
+        }
         $segments = explode('\\', $name);
         $ok = $segments[0] === 'Tey' && $segments[2] === 'Features' && isset($segments[4], FEATURE_GRAPH_REQUIRES[$segments[3]]) && in_array($segments[3], $allowed, true);
         if (! $ok) {
@@ -119,6 +125,16 @@ function featureGraphPhpViolations(string $path, string $source): array
     }
 
     return $violations;
+}
+function featureGraphKitLibrary(string $name): bool
+{
+    foreach (FEATURE_GRAPH_KIT_LIBRARY as $allowed) {
+        if (str_ends_with($allowed, '\\') ? str_starts_with($name, $allowed) : $name === $allowed) {
+            return true;
+        }
+    }
+
+    return false;
 }
 /** @return list<string> */
 function featureGraphJsViolations(string $root, string $path, string $source): array

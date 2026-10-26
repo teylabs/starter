@@ -1,4 +1,5 @@
 // Where a list of server action descriptors goes: inline or in a menu. Nothing here checks a permission: a forbidden action is absent from the list.
+// `intent` is `dialog`, `document` or `edit` (an action that changes the record; ActionBar hides it inside a locked LockedForm).
 export type ActionDescriptor = {
     label: string; url: string; method: string; key?: string | null; disabled?: boolean; reason?: string | null; destructive?: boolean;
     confirm?: { title: string; description: string; label: string } | null; intent?: string | null; group?: string | null; menu?: boolean; icon?: string | null; newTab?: boolean | null;

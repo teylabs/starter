@@ -224,8 +224,10 @@ test('the cursor rule is the kits stylesheet and disabled items are not pointer 
     $this->assertStringNotContainsString('kit-cursor-native', $app, 'the rule lives in the kit stylesheet, not in the app');
 
     // Disabled menu and select items are blocked by the disabled state, so the not-allowed cursor can show; none of them is pointer-events: none.
+    // A LockedForm's read-only trigger is not disabled: its `locked ? '…'` branch may use the default cursor.
     foreach (array_merge(glob($root.'/resources/js/components/ui/dropdown-menu/*.vue'), [$root.'/resources/js/components/Kit/Form/Select.vue']) as $file) {
-        $this->assertStringNotContainsString('data-[disabled]:pointer-events-none', (string) file_get_contents($file), basename($file));
-        $this->assertStringNotContainsString('cursor-default', (string) file_get_contents($file), basename($file));
+        $source = (string) preg_replace("/locked \\? '[^']*'/", '', (string) file_get_contents($file));
+        $this->assertStringNotContainsString('data-[disabled]:pointer-events-none', $source, basename($file));
+        $this->assertStringNotContainsString('cursor-default', $source, basename($file));
     }
 });

@@ -64,8 +64,8 @@ export type SettingsFrameProps = Record<string, never>;
 /** A person's photo (`src`, `src2x`) or their initials when there is none; `large` is the profile size. */
 export interface AvatarProps { initials: string; src?: string | null; src2x?: string | null; large?: boolean }
 
-/** A file chooser (`v-model`: File or null); `accept` filters the picker. */
-export interface FileInputProps { id: string; accept?: string; disabled?: boolean }
+/** A file chooser (`v-model`: File or null); `accept` filters the picker. `current` is the record's file (name, size, link), shown in place of the picker inside a locked LockedForm. */
+export interface FileInputProps { id: string; accept?: string; disabled?: boolean; current?: { name: string; size?: number | null; url?: string | null } | null }
 
 /**
  * The bar at the foot of a form (status, Cancel, submit; right-aligned; sticky). It reads Inertia's <Form> context, or `form` (a useForm() result). `submit` is the server's action descriptor (its label, and `disabled` with a `reason` shown in the status slot); `submitLabel` is the verb
@@ -76,8 +76,19 @@ export interface FormActionsProps { form?: object; submit?: { label: string; dis
 /** A card for a form: a title, a six-column field grid, fieldsets, and the FormActions bar in its footer (same props). */
 export interface FormCardProps extends FormActionsProps { title?: string; description?: string }
 
-/** A group of fields inside a FormCard, with a legend and a line under it. */
-export interface FormFieldsetProps { legend: string; description?: string }
+/**
+ * A titled group of fields inside a FormCard: a native fieldset whose legend holds `title` as a heading at `level` (2 to 6, default 2), `description` after the legend (aria-describedby),
+ * `legendHidden` for screen readers only, `separator` (`rule`, default, or `space`) between sibling groups, `fullwidth` to stack the fields. Slots: `title`, `description`, default (the fields). `legend` is the old name of `title`, until 0.4.
+ */
+export interface FormFieldsetProps { title?: string; legend?: string; description?: string; level?: 2 | 3 | 4 | 5 | 6; legendHidden?: boolean; separator?: 'rule' | 'space'; fullwidth?: boolean }
+
+/**
+ * A form someone may read but not change: locked when `save`, the page's save descriptor, is `null` (the server decides). Every kit control inside turns read-only (never disabled), kit edit
+ * actions and `intent: 'edit'` descriptors are hidden, each FormCard shows the notice in place of FormActions and nothing submits. `quantity` picks the plural (default) or singular notice,
+ * `notice` replaces it, `reason` adds a muted line. Slot props `{ locked }`. `EditOnly` (no props) renders its slot only while editable; `useLocked()` returns `{ locked, notice, reason }`.
+ */
+export interface LockedFormProps { save: object | null; quantity?: 'many' | 'one'; notice?: string; reason?: string | null }
+export type EditOnlyProps = Record<string, never>;
 
 /** The kit's Dialog: a confirmation or a prompt (static; never a form), `variant` danger (icon circle, destructive action) or neutral; `action` is a server action the dialog performs. The trigger is the default slot, `@confirm` runs the action; `v-model:open` opens it without one; `@closed` fires after it has closed and returned focus. Slots: icon, title, body, footer. Bottom-aligned on phones. */
 export interface DialogProps { title: string; description?: string; confirmLabel?: string; cancelLabel?: string; variant?: 'danger' | 'neutral'; action?: { url: string; method: string } }
@@ -161,3 +172,22 @@ export interface DropdownDeleteProps { href?: string; noun?: string; context?: s
 /** DropdownAction: an entry from a server action; with `confirmationMessage` it asks first. `icon` is a CSS class for an `<i>`. */
 export interface DropdownActionProps { action: { url: string; method?: string; label: string; icon?: string; description?: string; variant?: string; confirmationMessage?: string } }
 export interface DropdownModalLinkProps { href: string }
+
+/**
+ * Work beside its context: `main` and `aside` slots on Reka's Splitter (aside 35% by default, 20–75%, collapsible; main at least 25%; keyboard resize by 5). Below `breakpoint` (lg | xl) the aside is a Modal drawer with an opener (`mobile="sheet"`) or stays in the flow (`inline`). Aside slot props: `{ sheet, collapsed, toggle }`. Exposed `show(target?)` opens the sheet. Layout state is saved per person through `preference` (`{ key, value }`), the server `state` wins, guarded localStorage is the fallback; remount when `storageKey`/`storageScope` change.
+ */
+export interface SplitPaneProps { storageKey: string; storageScope: string; label: string; state?: string | null; preference?: { url: string; method: string } | null; breakpoint?: 'lg' | 'xl'; asideSize?: number; mobile?: 'sheet' | 'inline'; showMobileTrigger?: boolean; mainScroll?: boolean; compact?: boolean; stickyAside?: boolean }
+
+/** A pane's own vertical scroll area; `chain` lets the wheel pass on to the page at either end. */
+export interface PaneScrollProps { chain?: boolean }
+
+/** Pane switches (single choice, `v-model`): not ARIA tabs, not navigation. */
+export interface PaneTabsProps { tabs: { value: string; label: string }[]; label: string; modelValue: string }
+
+/** The collapse/expand icon button for a pane; it owns no state. */
+export interface PaneToggleProps { label: string; collapsed?: boolean }
+
+/**
+ * The one dropzone: drop, focused paste or browse into a hidden native file input (the form's value). Emits `files` (an empty list on a rejected selection or removing the last file); starts no upload. `accept` (MIME types) and `maxBytes` come from the server; `maxFiles` defaults to 1. `handleDrops` consumes drops, otherwise the host owns them. `compact` is overlay-only. Default slot: `{ browse }`. Exposed: `attach(files)`, `remove(index)`, `open()`.
+ */
+export interface BulkDropProps { name: string; label: string; accept: string[]; maxBytes: number; hasFiles: boolean; empty?: object | null; active?: boolean; multiple?: boolean; maxFiles?: number; handleDrops?: boolean; prompt?: string; hint?: string; disabled?: boolean; compact?: boolean; busy?: string }

@@ -27,10 +27,11 @@ test('released packages and trusted host binding', function () {
     // through them and is a release too.
     $constraint = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/concierge'];
     expect(Semver::satisfies((string) InstalledVersions::getVersion('tey/concierge'), $constraint))->toBeTrue('tey/concierge '.InstalledVersions::getPrettyVersion('tey/concierge').' satisfies '.$constraint);
-    foreach (['tey/concierge', 'tey/mod'] as $package) {
+    foreach (['tey/concierge', 'tey/mod', 'tey/kit'] as $package) {
         expect((string) InstalledVersions::getPrettyVersion($package))->toMatch('/^v\d+\.\d+\.\d+$/', $package.' is a release, not a branch');
     }
-    expect(InstalledVersions::getPrettyVersion('tey/kit'))->toBe('dev-main');
+    $kit = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/kit'];
+    expect(Semver::satisfies((string) InstalledVersions::getVersion('tey/kit'), $kit))->toBeTrue('tey/kit '.InstalledVersions::getPrettyVersion('tey/kit').' satisfies '.$kit);
     // TEMP: the local path repo
     expect((new ReflectionClass(Maintenance::class))->getFileName())->toEndWith('/vendor/tey/mod/src/Maintenance/Maintenance.php');
     $host = app(LifecycleHost::class);

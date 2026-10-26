@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9380c9e29d9874c5f996e20517762c45",
+    "content-hash": "de2d029c60c9ab53b9050fa845661c7c",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -5740,16 +5740,16 @@
         },
         {
             "name": "spatie/laravel-data",
-            "version": "4.23.0",
+            "version": "4.23.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-data.git",
-                "reference": "230543769c996e407fec2873930626aed7dd0d3b"
+                "reference": "23d0748b9712767ca4af795fa8a25dbc8c2492e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-data/zipball/230543769c996e407fec2873930626aed7dd0d3b",
-                "reference": "230543769c996e407fec2873930626aed7dd0d3b",
+                "url": "https://api.github.com/repos/spatie/laravel-data/zipball/23d0748b9712767ca4af795fa8a25dbc8c2492e0",
+                "reference": "23d0748b9712767ca4af795fa8a25dbc8c2492e0",
                 "shasum": ""
             },
             "require": {
@@ -5812,7 +5812,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-data/issues",
-                "source": "https://github.com/spatie/laravel-data/tree/4.23.0"
+                "source": "https://github.com/spatie/laravel-data/tree/4.23.1"
             },
             "funding": [
                 {
@@ -5820,20 +5820,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-08T14:41:13+00:00"
+            "time": "2026-10-26T09:29:36+00:00"
         },
         {
             "name": "spatie/laravel-medialibrary",
-            "version": "11.23.10",
+            "version": "11.23.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-medialibrary.git",
-                "reference": "e32803a1295c001ad53a1e9c8468f5a39b4df37f"
+                "reference": "7893a70370e10d0a21286af05ed577b3ef94f353"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/e32803a1295c001ad53a1e9c8468f5a39b4df37f",
-                "reference": "e32803a1295c001ad53a1e9c8468f5a39b4df37f",
+                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/7893a70370e10d0a21286af05ed577b3ef94f353",
+                "reference": "7893a70370e10d0a21286af05ed577b3ef94f353",
                 "shasum": ""
             },
             "require": {
@@ -5918,7 +5918,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-medialibrary/issues",
-                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.10"
+                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.11"
             },
             "funding": [
                 {
@@ -5930,7 +5930,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-19T12:45:53+00:00"
+            "time": "2026-10-26T11:49:37+00:00"
         },
         {
             "name": "spatie/laravel-multitenancy",
@@ -6162,16 +6162,16 @@
         },
         {
             "name": "spatie/laravel-query-builder",
-            "version": "7.3.6",
+            "version": "7.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-query-builder.git",
-                "reference": "af3155714b1b7abe20508754ce08664e1aea5bac"
+                "reference": "99cad9ffaabe626f430c8f4e4d8e10c86c77fd25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-query-builder/zipball/af3155714b1b7abe20508754ce08664e1aea5bac",
-                "reference": "af3155714b1b7abe20508754ce08664e1aea5bac",
+                "url": "https://api.github.com/repos/spatie/laravel-query-builder/zipball/99cad9ffaabe626f430c8f4e4d8e10c86c77fd25",
+                "reference": "99cad9ffaabe626f430c8f4e4d8e10c86c77fd25",
                 "shasum": ""
             },
             "require": {
@@ -6232,7 +6232,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2026-10-19T00:08:20+00:00"
+            "time": "2026-10-26T11:47:01+00:00"
         },
         {
             "name": "spatie/laravel-settings",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "dev-main",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "5619adf7d60f6e9ffa89fca311e59de11038c4e9"
+                "reference": "4eb60fb821939d0d08031babeac6be5e61dacbbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/5619adf7d60f6e9ffa89fca311e59de11038c4e9",
-                "reference": "5619adf7d60f6e9ffa89fca311e59de11038c4e9",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/4eb60fb821939d0d08031babeac6be5e61dacbbe",
+                "reference": "4eb60fb821939d0d08031babeac6be5e61dacbbe",
                 "shasum": ""
             },
             "require": {
@@ -10087,7 +10087,6 @@
                 "spatie/laravel-settings": "^3.9",
                 "tey/concierge": "^0.8.2"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -10109,7 +10108,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/main"
+                "source": "https://github.com/teylabs/kit/tree/v0.3.1"
             },
             "funding": [
                 {
@@ -10117,20 +10116,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-26T07:44:02+00:00"
+            "time": "2026-10-26T13:52:35+00:00"
         },
         {
             "name": "tey/mod",
-            "version": "v0.11.0",
+            "version": "v0.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/mod.git",
-                "reference": "60f02fe4a37e8873831a3788dacc889cf0abc79f"
+                "reference": "d043a6f1a714c055adb12f8f55aa6e3b02b267f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/mod/zipball/60f02fe4a37e8873831a3788dacc889cf0abc79f",
-                "reference": "60f02fe4a37e8873831a3788dacc889cf0abc79f",
+                "url": "https://api.github.com/repos/teylabs/mod/zipball/d043a6f1a714c055adb12f8f55aa6e3b02b267f5",
+                "reference": "d043a6f1a714c055adb12f8f55aa6e3b02b267f5",
                 "shasum": ""
             },
             "require": {
@@ -10225,7 +10224,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-25T14:52:41+00:00"
+            "time": "2026-10-26T13:12:09+00:00"
         },
         {
             "name": "tey/standards",
@@ -16522,9 +16521,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "tey/kit": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
