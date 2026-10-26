@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4fac1c2fd8a97328fa8c9c8362c58e09",
+    "content-hash": "1d81698ba7315f03a4b3c3a8dba52aeb",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -665,23 +665,23 @@
         },
         {
             "name": "doctrine/inflector",
-            "version": "2.1.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/inflector.git",
-                "reference": "46351b6812b7b6d52b82c3efa5dfb786a198ec88"
+                "reference": "6d6c96277ea252fc1304627204c3d5e6e15faa3b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/inflector/zipball/46351b6812b7b6d52b82c3efa5dfb786a198ec88",
-                "reference": "46351b6812b7b6d52b82c3efa5dfb786a198ec88",
+                "url": "https://api.github.com/repos/doctrine/inflector/zipball/6d6c96277ea252fc1304627204c3d5e6e15faa3b",
+                "reference": "6d6c96277ea252fc1304627204c3d5e6e15faa3b",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^12.0 || ^14.0",
+                "doctrine/coding-standard": "^12.0 || ^13.0",
                 "phpstan/phpstan": "^1.12 || ^2.0",
                 "phpstan/phpstan-phpunit": "^1.4 || ^2.0",
                 "phpstan/phpstan-strict-rules": "^1.6 || ^2.0",
@@ -735,7 +735,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/inflector/issues",
-                "source": "https://github.com/doctrine/inflector/tree/2.1.1"
+                "source": "https://github.com/doctrine/inflector/tree/2.1.0"
             },
             "funding": [
                 {
@@ -751,7 +751,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-26T08:14:14+00:00"
+            "time": "2025-08-10T19:31:58+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -10229,16 +10229,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.10.0",
+            "version": "v0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "e8c6a89aeca0d1b81bcd505d3eb8a97a805072fc"
+                "reference": "b1cb803e8f02221f4bf054cebb0ca2879c1f6b9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/e8c6a89aeca0d1b81bcd505d3eb8a97a805072fc",
-                "reference": "e8c6a89aeca0d1b81bcd505d3eb8a97a805072fc",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/b1cb803e8f02221f4bf054cebb0ca2879c1f6b9f",
+                "reference": "b1cb803e8f02221f4bf054cebb0ca2879c1f6b9f",
                 "shasum": ""
             },
             "require": {
@@ -10309,7 +10309,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.10.0"
+                "source": "https://github.com/teylabs/standards/tree/v0.7.0"
             },
             "funding": [
                 {
@@ -10317,7 +10317,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-26T20:21:18+00:00"
+            "time": "2026-10-20T12:20:36+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
