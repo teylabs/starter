@@ -5,7 +5,7 @@ import UserAvatar from './UserAvatar.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@kit/ui';
 
 // Who is signed in, the account pages, whatever the app adds in the `extra` slot, then Sign out last as a POST.
-defineProps<{ user: NonNullable<Tey.Kit.Features.SessionUi.Data.ShellData['user']>; signOutUrl: string }>();
+defineProps<{ user: NonNullable<Tey.Kit.Features.Shell.Data.ShellData['user']>; signOutUrl: string }>();
 </script>
 <template>
     <DropdownMenu :modal="false">

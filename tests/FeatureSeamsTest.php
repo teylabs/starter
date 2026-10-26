@@ -84,7 +84,7 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(17);
+    expect($kit)->toHaveCount(18);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -118,6 +118,8 @@ function featureSeamsReleased(bool $withNotes): array
     // A capability switched for one person in one workspace.
     $schema['kit_capability_overrides'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-capability-overrides.json'), true);
     $schema['kit_permission_defaults'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-permission-defaults.json'), true);
+    // Entitlements per feature: what a workspace's plan includes, and its limits.
+    $schema['kit_entitlements'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-entitlements.json'), true);
 
     // The account pages: Fortify's two-factor columns on users (the starter's own migration) and the kit's per-user security log.
     $schema['users']['columns'] = [...$schema['users']['columns'], ['two_factor_secret', 'text', 0, null, 0], ['two_factor_recovery_codes', 'text', 0, null, 0], ['two_factor_confirmed_at', 'datetime', 0, null, 0]];

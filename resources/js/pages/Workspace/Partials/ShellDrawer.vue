@@ -6,7 +6,7 @@ import UserAvatar from './UserAvatar.vue';
 import { Button, Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
 
 // Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
-defineProps<{ shell: Tey.Kit.Features.SessionUi.Data.ShellData }>();
+defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData }>();
 
 const open = ref(false);
 const stop = router.on('navigate', () => {

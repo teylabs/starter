@@ -2,7 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 
 // The current workspace's pages, with one active mark: aria-current plus an underline on the bar's edge.
-defineProps<{ navigation: Tey.Kit.Features.SessionUi.Data.ShellData['navigation']; label: string }>();
+defineProps<{ navigation: Tey.Kit.Features.Shell.Data.ShellData['navigation']; label: string }>();
 </script>
 <template>
     <nav v-if="navigation.length" :aria-label="label" class="flex items-center gap-0.5" data-shell-nav>

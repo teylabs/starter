@@ -48,10 +48,13 @@ test('the mark is app name and a logomark never the workspace name', function ()
     // The kit points at a logomark that the starter ships.
     expect(public_path('logomark.svg'))->toBeFile();
 
-    // The shell renders the product, never the switcher's workspace, in the mark.
+    // The shell renders the product, never the switcher's workspace, in the mark: the Layout hands the product and its mark slot to the
+    // shared Wordmark partial, whose default (the symbol) is drawn from the product.
     $layout = file_get_contents(base_path('resources/js/pages/Workspace/Layout.vue'));
-    expect($layout)->toMatch('/<slot name="mark">.*product\.name.*<\/slot>/s');
-    $this->assertDoesNotMatchRegularExpression('/<slot name="mark">[^<]*<[^>]*>[^<]*switcher/s', $layout);
+    expect($layout)->toMatch('/<Wordmark :product="props\.shell\.product">.*<slot name="mark" \/>.*<\/Wordmark>/s');
+    $wordmark = file_get_contents(base_path('resources/js/pages/Workspace/Partials/Wordmark.vue'));
+    expect($wordmark)->toMatch('/<slot>.*product\.name.*<\/slot>/s');
+    $this->assertDoesNotMatchRegularExpression('/switcher/', $wordmark);
 });
 test('the shell always names the workspace and always has the switcher', function () {
     require dirname(__DIR__).'/database/fixture.php';

@@ -7,7 +7,7 @@ import { Dialog, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMe
 // The workspace in the bar, beside the product symbol: its name (a link home) and a caret (the menu). The server sends `workspace` (the current one, or the only one) and `switcher` (only with two or more);
 // this renders what is there: the workspaces to switch to, "Workspace settings" when the server sends that action, and the server's `all` action (the chooser; null with one workspace). The trigger is one truncated line,
 // the full name in `title`.
-type Shell = Tey.Kit.Features.SessionUi.Data.ShellData;
+type Shell = Tey.Kit.Features.Shell.Data.ShellData;
 defineOptions({ inheritAttrs: false });
 const props = defineProps<{ workspace: Shell['workspace']; switcher: Shell['switcher']; account: Shell['account'] }>();
 // Leave workspace is the server's action, there only for a member who can leave; it asks first (opened after the menu has closed, or the menu's own dismissal swallows it).

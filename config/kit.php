@@ -5,7 +5,7 @@
 return [
     // The adopted features. The template ships every feature's files, but no installed record, which is bound to a
     // checkout's own path. Null reads them from that record once `kit:add` has claimed the files (docs/lifecycle.md).
-    'features' => ['core', 'workspaces', 'access', 'settings', 'session-ui', 'mcp'],
+    'features' => ['core', 'workspaces', 'access', 'settings', 'shell', 'session-ui', 'mcp'],
 
     // The host's user model. Null uses the `users` auth provider's model.
     'models' => ['user' => null],
