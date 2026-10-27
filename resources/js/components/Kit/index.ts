@@ -48,6 +48,10 @@ export type { InputSelectGroup, InputSelectMessages, InputSelectOption, InputSel
 export { default as Textarea } from './Form/Textarea.vue';
 export { default as TimezoneSelect } from './Form/TimezoneSelect.vue';
 export { default as RowActions } from './Table/RowActions.vue';
+// The index page's pieces around DataTable: the search-and-filters toolbar, the bulk bar for selected rows and the selection model (DataTable uses all three).
+export { default as IndexToolbar } from './Table/IndexToolbar.vue';
+export { default as BulkBar } from './Table/BulkBar.vue';
+export { emptySelection, isSelected, pageState, toggle as toggleSelection, togglePage, type Selection } from './Table/selection';
 export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 export { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 export { default as InputNumber } from './Form/InputNumber.vue';

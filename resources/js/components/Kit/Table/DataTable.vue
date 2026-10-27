@@ -3,16 +3,21 @@ import { Link, router } from '@inertiajs/vue3';
 import { type ColumnDef, getCoreRowModel, useVueTable } from '@tanstack/vue-table';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { ActionDescriptor } from '@/components/Kit/Action/actionPlacement';
 import Button from '@/components/Kit/Form/Button.vue';
-import Input from '@/components/Kit/Form/Input.vue';
+import BulkBar from './BulkBar.vue';
+import IndexToolbar from './IndexToolbar.vue';
 import RowActions from './RowActions.vue';
+import { emptySelection, isSelected, pageState, toggle as toggleRow, togglePage, type Selection } from './selection';
 
 /*
  * A server-driven index table. The server owns the query (search, filters, sort, pages and tabs, in the URL) and decides each row's actions; TanStack Table runs
  * headless for the columns, their visibility and the rows, and everything is Tailwind utilities on the markup. Every state change is an Inertia visit that keeps
  * the old rows, dimmed (`aria-busy`), until the new ones arrive; back, forward and reload restore the view from the URL. Below `sm` each row is a stacked card.
- * Slots: `cell-<key>` ({ row, value }), `row-actions` ({ row }), `toolbar`, `empty-first-use`, `empty-no-results`. `intercept` names row actions the page performs itself
- * (it listens to `act`), such as one that opens a dialog. Nothing here checks a permission: an action that is not in the row is not shown.
+ * The toolbar is IndexToolbar (search and the server's filter `choices`). With `bulkActions` the rows are selectable: a checkbox column, a page checkbox, and BulkBar
+ * at the viewport's foot while anything is selected (the selection survives pages, sorts and filters until cleared or acted on).
+ * Slots: `cell-<key>` ({ row, value }), `row-actions` ({ row }), `toolbar`, `toolbar-end`, `empty-first-use`, `empty-no-results`. `intercept` names row and bulk actions the page performs
+ * itself (it listens to `act` and `bulk`), such as one that opens a dialog. Nothing here checks a permission: an action that is not in the row or the table is not shown.
  */
 type Action = { key: string | null; label: string; url: string; method: string; destructive: boolean; confirm: { title: string; description: string; label: string } | null };
 type Row = Record<string, any> & { id: string | number; actions?: Action[] };
@@ -26,9 +31,11 @@ type Table = {
     tabs: { key: string; label: string; url: string; count: number; current: boolean }[];
     pagination: { page: number; perPage: number; total: number; from: number | null; to: number | null; lastPage: number };
     emptyState: 'first-use' | 'no-results' | null;
+    choices?: { key: string; label: string; options: { value: string; label: string }[] }[];
+    bulkActions?: ActionDescriptor[];
 };
 const props = withDefaults(defineProps<{ table: Table; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[]; toolbar?: boolean }>(), { itemKey: 'id', stickyHeader: true, searchLabel: 'Search', intercept: () => [], toolbar: true });
-const emit = defineEmits<{ act: [row: Row, action: Action] }>();
+const emit = defineEmits<{ act: [row: Row, action: Action]; bulk: [action: ActionDescriptor, ids: (string | number)[]] }>();
 
 // ---- visits: the URL is the state ------------------------------------------------------------------------------------------------------------------
 const busy = ref(false);
@@ -49,18 +56,6 @@ function visit(patch: { search?: string | null; filters?: Record<string, string 
     if (patch.page && patch.page > 1) query.page = patch.page;
     router.get(window.location.pathname, query as never, { preserveState: true, preserveScroll: true, replace });
 }
-const search = ref(props.table.search ?? '');
-watch(() => props.table.search, (value) => (search.value = value ?? ''));
-let timer: ReturnType<typeof setTimeout> | undefined;
-function typed() {
-    clearTimeout(timer);
-    timer = setTimeout(() => visit({ search: search.value.trim() || null }, true), 300);
-}
-function submitSearch() {
-    clearTimeout(timer);
-    visit({ search: search.value.trim() || null }, true);
-}
-onBeforeUnmount(() => clearTimeout(timer));
 const clear = () => visit({ search: null, filters: Object.fromEntries(Object.keys(props.table.filters).map((name) => [name, null])) });
 const ariaSort = (column: Column) => (!column.sortable || props.table.sort?.column !== column.key ? 'none' : props.table.sort.direction === 'desc' ? 'descending' : 'ascending');
 function sortBy(column: Column) {
@@ -69,6 +64,12 @@ function sortBy(column: Column) {
     const param = column.sortBy ?? column.key;
     visit({ sort: !active ? param : props.table.sort?.direction === 'asc' ? `-${param}` : null });
 }
+
+// ---- selection: only with bulk actions ---------------------------------------------------------------------------------------------------------------
+const selectable = computed(() => (props.table.bulkActions?.length ?? 0) > 0);
+const selection = ref<Selection>(emptySelection());
+const pageIds = computed(() => props.table.rows.map((row) => row[props.itemKey] as string | number));
+const page = computed(() => pageState(selection.value, pageIds.value));
 
 // ---- columns: TanStack, headless ----------------------------------------------------------------------------------------------------------------------
 const storageKey = computed(() => `kit.table.${window.location.pathname}.${tabKey.value ?? ''}`);
@@ -123,11 +124,11 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                 {{ tab.label }}<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground" data-tab-count>{{ tab.count }}</span>
             </Link>
         </nav>
-        <div v-if="showToolbar" class="flex flex-wrap items-center gap-2" data-table-toolbar>
-            <form class="flex min-w-0 flex-1 items-center gap-2" role="search" @submit.prevent="submitSearch">
-                <Input v-model="search" type="search" :placeholder="`${searchLabel}…`" :aria-label="searchLabel" class="max-w-xs" data-table-search @input="typed" />
-            </form>
-            <slot name="toolbar" />
+        <div v-if="showToolbar" class="flex flex-wrap items-center gap-2">
+            <IndexToolbar :search="table.search" :filters="table.filters" :choices="table.choices ?? []" :search-label="searchLabel" class="flex-1" @search="(value) => visit({ search: value }, true)" @filter="(name, value) => visit({ filters: { [name]: value } })">
+                <slot name="toolbar" />
+                <template #end><slot name="toolbar-end" /></template>
+            </IndexToolbar>
             <DropdownMenu v-if="hideable.length">
                 <DropdownMenuTrigger as-child><Button variant="secondary" type="button" data-columns-menu>Columns</Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -145,6 +146,9 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                 <table class="w-full border-collapse text-sm max-sm:block" :aria-busy="busy" data-table>
                     <thead class="bg-muted/60 text-xs text-muted-foreground max-sm:sr-only" :class="stickyHeader ? 'sticky top-0 z-10' : ''">
                         <tr v-for="group in tanstack.getHeaderGroups()" :key="group.id">
+                            <th v-if="selectable" scope="col" class="w-10 px-4 py-2" data-select-column>
+                                <input type="checkbox" class="size-4 accent-primary" aria-label="Select the rows on this page" :checked="page === 'all'" :indeterminate="page === 'some'" data-select-page @change="selection = togglePage(selection, pageIds)" />
+                            </th>
                             <th v-for="header in group.headers" :key="header.id" scope="col" :aria-sort="ariaSort(meta(header.column))" class="px-4 py-2 font-medium first:sticky first:left-0 first:bg-muted" :class="align(meta(header.column))" :data-column="header.id">
                                 <span v-if="meta(header.column).srOnlyLabel" class="sr-only">{{ meta(header.column).label }}</span>
                                 <Button v-else-if="meta(header.column).sortable" variant="secondary" type="button" class="-mx-2 h-7 border-0 bg-transparent px-2 text-xs shadow-none" :data-sort="header.id" @click="sortBy(meta(header.column))">
@@ -155,7 +159,10 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                         </tr>
                     </thead>
                     <tbody class="max-sm:grid max-sm:gap-3 max-sm:p-3">
-                        <tr v-for="row in tanstack.getRowModel().rows" :key="row.id" class="border-b border-border last:border-b-0 max-sm:grid max-sm:gap-1 max-sm:rounded-lg max-sm:border max-sm:p-3 max-sm:last:border-b" data-row>
+                        <tr v-for="row in tanstack.getRowModel().rows" :key="row.id" class="border-b border-border last:border-b-0 max-sm:grid max-sm:gap-1 max-sm:rounded-lg max-sm:border max-sm:p-3 max-sm:last:border-b" data-row :data-selected="selectable && isSelected(selection, row.original[itemKey]) ? '' : undefined">
+                            <td v-if="selectable" class="w-10 px-4 py-3 align-middle max-sm:px-0 max-sm:py-1" data-cell="select">
+                                <input type="checkbox" class="size-4 accent-primary" :aria-label="`Select row ${row.index + 1}`" :checked="isSelected(selection, row.original[itemKey])" data-select-row @change="selection = toggleRow(selection, row.original[itemKey])" />
+                            </td>
                             <td v-for="(cell, index) in row.getVisibleCells()" :key="cell.id" class="px-4 py-3 align-middle first:sticky first:left-0 first:bg-background max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:px-0 max-sm:py-1 max-sm:first:static" :class="align(meta(cell.column))" :data-cell="cell.column.id">
                                 <!-- The phone card's field label: shown for every visible column after the first (the card's title) unless the column hides its label (actions). -->
                                 <span class="hidden text-xs text-muted-foreground" :class="index > 0 && !meta(cell.column).srOnlyLabel ? 'max-sm:inline' : ''" data-cell-label>{{ meta(cell.column).label }}</span>
@@ -177,5 +184,6 @@ const showToolbar = computed(() => props.toolbar && props.table.emptyState !== '
                 </nav>
             </div>
         </div>
+        <BulkBar v-if="selectable" :ids="selection.ids" :actions="table.bulkActions ?? []" :intercept="intercept" @clear="selection = emptySelection()" @act="(action, ids) => emit('bulk', action, ids)" />
     </section>
 </template>

@@ -5,6 +5,7 @@ namespace App\Support;
 use Laravel\Mcp\Server\Tool;
 use ReflectionClass;
 use RuntimeException;
+use Tey\Kit\Dashboard\ReadDashboard;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Mcp\WorkspaceServer;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
@@ -27,16 +28,23 @@ final class McpCapabilities
 
     private const SETTINGS_CONTROLLER = self::KIT.'Settings/Http/SettingsController.php';
 
+    private const DASHBOARD_PAGE = 'resources/js/pages/Workspace/Dashboard/Page.vue';
+
+    private const DASHBOARD_CONTROLLER = self::KIT.'SessionUi/Http/DashboardController.php';
+
     /** UI source file (each page and the kit controller that serves it) => the capabilities it reaches. */
     public const INVENTORY = [
         self::SETTINGS_PAGE => ['workspace.settings.read', 'workspace.settings.update'],
         self::SETTINGS_CONTROLLER => ['workspace.settings.read', 'workspace.settings.update'],
+        self::DASHBOARD_PAGE => ['workspace.dashboard.read'],
+        self::DASHBOARD_CONTROLLER => ['workspace.dashboard.read'],
     ];
 
     /** The parity tests: name => [path, what they cover on both transports]. */
     private const TESTS = [
         'session_settings' => ['tests/TransportTest.php', 'test_session_settings', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass', 'error', 'recovery']],
         'delegated_settings' => ['tests/McpTransportTest.php', 'test_delegated_settings', ['success', 'authorization', 'validation', 'retry', 'stale', 'audit', 'privacy', 'no_bypass', 'error', 'recovery']],
+        'session_dashboard' => ['tests/DashboardTest.php', 'test_session_dashboard', ['success', 'authorization', 'privacy', 'no_bypass']],
         'inertia_pages' => ['tests/InertiaTransportTest.php', 'test_inertia_session_pages_share_real_operations_and_fresh_navigation', ['success', 'authorization', 'validation', 'retry', 'stale', 'error']],
     ];
 
@@ -44,6 +52,7 @@ final class McpCapabilities
     private const CAPABILITIES = [
         'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
         'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
+        'workspace.dashboard.read' => ['read', [[self::DASHBOARD_PAGE, 'props'], [self::DASHBOARD_CONTROLLER, 'show']], [self::KIT.'SessionUi/Dashboard/Widgets.php', 'resolve'], ReadDashboard::class, 'dashboard.read', ['session_dashboard', 'delegated_settings'], ['returns the workspace and the widgets the person may see, each gated by its own ability']],
     ];
 
     public static function inventory(): array
