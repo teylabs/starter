@@ -21,7 +21,7 @@
     - shell: `Partials/GlobalSearch.vue` and the Workspace Layout;
     - session-ui: `Workspace/Search/Page.vue`.
   - `FeatureSeamsTest` and its route fixture now include the search routes, the `search.read` scope, the `workspace.search` capability and the `rate_limited` (429) code.
-  - **Pins.** The starter pins `tey/standards` ^0.11.3. **Temporary pin:** `tey/kit` is `dev-feat/page-end-search as 0.4.10` (which includes v0.4.9's notes) until the kit tag; swap it for `^0.4.10` before merging.
+  - **Pins.** The starter pins `tey/kit` ^0.4.10 (notes, global search, StickyBar and PageEnd) and `tey/standards` ^0.11.3.
 - The starter adopts the kit's `notes` feature:
   - a Notes page (composer, colour filter, a wall of cards with edit, pin and delete with a confirm, attachments, and a save toast) in the primary nav, and a `notes.recent` dashboard card;
   - `config/kit.php` turns on `notes` and `workspace.notes`;
