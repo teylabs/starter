@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Providers;
 
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\AttributedClassTransformer;
@@ -9,7 +9,7 @@ use Spatie\TypeScriptTransformer\Writers\GlobalNamespaceWriter;
 use Tey\Kit\TypeScript\ExplanationTypesExtension;
 use Tey\Kit\TypeScript\ViewModelTransformer;
 
-final class TypeScriptProvider extends TypeScriptTransformerApplicationServiceProvider
+final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationServiceProvider
 {
     protected function configure(TypeScriptTransformerConfigFactory $config): void
     {
