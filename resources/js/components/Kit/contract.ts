@@ -157,6 +157,18 @@ export interface ScrollListProps { listKey: string; title: string; density?: 'de
 export interface FloatingToolbarProps { mode?: 'auto' | 'float' | 'inline'; reveal?: string; label?: string; revealed?: boolean }
 
 /**
+ * A full-width bar pinned to its container's foot while the container's end is below the fold, then back in flow: the page's own controls (a pager, totals,
+ * kept filters). FloatingToolbar is for page actions. While pinned it registers with useStickyBars. `surface` keeps the card look unpinned. Slot props `{ pinned }`.
+ */
+export interface StickyBarProps { sticky?: boolean; surface?: boolean }
+
+/** The end of a long page (shown only past one and a half screens, hidden under a pinned form bar): Back to top, a `sections` jump list, and `pagination` / `actions` slots. */
+export interface PageEndProps { sections?: { id: string; label: string }[]; label?: string; topLabel?: string; sectionsLabel?: string }
+
+/** A search combobox over the server's grouped results (`url` answers JSON `{ groups, partial }`); Enter opens the active result or the full results page. Exposes `focus()`; emits `navigate`. */
+export interface SearchBoxProps { url: string; label?: string; placeholder?: string; minLength?: number }
+
+/**
  * Server action descriptors as button groups: declared `group`/`menu` (layoutActions: menu-bearing groups last), else the placement rule (placeActions). Dialog intent opens the
  * route modal, document intent a new tab, ordinary GETs navigate; other actions are emitted (`@action`) for the host to run. `busy` blocks all but a standalone document link;
  * `dialogOpen` holds menu focus for the host's dialog; `primary` fills each group's leading segment.

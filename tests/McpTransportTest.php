@@ -60,9 +60,11 @@ test('delegated settings', function () {
     mcpTransportRpc($connection, 'tools/list')->assertUnauthorized();
     $this->withToken($bearer);
     mcpTransportRpc($connection, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => new stdClass, 'clientInfo' => ['name' => 'Synthetic client', 'version' => '1']])->assertOk()->assertJsonPath('result.serverInfo.name', 'Workspace operations');
-    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(3, 'result.tools');
+    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(4, 'result.tools');
     // A connection granted settings only stays narrow: the dashboard read tool needs dashboard.read (or acts-as-me).
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
+    // So does global search: workspace_search needs search.read.
+    mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_search', 'arguments' => ['q' => 'alpha']])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace_id', 1);
     $data = ['display_name' => 'MCP Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'mcp-update'];
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.structuredContent.version', 2);

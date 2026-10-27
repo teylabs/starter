@@ -52,6 +52,28 @@
                     "default"
                 ]
             }
+        },
+        {
+            "path": "resources/js/pages/Workspace/Search/Page.vue",
+            "capabilities": [
+                "workspace.search.read"
+            ],
+            "variants": {
+                "workspace.search.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/SessionUi/Http/SearchController.php",
+            "capabilities": [
+                "workspace.search.read"
+            ],
+            "variants": {
+                "workspace.search.read": [
+                    "default"
+                ]
+            }
         }
     ],
     "capabilities": [
@@ -486,6 +508,132 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "workspace.search.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Search/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/SessionUi/Http/SearchController.php",
+                    "symbol": "index"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/SessionUi/Search/Searches.php",
+                "symbol": "run"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_search",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Search/SearchWorkspace.php",
+                    "symbol": "SearchWorkspace"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "search.read"
+                ],
+                "description": "Search the workspace: each kind of record you can see that matches the query, up to 25 of each, best first.",
+                "input_schema": {
+                    "properties": {
+                        "q": {
+                            "description": "What to look for, 1 to 100 characters.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "q"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/SearchTest.php",
+                    "name": "test_session_search",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "q": "string, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns each registered provider's results the person may see in the workspace, grouped, with partial when a provider failed"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "q": "string, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns each registered provider's results the person may see in the workspace, grouped, with partial when a provider failed"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/SearchTest.php",
+                            "name": "test_session_search",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "server": {
@@ -508,7 +656,8 @@
             "mcp:act": "Act as you in the workspaces you approve",
             "settings.read": "Read workspace settings",
             "settings.write": "Update workspace settings",
-            "dashboard.read": "Read the workspace dashboard"
+            "dashboard.read": "Read the workspace dashboard",
+            "search.read": "Search the workspace"
         }
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
 use Tey\Kit\Dashboard\ReadDashboard;
+use Tey\Kit\Search\SearchWorkspace;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
@@ -34,19 +35,20 @@ test('databases migrated before the split keep their schema and data', function 
 });
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
-    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadDashboard::class]);
+    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadDashboard::class, SearchWorkspace::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary']]);
-    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard'];
+    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard', 'search.read' => 'Search the workspace'];
     expect($registry->tokenScopes())->toBe($scopes);
     expect(Passport::scopeIds())->toBe(array_keys($scopes));
-    expect($registry->workspaceCapabilities())->toBe(['workspace.settings', 'workspace.dashboard']);
-    expect(Feature::defined())->toEqualCanonicalizing(['workspace.settings', 'workspace.dashboard']);
+    expect($registry->workspaceCapabilities())->toBe(['workspace.settings', 'workspace.dashboard', 'workspace.search']);
+    expect(Feature::defined())->toEqualCanonicalizing(['workspace.settings', 'workspace.dashboard', 'workspace.search']);
     $statuses = [
         // A capability that is off is absent, not forbidden: a 404 like a page that is not there.
         404 => ['workspace_not_found', 'workspace_mismatch', 'capability_unavailable'],
         403 => ['account_inactive', 'verification_required', 'admission_required', 'permission_denied', 'connection_denied', 'entitlement_required'],
         409 => ['stale_settings', 'intent_conflict', 'connection_intent_conflict', 'connection_revoked', 'connection_active'],
         422 => ['unknown_arguments'],
+        429 => ['rate_limited'],
     ];
     foreach ($statuses as $status => $codes) {
         foreach ($codes as $code) {

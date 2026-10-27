@@ -4,6 +4,25 @@
 
 ### Changed
 
+- Global search is on (tey/kit global search, `workspace.search` in `config/kit.php`).
+  - **UI.** The header has a search field with a live palette: ⌘K, Ctrl+K or `/`, and a sheet below `lg`. The full results are at `/@{workspace}/search`. The kit's people provider finds the workspace's members, with a People link for those who manage people.
+  - **MCP.** The read-only tool `workspace_search` is declared in `docs/mcp-capabilities.json` as `workspace.search.read`, under the new `search.read` scope.
+  - **Tests.** `tests/SearchTest.php` covers the session transport:
+    - the owner's results, with no other workspace's people;
+    - the palette JSON, which is `no-store`;
+    - the 422 for a long term;
+    - a viewer without links, and with no access to another workspace;
+    - the per-minute limit (429);
+    - the 404, with no header search, while the capability is off.
+
+    `McpTransportTest` covers the delegated transport: a settings-only connection is refused `workspace_search`.
+  - **Kit files**, resynced from `kit:add`, with the TypeScript types regenerated:
+    - core: `Layout/StickyBar.vue`, `Layout/PageEnd.vue`, `Search/SearchBox.vue` and `Search/search.ts`, and updates to `contract.ts` and `index.ts`;
+    - shell: `Partials/GlobalSearch.vue` and the Workspace Layout;
+    - session-ui: `Workspace/Search/Page.vue`.
+  - `FeatureSeamsTest` and its route fixture now include the search routes, the `search.read` scope, the `workspace.search` capability and the `rate_limited` (429) code.
+  - **Pins.** The starter pins `tey/standards` ^0.11.3. **Temporary pin:** `tey/kit` is `dev-feat/page-end-search as 0.4.9` until the kit tag; swap it for `^0.4.9` before merging.
+
 - The dashboard shows the kit's widgets (tey/kit dashboard widgets): the You card, Recent activity (members who manage people only) and People, in a responsive grid that follows each widget's span. Session-ui's dashboard files are resynced from `kit:add` (`Dashboard/Page.vue` and the new `Dashboard/Partials/`), and the TypeScript types are regenerated. The read-only MCP tool `workspace_dashboard` is declared in `docs/mcp-capabilities.json` as `workspace.dashboard.read` under the new `dashboard.read` scope. `tests/DashboardTest.php` covers it on the session transport, and `McpTransportTest` on the delegated one: a settings-only connection is refused, and a `dashboard.read` connection gets only the widgets its grant covers. `SignIn` (browser) asserts that the grid and the people list render. The starter pins `tey/kit` ^0.4.8. Core's kit files are resynced from `kit:add` for 0.4.8's index table (`Table/BulkBar.vue`, `Table/IndexToolbar.vue`, `Table/selection.ts`, and updates to `DataTable`, `contract.ts` and `index.ts`). `standards:check` reports 0 findings, but warns that tey/standards' kit-exports snapshot lacks `BulkBar` and `IndexToolbar` until tey/standards is updated.
 
 - The starter pins `tey/kit` ^0.4.7 and `tey/standards` ^0.11.2. Core's kit files are resynced from `kit:add`, the files Kit parity compares: `FormActions` carries `data-action`, so a save toast's `->from()` can anchor to the form's Save button, and the `Toaster` dispatches a `kit:toast` event. No shell or session-ui file changed. `standards:check` reports 0 findings with an empty allowlist, and its kit-exports snapshot now includes `Toaster`.
