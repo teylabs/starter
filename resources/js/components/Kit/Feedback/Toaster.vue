@@ -58,6 +58,8 @@ async function show(value: unknown): Promise<void> {
     last = value;
     const flashed: FlashedToast | null = flashedToast(value);
     if (!flashed) return;
+    // Headless history: the app can record every shown toast (a notification bell, say) without the kit owning one.
+    window.dispatchEvent(new CustomEvent('kit:toast', { detail: flashed }));
     measureShell();
     const el = trigger(flashed.from);
     const plan = toastPlan(flashed.style, el !== null, window.matchMedia('(prefers-reduced-motion: reduce)').matches);
