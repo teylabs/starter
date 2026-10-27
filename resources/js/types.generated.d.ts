@@ -424,6 +424,15 @@ done: number,
 total: number,
 };
 }
+export namespace Search {
+export type SearchResult = {
+id: string,
+label: string,
+url: string | null,
+description: string | null,
+meta: string | null,
+};
+}
 export namespace ViewModels {
 export type ChallengeViewModel = {
 readonly title: string,
@@ -564,6 +573,18 @@ readonly email_verified: boolean,
 readonly profile_url: string,
 readonly notice: string | null,
 readonly verify_url: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type SearchViewModel = {
+readonly title: string,
+readonly query: string,
+readonly url: string,
+readonly groups: {
+key: string,
+label: string,
+results: Tey.Kit.Features.SessionUi.Search.SearchResult[],
+}[],
+readonly partial: boolean,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type SectionsViewModel = {
@@ -727,6 +748,11 @@ label: string,
 url: string,
 current: boolean,
 }[],
+} | null,
+search: {
+url: string,
+label: string,
+placeholder: string,
 } | null,
 };
 }

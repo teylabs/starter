@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { Form, router } from '@inertiajs/vue3';
 import { FileText, Pin } from '@lucide/vue';
-import { Button, Dropdown, DropdownConfirm, DropdownItem, Field, InputSelect, Textarea } from '@kit/ui';
+import { Button, Dropdown, DropdownConfirm, DropdownItem, Field, FormActions, Input, InputSelect, Textarea } from '@kit/ui';
 import { computed, nextTick, ref } from 'vue';
 import { dot, intentKey, tone } from './colours';
 
 // One note on the wall: its body, author and time, the record it is about, its attachments, and, for someone who may change it (their own, or a moderator), Edit, Pin and
-// Delete (with a confirmation). Every change sends the version the card shows: a note someone changed meanwhile is refused as out of date, never overwritten.
+// Delete (with a confirmation). Editing is Inertia's <Form> ending in FormActions. Every change sends the version the card shows: a note someone changed meanwhile is
+// refused as out of date, never overwritten.
 const props = defineProps<{ item: Tey.Kit.Features.Notes.Data.NoteItemData; colours: { key: string; label: string }[] }>();
 const note = computed(() => props.item.note);
 const options = computed(() => props.colours.map((colour) => ({ value: colour.key, label: colour.label })));
 const editing = ref(false);
 const editor = ref<{ $el?: HTMLElement } | null>(null);
-const form = useForm({ body: '', colour: '', expected_version: 0, intent_key: '' });
+const key = ref('');
 const when = (at: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(at));
 async function edit() {
-    form.defaults({ body: note.value.body, colour: note.value.colour, expected_version: note.value.version, intent_key: intentKey() });
-    form.reset();
+    key.value = intentKey();
     editing.value = true;
     await nextTick();
-    (editor.value?.$el?.querySelector('textarea') ?? editor.value?.$el)?.focus?.();
-}
-function save() {
-    if (!props.item.update || form.processing) return;
-    form.put(props.item.update.url, { preserveScroll: true, onSuccess: () => (editing.value = false) });
+    editor.value?.$el?.querySelector?.('textarea')?.focus();
 }
 function pin() {
     if (!props.item.update) return;
@@ -48,22 +44,20 @@ const remove = () => new Promise<void>((resolve) => router.delete(props.item.del
                 </DropdownConfirm>
             </Dropdown>
         </header>
-        <form v-if="editing" class="grid gap-3" data-note-editor @submit.prevent="save">
-            <Field :id="`note-${note.id}-body`" ref="editor" label="Note" :error="form.errors.body">
-                <Textarea :id="`note-${note.id}-body`" v-model="form.body" rows="3" :invalid="!!form.errors.body" :aria-describedby="`note-${note.id}-body-error`" />
+        <Form v-if="editing && item.update" v-slot="{ errors }" :action="item.update.url" method="put" :options="{ preserveScroll: true }" class="grid gap-3" data-note-editor @success="editing = false">
+            <Input type="hidden" name="expected_version" :model-value="String(note.version)" />
+            <Input type="hidden" name="intent_key" :model-value="key" />
+            <Field :id="`note-${note.id}-body`" ref="editor" name="body" label="Note" :error="errors.body">
+                <Textarea :id="`note-${note.id}-body`" name="body" :model-value="note.body" rows="3" required maxlength="5000" :invalid="!!errors.body" :aria-describedby="`note-${note.id}-body-error`" />
             </Field>
-            <div class="flex flex-wrap items-end justify-between gap-2">
-                <Field :id="`note-${note.id}-colour`" label="Colour" :error="form.errors.colour">
-                    <InputSelect :id="`note-${note.id}-colour`" v-model="form.colour" :options="options" :searchable="false" :clearable="false">
-                        <template #option="{ option }"><span class="flex items-center gap-2"><span :class="['size-3 rounded-full', dot(String(option.value))]" aria-hidden="true" />{{ option.label }}</span></template>
-                    </InputSelect>
-                </Field>
-                <div class="flex gap-2">
-                    <Button type="button" variant="secondary" @click="editing = false">Cancel</Button>
-                    <Button type="submit" :disabled="form.processing" data-action="save">{{ form.processing ? 'Saving…' : 'Save' }}</Button>
-                </div>
-            </div>
-        </form>
+            <Field :id="`note-${note.id}-colour`" name="colour" label="Colour" :error="errors.colour">
+                <InputSelect :id="`note-${note.id}-colour`" name="colour" :model-value="note.colour" :options="options" :searchable="false" :clearable="false">
+                    <template #option="{ option }"><span class="flex items-center gap-2"><span :class="['size-3 rounded-full', dot(String(option.value))]" aria-hidden="true" />{{ option.label }}</span></template>
+                </InputSelect>
+            </Field>
+            <Button type="button" variant="secondary" class="w-fit" data-note-cancel @click="editing = false">Cancel</Button>
+            <FormActions submit-label="Save" busy-label="Saving…" :sticky="false" :cancel="false" :warn-on-leave="false" />
+        </Form>
         <p v-else class="text-sm break-words whitespace-pre-line">{{ note.body }}</p>
         <a v-if="note.subject" :href="note.subject.url ?? undefined" class="w-fit rounded-full bg-background/60 px-2 py-0.5 text-xs font-medium hover:underline" data-note-subject>{{ note.subject.label }}</a>
         <ul v-if="note.attachments.length" class="flex flex-wrap gap-2" aria-label="Attachments">

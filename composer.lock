@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a4ecbb6f46492859a437d2e600f4ef59",
+    "content-hash": "abb1b3b25c54372f495f63b8725b60a9",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.4.9",
+            "version": "dev-fix/notes-forms",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "c0f61bc3e8cc743a961ffe0c45d2dac56cb2843e"
+                "reference": "307fb50f145690715de938dc55804602182023e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/c0f61bc3e8cc743a961ffe0c45d2dac56cb2843e",
-                "reference": "c0f61bc3e8cc743a961ffe0c45d2dac56cb2843e",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/307fb50f145690715de938dc55804602182023e7",
+                "reference": "307fb50f145690715de938dc55804602182023e7",
                 "shasum": ""
             },
             "require": {
@@ -10109,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.4.9"
+                "source": "https://github.com/teylabs/kit/tree/fix/notes-forms"
             },
             "funding": [
                 {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T22:23:46+00:00"
+            "time": "2026-10-27T22:38:18+00:00"
         },
         {
             "name": "tey/mod",
@@ -16522,9 +16522,18 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "tey/kit",
+            "version": "dev-fix/notes-forms",
+            "alias": "0.4.10",
+            "alias_normalized": "0.4.10.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "tey/kit": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
