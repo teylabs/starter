@@ -25,6 +25,8 @@ it('writes, edits and deletes a note on the wall', function (): void {
         $page->fill('note-body', 'Call the venue about Friday')->click('[data-note-composer] [data-action="save"]');
         $page->assertSeeIn('[data-scroll-list="notes"]', 'Call the venue about Friday')->assertSee('Note added');
         expect((string) $page->script('() => document.querySelector("#note-body").value'))->toBe('');
+        // The reset composer is clean again: no "Unsaved changes" for a form that was just saved.
+        expect((string) $page->script('() => document.querySelector("[data-note-composer]").innerText'))->not->toContain('Unsaved changes');
         expect(DB::table('kit_notes')->where('body', 'Call the venue about Friday')->count())->toBe(1);
 
         // Edit in place from the card's menu.

@@ -23,9 +23,9 @@
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
         "tey/concierge": "^0.8.2",
-        "tey/kit": "dev-feat/page-end-search as 0.4.10",
+        "tey/kit": "dev-fix/notes-forms as 0.4.10",
         "tey/mod": "^0.11",
-        "tey/standards": "^0.11.3"
+        "tey/standards": "^0.11.2"
     },
     "require-dev": {
         "larastan/larastan": "^3.9",

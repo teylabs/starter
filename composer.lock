@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c153d6b61b3f05fb17276be2b41c4126",
+    "content-hash": "abb1b3b25c54372f495f63b8725b60a9",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "dev-feat/page-end-search",
+            "version": "dev-fix/notes-forms",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "34021ae07dbad8a5634f749aa645e3066edc98c4"
+                "reference": "307fb50f145690715de938dc55804602182023e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/34021ae07dbad8a5634f749aa645e3066edc98c4",
-                "reference": "34021ae07dbad8a5634f749aa645e3066edc98c4",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/307fb50f145690715de938dc55804602182023e7",
+                "reference": "307fb50f145690715de938dc55804602182023e7",
                 "shasum": ""
             },
             "require": {
@@ -10109,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/feat/page-end-search"
+                "source": "https://github.com/teylabs/kit/tree/fix/notes-forms"
             },
             "funding": [
                 {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T22:28:37+00:00"
+            "time": "2026-10-27T22:38:18+00:00"
         },
         {
             "name": "tey/mod",
@@ -10229,16 +10229,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.11.3",
+            "version": "v0.11.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "9a403371632063e84cbfd7009a89e7c8272750d1"
+                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/9a403371632063e84cbfd7009a89e7c8272750d1",
-                "reference": "9a403371632063e84cbfd7009a89e7c8272750d1",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/f868e339012e4fcfcc00e5ed8e989d851be85df4",
+                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4",
                 "shasum": ""
             },
             "require": {
@@ -10262,7 +10262,7 @@
                 "pestphp/pest": "^4.7 || ^5.0",
                 "pestphp/pest-plugin-arch": "^4.0 || ^5.0",
                 "symfony/finder": "^7.0 || ^8.0",
-                "tey/kit": "^0.4.8"
+                "tey/kit": "^0.4.6"
             },
             "suggest": {
                 "nikic/php-parser": "Required for architecture checks (^5.0); install in the app's require-dev.",
@@ -10311,7 +10311,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.11.3"
+                "source": "https://github.com/teylabs/standards/tree/v0.11.2"
             },
             "funding": [
                 {
@@ -10319,7 +10319,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T21:41:47+00:00"
+            "time": "2026-10-27T20:47:46+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -16525,7 +16525,7 @@
     "aliases": [
         {
             "package": "tey/kit",
-            "version": "dev-feat/page-end-search",
+            "version": "dev-fix/notes-forms",
             "alias": "0.4.10",
             "alias_normalized": "0.4.10.0"
         }
