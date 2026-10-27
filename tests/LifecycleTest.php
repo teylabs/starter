@@ -61,7 +61,7 @@ test('adding every feature writes the template files then reruns as a no op', fu
     // A second request adopts nothing new and writes nothing.
     $records = lifecycleRecords($root);
     $again = lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS);
-    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, 7, 'adopted'));
+    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, 8, 'adopted'));
     lifecycleRefuses(fn () => lifecycleLineages()->resume($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS, 'install', lifecycleCheck($root)), 'already adopted');
     expect(lifecycleRecords($root))->toBe($records);
     expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
@@ -128,7 +128,7 @@ test('kit add command', function () {
         $this->assertNotSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => 'sha256:wrong']));
         expect(lifecycleRecords($root))->toBe([]);
         expect($kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => $preview['plan']]))->toBe(0);
-        expect(lifecycleRecords($root))->toHaveCount(7);
+        expect(lifecycleRecords($root))->toHaveCount(8);
         expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
     } finally {
         $this->app->setBasePath($base);

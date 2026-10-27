@@ -22,6 +22,8 @@ test('delegated settings', function () {
     foreach (glob(base_path('vendor/laravel/passport/database/migrations/*.php')) as $migration) {
         (require $migration)->up();
     }
+    // The consent gate's intent ledger, which replays a capability tool's retry (notes_write) on its intent_key.
+    (require base_path('database/migrations/kit/mcp/0001_01_02_000601_create_kit_mcp_intents_table.php'))->up();
     $keys = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
     openssl_pkey_export($keys, $private);
     $public = openssl_pkey_get_details($keys)['key'];
@@ -60,7 +62,7 @@ test('delegated settings', function () {
     mcpTransportRpc($connection, 'tools/list')->assertUnauthorized();
     $this->withToken($bearer);
     mcpTransportRpc($connection, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => new stdClass, 'clientInfo' => ['name' => 'Synthetic client', 'version' => '1']])->assertOk()->assertJsonPath('result.serverInfo.name', 'Workspace operations');
-    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(3, 'result.tools');
+    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(7, 'result.tools');
     // A connection granted settings only stays narrow: the dashboard read tool needs dashboard.read (or acts-as-me).
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace_id', 1);
@@ -96,7 +98,7 @@ test('delegated settings', function () {
     // A capability that is off is absent: the endpoint answers 404, not 403.
     config(['kit.capabilities' => ['workspace.settings' => false]]);
     mcpTransportRpc($connection, 'tools/list')->assertNotFound();
-    config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.dashboard' => true]]);
+    config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.dashboard' => true, 'workspace.notes' => true]]);
     $this->withoutToken();
     Auth::forgetGuards();
 
@@ -113,7 +115,7 @@ test('delegated settings', function () {
     $this->withoutToken();
     Auth::forgetGuards();
     $verifier = Str::random(64);
-    $query['scope'] = 'mcp:use settings.read dashboard.read';
+    $query['scope'] = 'mcp:use settings.read dashboard.read notes.read notes.write';
     $query['code_challenge'] = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
     $this->get('/oauth/authorize?'.http_build_query($query))->assertOk();
     $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken')])->assertRedirect();
@@ -122,17 +124,28 @@ test('delegated settings', function () {
     $exchange['code_verifier'] = $verifier;
     $newBearer = $this->postJson('/oauth/token', $exchange)->assertOk()->json('access_token');
     $newToken = Token::query()->where('user_id', 1)->where('client_id', $client->id)->where('id', '!=', $token->id)->firstOrFail();
-    $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read', 'dashboard.read'], 'intent_key' => 'approve-reconnected'];
+    $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read', 'dashboard.read', 'notes.read', 'notes.write'], 'intent_key' => 'approve-reconnected'];
     $newConnection = $this->postJson('/@alpha/settings/connections', $newGrant)->assertCreated()->json('id');
     $this->withToken($bearer);
     mcpTransportRpc($newConnection, 'tools/list')->assertForbidden();
     $this->withToken($newBearer);
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.display_name', 'MCP Alpha');
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
-    // The dashboard over MCP: the widgets this connection's grant covers (dashboard.read), not the activity widget behind members.manage; extra arguments are refused.
+    // The dashboard over MCP: the widgets this connection's grant covers (dashboard.read, and notes.read for the notes card), not the activity widget behind members.manage; extra arguments are refused.
     $dashboard = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace.id', 1);
-    self::assertSame(['kit.you', 'kit.people'], array_column($dashboard->json('result.structuredContent.widgets'), 'key'));
+    self::assertSame(['kit.you', 'kit.people', 'notes.recent'], array_column($dashboard->json('result.structuredContent.widgets'), 'key'));
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => ['workspace_id' => 2]])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'unknown_arguments');
+    // Notes over MCP: the same operations as the pages. A write replays on its intent key, a stale version is refused, and a delete asks for confirmation first.
+    $written = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note.version', 1);
+    $noteId = $written->json('result.structuredContent.note_id');
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note_id', $noteId);
+    self::assertSame(1, DB::table('kit_notes')->where('body', 'From the assistant')->count());
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_read', 'arguments' => ['id' => $noteId]])->assertOk()->assertJsonPath('result.structuredContent.author_id', 1);
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_list', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.notes.0.id', $noteId);
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['id' => $noteId, 'expected_version' => 9, 'body' => 'Stale', 'intent_key' => 'mcp-note-2']])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'stale_note');
+    $ask = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3']])->assertOk()->assertJsonPath('result.structuredContent.status', 'confirmation_required');
+    self::assertSame(1, DB::table('kit_notes')->whereNull('deleted_at')->where('id', $noteId)->count());
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3', 'confirm_token' => $ask->json('result.structuredContent.confirm_token')]])->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
 
     // Persisted scopes cannot widen the cryptographically granted JWT scopes.
     $newToken->update(['scopes' => ['mcp:use', 'settings.read', 'settings.write']]);

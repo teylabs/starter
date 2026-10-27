@@ -91,14 +91,14 @@ test('every page route has a breadcrumb', function () {
     $checked = [];
     foreach (Route::getRoutes() as $route) {
         $action = $route->getActionName();
-        if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'DemoLogin') && ! str_contains($action, 'Moved') && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'AvatarImage')) {
+        if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'DemoLogin') && ! str_contains($action, 'Moved') && ! str_contains($action, 'PeopleModalController') && ! str_contains($action, 'AvatarImage') && ! str_contains($action, 'NoteMedia')) {
             expect($registry->get($route))->not->toBeNull($route->uri().' declares no breadcrumb');
             $checked[] = $route->uri();
         }
     }
 
     // Every kit page, in both URL forms, and the personal one.
-    foreach (['@{workspace}', '/', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
+    foreach (['@{workspace}', '/', '@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
         expect($checked)->toContain($uri);
     }
 });
@@ -127,11 +127,11 @@ test('every trail starts at home', function () {
     require dirname(__DIR__).'/database/fixture.php';
     RecordsFixtureProvider::install();
     $registry = app(Registry::class);
-    $params = ['workspace' => '1', 'record' => '1', 'connection' => '1'];
+    $params = ['workspace' => '1', 'record' => '1', 'connection' => '1', 'note' => '1'];
     $checked = 0;
     foreach (Route::getRoutes() as $route) {
         $action = $route->getActionName();
-        if (! in_array('GET', $route->methods(), true) || str_contains($action, 'PeopleModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage') || str_contains($action, 'DemoLogin')) {
+        if (! in_array('GET', $route->methods(), true) || str_contains($action, 'PeopleModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage') || str_contains($action, 'NoteMedia') || str_contains($action, 'DemoLogin')) {
             continue;
         }
         $crumb = $registry->get($route);
