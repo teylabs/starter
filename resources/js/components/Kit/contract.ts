@@ -105,10 +105,17 @@ export interface DialogProps { title: string; description?: string; confirmLabel
 
 /**
  * A server-driven index table (TanStack headless, Tailwind). `table` is the server's TableData: rows, columns, sort, search, filters, tabs, pagination and the empty state, with each
- * row's `actions` already decided. Every change is an Inertia visit with the state in the URL. Slots: `cell-<key>` ({ row, value }), `row-actions`, `toolbar`, `empty-first-use`,
- * `empty-no-results`. `intercept` names row actions the page performs itself (`@act`). Nothing here checks a permission.
+ * row's `actions` already decided, plus the filter `choices` the toolbar shows and the `bulkActions` that make rows selectable. Every change is an Inertia visit with the state in the URL.
+ * Slots: `cell-<key>` ({ row, value }), `row-actions`, `toolbar`, `toolbar-end`, `empty-first-use`, `empty-no-results`. `intercept` names row and bulk actions the page performs itself
+ * (`@act`, `@bulk` with the selected ids). Nothing here checks a permission.
  */
 export interface DataTableProps { table: object; itemKey?: string; stickyHeader?: boolean; searchLabel?: string; intercept?: string[]; toolbar?: boolean }
+
+/** The index toolbar: search (300ms after typing, Enter at once) and one choice per server filter `choice`. It emits `search` and `filter` (name, value or null); the host visits. Slots: default (after the filters), `end`. */
+export interface IndexToolbarProps { search?: string | null; filters?: Record<string, string>; choices?: { key: string; label: string; options: { value: string; label: string }[] }[]; searchLabel?: string; searchable?: boolean }
+
+/** The selected rows' bar: a floating FloatingToolbar (registered with useStickyBars) with the count, the server's bulk actions and Clear, shown while `ids` is not empty. An action posts `ids[]` after its `confirm`; `@clear` on success. */
+export interface BulkBarProps { ids: (string | number)[]; actions: import('./Action/actionPlacement').ActionDescriptor[]; intercept?: string[]; label?: string }
 
 /** Vertical rhythm between sibling blocks: `flex flex-col gap-4` (`class="gap-6"` for a deliberate other rhythm). Spacing has one owner: siblings carry no margins. `as` / `asChild` as Reka's Primitive. */
 export interface BlockStackProps { as?: string; asChild?: boolean }

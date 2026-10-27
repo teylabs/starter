@@ -69,6 +69,16 @@ filters: Record<string, string>,
 tabs: Tey.Kit.Features.Core.Data.TableTab[],
 pagination: Tey.Kit.Features.Core.Data.TablePagination,
 emptyState: unknown | null,
+choices: Tey.Kit.Features.Core.Data.TableFilter[],
+bulkActions: Tey.Kit.Features.Core.Data.Action[],
+};
+export type TableFilter = {
+key: string,
+label: string,
+options: {
+value: string,
+label: string,
+}[],
 };
 export type TablePagination = {
 page: number,
