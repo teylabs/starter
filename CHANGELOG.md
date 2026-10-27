@@ -21,7 +21,7 @@
     - shell: `Partials/GlobalSearch.vue` and the Workspace Layout;
     - session-ui: `Workspace/Search/Page.vue`.
   - `FeatureSeamsTest` and its route fixture now include the search routes, the `search.read` scope, the `workspace.search` capability and the `rate_limited` (429) code.
-  - **Pins.** The starter pins `tey/standards` ^0.11.4, whose kit-exports snapshot includes `PageEnd`, `SearchBox` and `StickyBar`, so `standards:check` gives no warning. **Temporary pin:** `tey/kit` is `dev-fix/search-case-insensitive as 0.4.12` (teylabs/kit#141: global search ignores case on PostgreSQL) until the kit tag; swap it for `^0.4.12` before merging. Kit 0.4.11's named `executor_stale` refusal is what `LifecycleTest` now expects. The placeholder browser test checks for no form or status inside `main`, because the header's search box keeps a live region.
+  - **Pins.** The starter pins `tey/standards` ^0.11.4, whose kit-exports snapshot includes `PageEnd`, `SearchBox` and `StickyBar`, so `standards:check` gives no warning. **Temporary pin:** `tey/kit` is `dev-fix/search-case-insensitive as 0.4.13` (teylabs/kit#141: global search ignores case on PostgreSQL; it includes 0.4.12) until the kit tag; swap it for `^0.4.13` before merging. Kit 0.4.11's named `executor_stale` refusal is what `LifecycleTest` now expects. The placeholder browser test checks for no form or status inside `main`, because the header's search box keeps a live region.
 - The starter adopts the kit's `notes` feature:
   - a Notes page (composer, colour filter, a wall of cards with edit, pin and delete with a confirm, attachments, and a save toast) in the primary nav, and a `notes.recent` dashboard card;
   - `config/kit.php` turns on `notes` and `workspace.notes`;
