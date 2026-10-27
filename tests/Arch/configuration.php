@@ -31,6 +31,9 @@ return new Configuration(
     safeAttributes: [],
     mediaTrait: 'Spatie\\MediaLibrary\\InteractsWithMedia',
     mediaInterface: 'Spatie\\MediaLibrary\\HasMedia',
+    allowlist: [
+        ['rule' => 'descriptors', 'target' => 'resources/js/pages/Workspace/Settings/People/Page.vue', 'check' => 'role or permission check', 'reason' => 'kit-owned page; displays server-provided role labels; fixed in kit core re-pin (lead todo 2563)', 'date' => '2026-10-27', 'expires' => '2026-11-10'],
+    ],
     // The default map, except Pest: Boost 2.10 ships no pest-testing skill (Pest is a guideline there), so testing-best-practices stands in for it.
     boostSkills: [
         'laravel/framework' => ['laravel-best-practices'],

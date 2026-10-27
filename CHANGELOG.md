@@ -10,7 +10,7 @@
 - The local TIA guard is inline in `tests/Pest.php`, in the shape standards' `tia` rule reads; `TiaGuard` keeps only the base branch. A set `CI`, `PARATEST` or `PEST_TIA` now bypasses it even when empty, which reverses the earlier empty-`CI=` fix below.
 - Stock Laravel placement: `FirstOwnerCommand` moves to `App\Console\Commands` and the TypeScript provider to `App\Providers\TypeScriptServiceProvider`.
 - phpunit/phpunit 13.4.5 and pestphp/pest 5.3.4 (GHSA-9vw2-f4vp-x7gf affects phpunit 13.4.0 to 13.4.3); `composer audit` is clean.
-- Settings › People shows each row's role badges from the cell value and drops an unused role-options computed; the page reads no role itself.
+- The kit-owned Settings › People page is allowlisted for the `descriptors` rule until the kit re-pin fixes it (it only displays server-provided role labels; expires 2026-11-10).
 
 - The starter pins `tey/kit` ^0.4.3 (kit#117, fixed in 0.4.1). The kit-owned `Layout/splitState.ts` is resynced from `kit:add`: it imports `http` from `@inertiajs/vue3` statically, which clears Vite's INEFFECTIVE_DYNAMIC_IMPORT warning. No other kit-owned file changed, and the mcp feature has no host-owned middleware change.
 - `vite build` prints no chunk-size warning: `vite.config.ts` splits the TanStack and UI vendor libraries into their own chunks instead of one 546 kB `Kit` chunk. `chunkSizeWarningLimit` is unchanged.
