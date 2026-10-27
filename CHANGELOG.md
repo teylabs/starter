@@ -4,6 +4,8 @@
 
 ### Changed
 
+- The starter pins `tey/kit` ^0.4.7 and `tey/standards` ^0.11.2. Core's kit files are resynced from `kit:add`, the files Kit parity compares: `FormActions` carries `data-action`, so a save toast's `->from()` can anchor to the form's Save button, and the `Toaster` dispatches a `kit:toast` event. No shell or session-ui file changed. `standards:check` reports 0 findings with an empty allowlist, and its kit-exports snapshot now includes `Toaster`.
+
 - The starter pins `tey/kit` ^0.4.6 and `tey/standards` ^0.11.1.
   - Kit files resynced from `kit:add` (this checkout has no lineage records for `kit:update` to plan against), the same files Kit parity compares:
     - core: the headless `Feedback/Toaster.vue` and `toastPlacement.ts`, and `Layout/stickyBars.ts`, which `FloatingToolbar` now registers with;
