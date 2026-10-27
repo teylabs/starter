@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
 use Tey\Kit\Dashboard\ReadDashboard;
-use Tey\Kit\Search\SearchWorkspace;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
@@ -15,6 +14,7 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\WriteNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
+use Tey\Kit\Search\SearchWorkspace;
 
 test('fresh schema equals the released schema', function () {
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);

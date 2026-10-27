@@ -6,7 +6,6 @@ use Laravel\Mcp\Server\Tool;
 use ReflectionClass;
 use RuntimeException;
 use Tey\Kit\Dashboard\ReadDashboard;
-use Tey\Kit\Search\SearchWorkspace;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Mcp\WorkspaceServer;
 use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
@@ -15,6 +14,7 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\WriteNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
+use Tey\Kit\Search\SearchWorkspace;
 
 /**
  * The MCP capability declaration (version 1, docs/schemas/mcp-capabilities.schema.json) committed as
