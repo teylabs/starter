@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "51ebbeec5cef8681e93bf13bdfb09a77",
+    "content-hash": "c153d6b61b3f05fb17276be2b41c4126",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10056,12 +10056,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "f1fa5911810afa2e5c03cfcd87d8c7a242680f5e"
+                "reference": "34021ae07dbad8a5634f749aa645e3066edc98c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/f1fa5911810afa2e5c03cfcd87d8c7a242680f5e",
-                "reference": "f1fa5911810afa2e5c03cfcd87d8c7a242680f5e",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/34021ae07dbad8a5634f749aa645e3066edc98c4",
+                "reference": "34021ae07dbad8a5634f749aa645e3066edc98c4",
                 "shasum": ""
             },
             "require": {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T22:01:02+00:00"
+            "time": "2026-10-27T22:28:37+00:00"
         },
         {
             "name": "tey/mod",
@@ -16526,8 +16526,8 @@
         {
             "package": "tey/kit",
             "version": "dev-feat/page-end-search",
-            "alias": "0.4.9",
-            "alias_normalized": "0.4.9.0"
+            "alias": "0.4.10",
+            "alias_normalized": "0.4.10.0"
         }
     ],
     "minimum-stability": "stable",

@@ -9,6 +9,7 @@ const FEATURE_GRAPH_REQUIRES = [
     'Mcp' => ['Workspaces', 'Access'],
     'Shell' => ['Core'],
     'SessionUi' => ['Workspaces', 'Access', 'Shell'],
+    'Notes' => ['Workspaces', 'Access', 'SessionUi'],
 ];
 /** Library features use no host class; everything else under Tey\Kit\ belongs to the composition root or the lifecycle. */
 const FEATURE_GRAPH_PREFIX = 'Tey\\Kit\\';
