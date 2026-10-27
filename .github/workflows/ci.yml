@@ -21,6 +21,12 @@ jobs:
         env:
           PRIVACY_PATTERN: ${{ secrets.PRIVACY_PATTERN }}
 
+  standards:
+    name: Standards
+    uses: teylabs/standards/.github/workflows/standards.yml@v0.11.0
+    with:
+      base-ref: ${{ github.base_ref }}
+
   pint:
     name: Pint
     runs-on: ubuntu-latest

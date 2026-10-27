@@ -1,0 +1,49 @@
+{
+    "hooks": {
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && { test -f vendor/tey/standards/bin/standards || exit 0; } && php vendor/tey/standards/bin/standards hook stop",
+                        "timeout": 300
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && { test -f vendor/tey/standards/bin/standards || exit 0; } && php vendor/tey/standards/bin/standards hook pre-commit",
+                        "timeout": 300
+                    }
+                ]
+            },
+            {
+                "matcher": "Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && { test -f vendor/tey/standards/bin/standards || exit 0; } && php vendor/tey/standards/bin/standards hook pre-write",
+                        "timeout": 300
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|MultiEdit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && { test -f vendor/tey/standards/bin/standards || exit 0; } && php vendor/tey/standards/bin/standards hook post-edit",
+                        "timeout": 300
+                    }
+                ]
+            }
+        ]
+    }
+}

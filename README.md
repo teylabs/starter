@@ -20,7 +20,8 @@ From a fresh clone (or `laravel new app --using=tey/starter` once the template i
 
 ```sh
 vendor/bin/pint --test
-vendor/bin/pest
+php artisan standards:check
+vendor/bin/pest --tia
 composer fixture:check
 composer test:browser
 npm run typecheck && npm run build && npm test
@@ -38,7 +39,9 @@ composer fixture:check
 
 `DB_CONNECTION` alone doesn't switch the tests, and `DB_DATABASE` must be set for the run; a database named in `.env` is never used.
 
-CI checks Pint, runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
+`php artisan standards:check` runs tey/standards' conformance rules (configured in `tests/Arch/configuration.php`) and must exit 0. Before building a page, action, MCP tool or setting, find its pattern with `bakery.find` (offline: `php artisan standards:pattern "<intent>"`). `standards:install` also adds Claude Code hooks in `.claude/settings.json` (a pre-commit and Stop check, a pattern lookup for new files, and a check after each edit) and a git pre-push hook running `standards:check --changed`. Laravel Boost (`boost.json`, `.ai/guidelines`) publishes the guidelines and skills to Claude Code and Codex; refresh them with `php artisan boost:update`.
+
+CI checks Pint and standards, runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
 
 ## Status
 

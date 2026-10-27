@@ -10,6 +10,12 @@ Pint (`pint.json` excludes `database/migrations/kit`, which must stay byte-ident
 vendor/bin/pint --test
 ```
 
+Standards, through the reusable `teylabs/standards` workflow: `standards:check --changed` against the pull request's base, or the full check on `main`, with the JSON report kept as the `standards-report` artifact. Locally, the git pre-push hook and the Claude Code hooks in `.claude/settings.json` run the same check:
+
+```sh
+php artisan standards:check
+```
+
 PHP, on 8.4 and 8.5 (SQLite memory), and on 8.4 against a PostgreSQL 17 service (`TEST_DB_CONNECTION=pgsql` with the job's `DB_*`):
 
 ```sh

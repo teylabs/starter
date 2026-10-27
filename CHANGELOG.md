@@ -4,6 +4,14 @@
 
 ### Changed
 
+- The starter pins `tey/standards` ^0.11 and adopts it: `standards:install` wrote `tests/Arch/configuration.php`, the ConformanceTest, the standards skills, the `.claude/settings.json` hooks, the git pre-push hook and the AGENTS.md pattern index. `php artisan standards:check` exits 0 and CI runs it through the reusable `teylabs/standards` workflow (v0.11.0). Find the pattern for new work with `bakery.find` (offline: `php artisan standards:pattern`).
+- Laravel Boost is set up for Claude Code and Codex: `boost.json`, `.ai/guidelines/starter.md`, the generated guideline block in AGENTS.md and CLAUDE.md, and the package skills standards expects. Boost 2.10 ships no `pest-testing` skill, so the configuration maps Pest to `testing-best-practices`.
+- `@inertiajs/core` is a declared dependency (3.9.1, matching `@inertiajs/vue3`): the kit-owned `splitState.ts` and `useScrollList.ts` type-import it.
+- The local TIA guard is inline in `tests/Pest.php`, in the shape standards' `tia` rule reads; `TiaGuard` keeps only the base branch. A set `CI`, `PARATEST` or `PEST_TIA` now bypasses it even when empty, which reverses the earlier empty-`CI=` fix below.
+- Stock Laravel placement: `FirstOwnerCommand` moves to `App\Console\Commands` and the TypeScript provider to `App\Providers\TypeScriptServiceProvider`.
+- phpunit/phpunit 13.4.5 and pestphp/pest 5.3.4 (GHSA-9vw2-f4vp-x7gf affects phpunit 13.4.0 to 13.4.3); `composer audit` is clean.
+- Settings › People shows each row's role badges from the cell value and drops an unused role-options computed; the page reads no role itself.
+
 - The starter pins `tey/kit` ^0.4.3 (kit#117, fixed in 0.4.1). The kit-owned `Layout/splitState.ts` is resynced from `kit:add`: it imports `http` from `@inertiajs/vue3` statically, which clears Vite's INEFFECTIVE_DYNAMIC_IMPORT warning. No other kit-owned file changed, and the mcp feature has no host-owned middleware change.
 - `vite build` prints no chunk-size warning: `vite.config.ts` splits the TanStack and UI vendor libraries into their own chunks instead of one 546 kB `Kit` chunk. `chunkSizeWarningLimit` is unchanged.
 - The starter pins `tey/standards` ^0.10.1 (was ^0.7). The non-blocking preflight level is `advisory` (JSON `level`, was `warning`), a non-interactive preflight prints only failed and advisory rows plus a summary, and `install.sessions` blocks a deployed Passport app on a cookie or unset `SESSION_DRIVER`. `.env.example`, `.env.production.example` and the production rehearsal CI jobs already set `SESSION_DRIVER=database`, and `docs/deploy.md` now names the check.

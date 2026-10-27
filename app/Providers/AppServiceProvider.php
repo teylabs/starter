@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Console\FirstOwnerCommand;
+use App\Console\Commands\FirstOwnerCommand;
 use App\Support\KitMigrationRepository;
 use App\Support\KitMigrator;
 use App\Support\LoginResponse;
