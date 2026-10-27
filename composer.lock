@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f22d30152c2a763c9dc0243232415fa0",
+    "content-hash": "28a2b854cf756e92ee22920ede9db8a7",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.4.10",
+            "version": "dev-fix/search-case-insensitive",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "6871f28ca44738e17da6e6539b00e9cccfbee40a"
+                "reference": "33de1b03e69008d4f8af05b46196421b0d7165e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/6871f28ca44738e17da6e6539b00e9cccfbee40a",
-                "reference": "6871f28ca44738e17da6e6539b00e9cccfbee40a",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/33de1b03e69008d4f8af05b46196421b0d7165e2",
+                "reference": "33de1b03e69008d4f8af05b46196421b0d7165e2",
                 "shasum": ""
             },
             "require": {
@@ -10109,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.4.10"
+                "source": "https://github.com/teylabs/kit/tree/fix/search-case-insensitive"
             },
             "funding": [
                 {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T22:50:22+00:00"
+            "time": "2026-10-27T23:11:07+00:00"
         },
         {
             "name": "tey/mod",
@@ -10229,16 +10229,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.11.2",
+            "version": "v0.11.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4"
+                "reference": "c35da9c5aa846d7699886518c3862d31db083872"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/f868e339012e4fcfcc00e5ed8e989d851be85df4",
-                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/c35da9c5aa846d7699886518c3862d31db083872",
+                "reference": "c35da9c5aa846d7699886518c3862d31db083872",
                 "shasum": ""
             },
             "require": {
@@ -10262,7 +10262,7 @@
                 "pestphp/pest": "^4.7 || ^5.0",
                 "pestphp/pest-plugin-arch": "^4.0 || ^5.0",
                 "symfony/finder": "^7.0 || ^8.0",
-                "tey/kit": "^0.4.6"
+                "tey/kit": "^0.4.10"
             },
             "suggest": {
                 "nikic/php-parser": "Required for architecture checks (^5.0); install in the app's require-dev.",
@@ -10311,7 +10311,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.11.2"
+                "source": "https://github.com/teylabs/standards/tree/v0.11.4"
             },
             "funding": [
                 {
@@ -10319,7 +10319,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T20:47:46+00:00"
+            "time": "2026-10-27T23:20:56+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -16522,9 +16522,18 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "tey/kit",
+            "version": "dev-fix/search-case-insensitive",
+            "alias": "0.4.12",
+            "alias_normalized": "0.4.12.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "tey/kit": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

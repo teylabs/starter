@@ -110,10 +110,10 @@ test('operation check fails closed', function () {
     expect($result['failed'])->toBe('core');
     expect(array_keys(Lineages::adopted($root, 'workspace-starter')))->toBe([]);
 
-    // A Mod executor that differs from the committed provenance refuses at plan time.
+    // A Mod executor that differs from the committed provenance refuses at plan time, named (kit 0.4.11): executor_stale, with the fix.
     $root = lifecycleCheckout();
     file_put_contents($root.'/config/kit-executor.json', '{"installed_mod_version":"v0.9.0"}');
-    lifecycleRefuses(fn () => lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS), 'Executor provenance');
+    lifecycleRefuses(fn () => lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS), 'executor_stale');
 });
 test('kit add command', function () {
     $root = lifecycleCheckout();

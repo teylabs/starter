@@ -21,7 +21,7 @@
     - shell: `Partials/GlobalSearch.vue` and the Workspace Layout;
     - session-ui: `Workspace/Search/Page.vue`.
   - `FeatureSeamsTest` and its route fixture now include the search routes, the `search.read` scope, the `workspace.search` capability and the `rate_limited` (429) code.
-  - **Pins.** The starter pins `tey/kit` ^0.4.10 (notes, global search, StickyBar and PageEnd) and `tey/standards` ^0.11.3.
+  - **Pins.** The starter pins `tey/standards` ^0.11.4, whose kit-exports snapshot includes `PageEnd`, `SearchBox` and `StickyBar`, so `standards:check` gives no warning. **Temporary pin:** `tey/kit` is `dev-fix/search-case-insensitive as 0.4.12` (teylabs/kit#141: global search ignores case on PostgreSQL) until the kit tag; swap it for `^0.4.12` before merging. Kit 0.4.11's named `executor_stale` refusal is what `LifecycleTest` now expects. The placeholder browser test checks for no form or status inside `main`, because the header's search box keeps a live region.
 - The starter adopts the kit's `notes` feature:
   - a Notes page (composer, colour filter, a wall of cards with edit, pin and delete with a confirm, attachments, and a save toast) in the primary nav, and a `notes.recent` dashboard card;
   - `config/kit.php` turns on `notes` and `workspace.notes`;
@@ -33,7 +33,7 @@
     - `tests/NotesTest.php` covers the session transport: writes, intent replay, stale versions, attachments, and moderation for the owner, your own note, someone else's without moderate, and with it.
     - `McpTransportTest` covers the delegated one, including the delete confirmation.
     - `tests/Browser/Notes.php` writes, edits and deletes a note in a browser.
-  - The starter pins `tey/kit` ^0.4.10 (see the search entry above).
+  - The starter's kit pin is in the search entry above.
 
 - The dashboard shows the kit's widgets (tey/kit dashboard widgets): the You card, Recent activity (members who manage people only) and People, in a responsive grid that follows each widget's span. Session-ui's dashboard files are resynced from `kit:add` (`Dashboard/Page.vue` and the new `Dashboard/Partials/`), and the TypeScript types are regenerated. The read-only MCP tool `workspace_dashboard` is declared in `docs/mcp-capabilities.json` as `workspace.dashboard.read` under the new `dashboard.read` scope. `tests/DashboardTest.php` covers it on the session transport, and `McpTransportTest` on the delegated one: a settings-only connection is refused, and a `dashboard.read` connection gets only the widgets its grant covers. `SignIn` (browser) asserts that the grid and the people list render. The starter pins `tey/kit` ^0.4.8. Core's kit files are resynced from `kit:add` for 0.4.8's index table (`Table/BulkBar.vue`, `Table/IndexToolbar.vue`, `Table/selection.ts`, and updates to `DataTable`, `contract.ts` and `index.ts`). `standards:check` reports 0 findings, but warns that tey/standards' kit-exports snapshot lacks `BulkBar` and `IndexToolbar` until tey/standards is updated.
 
