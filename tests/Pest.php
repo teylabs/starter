@@ -4,11 +4,11 @@ use Tests\RecordsCase;
 use Tests\StorageCase;
 use Tests\TestCase;
 
-// A local run needs --tia (impacted tests only) or --no-tia (browser specs); CI, PARATEST and PEST_TIA bypass. tests/TiaGuard.php holds the TIA base branch.
+// A local run needs --tia (impacted tests only) or --no-tia (browser specs); a non-empty CI, or a set PARATEST or PEST_TIA, bypasses (an empty CI= does not). tests/TiaGuard.php holds the TIA base branch.
 require_once __DIR__.'/TiaGuard.php';
 
 $argv = $_SERVER['argv'] ?? [];
-if (getenv('CI') === false && getenv('PARATEST') === false && getenv('PEST_TIA') === false && ! in_array('--tia', $argv, true) && ! in_array('--no-tia', $argv, true)) {
+if ((getenv('CI') === false || getenv('CI') === '') && getenv('PARATEST') === false && getenv('PEST_TIA') === false && ! in_array('--tia', $argv, true) && ! in_array('--no-tia', $argv, true)) {
     fwrite(STDERR, "Run tests with TIA: composer test (or vendor/bin/pest --tia …). Use --no-tia only for browser specs.\n");
     exit(1);
 }

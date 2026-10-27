@@ -9,6 +9,9 @@ export { default as Placeholder } from './Feedback/Placeholder.vue';
 export { default as Alert } from './Feedback/Alert.vue';
 export { alertVariants } from './Feedback/alertVariants';
 export type { AlertTier, AlertVariant } from './Feedback/alertVariants';
+// The app's one toast renderer, mounted by the shell; it renders the server's flashed `toast` (toasts.md). Sticky bottom bars register with useStickyBars.
+export { default as Toaster } from './Feedback/Toaster.vue';
+export { useStickyBars } from './Layout/stickyBars';
 export { default as Avatar } from './Layout/Avatar.vue';
 export { default as BlockStack } from './Layout/BlockStack.vue';
 export { default as Toolbar } from './Layout/Toolbar.vue';

@@ -4,6 +4,16 @@
 
 ### Changed
 
+- The starter pins `tey/kit` ^0.4.6 and `tey/standards` ^0.11.1.
+  - Kit files resynced from `kit:add` (this checkout has no lineage records for `kit:update` to plan against), the same files Kit parity compares:
+    - core: the headless `Feedback/Toaster.vue` and `toastPlacement.ts`, and `Layout/stickyBars.ts`, which `FloatingToolbar` now registers with;
+    - shell: the Workspace Layout and GuestShell mount the `Toaster`;
+    - session-ui: the Settings › People page.
+  - Pages now share `kitToasts`, the toast position.
+  - The People-page `descriptors` allowlist entry is gone because kit fixed the page. `standards:check` reports 0 findings with an empty allowlist.
+- The local TIA guard is strict again. `tests/Pest.php` checks `CI` as non-empty (`getenv('CI') === false || getenv('CI') === ''`), the shape standards 0.11.1's `tia` rule accepts, and `TiaGuardTest` covers an empty `CI=`. This restores the empty-`CI=` fix below.
+- `standards:install` (0.11.1) kept `boost.json`, which already lists `agents` and `packages`.
+
 - The starter pins `tey/standards` ^0.11 and adopts it: `standards:install` wrote `tests/Arch/configuration.php`, the ConformanceTest, the standards skills, the `.claude/settings.json` hooks, the git pre-push hook and the AGENTS.md pattern index. `php artisan standards:check` exits 0 and CI runs it through the reusable `teylabs/standards` workflow (v0.11.0). Find the pattern for new work with `bakery.find` (offline: `php artisan standards:pattern`).
 - Laravel Boost is set up for Claude Code and Codex: `boost.json`, `.ai/guidelines/starter.md`, the generated guideline block in AGENTS.md and CLAUDE.md, and the package skills standards expects. Boost 2.10 ships no `pest-testing` skill, so the configuration maps Pest to `testing-best-practices`.
 - `@inertiajs/core` is a declared dependency (3.9.1, matching `@inertiajs/vue3`): the kit-owned `splitState.ts` and `useScrollList.ts` type-import it.

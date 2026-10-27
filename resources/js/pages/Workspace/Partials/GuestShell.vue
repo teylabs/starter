@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
-import { AppearanceToggle } from '@kit/ui';
+import { AppearanceToggle, Toaster } from '@kit/ui';
 import { computed } from 'vue';
 import Wordmark from './Wordmark.vue';
 
@@ -41,5 +41,7 @@ const product = computed(() => props.product ?? page.props.shell?.product ?? nul
             </div>
             <div v-if="$slots.footer" class="mt-6 text-center text-sm text-muted-foreground" data-guest-footer><slot name="footer" /></div>
         </main>
+        <!-- The one toast renderer: it shows what the server flashed, where kit.toasts.position puts it. -->
+        <Toaster />
     </div>
 </template>
