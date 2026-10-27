@@ -33,7 +33,7 @@
     - `tests/NotesTest.php` covers the session transport: writes, intent replay, stale versions, attachments, and moderation for the owner, your own note, someone else's without moderate, and with it.
     - `McpTransportTest` covers the delegated one, including the delete confirmation.
     - `tests/Browser/Notes.php` writes, edits and deletes a note in a browser.
-  - The starter pins `tey/kit` ^0.4.9.
+  - The starter pins `tey/kit` ^0.4.10 (see the search entry above).
 
 - The dashboard shows the kit's widgets (tey/kit dashboard widgets): the You card, Recent activity (members who manage people only) and People, in a responsive grid that follows each widget's span. Session-ui's dashboard files are resynced from `kit:add` (`Dashboard/Page.vue` and the new `Dashboard/Partials/`), and the TypeScript types are regenerated. The read-only MCP tool `workspace_dashboard` is declared in `docs/mcp-capabilities.json` as `workspace.dashboard.read` under the new `dashboard.read` scope. `tests/DashboardTest.php` covers it on the session transport, and `McpTransportTest` on the delegated one: a settings-only connection is refused, and a `dashboard.read` connection gets only the widgets its grant covers. `SignIn` (browser) asserts that the grid and the people list render. The starter pins `tey/kit` ^0.4.8. Core's kit files are resynced from `kit:add` for 0.4.8's index table (`Table/BulkBar.vue`, `Table/IndexToolbar.vue`, `Table/selection.ts`, and updates to `DataTable`, `contract.ts` and `index.ts`). `standards:check` reports 0 findings, but warns that tey/standards' kit-exports snapshot lacks `BulkBar` and `IndexToolbar` until tey/standards is updated.
 
