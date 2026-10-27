@@ -30,6 +30,28 @@
                     "default"
                 ]
             }
+        },
+        {
+            "path": "resources/js/pages/Workspace/Dashboard/Page.vue",
+            "capabilities": [
+                "workspace.dashboard.read"
+            ],
+            "variants": {
+                "workspace.dashboard.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/SessionUi/Http/DashboardController.php",
+            "capabilities": [
+                "workspace.dashboard.read"
+            ],
+            "variants": {
+                "workspace.dashboard.read": [
+                    "default"
+                ]
+            }
         }
     ],
     "capabilities": [
@@ -352,6 +374,118 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "workspace.dashboard.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Dashboard/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/SessionUi/Http/DashboardController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/SessionUi/Dashboard/Widgets.php",
+                "symbol": "resolve"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_dashboard",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Dashboard/ReadDashboard.php",
+                    "symbol": "ReadDashboard"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "dashboard.read"
+                ],
+                "description": "Read the workspace dashboard: the widgets you can see, their state and what they show.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/DashboardTest.php",
+                    "name": "test_session_dashboard",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "privacy",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the workspace and the widgets the person may see, each gated by its own ability"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the workspace and the widgets the person may see, each gated by its own ability"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/DashboardTest.php",
+                            "name": "test_session_dashboard",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "privacy",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "server": {
@@ -373,7 +507,8 @@
             "mcp:use": "Act as you in the workspaces you approve, with what your role there allows",
             "mcp:act": "Act as you in the workspaces you approve",
             "settings.read": "Read workspace settings",
-            "settings.write": "Update workspace settings"
+            "settings.write": "Update workspace settings",
+            "dashboard.read": "Read the workspace dashboard"
         }
     }
 }

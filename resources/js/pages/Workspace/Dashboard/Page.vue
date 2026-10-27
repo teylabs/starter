@@ -3,9 +3,11 @@ import { Link, router } from '@inertiajs/vue3';
 import { Camera, Check, ChevronRight, CircleDashed, Globe } from '@lucide/vue';
 import { Button, Page } from '@kit/ui';
 import { computed } from 'vue';
+import WidgetGrid from './Partials/WidgetGrid.vue';
+import type { WidgetFrame } from './Partials/types';
 // The workspace home. The greeting is the page heading; below it the welcome card (the one welcome: a greeting for a new member, then the "Finish setting up"
-// checklist of skipped steps), and the empty state until the workspace has data. An app replaces this page by registering its own dashboard component,
-// which receives the same props and can render <WelcomeCard> where it likes.
+// checklist of skipped steps), then the widget grid (`Registry::widget()`), or the empty state when the viewer has no widgets. An app adds widgets rather than forking
+// this page; it can still replace it by registering its own dashboard component, which receives the same props and can render <WidgetGrid> where it likes.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.DashboardViewModel>();
 // The page heading greets by name; while the welcome card is up it greets the person itself, so the heading drops the name (no double greeting).
 const heading = computed(() => (props.welcome ? props.greeting.split(',')[0] : props.greeting));
@@ -48,7 +50,8 @@ const percent = computed(() => (props.welcome && props.welcome.total > 0 ? Math.
             <Button type="button" variant="secondary" data-welcome-dismiss @click="router.delete(welcome.dismiss.url, { preserveScroll: true })">{{ welcome.dismiss.label }}</Button>
         </div>
     </section>
-    <section class="grid max-w-xl justify-items-start gap-3 rounded-xl border border-dashed p-8" data-dashboard-empty>
+    <WidgetGrid v-if="widgets.length" :widgets="widgets as WidgetFrame[]" />
+    <section v-else class="grid max-w-xl justify-items-start gap-3 rounded-xl border border-dashed p-8" data-dashboard-empty>
         <h2 class="text-lg font-semibold">Nothing here yet</h2>
         <p class="text-sm text-muted-foreground">This is the home of {{ workspace }}. What your team works on will show up here.</p>
         <Link :href="next_url" class="mt-2 inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">{{ next_label }}</Link>

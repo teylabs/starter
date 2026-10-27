@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
+use Tey\Kit\Dashboard\ReadDashboard;
 use Tey\Kit\Features\Core\Registry;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
@@ -33,9 +34,9 @@ test('databases migrated before the split keep their schema and data', function 
 });
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
-    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class]);
+    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadDashboard::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary']]);
-    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings'];
+    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard'];
     expect($registry->tokenScopes())->toBe($scopes);
     expect(Passport::scopeIds())->toBe(array_keys($scopes));
     expect($registry->workspaceCapabilities())->toBe(['workspace.settings', 'workspace.dashboard']);

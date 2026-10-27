@@ -48,6 +48,10 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertPresent('[data-shell-subbar] [data-shell-breadcrumbs]')
             ->assertPresent('[data-shell-content] [data-slot="page"] [data-slot="page-header"] h1')
             ->assertPresent('[data-shell-bar]')
+            // The kit's widgets render in the grid; the people list's deferred rows arrive in its ScrollList.
+            ->assertPresent('[data-widget-grid] [data-widget="kit.you"] [data-widget-you]')
+            ->assertPresent('[data-widget-grid] [data-widget="kit.activity"]')
+            ->assertSeeIn('[data-widget="kit.people"] [data-scroll-list="dashboard_people"]', 'Local owner')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'app-shell');
 

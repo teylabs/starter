@@ -60,7 +60,9 @@ test('delegated settings', function () {
     mcpTransportRpc($connection, 'tools/list')->assertUnauthorized();
     $this->withToken($bearer);
     mcpTransportRpc($connection, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => new stdClass, 'clientInfo' => ['name' => 'Synthetic client', 'version' => '1']])->assertOk()->assertJsonPath('result.serverInfo.name', 'Workspace operations');
-    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(2, 'result.tools');
+    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(3, 'result.tools');
+    // A connection granted settings only stays narrow: the dashboard read tool needs dashboard.read (or acts-as-me).
+    mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace_id', 1);
     $data = ['display_name' => 'MCP Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'mcp-update'];
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.structuredContent.version', 2);
@@ -94,7 +96,7 @@ test('delegated settings', function () {
     // A capability that is off is absent: the endpoint answers 404, not 403.
     config(['kit.capabilities' => ['workspace.settings' => false]]);
     mcpTransportRpc($connection, 'tools/list')->assertNotFound();
-    config(['kit.capabilities' => ['workspace.settings' => true]]);
+    config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.dashboard' => true]]);
     $this->withoutToken();
     Auth::forgetGuards();
 
@@ -111,7 +113,7 @@ test('delegated settings', function () {
     $this->withoutToken();
     Auth::forgetGuards();
     $verifier = Str::random(64);
-    $query['scope'] = 'mcp:use settings.read';
+    $query['scope'] = 'mcp:use settings.read dashboard.read';
     $query['code_challenge'] = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
     $this->get('/oauth/authorize?'.http_build_query($query))->assertOk();
     $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken')])->assertRedirect();
@@ -120,13 +122,17 @@ test('delegated settings', function () {
     $exchange['code_verifier'] = $verifier;
     $newBearer = $this->postJson('/oauth/token', $exchange)->assertOk()->json('access_token');
     $newToken = Token::query()->where('user_id', 1)->where('client_id', $client->id)->where('id', '!=', $token->id)->firstOrFail();
-    $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read'], 'intent_key' => 'approve-reconnected'];
+    $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read', 'dashboard.read'], 'intent_key' => 'approve-reconnected'];
     $newConnection = $this->postJson('/@alpha/settings/connections', $newGrant)->assertCreated()->json('id');
     $this->withToken($bearer);
     mcpTransportRpc($newConnection, 'tools/list')->assertForbidden();
     $this->withToken($newBearer);
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.display_name', 'MCP Alpha');
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
+    // The dashboard over MCP: the widgets this connection's grant covers (dashboard.read), not the activity widget behind members.manage; extra arguments are refused.
+    $dashboard = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace.id', 1);
+    self::assertSame(['kit.you', 'kit.people'], array_column($dashboard->json('result.structuredContent.widgets'), 'key'));
+    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => ['workspace_id' => 2]])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'unknown_arguments');
 
     // Persisted scopes cannot widen the cryptographically granted JWT scopes.
     $newToken->update(['scopes' => ['mcp:use', 'settings.read', 'settings.write']]);

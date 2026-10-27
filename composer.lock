@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "749a1f4f3b62eb2086e27b301d84f7dc",
+    "content-hash": "8d109e1416de727601ac7a02f712665e",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.4.7",
+            "version": "dev-feat/dashboard-widgets",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "5c520b16a0346f9497814400a63cf62574d734dc"
+                "reference": "ef6a50276f2c502fd57eaab27a7f8891e0c3f06e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/5c520b16a0346f9497814400a63cf62574d734dc",
-                "reference": "5c520b16a0346f9497814400a63cf62574d734dc",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/ef6a50276f2c502fd57eaab27a7f8891e0c3f06e",
+                "reference": "ef6a50276f2c502fd57eaab27a7f8891e0c3f06e",
                 "shasum": ""
             },
             "require": {
@@ -10109,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.4.7"
+                "source": "https://github.com/teylabs/kit/tree/feat/dashboard-widgets"
             },
             "funding": [
                 {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T20:44:20+00:00"
+            "time": "2026-10-27T21:21:40+00:00"
         },
         {
             "name": "tey/mod",
@@ -16522,9 +16522,18 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "tey/kit",
+            "version": "dev-feat/dashboard-widgets",
+            "alias": "0.4.8",
+            "alias_normalized": "0.4.8.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "tey/kit": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

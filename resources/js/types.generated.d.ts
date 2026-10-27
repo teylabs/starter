@@ -165,6 +165,80 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 }
 }
 export namespace SessionUi {
+export namespace Dashboard {
+export type ActivityWidget = {
+readonly title: string,
+readonly component: string,
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly state: string,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly items: {
+id: string,
+actor: string,
+event: string,
+at: string,
+}[],
+readonly key: string,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+readonly actions: Tey.Kit.Features.Core.Data.Action[],
+};
+export type FailedWidget = {
+readonly title: string,
+readonly component: string,
+readonly state: string,
+readonly key: string,
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+readonly actions: Tey.Kit.Features.Core.Data.Action[],
+};
+export type PeopleWidget = {
+readonly title: string,
+readonly component: string,
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly list: string,
+readonly actions: Array<any>,
+readonly key: string,
+readonly state: string,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+};
+export type Widget = object;
+export type WidgetEmptyData = {
+title: string,
+description: string,
+action: Tey.Kit.Features.Core.Data.Action | null,
+};
+export type WidgetErrorData = {
+message: string,
+retry: Tey.Kit.Features.Core.Data.Action | null,
+};
+export type WidgetSpanData = {
+md: number,
+lg: number,
+};
+export type YouWidget = {
+readonly title: string,
+readonly component: string,
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly person: {
+name: string,
+email: string,
+initials: string,
+avatar: {
+url: string,
+url_2x: string,
+} | null,
+role: string | null,
+workspace: string,
+},
+readonly actions: Array<any>,
+readonly key: string,
+readonly state: string,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+};
+}
 export namespace Data {
 export type FocusShellData = {
 product: {
@@ -252,6 +326,26 @@ readonly next_label: string,
 readonly next_url: string,
 readonly greeting: string,
 readonly welcome: Tey.Kit.Features.SessionUi.Data.WelcomeCardData | null,
+readonly widgets: {
+key: string,
+title: string,
+component: string,
+span: {
+md: number,
+lg: number,
+},
+state: string,
+empty: {
+title: string,
+description: string,
+action: Record<string, any> | null,
+} | null,
+error: {
+message: string,
+retry: Record<string, any> | null,
+} | null,
+actions: Record<string, any>[],
+}[],
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type ErrorViewModel = {

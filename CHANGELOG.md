@@ -4,6 +4,8 @@
 
 ### Changed
 
+- The dashboard shows the kit's widgets (tey/kit dashboard widgets): the You card, Recent activity (members who manage people only) and People, in a responsive grid that follows each widget's span. Session-ui's dashboard files are resynced from `kit:add` (`Dashboard/Page.vue` and the new `Dashboard/Partials/`), and the TypeScript types are regenerated. The read-only MCP tool `workspace_dashboard` is declared in `docs/mcp-capabilities.json` as `workspace.dashboard.read` under the new `dashboard.read` scope. `tests/DashboardTest.php` covers it on the session transport, and `McpTransportTest` on the delegated one: a settings-only connection is refused, and a `dashboard.read` connection gets only the widgets its grant covers. `SignIn` (browser) asserts that the grid and the people list render. **Temporary pin:** `tey/kit` is `dev-feat/dashboard-widgets as 0.4.8` until the kit tag; swap it for `^0.4.8` before merging.
+
 - The starter pins `tey/kit` ^0.4.7 and `tey/standards` ^0.11.2. Core's kit files are resynced from `kit:add`, the files Kit parity compares: `FormActions` carries `data-action`, so a save toast's `->from()` can anchor to the form's Save button, and the `Toaster` dispatches a `kit:toast` event. No shell or session-ui file changed. `standards:check` reports 0 findings with an empty allowlist, and its kit-exports snapshot now includes `Toaster`.
 
 - The starter pins `tey/kit` ^0.4.6 and `tey/standards` ^0.11.1.
