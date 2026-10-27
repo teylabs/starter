@@ -2,6 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
 import { UserMenu, WorkspaceSwitcher } from '@kit/shell';
+import { Toaster } from '@kit/ui';
 import { provide } from 'vue';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
@@ -48,7 +49,7 @@ provide('kit.shell', true);
                     <div v-if="$slots.bar" class="ml-auto flex min-w-0 items-center gap-2" data-shell-bar-slot>
                         <slot name="bar" />
                     </div>
-                    <div :class="['flex shrink-0 items-center gap-2', $slots.bar ? '' : 'ml-auto']">
+                    <div :class="['flex shrink-0 items-center gap-2', $slots.bar ? '' : 'ml-auto']" data-shell-actions>
                         <div class="hidden items-center gap-2 lg:flex">
                             <slot name="actions" />
                             <!-- The `user-menu` slot replaces it, with the menu's own props. -->
@@ -93,5 +94,7 @@ provide('kit.shell', true);
             </div>
         </main>
         <slot name="footer" />
+        <!-- The one toast renderer: it shows what the server flashed, where kit.toasts.position puts it. -->
+        <Toaster />
     </div>
 </template>

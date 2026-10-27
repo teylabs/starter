@@ -8,7 +8,6 @@ import { computed, ref } from 'vue';
 // the owner); this page only renders them. Removing and revoking ask first (the action's own confirm text, in the table); changing a role and inviting open a dialog.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.PeopleViewModel>();
 type Row = Record<string, any>;
-const roleOptions = computed(() => props.roles.map((role) => ({ value: role.value, label: role.label })));
 const date = (iso: unknown) => (typeof iso === 'string' && iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 // Server-driven modals over this page, from the descriptors' URLs (the same URL the change is sent to), opened in history so Back closes them. Invite is the package's ModalLink,
 // which prefetches on hover and shows its loading state; a row action's modal opens through `visitModal`.
@@ -51,7 +50,8 @@ const members = computed(() => props.tab === 'members');
                         </span>
                     </span>
                 </template>
-                <template #cell-roles="{ row }">{{ (row.roles as Row[]).map((role) => role.label).join(', ') }}</template>
+                <!-- The server's role labels, as sent: the page shows them and checks nothing. -->
+                <template #cell-roles="{ value }">{{ ((value ?? []) as { label: string }[]).map((granted) => granted.label).join(', ') }}</template>
                 <template #cell-joined="{ row }">{{ date(row.joined) }}</template>
                 <template #cell-sent="{ row }">{{ date(row.sent) }}</template>
                 <template #cell-expires="{ row }"><span :class="row.status === 'expired' ? 'text-destructive' : ''">{{ row.status === 'expired' ? 'Expired ' : '' }}{{ date(row.expires) }}</span></template>

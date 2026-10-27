@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
 import { provideSurface } from '@/components/Kit/Surface/surface';
 import { readOnlyLabel } from '@/components/Kit/Form/locked';
 import { useLocked } from '@/components/Kit/Form/useLocked';
+import { useStickyBars } from './stickyBars';
 
 /*
  * A centred pill of page actions and status. `auto` (default) sits inline under short content, floats above the viewport's foot while long content scrolls past
@@ -10,13 +11,14 @@ import { useLocked } from '@/components/Kit/Form/useLocked';
  * `revealed` (also `v-model:revealed`) is true while that element is out of view, so the host can repeat those actions only when they cannot be reached. Actions
  * and status come in through the slot; nothing here reads a page or bench store. The slot is for ActionBar and STATUS only: every action is a server descriptor
  * rendered by ActionBar so it overflows into the ⌄ menu on phones. A button or link slotted directly cannot overflow (it would clip), so it warns in development. It provides the inverse tone and pill shape to the controls inside.
- * Sits under dialogs and sheets (z-40), honours the bottom safe-area inset, and needs ancestors that do not clip overflow. Attributes go on the pill.
+ * Sits under dialogs and sheets (z-40), registers its height with useStickyBars while it floats (so the shell's Toaster sits above it), honours the bottom safe-area inset, and needs ancestors that do not clip overflow. Attributes go on the pill.
  * Below `sm` the pill keeps one row (ActionBar collapses to its main action and a ⌄ menu, which keep their size while other content truncates); dark mode uses the popover surface with a border ring.
  * Inside a locked LockedForm (the LockedForm spec) the pill shows the read-only label as status text after the slot, the reason or "View only", in the save action's place; the ActionBar inside hides edit actions itself.
  */
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(defineProps<{ mode?: 'auto' | 'float' | 'inline'; reveal?: string; label?: string }>(), { mode: 'auto', reveal: undefined, label: 'Page actions' });
 const pill = useTemplateRef<HTMLElement>('pill');
+useStickyBars().track(pill, () => props.mode !== 'inline');
 const revealed = defineModel<boolean>('revealed', { default: false });
 const lock = useLocked();
 provideSurface(() => ({ tone: 'inverse', shape: 'pill' }));
