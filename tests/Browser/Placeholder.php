@@ -27,7 +27,7 @@ it('renders a placeholder page and a planned settings section', function (): voi
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/orders')->assertSeeIn('[data-slot="placeholder"]', 'Not built yet')->assertSeeIn('[data-placeholder-milestone]', 'Planned for the Orders release')
-            ->assertPresent('[data-slot="placeholder"] a')->assertMissing('form, [role="status"]')->assertNoJavaScriptErrors();
+            ->assertPresent('[data-slot="placeholder"] a')->assertMissing('main form, main [role="status"]')->assertNoJavaScriptErrors();
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {
                 $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');

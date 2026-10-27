@@ -74,6 +74,12 @@ export type * from './Explanation/explanation.generated';
 // Page actions: FloatingToolbar with its surface context, ActionBar over server descriptors, and SectionHeader (FloatingToolbar.md, ActionBar.md, SectionHeader.md).
 export { default as FloatingToolbar } from './Layout/FloatingToolbar.vue';
 export { default as FloatingToolbarDot } from './Layout/FloatingToolbarDot.vue';
+// The page's own bottom-edge bar (registered with useStickyBars, like FloatingToolbar) and the end-of-page Back to top.
+export { default as StickyBar } from './Layout/StickyBar.vue';
+export { default as PageEnd } from './Layout/PageEnd.vue';
+// Global search's field and its client rules; the shell's GlobalSearch places it in the header (docs/search.md).
+export { default as SearchBox } from './Search/SearchBox.vue';
+export { flatten as flattenSearch, move as moveSearch, opensSearch, type SearchGroup, type SearchResult } from './Search/search';
 export { provideSurface, useSurface } from './Surface/surface';
 export type { Surface } from './Surface/surface';
 export { default as ActionBar } from './Action/ActionBar.vue';

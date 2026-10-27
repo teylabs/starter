@@ -61,7 +61,7 @@ test('adding every feature writes the template files then reruns as a no op', fu
     // A second request adopts nothing new and writes nothing.
     $records = lifecycleRecords($root);
     $again = lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS);
-    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, 7, 'adopted'));
+    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, 8, 'adopted'));
     lifecycleRefuses(fn () => lifecycleLineages()->resume($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS, 'install', lifecycleCheck($root)), 'already adopted');
     expect(lifecycleRecords($root))->toBe($records);
     expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
@@ -110,10 +110,10 @@ test('operation check fails closed', function () {
     expect($result['failed'])->toBe('core');
     expect(array_keys(Lineages::adopted($root, 'workspace-starter')))->toBe([]);
 
-    // A Mod executor that differs from the committed provenance refuses at plan time.
+    // A Mod executor that differs from the committed provenance refuses at plan time, named (kit 0.4.11): executor_stale, with the fix.
     $root = lifecycleCheckout();
     file_put_contents($root.'/config/kit-executor.json', '{"installed_mod_version":"v0.9.0"}');
-    lifecycleRefuses(fn () => lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS), 'Executor provenance');
+    lifecycleRefuses(fn () => lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS), 'executor_stale');
 });
 test('kit add command', function () {
     $root = lifecycleCheckout();
@@ -128,7 +128,7 @@ test('kit add command', function () {
         $this->assertNotSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => 'sha256:wrong']));
         expect(lifecycleRecords($root))->toBe([]);
         expect($kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => $preview['plan']]))->toBe(0);
-        expect(lifecycleRecords($root))->toHaveCount(7);
+        expect(lifecycleRecords($root))->toHaveCount(8);
         expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
     } finally {
         $this->app->setBasePath($base);

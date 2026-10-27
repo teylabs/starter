@@ -1,7 +1,7 @@
 #!/bin/sh
 # Asserts the template's feature files equal `kit:add` of every catalog feature on a clean Laravel app.
 # Usage: sh bin/kit-parity.sh <clean-app>, where <clean-app> is a fresh `laravel/laravel` checkout with its
-# dependencies installed (Notes, an opt-in kit example, is left out). It adds the template's locked tey/kit and the packages the features need, runs
+# dependencies installed. It adds the template's locked tey/kit and the packages the features need, runs
 # kit:install and kit:add, then compares every path a feature owns in both directions.
 set -eu
 template=$(cd "$(dirname "$0")/.." && pwd)
@@ -21,14 +21,14 @@ php artisan kit:install
 php -r '$f = "app/Models/User.php"; $s = file_get_contents($f); $n = preg_replace("/^class User extends Authenticatable\n\{\n/m", "class User extends Authenticatable implements \\Tey\\Concierge\\Contracts\\Member\n{\n    use \\Tey\\Kit\\Features\\Workspaces\\Concerns\\HasWorkspaces;\n", $s, 1, $count); if ($count !== 1) { fwrite(STDERR, "parity: could not apply the user model host step\n"); exit(1); } file_put_contents($f, $n);'
 touch database/database.sqlite
 php artisan migrate --force --path=database/migrations
-features=$(php artisan kit:list --json | php -r 'echo implode(" ", array_diff(array_column(json_decode(stream_get_contents(STDIN), true), "id"), ["notes"]));')
+features=$(php artisan kit:list --json | php -r 'echo implode(" ", array_column(json_decode(stream_get_contents(STDIN), true), "id"));')
 # shellcheck disable=SC2086
 plan=$(php artisan kit:add $features --json | php -r 'echo json_decode(stream_get_contents(STDIN), true)["plan"];')
 # shellcheck disable=SC2086
 php artisan kit:add $features --apply --expected-plan="$plan"
 
 status=0
-for owned in $(php artisan kit:list --json | php -r 'foreach (json_decode(stream_get_contents(STDIN), true) as $f) { if ($f["id"] !== "notes") { echo implode("\n", $f["owns"]), "\n"; } }'); do
+for owned in $(php artisan kit:list --json | php -r 'foreach (json_decode(stream_get_contents(STDIN), true) as $f) { echo implode("\n", $f["owns"]), "\n"; }'); do
     if ! diff -r "$app/$owned" "$template/$owned"; then
         echo "parity: $owned differs from kit:add" >&2
         status=1

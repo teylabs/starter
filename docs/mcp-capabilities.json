@@ -52,6 +52,74 @@
                     "default"
                 ]
             }
+        },
+        {
+            "path": "resources/js/pages/Workspace/Search/Page.vue",
+            "capabilities": [
+                "workspace.search.read"
+            ],
+            "variants": {
+                "workspace.search.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/SessionUi/Http/SearchController.php",
+            "capabilities": [
+                "workspace.search.read"
+            ],
+            "variants": {
+                "workspace.search.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "resources/js/pages/Workspace/Notes/Index/Page.vue",
+            "capabilities": [
+                "workspace.notes.list",
+                "workspace.notes.read",
+                "workspace.notes.write",
+                "workspace.notes.delete"
+            ],
+            "variants": {
+                "workspace.notes.list": [
+                    "default"
+                ],
+                "workspace.notes.read": [
+                    "default"
+                ],
+                "workspace.notes.write": [
+                    "default"
+                ],
+                "workspace.notes.delete": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+            "capabilities": [
+                "workspace.notes.list",
+                "workspace.notes.read",
+                "workspace.notes.write",
+                "workspace.notes.delete"
+            ],
+            "variants": {
+                "workspace.notes.list": [
+                    "default"
+                ],
+                "workspace.notes.read": [
+                    "default"
+                ],
+                "workspace.notes.write": [
+                    "default"
+                ],
+                "workspace.notes.delete": [
+                    "default"
+                ]
+            }
         }
     ],
     "capabilities": [
@@ -486,6 +554,707 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "workspace.search.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Search/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/SessionUi/Http/SearchController.php",
+                    "symbol": "index"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/SessionUi/Search/Searches.php",
+                "symbol": "run"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_search",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Search/SearchWorkspace.php",
+                    "symbol": "SearchWorkspace"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "search.read"
+                ],
+                "description": "Search the workspace: each kind of record you can see that matches the query, up to 25 of each, best first.",
+                "input_schema": {
+                    "properties": {
+                        "q": {
+                            "description": "What to look for, 1 to 100 characters.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "q"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/SearchTest.php",
+                    "name": "test_session_search",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "privacy",
+                        "no_bypass",
+                        "error"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "q": "string, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns each registered provider's results the person may see in the workspace, grouped, with partial when a provider failed"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "q": "string, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns each registered provider's results the person may see in the workspace, grouped, with partial when a provider failed"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/SearchTest.php",
+                            "name": "test_session_search",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "privacy",
+                                "no_bypass",
+                                "error"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.list",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Notes/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "index"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "listing"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "notes_list",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/ListNotes.php",
+                    "symbol": "ListNotes"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.read"
+                ],
+                "description": "List the workspace's newest notes (up to 50), pinned first; optionally one colour, or the notes about one record.",
+                "input_schema": {
+                    "properties": {
+                        "colour": {
+                            "type": "string"
+                        },
+                        "subject_type": {
+                            "type": "string"
+                        },
+                        "subject_id": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTest.php",
+                    "name": "test_session_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "colour": "string, optional",
+                            "subject_type": "string, optional",
+                            "subject_id": "integer, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns the newest notes, pinned first"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "colour": "string, optional",
+                            "subject_type": "string, optional",
+                            "subject_id": "integer, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns the newest notes, pinned first"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTest.php",
+                            "name": "test_session_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Notes/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "read"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "notes_read",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/ReadNote.php",
+                    "symbol": "ReadNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.read"
+                ],
+                "description": "Read one note by its id, with its current version.",
+                "input_schema": {
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "id"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTest.php",
+                    "name": "test_session_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "id": "integer, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns one note with its version"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "id": "integer, required"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "returns one note with its version"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTest.php",
+                            "name": "test_session_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.write",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Notes/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "store"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "update"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "mutate"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "notes_write",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/WriteNote.php",
+                    "symbol": "WriteNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.write"
+                ],
+                "description": "Create a note, or change one you may change (pass id and expected_version): body, colour, pinned. Retry with the same intent_key.",
+                "input_schema": {
+                    "properties": {
+                        "intent_key": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "integer"
+                        },
+                        "expected_version": {
+                            "type": "integer"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "colour": {
+                            "type": "string"
+                        },
+                        "pinned": {
+                            "type": "boolean"
+                        },
+                        "subject_type": {
+                            "type": "string"
+                        },
+                        "subject_id": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "intent_key"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTest.php",
+                    "name": "test_session_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "intent_key": "string, required",
+                            "id": "integer, optional",
+                            "expected_version": "integer, optional",
+                            "body": "string, optional",
+                            "colour": "string, optional",
+                            "pinned": "boolean, optional",
+                            "subject_type": "string, optional",
+                            "subject_id": "integer, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "creates a note, or changes your own (or any, with moderation) at the expected version",
+                            "audits workspace.note.created or workspace.note.updated once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "intent_key": "string, required",
+                            "id": "integer, optional",
+                            "expected_version": "integer, optional",
+                            "body": "string, optional",
+                            "colour": "string, optional",
+                            "pinned": "boolean, optional",
+                            "subject_type": "string, optional",
+                            "subject_id": "integer, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "creates a note, or changes your own (or any, with moderation) at the expected version",
+                            "audits workspace.note.created or workspace.note.updated once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTest.php",
+                            "name": "test_session_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.notes.delete",
+            "kind": "write",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Notes/Index/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Notes/Http/NoteController.php",
+                    "symbol": "destroy"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Notes/Operations/WorkspaceNotes.php",
+                "symbol": "mutate"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "notes_delete",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Notes/Integrations/Mcp/DeleteNote.php",
+                    "symbol": "DeleteNote"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "notes.write"
+                ],
+                "description": "Delete a note you may change, at its expected_version. Asks for confirmation first.",
+                "input_schema": {
+                    "properties": {
+                        "intent_key": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "integer"
+                        },
+                        "expected_version": {
+                            "type": "integer"
+                        },
+                        "confirm_token": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object",
+                    "required": [
+                        "intent_key",
+                        "id",
+                        "expected_version"
+                    ]
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/NotesTest.php",
+                    "name": "test_session_notes",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {
+                            "intent_key": "string, required",
+                            "id": "integer, required",
+                            "expected_version": "integer, required",
+                            "confirm_token": "string, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "deletes your own note (or any, with moderation) at the expected version, after confirmation",
+                            "audits workspace.note.deleted once per intent key"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {
+                            "intent_key": "string, required",
+                            "id": "integer, required",
+                            "expected_version": "integer, required",
+                            "confirm_token": "string, optional"
+                        },
+                        "defaults": {},
+                        "effects": [
+                            "deletes your own note (or any, with moderation) at the expected version, after confirmation",
+                            "audits workspace.note.deleted once per intent key"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/NotesTest.php",
+                            "name": "test_session_notes",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "server": {
@@ -508,7 +1277,10 @@
             "mcp:act": "Act as you in the workspaces you approve",
             "settings.read": "Read workspace settings",
             "settings.write": "Update workspace settings",
-            "dashboard.read": "Read the workspace dashboard"
+            "dashboard.read": "Read the workspace dashboard",
+            "search.read": "Search the workspace",
+            "notes.read": "Read workspace notes",
+            "notes.write": "Create, change and delete your workspace notes"
         }
     }
 }

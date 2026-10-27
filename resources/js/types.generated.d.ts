@@ -174,6 +174,117 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 }
 }
+export namespace Notes {
+export namespace Data {
+export type NoteChange = {
+note_id: number,
+workspace_id: number,
+deleted: boolean,
+note: Tey.Kit.Features.Notes.Data.NoteRecord | null,
+};
+export type NoteComposerData = {
+submit: Tey.Kit.Features.Core.Data.Action,
+placeholder: string,
+colours: {
+key: string,
+label: string,
+}[],
+default_colour: string,
+media: {
+accept: string[],
+max_files: number,
+max_kb: number,
+},
+subject: {
+type: string,
+id: number,
+} | null,
+options: {
+key: string,
+label: string,
+icon: string | null,
+url: string | null,
+}[],
+subject_search: string | null,
+};
+export type NoteItemData = {
+note: Tey.Kit.Features.Notes.Data.NoteRecord,
+update: Tey.Kit.Features.Core.Data.Action | null,
+delete: Tey.Kit.Features.Core.Data.Action | null,
+id: string,
+title: string,
+url: string | null,
+description: string | null,
+meta: {
+icon: string | null,
+label: string,
+url: string | null,
+}[],
+badges: {
+label: string,
+variant: string,
+}[],
+variant: string | null,
+group: {
+key: string,
+label: string,
+} | null,
+actions: Tey.Kit.Features.Core.Data.Action[],
+};
+export type NoteRecord = {
+id: number,
+workspace_id: number,
+author_id: number | null,
+author: string | null,
+body: string,
+colour: string,
+pinned: boolean,
+version: number,
+subject: {
+type: string,
+id: number,
+label: string,
+url: string | null,
+} | null,
+attachments: {
+id: string,
+name: string,
+mime: string,
+size: number,
+url: string,
+thumb_url: string | null,
+}[],
+created_at: string,
+updated_at: string,
+};
+}
+export namespace ViewModels {
+export type NotesIndexViewModel = {
+readonly title: string,
+readonly composer: Tey.Kit.Features.Notes.Data.NoteComposerData | null,
+readonly colours: {
+key: string,
+label: string,
+}[],
+readonly colour: string | null,
+readonly index_url: string,
+readonly list: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type NotesWidget = {
+readonly title: string,
+readonly component: string,
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly state: string,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly composer: Tey.Kit.Features.Notes.Data.NoteComposerData | null,
+readonly notes: Tey.Kit.Features.Notes.Data.NoteRecord[],
+readonly actions: Array<any>,
+readonly key: string,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+};
+}
+}
 export namespace SessionUi {
 export namespace Dashboard {
 export type ActivityWidget = {
@@ -311,6 +422,15 @@ state: string,
 }[],
 done: number,
 total: number,
+};
+}
+export namespace Search {
+export type SearchResult = {
+id: string,
+label: string,
+url: string | null,
+description: string | null,
+meta: string | null,
 };
 }
 export namespace ViewModels {
@@ -453,6 +573,18 @@ readonly email_verified: boolean,
 readonly profile_url: string,
 readonly notice: string | null,
 readonly verify_url: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+};
+export type SearchViewModel = {
+readonly title: string,
+readonly query: string,
+readonly url: string,
+readonly groups: {
+key: string,
+label: string,
+results: Tey.Kit.Features.SessionUi.Search.SearchResult[],
+}[],
+readonly partial: boolean,
 readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 };
 export type SectionsViewModel = {
@@ -616,6 +748,11 @@ label: string,
 url: string,
 current: boolean,
 }[],
+} | null,
+search: {
+url: string,
+label: string,
+placeholder: string,
 } | null,
 };
 }

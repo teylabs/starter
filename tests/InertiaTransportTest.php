@@ -33,9 +33,9 @@ test('inertia session pages share real operations and fresh navigation', functio
     $this->get('/', $inertia)->assertOk();
     $this->get('/@alpha/records', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
         ->assertJsonPath('component', 'Workspace/Record/Index/Page')->assertJsonPath('props.records.0.title', 'Alpha private')->assertJsonCount(1, 'props.records')
-        ->assertJsonPath('props.shell.workspace.id', 1)->assertJsonCount(1, 'props.shell.switcher.choices')->assertJsonCount(3, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.0.label', 'Dashboard')->assertJsonPath('props.shell.navigation.1.label', 'Records')
-        ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.navigation.2.label', 'Settings')
-        ->assertJsonPath('props.shell.navigation.2.current', false);
+        ->assertJsonPath('props.shell.workspace.id', 1)->assertJsonCount(1, 'props.shell.switcher.choices')->assertJsonCount(4, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.0.label', 'Dashboard')->assertJsonPath('props.shell.navigation.1.label', 'Notes')->assertJsonPath('props.shell.navigation.2.label', 'Records')
+        ->assertJsonPath('props.shell.navigation.2.current', true)->assertJsonPath('props.shell.navigation.3.label', 'Settings')
+        ->assertJsonPath('props.shell.navigation.3.current', false);
 
     // A write redirects back to the list, in the short form for a user with one workspace; a validation error returns to the form.
     $this->post('/@alpha/records', ['title' => 'Inertia-created'], $inertia)->assertRedirect('/records');

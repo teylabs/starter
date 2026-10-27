@@ -27,10 +27,10 @@ test('session dashboard', function () {
         ['actor_id' => 2, 'workspace_id' => 2, 'event' => 'beta.only', 'details' => '{}', 'created_at' => now()],
     ]);
 
-    // The owner sees the kit's three widgets in order, with this workspace's activity and no event details.
+    // The owner sees the kit's three widgets in order (then the notes feature's card), with this workspace's activity and no event details.
     $signIn(1);
     $owner = $this->get('/@alpha', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Dashboard/Page');
-    expect(array_column($owner->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.activity', 'kit.people']);
+    expect(array_column($owner->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.activity', 'kit.people', 'notes.recent']);
     $owner->assertJsonPath('props.widgets.0.person.name', 'Alpha')->assertJsonPath('props.widgets.0.person.role', 'Owner')
         ->assertJsonPath('props.widgets.1.items.0.event', 'Workspace settings updated')->assertJsonCount(1, 'props.widgets.1.items')
         ->assertJsonPath('props.widgets.2.list', 'dashboard_people')->assertJsonMissingPath('props.dashboard_people');
@@ -44,7 +44,7 @@ test('session dashboard', function () {
     $this->postJson('/logout')->assertNoContent();
     $signIn(3);
     $viewer = $this->get('/@alpha', $inertia)->assertOk();
-    expect(array_column($viewer->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.people']);
+    expect(array_column($viewer->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.people', 'notes.recent']);
     $viewer->assertJsonPath('props.widgets.0.person.role', 'Viewer')->assertJsonPath('props.widgets.1.actions', []);
     $this->get('/@beta', $inertia)->assertNotFound();
 

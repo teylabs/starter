@@ -5,6 +5,7 @@ import { UserMenu, WorkspaceSwitcher } from '@kit/shell';
 import { Toaster } from '@kit/ui';
 import { provide } from 'vue';
 import Breadcrumbs from './Partials/Breadcrumbs.vue';
+import GlobalSearch from './Partials/GlobalSearch.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
 import ShellDrawer from './Partials/ShellDrawer.vue';
 import SubNav from './Partials/SubNav.vue';
@@ -49,7 +50,11 @@ provide('kit.shell', true);
                     <div v-if="$slots.bar" class="ml-auto flex min-w-0 items-center gap-2" data-shell-bar-slot>
                         <slot name="bar" />
                     </div>
-                    <div :class="['flex shrink-0 items-center gap-2', $slots.bar ? '' : 'ml-auto']" data-shell-actions>
+                    <!-- Global search: only when the server sends it (the viewer may search this workspace). -->
+                    <div v-if="props.shell.search" :class="['flex min-w-0 items-center', $slots.bar ? '' : 'ml-auto']" data-shell-search>
+                        <GlobalSearch :search="props.shell.search" />
+                    </div>
+                    <div :class="['flex shrink-0 items-center gap-2', $slots.bar || props.shell.search ? '' : 'ml-auto']" data-shell-actions>
                         <div class="hidden items-center gap-2 lg:flex">
                             <slot name="actions" />
                             <!-- The `user-menu` slot replaces it, with the menu's own props. -->

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df4a60e0c9cb56b3e36612d852146dca",
+    "content-hash": "c3e4b89b6cf404ef5a96646b08573ebc",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4761,16 +4761,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "2.3.8",
+            "version": "2.3.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "ec4293f7caf9936acce286b589ccb84faf1aa88d"
+                "reference": "2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/ec4293f7caf9936acce286b589ccb84faf1aa88d",
-                "reference": "ec4293f7caf9936acce286b589ccb84faf1aa88d",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17",
+                "reference": "2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17",
                 "shasum": ""
             },
             "require": {
@@ -4802,9 +4802,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.8"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.9"
             },
-            "time": "2026-10-26T20:24:50+00:00"
+            "time": "2026-10-27T22:32:31+00:00"
         },
         {
             "name": "pragmarx/google2fa",
@@ -10052,16 +10052,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.4.8",
+            "version": "v0.4.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "6c4073d303a7b87e01cf6c67204bfb85a44222ba"
+                "reference": "5df2a1ec19d7e4068d3115a6b241423b55478b3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/6c4073d303a7b87e01cf6c67204bfb85a44222ba",
-                "reference": "6c4073d303a7b87e01cf6c67204bfb85a44222ba",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/5df2a1ec19d7e4068d3115a6b241423b55478b3f",
+                "reference": "5df2a1ec19d7e4068d3115a6b241423b55478b3f",
                 "shasum": ""
             },
             "require": {
@@ -10109,7 +10109,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.4.8"
+                "source": "https://github.com/teylabs/kit/tree/v0.4.13"
             },
             "funding": [
                 {
@@ -10117,7 +10117,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T21:34:18+00:00"
+            "time": "2026-10-27T23:48:41+00:00"
         },
         {
             "name": "tey/mod",
@@ -10229,16 +10229,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.11.2",
+            "version": "v0.11.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4"
+                "reference": "a08866ca51635d161baf072ad7f011e9181e614a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/f868e339012e4fcfcc00e5ed8e989d851be85df4",
-                "reference": "f868e339012e4fcfcc00e5ed8e989d851be85df4",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/a08866ca51635d161baf072ad7f011e9181e614a",
+                "reference": "a08866ca51635d161baf072ad7f011e9181e614a",
                 "shasum": ""
             },
             "require": {
@@ -10261,8 +10261,9 @@
                 "nikic/php-parser": "^5.0",
                 "pestphp/pest": "^4.7 || ^5.0",
                 "pestphp/pest-plugin-arch": "^4.0 || ^5.0",
+                "spatie/laravel-webhook-client": "^3.7",
                 "symfony/finder": "^7.0 || ^8.0",
-                "tey/kit": "^0.4.6"
+                "tey/kit": "^0.4.10"
             },
             "suggest": {
                 "nikic/php-parser": "Required for architecture checks (^5.0); install in the app's require-dev.",
@@ -10311,7 +10312,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.11.2"
+                "source": "https://github.com/teylabs/standards/tree/v0.11.6"
             },
             "funding": [
                 {
@@ -10319,7 +10320,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-27T20:47:46+00:00"
+            "time": "2026-10-27T23:48:47+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
