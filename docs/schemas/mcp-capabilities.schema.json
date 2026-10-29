@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Copied from tey/standards (docs/schemas/mcp-capabilities.schema.json); change it there and copy it here.",
   "title": "MCP capability declaration v1",
   "description": "Declaration only; exact-revision behavioural evidence and full inventory review remain required.",
   "type": "object",
@@ -56,50 +57,45 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "kind",
-          "ui",
-          "domain",
-          "mcp",
-          "tests",
-          "variants"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9_.-]*$"
+        "oneOf": [
+          {
+            "$ref": "#/$defs/capability"
           },
-          "kind": {
-            "enum": [
-              "read",
-              "write",
-              "external"
-            ]
-          },
-          "ui": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": [
-                "path",
-                "symbol"
-              ],
-              "properties": {
-                "path": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "symbol": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              }
-            }
-          },
-          "domain": {
+          {
+            "$ref": "#/$defs/uiOnlyCapability"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "ui",
+        "domain",
+        "mcp",
+        "tests",
+        "variants"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*$"
+        },
+        "kind": {
+          "enum": [
+            "read",
+            "write",
+            "external"
+          ]
+        },
+        "ui": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
             "type": "object",
             "required": [
               "path",
@@ -115,142 +111,199 @@
                 "minLength": 1
               }
             }
-          },
-          "mcp": {
-            "type": "object",
-            "required": [
-              "status"
-            ],
-            "properties": {
-              "status": {
-                "enum": [
-                  "implemented",
-                  "missing",
-                  "partial"
-                ]
-              },
-              "kind": {
-                "enum": [
-                  "tool",
-                  "resource",
-                  "protocol"
-                ]
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "entrypoint": {
-                "type": "object",
-                "required": [
-                  "path",
-                  "symbol"
-                ],
-                "properties": {
-                  "path": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "symbol": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                }
-              },
-              "scopes": {
-                "type": "array",
-                "minItems": 1,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "handoff": {
-                "type": "string",
-                "minLength": 1
-              },
-              "confirmation": {
-                "type": "string",
-                "minLength": 1
-              }
+          }
+        },
+        "domain": {
+          "type": "object",
+          "required": [
+            "path",
+            "symbol"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
             },
-            "allOf": [
-              {
-                "if": {
-                  "properties": {
-                    "status": {
-                      "const": "implemented"
-                    }
-                  }
-                },
-                "then": {
-                  "required": [
-                    "kind",
-                    "name",
-                    "entrypoint",
-                    "scopes"
-                  ]
-                }
-              },
-              {
-                "if": {
-                  "required": [
-                    "kind"
-                  ],
-                  "properties": {
-                    "kind": {
-                      "const": "protocol"
-                    }
-                  }
-                },
-                "then": {
-                  "required": [
-                    "handoff"
-                  ]
-                }
-              }
-            ]
-          },
-          "tests": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/$defs/evidence"
-            }
-          },
-          "variants": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/$defs/variant"
+            "symbol": {
+              "type": "string",
+              "minLength": 1
             }
           }
         },
-        "allOf": [
-          {
-            "if": {
+        "mcp": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "implemented",
+                "missing",
+                "partial"
+              ]
+            },
+            "kind": {
+              "enum": [
+                "tool",
+                "resource",
+                "protocol"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "entrypoint": {
+              "type": "object",
+              "required": [
+                "path",
+                "symbol"
+              ],
               "properties": {
-                "kind": {
-                  "const": "external"
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "symbol": {
+                  "type": "string",
+                  "minLength": 1
                 }
               }
             },
-            "then": {
-              "properties": {
-                "mcp": {
-                  "required": [
-                    "confirmation"
-                  ]
+            "scopes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "handoff": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirmation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "implemented"
+                  }
                 }
+              },
+              "then": {
+                "required": [
+                  "kind",
+                  "name",
+                  "entrypoint",
+                  "scopes"
+                ]
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "kind"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "protocol"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "handoff"
+                ]
+              }
+            }
+          ]
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/variant"
+          }
+        },
+        "routes": {
+          "$ref": "#/$defs/routes"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "external"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "mcp": {
+                "required": [
+                  "confirmation"
+                ]
               }
             }
           }
+        }
+      ],
+      "not": {
+        "required": [
+          "uiOnly"
         ]
       }
-    }
-  },
-  "$defs": {
+    },
+    "uiOnlyCapability": {
+      "type": "object",
+      "description": "A capability with no MCP path: its routes stay UI-only for the stated reason. The parity inventory must not name it.",
+      "required": [
+        "id",
+        "uiOnly",
+        "routes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*$"
+        },
+        "uiOnly": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Why this capability stays out of MCP."
+        },
+        "routes": {
+          "$ref": "#/$defs/routes"
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "description": "Mutating routes this capability covers, by route name or as \"METHOD /uri\".",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
+    },
     "evidence": {
       "type": "object",
       "required": [
