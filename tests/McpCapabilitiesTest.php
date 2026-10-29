@@ -83,6 +83,20 @@ function mcpCapabilitiesNormalize(mixed $value): mixed
 
     return array_map(fn (mixed $item): mixed => mcpCapabilitiesNormalize($item), $value);
 }
+test('the vendored schema accepts a minimal uiOnly capability and refuses one without a reason or routes', function () {
+    $with = function (array $entry): mixed {
+        // Decoded as objects, so the declaration's empty {} maps stay objects.
+        $document = json_decode(file_get_contents(base_path(McpCapabilities::PATH)), flags: JSON_THROW_ON_ERROR);
+        $document->capabilities[] = (object) $entry;
+
+        return $document;
+    };
+
+    expect(mcpCapabilitiesSchemaErrors($with(['id' => 'webhooks.inbound', 'uiOnly' => 'a provider callback, not a user operation', 'routes' => ['POST /webhooks/inbound']])))->toBe([]);
+    $this->assertNotSame([], mcpCapabilitiesSchemaErrors($with(['id' => 'webhooks.inbound', 'uiOnly' => ' ', 'routes' => ['POST /webhooks/inbound']])));
+    $this->assertNotSame([], mcpCapabilitiesSchemaErrors($with(['id' => 'webhooks.inbound', 'uiOnly' => 'a provider callback', 'routes' => []])));
+    $this->assertNotSame([], mcpCapabilitiesSchemaErrors($with(['id' => 'webhooks.inbound', 'kind' => 'write', 'routes' => ['POST /webhooks/inbound']])));
+});
 /** @return array<string, mixed> */
 function mcpCapabilitiesSchemaErrors(mixed $data): array
 {

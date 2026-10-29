@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- The vendored `docs/schemas/mcp-capabilities.schema.json` is now tey/standards' copy, and its `$comment` names standards as the source. A minimal uiOnly capability (`id`, a non-blank `uiOnly` reason and `routes`), as rule 55 documents, now validates; a full capability may also carry `routes`. `tests/McpCapabilitiesTest.php` checks that a minimal uiOnly entry passes, and that a blank reason, empty routes or a missing reason fail.
+
 ### Changed
 
 - Global search is on (tey/kit global search, `workspace.search` in `config/kit.php`).
