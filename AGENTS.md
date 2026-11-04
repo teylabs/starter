@@ -13,6 +13,10 @@ Guidance for contributors and coding agents working in this repository.
 
 ## Gates
 
+Ship fast; CI is the gate. Before a push, run only what your change touches: `composer test` (TIA, impacted tests) or the one file you changed, plus `vendor/bin/pint --test` and `php artisan standards:check --changed`. Never hold a push for a full local run, a rerun or local browser specs. Push, and let PR CI run the full gate; fix reds there. Something stuck locally for more than about 15 minutes gets pushed as it is, with the blocker named in the PR.
+
+What CI runs (and what you can run by hand to reproduce a red):
+
 ```sh
 composer install --no-interaction
 vendor/bin/pint --test
