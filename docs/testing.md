@@ -48,7 +48,7 @@ Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` 
 
 Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) starts from zero (a local boot with `.env.example`'s local sign-in settings and `starter:first-owner`'s defaults), signs the owner in with Concierge's one-click button, sees their workspace listed in the shell nav and their name only in the user menu, then opens the workspace, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
 
-Run all of these before opening a pull request. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
+These are CI's gates: run them by hand only to reproduce a red. Before a push, run the tests your change touches (`composer test`, or one file) and let PR CI run the rest. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
 
 ## Focused checks
 
