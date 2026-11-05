@@ -5,9 +5,16 @@ const tones: Record<string, string> = {
     blue: 'bg-sky-100 text-sky-950 dark:bg-sky-950/50 dark:text-sky-50',
     green: 'bg-emerald-100 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-50',
 };
-const dots: Record<string, string> = { yellow: 'bg-amber-400', pink: 'bg-pink-400', blue: 'bg-sky-400', green: 'bg-emerald-400' };
+const dots: Record<string, string> = {
+    yellow: 'bg-amber-400',
+    pink: 'bg-pink-400',
+    blue: 'bg-sky-400',
+    green: 'bg-emerald-400',
+};
 
-export const tone = (colour: string): string => tones[colour] ?? 'bg-card text-card-foreground';
-export const dot = (colour: string): string => dots[colour] ?? 'bg-muted-foreground';
+export const tone = (colour: string): string =>
+    tones[colour] ?? 'bg-card text-card-foreground';
+export const dot = (colour: string): string =>
+    dots[colour] ?? 'bg-muted-foreground';
 // One key per attempt: a retry of the same save (a lost response) replays it instead of writing twice.
 export const intentKey = (): string => crypto.randomUUID();

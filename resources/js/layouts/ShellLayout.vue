@@ -11,7 +11,11 @@ const page = usePage<{ shell?: { kind?: 'app' | 'guest' | 'focus' } }>();
 </script>
 
 <template>
-    <FocusLayout v-if="page.props.shell?.kind === 'focus'"><slot /></FocusLayout>
-    <GuestLayout v-else-if="page.props.shell?.kind === 'guest'"><slot /></GuestLayout>
+    <FocusLayout v-if="page.props.shell?.kind === 'focus'">
+        <slot />
+    </FocusLayout>
+    <GuestLayout v-else-if="page.props.shell?.kind === 'guest'">
+        <slot />
+    </GuestLayout>
     <AppLayout v-else><slot /></AppLayout>
 </template>

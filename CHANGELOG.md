@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- **Prettier and ESLint** with the house config (4 spaces, single quotes, 80 columns, `htmlWhitespaceSensitivity: ignore`, the Tailwind class sorter; Vue + TypeScript rules, type-only imports, braces always, blank lines around control statements). Scripts `format`, `format:check`, `lint`, `lint:check`; CI runs both checks. Kit-owned files, shadcn-vue primitives and generated types are ignored. The starter's own files are formatted in this change.
+
 ### Fixed
 
 - The vendored `docs/schemas/mcp-capabilities.schema.json` is now tey/standards' copy, and its `$comment` names standards as the source. A minimal uiOnly capability (`id`, a non-blank `uiOnly` reason and `routes`), as rule 55 documents, now validates; a full capability may also carry `routes`. `tests/McpCapabilitiesTest.php` checks that a minimal uiOnly entry passes, and that a blank reason, empty routes or a missing reason fail.
