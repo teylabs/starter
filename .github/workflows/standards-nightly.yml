@@ -1,0 +1,66 @@
+# Runs the standards gate every night, without failing, and keeps its JSON report as the artifact `standards-report` for 14 days.
+# standards:check reads source only: no services, no database. Copy as .github/workflows/standards-nightly.yml.
+# Generic on purpose: it names no collector, so an app whose CI forbids internal references can carry it unchanged.
+# Kept under ~2 minutes: the composer cache is restored, and nothing but the gate runs. Every dependency is public, so no auth step.
+name: Standards nightly report
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # The app's own PHP: composer.json's config.platform.php, else a .php-version file, else 8.5 (the fleet's current PHP). Not the
+      # require.php lower bound: an app on 8.5 that still allows ^8.4 would be checked on the older one.
+      - name: PHP version
+        id: php
+        run: |
+          version=$(jq -r '.config.platform.php // empty' composer.json | cut -d. -f1,2)
+          if [ -z "$version" ] && [ -f .php-version ]; then
+            version=$(cut -d. -f1,2 .php-version)
+          fi
+          echo "version=${version:-8.5}" >> "$GITHUB_OUTPUT"
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ steps.php.outputs.version }}
+          coverage: none
+
+      - name: Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ steps.php.outputs.version }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-${{ steps.php.outputs.version }}-
+
+      - name: Environment for artisan
+        run: cp .env.example .env
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - run: php artisan key:generate --no-interaction
+
+      - name: standards:check --json (never fails the job)
+        run: php artisan standards:check --json > standards-report.json || true
+
+      - name: The report is JSON
+        run: |
+          php -r 'json_decode(file_get_contents("standards-report.json"), flags: JSON_THROW_ON_ERROR);'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: standards-report
+          path: standards-report.json
+          retention-days: 14
