@@ -1,0 +1,29 @@
+# Kit-owned (php artisan kit:list): bin/kit-parity.sh compares these byte for byte with kit:add.
+resources/js/components/Kit/**
+resources/js/pages/Auth/Invitation/**
+resources/js/pages/Auth/Login/**
+resources/js/pages/Auth/TwoFactor/**
+resources/js/pages/Auth/VerifyEmail/**
+resources/js/pages/Provision/**
+resources/js/pages/Welcome/**
+resources/js/pages/Workspace/Account/**
+resources/js/pages/Workspace/Dashboard/**
+resources/js/pages/Workspace/Error/**
+resources/js/pages/Workspace/Index/**
+resources/js/pages/Workspace/Layout.vue
+resources/js/pages/Workspace/Notes/**
+resources/js/pages/Workspace/Partials/**
+resources/js/pages/Workspace/Placeholder/**
+resources/js/pages/Workspace/Search/**
+resources/js/pages/Workspace/Sections/**
+resources/js/pages/Workspace/Settings/Connections/**
+resources/js/pages/Workspace/Settings/General/**
+resources/js/pages/Workspace/Settings/Layout.vue
+resources/js/pages/Workspace/Settings/People/**
+resources/js/pages/Workspace/Settings/Placeholder/**
+resources/js/types/kit-shell.d.ts
+resources/js/widgets/Notes.vue
+# shadcn-vue primitives, copied as they ship.
+resources/js/components/ui/**
+# Generated.
+resources/js/types.generated.d.ts

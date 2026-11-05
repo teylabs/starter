@@ -13,7 +13,10 @@ withDefaults(
     { title: '', description: '', wide: false, showHeading: false },
 );
 
-const page = usePage<{ shell?: Tey.Kit.Features.SessionUi.Data.GuestShellData; layout?: { documentTitle: string } }>();
+const page = usePage<{
+    shell?: Tey.Kit.Features.SessionUi.Data.GuestShellData;
+    layout?: { documentTitle: string };
+}>();
 const product = computed(() => page.props.shell?.product.name ?? '');
 </script>
 
