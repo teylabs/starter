@@ -27,12 +27,35 @@ plan=$(php artisan kit:add $features --json | php -r 'echo json_decode(stream_ge
 # shellcheck disable=SC2086
 php artisan kit:add $features --apply --expected-plan="$plan"
 
+# A file the template marks `kit: tweaked <reason>` in its first lines (`// kit: tweaked …` in a script, `<!-- kit: tweaked … -->` in a template) is a
+# deliberate app tweak waiting to graduate into the kit: listed, never a failure. Any other difference, and any file only on one side, fails.
+tweaked() { head -n 5 "$1" 2>/dev/null | grep -q 'kit: tweaked'; }
+reason() { head -n 5 "$1" | grep -o 'kit: tweaked.*' | head -n 1 | sed -e 's/^kit: tweaked[[:space:]]*//' -e 's/[[:space:]]*-->[[:space:]]*$//'; }
 status=0
+tweaks=0
 for owned in $(php artisan kit:list --json | php -r 'foreach (json_decode(stream_get_contents(STDIN), true) as $f) { echo implode("\n", $f["owns"]), "\n"; }'); do
-    if ! diff -r "$app/$owned" "$template/$owned"; then
-        echo "parity: $owned differs from kit:add" >&2
+    differences=$(diff -rq "$app/$owned" "$template/$owned" || true)
+    [ -z "$differences" ] && continue
+    while IFS= read -r line; do
+        case "$line" in
+            "Files "*" differ")
+                file=${line#* and }
+                file=${file% differ}
+                if tweaked "$file"; then
+                    echo "parity: tweaked, a graduation candidate: ${file#"$template"/} ($(reason "$file"))"
+                    tweaks=$((tweaks + 1))
+                    continue
+                fi
+                echo "parity: ${file#"$template"/} differs from kit:add (mark a deliberate tweak with \`// kit: tweaked <reason>\`)" >&2
+                ;;
+            *)
+                echo "parity: $line" >&2
+                ;;
+        esac
         status=1
-    fi
+    done <<EOF
+$differences
+EOF
 done
-[ "$status" -eq 0 ] && echo "parity: the template's feature files equal kit:add $features"
+[ "$status" -eq 0 ] && echo "parity: the template's feature files equal kit:add $features ($tweaks marked tweaks listed above)"
 exit "$status"
