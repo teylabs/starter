@@ -44,7 +44,7 @@ vendor/bin/pest
 composer fixture:check
 ```
 
-Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's.
+Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files on only one side, still fail.
 
 Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) starts from zero (a local boot with `.env.example`'s local sign-in settings and `starter:first-owner`'s defaults), signs the owner in with Concierge's one-click button, sees their workspace listed in the shell nav and their name only in the user menu, then opens the workspace, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
 
