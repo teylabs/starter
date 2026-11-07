@@ -9,12 +9,30 @@
  */
 import { computed } from 'vue';
 
-const props = defineProps<{ footer: Tey.Kit.Features.SessionUi.Data.ShellData['footer'] }>();
+const props = defineProps<{
+    footer: Tey.Kit.Features.SessionUi.Data.ShellData['footer'];
+}>();
 
 const items = computed(() => [
-    { key: 'identity', label: props.footer.identity, url: null as string | null },
-    ...(props.footer.credit ? [{ key: 'credit', label: props.footer.credit, url: null as string | null }] : []),
-    ...props.footer.links.map((link) => ({ key: link.url, label: link.label, url: link.url as string | null })),
+    {
+        key: 'identity',
+        label: props.footer.identity,
+        url: null as string | null,
+    },
+    ...(props.footer.credit
+        ? [
+              {
+                  key: 'credit',
+                  label: props.footer.credit,
+                  url: null as string | null,
+              },
+          ]
+        : []),
+    ...props.footer.links.map((link) => ({
+        key: link.url,
+        label: link.label,
+        url: link.url as string | null,
+    })),
 ]);
 </script>
 
@@ -25,7 +43,15 @@ const items = computed(() => [
             data-shell-footer
         >
             <template v-for="(item, index) in items" :key="item.key">
-                <template v-if="index > 0">{{ ' ' }}<span aria-hidden="true" class="mx-1" data-shell-footer-separator>·</span>{{ ' ' }}</template>
+                <template v-if="index > 0"
+                    >{{ ' '
+                    }}<span
+                        aria-hidden="true"
+                        class="mx-1"
+                        data-shell-footer-separator
+                        >·</span
+                    >{{ ' ' }}</template
+                >
                 <a
                     v-if="item.url"
                     :href="item.url"
