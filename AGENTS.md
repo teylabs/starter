@@ -3,12 +3,12 @@
 Guidance for contributors and coding agents working in this repository.
 
 - Preserve the tenant, ownership, grant and stale-write regression tests.
-- Focused checks explicitly opt into synthetic SQLite memory. Public requests must never seed fixtures, bypass auth, or use default credentials or keys.
+- Tests and focused checks run on PostgreSQL, in parallel, each worker on its own disposable database (Jasper's ruling, 2026-11-07). SQLite only for tiny pure unit tests that touch no database features. Public requests must never seed fixtures, bypass auth, or use default credentials or keys.
 - No external services, production data or provider side effects in tests.
 - Fail closed, and restore tenant, permission and settings context in `finally` blocks.
 - Keep capabilities, entitlements, membership and admission distinct.
 - State missing Inertia, protocol, lifecycle or platform coverage explicitly rather than implying it.
-- Run local tests with `composer test` (`pest --tia`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; a non-empty CI, or a set PARATEST or PEST_TIA, bypasses the guard (an empty `CI=` does not). TIA diffs against `main`, or `TIA_DEFAULT_BRANCH` when set.
+- Run local tests with `composer test` (`pest --tia --parallel`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; a non-empty CI, or a set PARATEST or PEST_TIA, bypasses the guard (an empty `CI=` does not). TIA diffs against `main`, or `TIA_DEFAULT_BRANCH` when set.
 - Never edit a file a kit feature owns (`database/migrations/kit/**`, the kit's pages): CI checks them against `kit:add`.
 
 ## Gates
@@ -20,16 +20,14 @@ What CI runs (and what you can run by hand to reproduce a red):
 ```sh
 composer install --no-interaction
 vendor/bin/pint --test
-vendor/bin/pest
+vendor/bin/pest --parallel
 composer fixture:check
 npm ci && npm run typecheck && npm run build && npm test
 composer test:browser
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. `TEST_DB_CONNECTION=pgsql` with `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` set for the run puts `pest` and `composer fixture:check` on PostgreSQL, as CI does; the database is wiped. See `docs/testing.md` for a local Herd example.
-
-`vendor/bin/pest --parallel` also works: on PostgreSQL each worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
+The PHP suites run on PostgreSQL. The connection comes from `.env.testing` (Herd's defaults, database `starter_testing`) unless `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` or `DB_PASSWORD` is set for the run, as CI does; `.env` is never read, and the database is wiped. `vendor/bin/pest --parallel` gives each worker its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `TEST_DB_CONNECTION=sqlite` is an explicit opt-in kept for `tests/FeatureSeamsTest.php`'s SQLite-dump comparison. See `docs/testing.md`. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
 
 ## Conventions
 

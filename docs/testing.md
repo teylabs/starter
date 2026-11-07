@@ -16,12 +16,13 @@ Standards, through the reusable `teylabs/standards` workflow, strict: every opti
 php artisan standards:check
 ```
 
-PHP on 8.4 (SQLite memory) for a pull request, 8.4 and 8.5 on `main`, and 8.4 against a PostgreSQL 17 service (`TEST_DB_CONNECTION=pgsql` with the job's `DB_*`):
+PHP on 8.4 for a pull request, 8.4 and 8.5 on `main`, against a PostgreSQL 17 service (the job's `DB_*`), in parallel with a database per worker. The released-schema comparison in `FeatureSeamsTest.php` reads a SQLite dump, so that file runs once more on SQLite memory:
 
 ```sh
 composer install --no-interaction
-vendor/bin/pest
+vendor/bin/pest --parallel
 composer fixture:check
+TEST_DB_CONNECTION=sqlite vendor/bin/pest tests/FeatureSeamsTest.php
 ```
 
 Node 22:
@@ -33,16 +34,17 @@ npm run build
 npm test
 ```
 
-### PostgreSQL locally
+### The test database
 
-`TEST_DB_CONNECTION` selects the test database for both `pest` and `composer fixture:check`: `sqlite` (the default, in memory) or `pgsql`. With `pgsql`, the connection comes from `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD`. `DB_DATABASE` must be set for the run, never taken from `.env`, because each app boot wipes it. Each run prints the database in use (`Test database: ...` on stderr, and `database` in the focused checks' JSON). `DB_CONNECTION` alone does not switch the tests. With Herd's PostgreSQL:
+The tests run on PostgreSQL, as production does (Jasper's ruling, 2026-11-07): `phpunit.xml` and the committed `.env.testing` set `DB_CONNECTION=pgsql`, and `tests/environment.php` takes `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` from the process environment, falling back to `.env.testing` (Herd's PostgreSQL: `127.0.0.1:5432`, user `root`, no password, database `starter_testing`). `.env` is never read, because each app boot wipes the database. The database is created on first use. A parallel run (`--parallel`) gives each worker its own, `{DB_DATABASE}_w{token}`. Each run prints the database in use (`Test database: ...` on stderr, and `database` in the focused checks' JSON). DBngin or Postgres.app may need `DB_USERNAME` and `DB_PASSWORD` set for the run. Two checkouts running at once should each set their own `DB_DATABASE`:
 
 ```sh
-createdb starter_test
-export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
-vendor/bin/pest
+composer test                                       # pest --tia --parallel
+DB_DATABASE=feature_x_testing vendor/bin/pest --no-tia --parallel
 composer fixture:check
 ```
+
+`TEST_DB_CONNECTION=sqlite` puts a run on SQLite memory instead. It is kept for the released-schema comparison (a SQLite dump) and pure unit tests that touch no database features; nothing else should need it.
 
 Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of the template's features (`config/kit.php`) on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files on only one side, still fail.
 
@@ -77,7 +79,7 @@ vendor/bin/pest tests/TransportTest.php
 
 ## Rules for tests
 
-- Focused checks opt into synthetic SQLite memory (or PostgreSQL through `TEST_DB_CONNECTION=pgsql`) by loading `tests/application.php`, which sets a synthetic key and wipes a PostgreSQL database as each app boots. Public requests never load it.
+- Focused checks run on PostgreSQL (a disposable database per parallel worker) by loading `tests/application.php`, which sets a synthetic key and wipes the database as each app boots. Public requests never load it.
 - Public requests must not seed fixtures, bypass auth or use default credentials or keys.
 - No external services, production data or provider side effects.
 - Keep the tenant, ownership, grant and stale-write regression tests.
@@ -87,8 +89,8 @@ vendor/bin/pest tests/TransportTest.php
 
 ## Not covered
 
-These checks use the HTTP kernel with synthetic data, plus one browser smoke test (desktop Chromium, sign-in and the app shell). No responsive, keyboard, accessibility, visual-diff or cookie-policy acceptance; HTTPS is checked only through a local TLS proxy, not a real certificate or platform. On PostgreSQL the released-schema comparison is skipped (the fixture is a SQLite dump); there is no concurrency check. No jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published template upgrade. Say so rather than implying coverage.
+These checks use the HTTP kernel with synthetic data, plus one browser smoke test (desktop Chromium, sign-in and the app shell). No responsive, keyboard, accessibility, visual-diff or cookie-policy acceptance; HTTPS is checked only through a local TLS proxy, not a real certificate or platform. The released-schema comparison runs only in the SQLite step (the fixture is a SQLite dump); there is no PostgreSQL concurrency check. No jobs, files, providers, production install or rollback. Lifecycle checks run in disposable checkouts, not a `laravel new` install or a published template upgrade. Say so rather than implying coverage.
 
 Local runs need `--tia` or `--no-tia`; a non-empty `CI`, `PARATEST` or `PEST_TIA` bypasses that guard (an empty `CI=` does not). TIA diffs against `main`, or the branch in `TIA_DEFAULT_BRANCH`. Files that runtime coverage cannot link re-run tests by the watch map in `tests/Pest.php`: config, routes, front-end assets and `database/**` (factories and seeders included) re-run the suite; `app/**` and `.github/workflows/**` re-run the source-reading arch tests; `tests/**` re-runs the application-free checks.
 
-`vendor/bin/pest --parallel` also works: on PostgreSQL each worker gets its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
+`vendor/bin/pest --parallel` gives each worker its own disposable database, `{DB_DATABASE}_w{token}`, created on first use, and its own storage root. `vendor/bin/pest`, `vendor/bin/phpunit` and `vendor/bin/pest --tia` read the root `phpunit.xml`.
