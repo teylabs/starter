@@ -25,6 +25,8 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         expect(Schema::hasTable($table))->toBeTrue($table);
         expect(DB::table($table)->count())->toBe(0, 'Migrate must not seed '.$table);
     }
+    // Notes is opt-in (kit:add notes): a new starter has no kit_notes table.
+    expect(Schema::hasTable('kit_notes'))->toBe(notesAdopted());
     $migrations = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
     expect($migrations)->toBe([
         '0001_01_01_000000_create_users_table',
@@ -66,7 +68,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_02_000602_add_oauth_client_to_kit_mcp_connections',
         '0001_01_02_000603_create_kit_mcp_registrations_table',
         '0001_01_02_000604_create_kit_mcp_runs_table',
-        '0001_01_02_000701_create_kit_notes_table',
+        ...(notesAdopted() ? ['0001_01_02_000701_create_kit_notes_table'] : []),
         '2016_06_01_000001_create_oauth_auth_codes_table',
         '2016_06_01_000002_create_oauth_access_tokens_table',
         '2016_06_01_000003_create_oauth_refresh_tokens_table',

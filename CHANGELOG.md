@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **Notes is opt-in.** A new app no longer ships the kit's `notes` feature: no `kit_notes` table, notes pages, dashboard card, navigation link or MCP tools. Add it with `php artisan kit:add notes` (docs/lifecycle.md). Existing apps keep theirs. The notes tests stay and switch on with the feature.
+
 ## v0.4.0
 
 ### Added

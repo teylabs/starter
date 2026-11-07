@@ -99,7 +99,7 @@ test('every page route has a breadcrumb', function () {
     }
 
     // Every kit page, in both URL forms, and the personal one.
-    foreach (['@{workspace}', '/', '@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}', '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
+    foreach (['@{workspace}', '/', ...(notesAdopted() ? ['@{workspace}/notes', 'notes', '@{workspace}/notes/{note}', 'notes/{note}'] : []), '@{workspace}/records', 'records', '@{workspace}/records/{record}', 'records/{record}', '@{workspace}/settings', 'settings', '@{workspace}/settings/general', 'settings/general', '@{workspace}/settings/connections', 'settings/connections', 'me', 'me/workspaces'] as $uri) {
         expect($checked)->toContain($uri);
     }
 });
