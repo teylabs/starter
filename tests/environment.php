@@ -37,6 +37,11 @@ if ($selected === 'pgsql') {
         // A worker boots this file more than once: add the suffix only once.
         $database = str_ends_with($database, $suffix) ? $database : $database.$suffix;
     }
+    // The name is quoted into `create database`: refuse anything but a plain identifier rather than escape it.
+    if (preg_match('/^[A-Za-z_][A-Za-z0-9_]{0,62}$/', $database) !== 1) {
+        fwrite(STDERR, "DB_DATABASE must be a plain PostgreSQL identifier (letters, digits and underscores, at most 63 characters).\n");
+        exit(2);
+    }
     // The run's database is created on first use, so a fresh name just works.
     if (! defined('STARTER_TEST_DATABASE_READY_'.md5($database))) {
         define('STARTER_TEST_DATABASE_READY_'.md5($database), true);
