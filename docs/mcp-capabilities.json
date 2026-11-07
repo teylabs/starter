@@ -32,6 +32,28 @@
             }
         },
         {
+            "path": "resources/js/pages/Workspace/Settings/Email/Page.vue",
+            "capabilities": [
+                "workspace.mail_identity.read"
+            ],
+            "variants": {
+                "workspace.mail_identity.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/Settings/Http/MailIdentityController.php",
+            "capabilities": [
+                "workspace.mail_identity.read"
+            ],
+            "variants": {
+                "workspace.mail_identity.read": [
+                    "default"
+                ]
+            }
+        },
+        {
             "path": "resources/js/pages/Workspace/Dashboard/Page.vue",
             "capabilities": [
                 "workspace.dashboard.read"
@@ -437,6 +459,116 @@
                                 "retry",
                                 "stale",
                                 "error"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.mail_identity.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Settings/Email/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Settings/Http/MailIdentityController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Settings/Mail/WorkspaceMailIdentity.php",
+                "symbol": "read"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_mail_identity_read",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Settings/Integrations/Mcp/ReadMailIdentity.php",
+                    "symbol": "ReadMailIdentity"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "settings.read"
+                ],
+                "description": "Read the approved workspace's email sending settings: sender name, from address, custom domain status and DNS records, and reply-to.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/MailIdentityTest.php",
+                    "name": "test_session_mail_identity",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the sender name, from mode and address, the custom domain's status and DNS records, and the reply-to"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns the sender name, from mode and address, the custom domain's status and DNS records, and the reply-to"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/MailIdentityTest.php",
+                            "name": "test_session_mail_identity",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
                             ]
                         }
                     ]

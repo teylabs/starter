@@ -12,6 +12,7 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
 use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\WriteNote;
+use Tey\Kit\Features\Settings\Integrations\Mcp\ReadMailIdentity;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
 use Tey\Kit\Search\SearchWorkspace;
@@ -33,6 +34,10 @@ final class McpCapabilities
 
     private const SETTINGS_CONTROLLER = self::KIT.'Settings/Http/SettingsController.php';
 
+    private const MAIL_PAGE = 'resources/js/pages/Workspace/Settings/Email/Page.vue';
+
+    private const MAIL_CONTROLLER = self::KIT.'Settings/Http/MailIdentityController.php';
+
     private const DASHBOARD_PAGE = 'resources/js/pages/Workspace/Dashboard/Page.vue';
 
     private const DASHBOARD_CONTROLLER = self::KIT.'SessionUi/Http/DashboardController.php';
@@ -51,6 +56,8 @@ final class McpCapabilities
     public const INVENTORY = [
         self::SETTINGS_PAGE => ['workspace.settings.read', 'workspace.settings.update'],
         self::SETTINGS_CONTROLLER => ['workspace.settings.read', 'workspace.settings.update'],
+        self::MAIL_PAGE => ['workspace.mail_identity.read'],
+        self::MAIL_CONTROLLER => ['workspace.mail_identity.read'],
         self::DASHBOARD_PAGE => ['workspace.dashboard.read'],
         self::DASHBOARD_CONTROLLER => ['workspace.dashboard.read'],
         self::SEARCH_PAGE => ['workspace.search.read'],
@@ -63,6 +70,7 @@ final class McpCapabilities
     private const TESTS = [
         'session_settings' => ['tests/TransportTest.php', 'test_session_settings', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass', 'error', 'recovery']],
         'delegated_settings' => ['tests/McpTransportTest.php', 'test_delegated_settings', ['success', 'authorization', 'validation', 'retry', 'stale', 'audit', 'privacy', 'no_bypass', 'error', 'recovery']],
+        'session_mail_identity' => ['tests/MailIdentityTest.php', 'test_session_mail_identity', ['success', 'authorization', 'no_bypass']],
         'session_dashboard' => ['tests/DashboardTest.php', 'test_session_dashboard', ['success', 'authorization', 'privacy', 'no_bypass']],
         'session_search' => ['tests/SearchTest.php', 'test_session_search', ['success', 'authorization', 'privacy', 'no_bypass', 'error']],
         'session_notes' => ['tests/NotesTest.php', 'test_session_notes', ['success', 'authorization', 'retry', 'stale', 'audit', 'no_bypass']],
@@ -73,6 +81,7 @@ final class McpCapabilities
     private const CAPABILITIES = [
         'workspace.settings.read' => ['read', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'show']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'read'], ReadSettings::class, 'settings.read', ['session_settings', 'delegated_settings', 'inertia_pages'], ['returns the display name, timezone and version']],
         'workspace.settings.update' => ['write', [[self::SETTINGS_PAGE, 'props'], [self::SETTINGS_CONTROLLER, 'update']], [self::KIT.'Settings/Operations/WorkspaceProfile.php', 'update'], UpdateSettings::class, 'settings.write', ['session_settings', 'delegated_settings', 'inertia_pages'], ['writes the settings at the expected version', 'audits workspace.settings.updated once per intent key']],
+        'workspace.mail_identity.read' => ['read', [[self::MAIL_PAGE, 'props'], [self::MAIL_CONTROLLER, 'show']], [self::KIT.'Settings/Mail/WorkspaceMailIdentity.php', 'read'], ReadMailIdentity::class, 'settings.read', ['session_mail_identity', 'delegated_settings'], ['returns the sender name, from mode and address, the custom domain\'s status and DNS records, and the reply-to']],
         'workspace.dashboard.read' => ['read', [[self::DASHBOARD_PAGE, 'props'], [self::DASHBOARD_CONTROLLER, 'show']], [self::KIT.'SessionUi/Dashboard/Widgets.php', 'resolve'], ReadDashboard::class, 'dashboard.read', ['session_dashboard', 'delegated_settings'], ['returns the workspace and the widgets the person may see, each gated by its own ability']],
         'workspace.search.read' => ['read', [[self::SEARCH_PAGE, 'props'], [self::SEARCH_CONTROLLER, 'index']], [self::KIT.'SessionUi/Search/Searches.php', 'run'], SearchWorkspace::class, 'search.read', ['session_search', 'delegated_settings'], ['returns each registered provider\'s results the person may see in the workspace, grouped, with partial when a provider failed']],
         'workspace.notes.list' => ['read', [[self::NOTES_PAGE, 'props'], [self::NOTES_CONTROLLER, 'index']], [self::NOTES, 'listing'], ListNotes::class, 'notes.read', ['session_notes', 'delegated_settings'], ['returns the newest notes, pinned first']],

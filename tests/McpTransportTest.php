@@ -70,6 +70,8 @@ test('delegated settings', function () {
     // So does global search: workspace_search needs search.read.
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_search', 'arguments' => ['q' => 'alpha']])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace_id', 1);
+    // The Email sending section's read rides on settings.read too.
+    mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_mail_identity_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', false);
     $data = ['display_name' => 'MCP Alpha', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'mcp-update'];
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.structuredContent.version', 2);
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.structuredContent.version', 2);

@@ -130,7 +130,8 @@ test('the password changes with the current one and signs other sessions out', f
     // Other devices are signed out; this one, and other people's sessions, stay.
     expect(DB::table('sessions')->whereIn('id', ['other-device-1', 'other-device-2'])->pluck('id')->all())->toBe([]);
     expect(DB::table('sessions')->where('user_id', 2)->count())->toBe(1);
-    expect(accountEvents(1))->toContain('password_changed');
+    // The kit logs a first password set by the account as password_set.
+    expect(array_intersect(['password_changed', 'password_set'], accountEvents(1)))->not->toBeEmpty();
     expect(accountEvents(1))->toContain('sessions_ended');
 });
 test('two factor is turned on with a code and a password and used to sign in', function () {

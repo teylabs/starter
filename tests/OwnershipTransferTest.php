@@ -48,9 +48,14 @@ function ownershipTransferRowActions(int $user): array
 
     return array_column($row['actions'] ?? [], 'key');
 }
+/** kit 0.8+: a transfer is confirmed by typing the workspace's name, as well as the password. */
+function ownershipTransferWorkspaceName(): string
+{
+    return (string) DB::table('workspaces')->where('id', 1)->value('name');
+}
 function ownershipTransferTransfer(int $to, ?string $password = null): TestResponse
 {
-    return test()->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, $to)->id, 'password' => $password ?? test()->password]);
+    return test()->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, $to)->id, 'password' => $password ?? test()->password, 'confirmation' => ownershipTransferWorkspaceName()]);
 }
 test('the owner passes ownership and becomes an admin', function () {
     require dirname(__DIR__).'/database/fixture.php';
@@ -63,7 +68,7 @@ test('the owner passes ownership and becomes an admin', function () {
     expect(ownershipTransferRowActions(3))->toContain('transfer-ownership');
     $make = collect($this->getJson('/@alpha/settings/people')->json('table.rows'))->firstWhere('id', (string) ownershipTransferMembership(1, 3)->id)['actions'];
     $make = collect($make)->firstWhere('key', 'transfer-ownership');
-    expect([$make['label'], $make['url']])->toBe(['Make owner', '/settings/ownership']);
+    expect([$make['label'], $make['url']])->toBe(['Make owner', '/settings/people/members/3/transfer']);
     expect($make['confirm'])->not->toBeNull();
     $this->get('/@alpha', ownershipTransferInertia())->assertJsonPath('props.shell.workspace.leave', null);
     ownershipTransferTransfer(3)->assertOk()->assertJsonPath('owner_membership_id', ownershipTransferMembership(1, 3)->id);
@@ -89,7 +94,7 @@ test('the password must be confirmed', function () {
     require dirname(__DIR__).'/database/fixture.php';
     ownershipTransferSignIn(1);
     ownershipTransferTransfer(3, 'not-the-password')->assertUnprocessable()->assertJsonValidationErrors('password');
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id])->assertUnprocessable()->assertJsonValidationErrors('password');
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'confirmation' => ownershipTransferWorkspaceName()])->assertUnprocessable()->assertJsonValidationErrors('password');
     expect(ownershipTransferRoles(1))->toBe(['owner']);
     expect(ownershipTransferRoles(3))->toBe(['viewer']);
 });
@@ -102,8 +107,8 @@ test('only the owner may transfer', function () {
     // An admin, who may manage viewers, still cannot take ownership; nor can a viewer.
     ownershipTransferSignIn(3);
     expect(ownershipTransferRowActions(1))->not->toContain('transfer-ownership');
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'password' => $this->password])->assertForbidden();
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 1)->id, 'password' => $this->password])->assertForbidden();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertForbidden();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 1)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertForbidden();
     expect(ownershipTransferRoles(1))->toBe(['owner']);
     expect(ownershipTransferRoles(3))->toBe(['admin']);
     expect(Ownership::query()->where('workspace_id', 1)->count())->toBe(1);
@@ -113,11 +118,11 @@ test('the target must be an existing active member of this workspace', function 
     ownershipTransferSignIn(1);
 
     // Yourself, a membership of another workspace, one that does not exist, and a member who has been removed.
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 1)->id, 'password' => $this->password])->assertForbidden();
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(2, 2)->id, 'password' => $this->password])->assertNotFound();
-    $this->putJson('/@alpha/settings/ownership', ['membership' => 99999, 'password' => $this->password])->assertNotFound();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 1)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertForbidden();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(2, 2)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertNotFound();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => 99999, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertNotFound();
     $this->deleteJson('/@alpha/settings/people/members/'.ownershipTransferMembership(1, 3)->id)->assertOk();
-    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'password' => $this->password])->assertForbidden();
+    $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertForbidden();
     expect(ownershipTransferRoles(1))->toBe(['owner']);
     expect(DB::table('concierge_ownerships')->where('workspace_id', 1)->count())->toBe(1);
 });

@@ -60,3 +60,13 @@ function kitOwnedFiles(): array
 
     return $owned;
 }
+
+// Browser screenshots wait for the web fonts to arrive (or fail). Shared here so every browser file has it under --parallel.
+if (! function_exists('settled')) {
+    function settled(mixed $page): mixed
+    {
+        $page->script('() => document.fonts.ready.then(() => true)');
+
+        return $page;
+    }
+}

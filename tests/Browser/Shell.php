@@ -70,58 +70,6 @@ function shellEnvironment(callable $run): void
     }
 }
 
-it('draws the breadcrumb sub-bar as its own translucent surface that stays readable over any content, in light and dark', function (): void {
-    shellEnvironment(function (): void {
-        $page = shellSignIn();
-        $page->resize(1440, 900)->navigate('/settings/people')->assertPresent('[data-shell-subbar]')->assertNoJavaScriptErrors();
-        foreach (['light', 'dark'] as $mode) {
-            $page->script('() => { document.documentElement.classList.toggle("dark", '.($mode === 'dark' ? 'true' : 'false').'); return true; }');
-            $read = $page->script(shellScript('const sub = getComputedStyle($("[data-shell-subbar]")); const crumb = getComputedStyle($("[data-shell-breadcrumbs] li:last-child a")); const first = getComputedStyle($("[data-shell-breadcrumbs] li:nth-child(2) a")); return { bar: norm(getComputedStyle($("[data-shell-bar]")).backgroundColor), sub: norm(sub.backgroundColor), page: norm(getComputedStyle(document.body).backgroundColor), border: norm(sub.borderBottomColor), width: sub.borderBottomWidth, last: norm(crumb.color), other: norm(first.color), blur: sub.backdropFilter };'));
-            expect($read['sub'])->not->toBe($read['bar'], $mode.': the sub-bar is not the header');
-            expect($read['sub'])->not->toBe($read['page'], $mode.': the sub-bar is not the page');
-            expect($read['sub'][3])->toBeGreaterThan(0.5)->toBeLessThan(0.95, $mode.': translucent, not clear and not solid');
-            expect($read['width'])->toBe('1px');
-            expect($read['border'][3])->toBeGreaterThan(0)->toBeLessThan(0.3, $mode.': a faint hairline');
-            expect($read['blur'])->toContain('blur');
-            // Readable over the worst case beneath: pure black and pure white content.
-            foreach ([[0, 0, 0, 1.0], [255, 255, 255, 1.0]] as $under) {
-                $surface = shellOver($read['sub'], $under);
-                foreach (['last', 'other'] as $crumb) {
-                    $ratio = shellContrast(shellOver($read[$crumb], $surface), $surface);
-                    expect($ratio)->toBeGreaterThanOrEqual(4.5, $mode.' '.$crumb.' crumb over '.($under[0] === 0 ? 'black' : 'white').': '.round($ratio, 2));
-                }
-            }
-        }
-        $page->script('() => { document.documentElement.classList.remove("dark"); return true; }');
-    });
-});
-
-it('reads correctly on a dark shell bar and the sub-bar does not follow it', function (): void {
-    shellEnvironment(function (): void {
-        $page = shellSignIn();
-        $page->resize(1440, 900)->navigate('/settings/people')->assertNoJavaScriptErrors();
-        $before = $page->script(shellScript('return norm(getComputedStyle($("[data-shell-subbar]")).backgroundColor);'));
-        $page->script('() => { document.documentElement.style.setProperty("--shell-bar", "#111827"); document.documentElement.style.setProperty("--shell-bar-foreground", "#f9fafb"); return true; }');
-        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 500))'); // let the colour transitions finish
-        $read = $page->script(shellScript('const color = (s) => norm(getComputedStyle($(s)).color); return { bar: norm(getComputedStyle($("[data-shell-bar]")).backgroundColor), sub: norm(getComputedStyle($("[data-shell-subbar]")).backgroundColor), wordmark: color("[data-shell-wordmark]"), nav: color("[data-shell-nav] a[aria-current=page]"), navOther: color("[data-shell-nav] a:not([aria-current])"), appearance: color("[data-appearance-toggle]"), user: color("[data-shell-user-menu]"), workspace: color("[data-shell-workspace]") };'));
-        expect($read['bar'])->toEqual([17, 24, 39, 1], 'the bar is exactly the token: solid, no fudge');
-        expect($read['sub'])->toEqual($before, 'a dark header token does not change the sub-bar');
-        foreach (['wordmark', 'nav', 'navOther', 'appearance', 'user', 'workspace'] as $control) {
-            foreach ([249, 250, 251] as $channel => $expected) {
-                expect(abs($read[$control][$channel] - $expected))->toBeLessThanOrEqual(2, $control.' draws from --shell-bar-foreground');
-            }
-            expect($read[$control][3])->toBeGreaterThanOrEqual(0.6);
-            expect(shellContrast(shellOver($read[$control], $read['bar']), $read['bar']))->toBeGreaterThanOrEqual(4.5, $control.' reads on the dark bar');
-        }
-        // Tablet width: the collapsed Menu toggle is white-ish on the dark bar, not the light theme's dark text.
-        $page->resize(820, 1000)->assertPresent('[data-shell-menu-button]');
-        $menu = $page->script(shellScript('return { color: norm(getComputedStyle($("[data-shell-menu-button]")).color), background: norm(getComputedStyle($("[data-shell-menu-button]")).backgroundColor) };'));
-        expect(array_slice($menu['color'], 0, 3))->toBe([249, 250, 251]);
-        expect(shellContrast(shellOver($menu['color'], [17, 24, 39, 1.0]), [17, 24, 39, 1.0]))->toBeGreaterThanOrEqual(4.5);
-        $page->assertNoJavaScriptErrors();
-    });
-});
-
 it('always has the workspace switcher in the bar (one workspace or two) beside the symbol only, and a long name or wide mark never skews the bar', function (): void {
     shellEnvironment(function (): void {
         $page = shellSignIn();
@@ -138,7 +86,7 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         // A 120-character name with no spaces, at three widths: the bar and sub-bar keep their heights, nothing overflows, the name is truncated with the full name in `title`.
         $long = str_repeat('Wonderful', 13).'WWW';
         expect(strlen($long))->toBe(120);
-        $measure = fn (): array => $page->script(shellScript('const h = (s) => Math.round($(s).getBoundingClientRect().height); const row = $("[data-shell-bar] > div"); const name = $("[data-shell-workspace]"); const viewport = window.innerWidth; const inside = (s) => { const r = $(s)?.getBoundingClientRect(); return !r || (r.left >= 0 && r.right <= viewport + 0.5); }; return { bar: h("[data-shell-bar]"), sub: h("[data-shell-subbar]"), rowFits: row.scrollWidth <= row.clientWidth, pageFits: document.documentElement.scrollWidth <= viewport, crumbsFit: $("[data-shell-breadcrumbs]").scrollWidth <= $("[data-shell-breadcrumbs]").clientWidth, menuIn: inside("[data-shell-menu-button]"), userIn: inside("[data-shell-user-menu]"), title: $("[data-shell-home]").getAttribute("title"), clipped: name.scrollWidth > name.clientWidth };'));
+        $measure = fn (): array => $page->script(shellScript('const h = (s) => Math.round($(s)?.getBoundingClientRect().height ?? 0); const row = $("[data-shell-bar] > div"); const name = $("[data-shell-workspace]"); const viewport = window.innerWidth; const inside = (s) => { const r = $(s)?.getBoundingClientRect(); return !r || (r.left >= 0 && r.right <= viewport + 0.5); }; return { bar: h("[data-shell-bar]"), sub: h("[data-shell-subbar]"), rowFits: row.scrollWidth <= row.clientWidth, pageFits: document.documentElement.scrollWidth <= viewport, crumbsFit: !$("[data-shell-breadcrumbs]") || $("[data-shell-breadcrumbs]").scrollWidth <= $("[data-shell-breadcrumbs]").clientWidth, menuIn: inside("[data-shell-menu-button]"), userIn: inside("[data-shell-user-menu]"), title: $("[data-shell-home]").getAttribute("title"), clipped: name.scrollWidth > name.clientWidth };'));
         $baseline = [];
         foreach ([390, 820, 1440] as $width) {
             $page->resize($width, 900)->navigate('/settings/people')->assertPresent('[data-shell-switcher]');

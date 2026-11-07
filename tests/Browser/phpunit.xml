@@ -14,6 +14,11 @@
             <file>People.php</file>
             <file>Shell.php</file>
             <file>Modals.php</file>
+            <file>Focus.php</file>
+            <file>FirstRun.php</file>
+            <file>Alert.php</file>
+            <file>Placeholder.php</file>
+            <file>Notes.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

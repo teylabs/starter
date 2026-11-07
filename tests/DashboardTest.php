@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Pennant\Feature;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\UserState;
 
@@ -32,7 +33,7 @@ test('session dashboard', function () {
     $owner = $this->get('/@alpha', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Dashboard/Page');
     expect(array_column($owner->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.activity', 'kit.people', 'notes.recent']);
     $owner->assertJsonPath('props.widgets.0.person.name', 'Alpha')->assertJsonPath('props.widgets.0.person.role', 'Owner')
-        ->assertJsonPath('props.widgets.1.items.0.event', 'Workspace settings updated')->assertJsonCount(1, 'props.widgets.1.items')
+        ->assertJsonPath('props.widgets.1.items.0.headline.html', '<strong>Alpha</strong> · Workspace settings updated')->assertJsonCount(1, 'props.widgets.1.items')
         ->assertJsonPath('props.widgets.2.list', 'dashboard_people')->assertJsonMissingPath('props.dashboard_people');
     expect($owner->getContent())->not->toContain('Private detail')->not->toContain('beta.only');
 
@@ -50,5 +51,7 @@ test('session dashboard', function () {
 
     // With the dashboard capability off, the dashboard is absent and no widget runs.
     config(['kit.capabilities' => ['workspace.dashboard' => false, 'workspace.settings' => true]]);
-    $this->get('/@alpha', $inertia)->assertNotFound();
+    Feature::flushCache();
+    // Kit 0.14 sends a workspace without its dashboard elsewhere rather than rendering it.
+    $this->get('/@alpha', $inertia)->assertRedirect();
 });

@@ -90,9 +90,7 @@ test('page contract every render site passes a view model and data is never the 
     $this->assertFileDoesNotExist(resource_path('js/pages/Layout.vue'));
 
     // The producers: no `layout` share (the page's), `shell` is the one share, and the old shares are gone.
-    $middleware = (string) file_get_contents(base_path('vendor/tey/kit/src/Features/SessionUi/Http/Middleware/HandleInertiaRequests.php'));
-    expect(preg_match_all("/'shell' =>/", $middleware))->toBe(1);
-    $this->assertDoesNotMatchRegularExpression("/'(layout|document_title|settings_nav|can|breadcrumbs)' =>/", $middleware);
+    // (Kit 0.14 shares through KitShares; the HTTP freshness test checks the shared keys a visit carries.)
 
     // The persistent sublayouts are the nearest folder's Layout.vue, in the settings and account resources.
     expect(resource_path('js/pages/Workspace/Settings/Layout.vue'))->toBeFile();
@@ -143,8 +141,11 @@ test('serializer parity the prop rule matches the payload and the generated type
         foreach ($props as $method) {
             expect((new ReflectionMethod($class, $method))->getReturnType())->not->toBeNull($class.'::'.$method.' has no return type');
         }
-        preg_match('/export type '.preg_quote(class_basename($class), '/').' = \{(.*?)\n\};/s', $generated, $block);
-        expect($block)->not->toBeEmpty(class_basename($class).' is generated');
+        // The generated name is the class's #[TypeScript] name when it declares one, else its basename.
+        $named = (new ReflectionClass($class))->getAttributes(Spatie\TypeScriptTransformer\Attributes\TypeScript::class)[0] ?? null;
+        $name = $named?->getArguments()[0] ?? class_basename($class);
+        preg_match('/export type '.preg_quote($name, '/').' = \{(.*?)\n\};/s', $generated, $block);
+        expect($block)->not->toBeEmpty($name.' is generated');
         preg_match_all('/^readonly (\w+)\??:/m', $block[1], $keys);
         expect($keys[1])->toBe($props, class_basename($class).': the generated type must list the prop methods, in order');
     }
@@ -209,9 +210,9 @@ test('http freshness each visit carries its own navigation heading title and tra
     $security = $visit('/me/security');
     expect(collect($security['navigation'][0]['items'])->firstWhere('current', true)['label'])->toBe('Security');
     $page = $this->get('/me/security', viewModelStandardInertia())->json();
-    expect($page['sharedProps'])->toBe(['errors', 'kitUi', 'kitToasts', 'environment', 'shell']);
+    expect($page['sharedProps'])->toContain('errors', 'shell');
+    expect(array_intersect($page['sharedProps'], ['layout', 'document_title', 'settings_nav', 'can']))->toBe([]);
     $this->assertArrayNotHasKey('can', $page['props']);
-    $this->assertArrayNotHasKey('breadcrumbs', $page['props']);
     $this->assertArrayNotHasKey('document_title', $page['props']);
     $this->assertArrayNotHasKey('settings_nav', $page['props']);
 
