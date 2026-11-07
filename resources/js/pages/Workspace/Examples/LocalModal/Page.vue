@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
     Modal,
     Page,
+    Toolbar,
 } from '@kit/ui';
 import { ref } from 'vue';
 
@@ -19,17 +20,38 @@ const picked = ref(0);
 </script>
 <template>
     <Page md>
-        <Button type="button" data-open-local @click="open = true">
-            Open the modal
-        </Button>
-        <Button
-            variant="destructive"
-            type="button"
-            data-open-dialog
-            @click="asking = true"
-        >
-            Open the dialog
-        </Button>
+        <Toolbar>
+            <Button type="button" data-open-local @click="open = true">
+                Open the modal
+            </Button>
+            <Button
+                variant="destructive"
+                type="button"
+                data-open-dialog
+                @click="asking = true"
+            >
+                Open the dialog
+            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button variant="secondary" type="button" data-open-menu>
+                        Open the menu
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem data-enabled-item @select="picked++">
+                        Usable
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        disabled
+                        data-disabled-item
+                        @select="picked += 100"
+                    >
+                        Not available
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </Toolbar>
         <Modal
             v-model:open="open"
             title="A local modal"
@@ -52,25 +74,6 @@ const picked = ref(0);
                 </Button>
             </template>
         </Modal>
-        <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-                <Button variant="secondary" type="button" data-open-menu>
-                    Open the menu
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem data-enabled-item @select="picked++">
-                    Usable
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    disabled
-                    data-disabled-item
-                    @select="picked += 100"
-                >
-                    Not available
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
         <p data-picked>{{ picked }}</p>
         <Dialog
             v-model:open="asking"

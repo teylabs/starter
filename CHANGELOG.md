@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **The FocusShell's account cluster and the LocalModal example group their actions.** Each had adjacent buttons outside an action container, which the standards `ui.action-group` rule (v0.11.78+) reports as advisories in every app made from the starter. The account cluster (Switch account, Sign out, the appearance toggle) and the example's three openers now sit in the kit's `Toolbar`, which sets only the gap and alignment, so neither page looks different.
+
 ### Changed
 
 - **Notes is opt-in.** A new app no longer ships the kit's `notes` feature: no `kit_notes` table, notes pages, dashboard card, navigation link or MCP tools. Add it with `php artisan kit:add notes` (docs/lifecycle.md). Existing apps keep theirs. The notes tests stay and switch on with the feature.

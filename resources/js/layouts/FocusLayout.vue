@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { AppearanceToggle, Avatar, Toaster } from '@kit/ui';
+import { AppearanceToggle, Avatar, Toaster, Toolbar } from '@kit/ui';
 
 /*
  * The FocusShell: a signed-in page outside any workspace (accept an invitation, switch account, the welcome steps, the no-workspace page). The product's mark and name
@@ -40,10 +40,7 @@ const shell = computed(() => page.props.shell);
                 />
                 <span class="truncate">{{ shell.product.name }}</span>
             </Link>
-            <div
-                class="flex shrink-0 items-center gap-2 sm:gap-3"
-                data-focus-account
-            >
+            <Toolbar class="shrink-0 flex-nowrap" data-focus-account>
                 <Avatar
                     :initials="shell.user.initials"
                     :src="shell.user.avatar_url"
@@ -74,7 +71,7 @@ const shell = computed(() => page.props.shell);
                     Sign out
                 </Link>
                 <AppearanceToggle />
-            </div>
+            </Toolbar>
         </header>
         <main
             class="flex flex-1 flex-col items-center gap-4 px-4 pt-6 pb-10 sm:px-6 sm:pt-12"
