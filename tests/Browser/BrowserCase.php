@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Testing\TestCase;
 
-/** The real app on synthetic SQLite memory, as the PHPUnit suites boot it; Pest's browser plugin serves it in-process. */
+/** The real app on its PostgreSQL test database, as the PHPUnit suites boot it; Pest's browser plugin serves it in-process. */
 abstract class BrowserCase extends TestCase
 {
     public function createApplication()

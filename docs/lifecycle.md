@@ -4,6 +4,8 @@
 
 `composer setup` takes a fresh clone to a working local sign-in: dependencies, `.env`, the key, `database/database.sqlite`, `migrate`, the frontend build and the first local owner and workspace (`php artisan starter:first-owner`, local environment only, through Concierge's tenant invitation and the kit's acceptance). The password is prompted for, or generated and printed once with `--no-interaction`; it is never stored in plain text and never defaulted.
 
+The tests never use that local database. They run on PostgreSQL (`.env.testing`, database `starter_testing` on Herd's server by default), in parallel with a database per worker; see [testing](testing.md#the-test-database).
+
 Boot never migrates, seeds, creates accounts or provisions workspaces. Registration is closed. In production, `concierge:owners` keeps the owner (see [deploy.md](deploy.md)).
 
 ### Schema
