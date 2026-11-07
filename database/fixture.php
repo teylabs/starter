@@ -20,6 +20,8 @@ Schema::create('workspaces', function (Blueprint $t): void {
     $t->unsignedBigInteger('provisioning_invitation_id')->nullable()->unique();
     $t->unsignedInteger('settings_version')->default(1);
     $t->boolean('admitted')->default(true);
+    $t->timestamp('deleting_at')->nullable();
+    $t->unsignedBigInteger('deleting_by')->nullable();
 });
 Schema::create('users', function (Blueprint $t): void {
     $t->id();
@@ -53,6 +55,7 @@ Schema::create('connections', function (Blueprint $t): void {
     $t->unique(['actor_id', 'intent_key']);
     $t->timestamp('expires_at')->nullable();
     $t->timestamp('revoked_at')->nullable();
+    $t->string('oauth_client_id')->nullable();
 });
 Schema::create('entitlements', function (Blueprint $t): void {
     $t->id();
@@ -88,10 +91,12 @@ Schema::create('settings_intents', function (Blueprint $t): void {
 Schema::create('audit_events', function (Blueprint $t): void {
     $t->id();
     $t->unsignedBigInteger('actor_id');
-    $t->foreignId('workspace_id')->constrained();
+    $t->foreignId('workspace_id')->nullable()->constrained()->nullOnDelete();
     $t->string('event');
     $t->json('details');
     $t->timestamp('created_at');
+    $t->string('workspace_name')->nullable();
+    $t->index('workspace_id');
 });
 
 Schema::create('password_reset_tokens', function (Blueprint $t): void {
@@ -113,9 +118,12 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php'))->up();
 // The notes feature's own tables.
 (require base_path('database/migrations/kit/notes/0001_01_02_000701_create_kit_notes_table.php'))->up();
+(require base_path('database/migrations/kit/settings/0001_01_02_000403_create_workspace_mail_identities_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000504_create_kit_account_deletions_table.php'))->up();
+(require base_path('database/migrations/kit/session-ui/0001_01_02_000505_add_finished_at_to_kit_account_deletions_table.php'))->up();
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
-foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php'] as $migration) {
+foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php', 'update_concierge_invitations_with_scope.php'] as $migration) {
     (require base_path('vendor/tey/concierge/database/migrations/'.$migration))->up();
 }
 app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]);

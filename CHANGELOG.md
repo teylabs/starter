@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## v0.4.0
 
 ### Added
+
+- `composer test:local`: the whole suite on a laptop, the PHP suite on 8 processes (without the `nightly` group), then the browser suite on 4 (`PEST_BROWSER=1`). Ctrl-C stops both and every worker. `composer test:browser` runs in parallel, in CI too.
 
 - **Prettier and ESLint** with the house config (4 spaces, single quotes, 80 columns, `htmlWhitespaceSensitivity: ignore`, the Tailwind class sorter; Vue + TypeScript rules, type-only imports, braces always, blank lines around control statements). Scripts `format`, `format:check`, `lint`, `lint:check`; CI runs both checks. Kit-owned files, shadcn-vue primitives and generated types are ignored. The starter's own files are formatted in this change.
 
@@ -11,6 +13,21 @@
 - The vendored `docs/schemas/mcp-capabilities.schema.json` is now tey/standards' copy, and its `$comment` names standards as the source. A minimal uiOnly capability (`id`, a non-blank `uiOnly` reason and `routes`), as rule 55 documents, now validates; a full capability may also carry `routes`. `tests/McpCapabilitiesTest.php` checks that a minimal uiOnly entry passes, and that a blank reason, empty routes or a missing reason fail.
 
 ### Changed
+
+- **tey/kit 0.14 and tey/standards 0.11.74** (from kit ^0.4.13 and standards ^0.11.6), with tey/concierge ^0.9 (kit's floor) and the kit's new npm requirements (tiptap, `@internationalized/date`, `vue-draggable-plus`).
+  - **Kit files**, resynced from `kit:add`: core's components, the shell, session-ui, settings (the workspace Email page), mcp (the consent page) and notes, plus the pages that moved to session-ui and workspace-ui. `workspace-ui` is adopted: notes now requires it. The opt-in `finalize` and `deliver` are not adopted.
+  - **Installed records are committed.** `.mod-maintenance/installed/*.json` (relative to the checkout) ship with the template, so `php artisan kit:status --check` and `kit:update` work on a clone and tey/standards knows which files the kit owns. The journals, lock and owner file stay gitignored.
+  - **Host steps:** the tenant tasks (`ConciergeContextTask`, `FlushFeatureCacheTask`) in `config/multitenancy.php`, and the Passport key variables documented in `.env.example`.
+  - **Toasts** are the kit's Toaster, which the kit shell mounts and which renders what the server flashed. The app's shadcn-vue Sonner wrapper and its flash bridge in `app.ts` are gone.
+  - **Behaviour the kit changed**, reflected in the tests: a member can be suspended; deletion sections are hidden until `kit.lifecycle` turns them on; invitations go out under the workspace's sender name; MCP consent binds the connection to a chosen workspace and makes it, and a narrow connection lists only the tools it covers; a workspace without its dashboard redirects to its first page; brand placeholders fail `/up` only when `kit.brand_mail` is on; accepting an invitation verifies the invited address.
+- **The strict standards gate.** `tests/Arch/configuration.php` turns on every optional and advisory rule (`optionalRules`) and enforces rule 51 (`ciEnforce`, and `PREFLIGHT_CI_ENFORCE=true` in CI), with an empty allowlist. The findings are fixed in the code:
+  - CI: pull requests run on opened, synchronize, reopened and ready for review; draft-aware concurrency that never cancels `main`; a timeout on every job; the test jobs skip drafts; one PHP version (8.4) on pull requests, 8.4 and 8.5 on `main`. The reusable standards workflow is pinned to v0.11.74.
+  - `starter:first-owner` takes `--dry-run` and refuses production explicitly.
+  - `AppServiceProvider` prohibits destructive database commands outside the tests (`ALLOW_DESTRUCTIVE_DB=1` for one deliberate local reset).
+  - The sign-in response's JSON branch is marked as Fortify's contract (`inertia.pure: package`).
+  - `FeatureSeamsTest` reads the route seams each route declares instead of a stored route table (`tests/Fixtures/routes.json` is gone), and a browser check no longer pins a pixel height.
+- **Kit parity** checks the template's adopted features (`config/kit.php`), not the whole catalog, and gives the clean app the template's shadcn-vue primitives, which core's `host_ui` step requires.
+- **Tests no longer assert kit markup.** Checks that read a kit-owned file's source (FormActions' internals, the kit Select, kit pages' roots and controls) now read the app's own files only; the kit's library checks and parity hold the kit's.
 
 - Global search is on (tey/kit global search, `workspace.search` in `config/kit.php`).
   - **UI.** The header has a search field with a live palette: ⌘K, Ctrl+K or `/`, and a sheet below `lg`. The full results are at `/@{workspace}/search`. The kit's people provider finds the workspace's members, with a People link for those who manage people.

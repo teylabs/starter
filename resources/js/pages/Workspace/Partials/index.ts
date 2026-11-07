@@ -4,3 +4,6 @@
 // export your own `UserMenu` or `WorkspaceSwitcher` with the same props.
 export { default as UserMenu } from './UserMenu.vue';
 export { default as WorkspaceSwitcher } from './WorkspaceSwitcher.vue';
+// The focus shell (welcome steps, no workspace yet): the Workspace Layout renders it for a `kind: 'focus'` shell.
+export { default as FocusShell } from './FocusShell.vue';
+export type { FocusShellShape } from './focusShell';

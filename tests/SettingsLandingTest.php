@@ -28,26 +28,27 @@ test('the landing page lists the registered sections in order', function () {
     require dirname(__DIR__).'/database/fixture.php';
     settingsLandingSignIn(1);
     $general = ['key' => 'general', 'label' => 'General', 'description' => 'The workspace display name and timezone.', 'icon' => 'sliders-horizontal', 'badge' => null, 'url' => '/settings/general'];
+    $email = ['key' => 'email', 'label' => 'Email sending', 'description' => 'The sender name, from address and reply-to of mail from this workspace.', 'icon' => 'mail', 'badge' => null, 'url' => '/settings/email'];
     $people = ['key' => 'people', 'label' => 'People', 'description' => 'Who belongs to this workspace, their roles, and who is invited.', 'icon' => 'users', 'badge' => null, 'url' => '/settings/people'];
     $this->get('/@alpha/settings', settingsLandingInertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
         // One "Workspace" group for the workspace's sections (a group never repeats a lone item's label); each carries its lucide icon.
-        ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $people]]]);
+        ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $email, $people]]]);
 
     // A provider registers a section with a group and an order, not a nav item; a lower order comes first, and a new group appears in place.
     app(Registry::class)->settingsSection('workspace', 'billing', 'Billing', 'Plan and invoices.', null, 'Account', -50, 'credit-card')->settingsSection('workspace', 'owner-only', 'Owner only', 'Needs write access.', 'settings.write', 'Workspace', 30);
     $this->get('/@alpha/settings', settingsLandingInertia())->assertOk()
         ->assertJsonPath('props.groups.0.label', 'Account')->assertJsonPath('props.groups.0.sections.0.url', '/settings/billing')->assertJsonPath('props.groups.0.sections.0.icon', 'credit-card')
-        ->assertJsonPath('props.groups.1.label', 'Workspace')->assertJsonPath('props.groups.1.sections.2.label', 'Owner only');
+        ->assertJsonPath('props.groups.1.label', 'Workspace')->assertJsonPath('props.groups.1.sections.3.label', 'Owner only');
 
     // A section registered without an icon carries the generic one.
     app(Registry::class)->settingsSection('workspace', 'plain', 'Plain', 'No icon given.', null, 'Workspace', 40);
-    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.groups.1.sections.3.icon', 'settings');
+    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.groups.1.sections.4.icon', 'settings');
 
     // The registered sections are listed by what the user may open: a viewer cannot write settings.
     $this->postJson('/logout')->assertNoContent();
     settingsLandingSignIn(3);
     $this->get('/@alpha/settings', settingsLandingInertia())->assertOk()
-        ->assertJsonPath('props.groups.1.sections', [$general, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'badge' => null, 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
+        ->assertJsonPath('props.groups.1.sections', [$general, $email, ['key' => 'plain', 'label' => 'Plain', 'description' => 'No icon given.', 'icon' => 'settings', 'badge' => null, 'url' => '/settings/plain']])->assertJsonCount(2, 'props.groups');
 });
 test('each section has its own page in both url forms', function () {
     require dirname(__DIR__).'/database/fixture.php';
@@ -63,15 +64,15 @@ test('each section has its own page in both url forms', function () {
 
     // Settings is one link in the nav, to the landing page; the sections are not.
     $this->get('/settings/general', settingsLandingInertia())->assertJsonPath('props.shell.navigation.2', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
-        ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Settings', 'url' => '/settings', 'current' => false, 'home' => false], ['label' => 'General', 'url' => '/settings/general', 'current' => true, 'home' => false]]);
-    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.shell.navigation.2.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false]]);
+        ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Settings', 'url' => '/settings', 'current' => false, 'home' => false, 'title' => null], ['label' => 'General', 'url' => '/settings/general', 'current' => true, 'home' => false, 'title' => null]]);
+    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.shell.navigation.2.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false, 'title' => null]]);
 });
 test('the personal landing page lists the personal sections', function () {
     require dirname(__DIR__).'/database/fixture.php';
     settingsLandingSignIn(1);
     $this->get('/me', settingsLandingInertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
         ->assertJsonPath('props.groups', [['label' => 'Account', 'sections' => [['key' => 'profile', 'label' => 'Profile', 'description' => 'Your name, email address and photo.', 'icon' => 'user', 'badge' => null, 'url' => '/me/profile'], ['key' => 'password', 'label' => 'Password', 'description' => 'Change your password.', 'icon' => 'key-round', 'badge' => null, 'url' => '/me/password'], ['key' => 'security', 'label' => 'Security', 'description' => 'Two-factor authentication, signed-in devices and your security log.', 'icon' => 'shield-check', 'badge' => null, 'url' => '/me/security'], ['key' => 'workspaces', 'label' => 'Workspaces', 'description' => 'The workspaces you belong to.', 'icon' => 'building-2', 'badge' => null, 'url' => '/me/workspaces']]]])
-        ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true], ['label' => 'Account', 'url' => '/me', 'current' => true, 'home' => false]]);
+        ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Account', 'url' => '/me', 'current' => true, 'home' => false, 'title' => null]]);
     $this->getJson('/me')->assertOk()->assertJsonPath('sections.3.key', 'workspaces');
     $this->postJson('/logout')->assertNoContent();
     $this->get('/me')->assertRedirect('/login');
@@ -99,7 +100,7 @@ test('a section page carries the sidebar with the current section marked', funct
         $nav = $this->get($path, settingsLandingInertia())->assertOk()->json('props.layout.navigation');
         expect($nav)->toHaveCount(1);
         expect($nav[0]['label'])->toBe('Workspace');
-        expect(array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']))->toBe([['General', true], ['People', false]]);
+        expect(array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']))->toBe([['General', true], ['Email sending', false], ['People', false]]);
         expect($nav[0]['items'][0]['icon'])->toBe('sliders-horizontal');
     }
     $this->get('/settings', settingsLandingInertia())->assertJsonPath('props.layout.navigation', []);

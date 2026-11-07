@@ -9,7 +9,15 @@ import { flatten, move, type SearchGroup, type SearchOption } from './search';
  * page (`url?q=`). Escape clears, then closes. A stale answer (the person typed on, or left) is dropped. It renders the server's results as they are:
  * labels and descriptions are text, never markup. The host focuses it with the exposed `focus()`.
  */
-const props = withDefaults(defineProps<{ url: string; label?: string; placeholder?: string; minLength?: number }>(), { label: 'Search', placeholder: 'Search', minLength: 1 });
+const props = withDefaults(
+    defineProps<{
+        url: string;
+        label?: string;
+        placeholder?: string;
+        minLength?: number;
+    }>(),
+    { label: 'Search', placeholder: 'Search', minLength: 1 },
+);
 const emit = defineEmits<{ navigate: [] }>();
 const id = useId();
 const input = ref<HTMLInputElement>();
@@ -22,7 +30,9 @@ const open = ref(false);
 const active = ref(-1);
 const options = computed<SearchOption[]>(() => flatten(groups.value));
 const term = computed(() => query.value.trim());
-const allResults = computed(() => `${props.url}?${new URLSearchParams({ q: term.value })}`);
+const allResults = computed(
+    () => `${props.url}?${new URLSearchParams({ q: term.value })}`,
+);
 let sequence = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
@@ -46,14 +56,31 @@ watch(query, () => {
     timer = setTimeout(async () => {
         controller = new AbortController();
         try {
-            const response = await fetch(`${props.url}?${new URLSearchParams({ q: term.value })}`, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', signal: controller.signal });
+            const response = await fetch(
+                `${props.url}?${new URLSearchParams({ q: term.value })}`,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                    signal: controller.signal,
+                },
+            );
             if (!response.ok) throw new Error(String(response.status));
-            const body = (await response.json()) as { groups: SearchGroup[]; partial: boolean };
+            const body = (await response.json()) as {
+                groups: SearchGroup[];
+                partial: boolean;
+            };
             if (asked !== sequence) return;
             groups.value = body.groups;
             partial.value = body.partial;
         } catch (error) {
-            if (asked === sequence && !(error instanceof DOMException && error.name === 'AbortError')) failed.value = true;
+            if (
+                asked === sequence &&
+                !(error instanceof DOMException && error.name === 'AbortError')
+            )
+                failed.value = true;
         } finally {
             if (asked === sequence) busy.value = false;
         }
@@ -73,7 +100,11 @@ function keydown(event: KeyboardEvent): void {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         open.value = term.value.length >= props.minLength;
-        active.value = move(active.value, options.value.length, event.key === 'ArrowDown' ? 1 : -1);
+        active.value = move(
+            active.value,
+            options.value.length,
+            event.key === 'ArrowDown' ? 1 : -1,
+        );
     } else if (event.key === 'Enter') {
         event.preventDefault();
         const chosen = options.value[active.value];
@@ -86,7 +117,15 @@ function keydown(event: KeyboardEvent): void {
         } else open.value = false;
     }
 }
-const status = computed(() => (busy.value || !open.value ? '' : failed.value ? 'Search is unavailable. Try again.' : options.value.length === 0 ? 'No results' : `${options.value.length} results${partial.value ? ', some sources could not be searched' : ''}`));
+const status = computed(() =>
+    busy.value || !open.value
+        ? ''
+        : failed.value
+          ? 'Search is unavailable. Try again.'
+          : options.value.length === 0
+            ? 'No results'
+            : `${options.value.length} results${partial.value ? ', some sources could not be searched' : ''}`,
+);
 defineExpose({ focus: () => input.value?.focus() });
 </script>
 <template>
@@ -104,38 +143,98 @@ defineExpose({ focus: () => input.value?.focus() });
             :aria-activedescendant="options[active]?.optionId"
             aria-autocomplete="list"
             maxlength="100"
-            class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            class="border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:outline-ring h-9 w-full rounded-md border px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             data-search-input
             @keydown="keydown"
             @blur="open = false"
             @focus="open = term.length >= minLength"
         />
-        <div v-show="open" :id="`${id}-list`" role="listbox" :aria-label="label" class="absolute inset-x-0 top-full z-50 mt-1 max-h-[60svh] min-w-72 overflow-y-auto rounded-md border border-border bg-popover p-1 text-sm text-popover-foreground shadow-lg" data-search-results @mousedown.prevent>
-            <p v-if="busy" class="px-2 py-1.5 text-muted-foreground">Searching…</p>
-            <p v-else-if="failed" class="px-2 py-1.5 text-destructive">Search is unavailable. Try again.</p>
-            <p v-else-if="!options.length" class="px-2 py-1.5 text-muted-foreground" data-search-empty>No results</p>
+        <div
+            v-show="open"
+            :id="`${id}-list`"
+            role="listbox"
+            :aria-label="label"
+            class="border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 mt-1 max-h-[60svh] min-w-72 overflow-y-auto rounded-md border p-1 text-sm shadow-lg"
+            data-search-results
+            @mousedown.prevent
+        >
+            <p v-if="busy" class="text-muted-foreground px-2 py-1.5">
+                Searching…
+            </p>
+            <p v-else-if="failed" class="text-destructive-text px-2 py-1.5">
+                Search is unavailable. Try again.
+            </p>
+            <p
+                v-else-if="!options.length"
+                class="text-muted-foreground px-2 py-1.5"
+                data-search-empty
+            >
+                No results
+            </p>
             <template v-else>
-                <div v-for="group in groups" :key="group.key" role="group" :aria-label="group.label" :data-search-group="group.key">
-                    <p aria-hidden="true" class="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">{{ group.label }}</p>
+                <div
+                    v-for="group in groups"
+                    :key="group.key"
+                    role="group"
+                    :aria-label="group.label"
+                    :data-search-group="group.key"
+                >
+                    <p
+                        aria-hidden="true"
+                        class="text-muted-foreground px-2 pt-2 pb-1 text-xs font-medium"
+                    >
+                        {{ group.label }}
+                    </p>
                     <div
-                        v-for="option in options.filter((candidate) => candidate.group === group.key)"
+                        v-for="option in options.filter(
+                            (candidate) => candidate.group === group.key,
+                        )"
                         :id="option.optionId"
                         :key="option.optionId"
                         role="option"
-                        :aria-selected="options[active]?.optionId === option.optionId"
+                        :aria-selected="
+                            options[active]?.optionId === option.optionId
+                        "
                         :aria-disabled="option.url ? undefined : 'true'"
-                        :class="['grid gap-0.5 rounded-sm px-2 py-1.5', options[active]?.optionId === option.optionId && 'bg-accent text-accent-foreground', option.url ? 'cursor-pointer' : 'cursor-default']"
+                        :class="[
+                            'grid gap-0.5 rounded-sm px-2 py-1.5',
+                            options[active]?.optionId === option.optionId &&
+                                'bg-accent text-accent-foreground',
+                            option.url ? 'cursor-pointer' : 'cursor-default',
+                        ]"
                         data-search-option
                         @click="option.url && go(option.url)"
                     >
                         <span class="font-medium">{{ option.label }}</span>
-                        <span v-if="option.description || option.meta" class="text-xs text-muted-foreground">{{ [option.description, option.meta].filter(Boolean).join(' · ') }}</span>
+                        <span
+                            v-if="option.description || option.meta"
+                            class="text-muted-foreground text-xs"
+                            >{{
+                                [option.description, option.meta]
+                                    .filter(Boolean)
+                                    .join(' · ')
+                            }}</span
+                        >
                     </div>
                 </div>
-                <p v-if="partial" class="px-2 py-1.5 text-xs text-muted-foreground">Some sources could not be searched.</p>
+                <p
+                    v-if="partial"
+                    class="text-muted-foreground px-2 py-1.5 text-xs"
+                >
+                    Some sources could not be searched.
+                </p>
             </template>
-            <a v-if="term" :href="allResults" class="mt-1 block rounded-sm border-t border-border px-2 py-1.5 text-muted-foreground hover:bg-accent" data-search-all @click.prevent="go(allResults)">See all results</a>
+            <a
+                v-if="term"
+                :href="allResults"
+                class="border-border text-muted-foreground hover:bg-accent mt-1 block rounded-sm border-t px-2 py-1.5"
+                data-search-all
+                @click.prevent="go(allResults)"
+                >See all results</a
+            >
         </div>
-        <span class="sr-only" role="status" aria-live="polite">{{ status }}</span>
+        <span class="sr-only" role="status" aria-live="polite">{{
+            status
+        }}</span>
     </div>
 </template>

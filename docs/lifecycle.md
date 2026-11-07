@@ -19,19 +19,11 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 
 ## Kit features
 
-`config/kit.php` adopts every feature (`features`). The kit's installed records (`.mod-maintenance/`) name the checkout's absolute path, so the template ships none and gitignores them. To let `kit:update` manage the files later, record them once in your own checkout, claiming each file after review:
+`config/kit.php` adopts every catalog feature except the opt-in `finalize` and `deliver` (`features`). The template ships tey/mod's installed records for them (`.mod-maintenance/installed/*.json`, relative to the checkout, so a clone carries them; the journals, lock and owner file stay local and gitignored). `php artisan kit:status --check` reads them and fails on an unmarked edit to a kit-owned file, and `php artisan kit:update plan --lineage=<feature>` / `apply` updates each feature in place. To add an opt-in feature, run `php artisan kit:add <feature>` and list it in `features`. tey/standards reads the same records, so a kit-owned file is the kit's, not the app's, to the frontend rules. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
 
-```sh
-php artisan kit:add core workspaces access settings session-ui mcp --claim=<path> ...      # preview
-php artisan kit:add core workspaces access settings session-ui mcp --claim=<path> ... --apply --expected-plan=<plan>
-```
-
-then set `features` to `null` so the installed records decide. The preview lists every file it can claim; an edited file is a conflict and is never claimed. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
-
-Never edit a generated feature file (`database/migrations/kit/**`, the kit's pages): copy a page to your own name, or add a migration of your own. CI's parity job runs `kit:add` of every feature on a clean Laravel app and fails when the template's files differ.
+Never edit a generated feature file (`database/migrations/kit/**`, the kit's pages): copy a page to your own name, or add a migration of your own. CI's parity job runs `kit:add` of the template's features on a clean Laravel app and fails when the template's files differ.
 
 ## Not available yet
 
 - `laravel new --using=tey/starter`: the template is not on Packagist yet.
-- tey/mod 0.10: tey/kit 0.1.5 requires tey/mod ^0.9, so the template stays on Mod 0.9 until the kit moves.
 - `kit:add --all`: the command takes the feature list; `kit:list --json` prints it.

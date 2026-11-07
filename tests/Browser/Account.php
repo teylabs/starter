@@ -52,18 +52,18 @@ it('sets two-factor authentication up with a code and shows the devices section'
         // the heading and the trail change; back and forward restore them.
         $page->navigate('/me/security')->assertPresent('[data-settings-frame]');
         $page->script('() => { document.querySelector("[data-settings-frame]").dataset.sentinel = "kept"; return true; }');
-        $state = fn (): array => $page->script('() => [document.querySelector("[data-settings-frame]").dataset.sentinel ?? null, document.querySelector("[data-settings-sidebar] [aria-current=page]")?.textContent.trim(), document.querySelector("[data-slot=page-heading]")?.textContent.trim(), location.pathname, [...document.querySelectorAll("[data-shell-breadcrumbs] li")].at(-1)?.textContent.trim()]');
-        expect($state())->toBe(['kept', 'Security', 'Security', '/me/security', 'Security']);
+        $state = fn (): array => $page->script('() => [document.querySelector("[data-settings-frame]").dataset.sentinel ?? null, document.querySelector("[data-settings-sidebar] [aria-current=page]")?.textContent.trim(), document.querySelector("[data-slot=page-heading]")?.textContent.trim(), location.pathname]');
+        expect($state())->toBe(['kept', 'Security', 'Security', '/me/security']);
         $page->click('[data-settings-sidebar] a[href="/me/password"]')->assertPathIs('/me/password');
-        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password', 'Password']);
+        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password']);
         $page->click('[data-settings-sidebar] a[href="/me/profile"]')->assertPathIs('/me/profile');
-        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile', 'Profile']);
+        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile']);
         $page->script('() => { history.back(); return true; }');
         $page->assertPathIs('/me/password');
-        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password', 'Password']);
+        expect($state())->toBe(['kept', 'Password', 'Password', '/me/password']);
         $page->script('() => { history.forward(); return true; }');
         $page->assertPathIs('/me/profile');
-        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile', 'Profile']);
+        expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile']);
         // Leaving the section for one without a sidebar drops the sublayout and the item does not linger.
         $page->navigate('/')->assertMissing('[data-settings-sidebar]');
 

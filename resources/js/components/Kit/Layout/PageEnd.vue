@@ -8,7 +8,20 @@ import Button from '@/components/Kit/Form/Button.vue';
  * form bar is pinned in the same <main>, which already holds the page's actions. Jumping moves focus to the target (the page's <h1> for Back to top),
  * and scrolls without animation for reduced motion.
  */
-withDefaults(defineProps<{ sections?: { id: string; label: string }[]; label?: string; topLabel?: string; sectionsLabel?: string }>(), { sections: () => [], label: 'End of page', topLabel: 'Back to top', sectionsLabel: 'Jump to a section' });
+withDefaults(
+    defineProps<{
+        sections?: { id: string; label: string }[];
+        label?: string;
+        topLabel?: string;
+        sectionsLabel?: string;
+    }>(),
+    {
+        sections: () => [],
+        label: 'End of page',
+        topLabel: 'Back to top',
+        sectionsLabel: 'Jump to a section',
+    },
+);
 const marker = ref<HTMLElement>();
 const shown = ref(false);
 let resize: ResizeObserver | undefined;
@@ -18,9 +31,22 @@ let frame = 0;
 function measure(): void {
     const main = marker.value?.closest('main');
     if (!main || !marker.value) return;
-    const pinnedBar = [...main.querySelectorAll<HTMLElement>('[data-form-actions], [data-sticky-bar]')].some((bar) => bar.dataset.pinned !== 'false' && bar.getClientRects().length > 0 && ['sticky', 'fixed'].includes(getComputedStyle(bar).position));
+    const pinnedBar = [
+        ...main.querySelectorAll<HTMLElement>(
+            '[data-form-actions], [data-sticky-bar]',
+        ),
+    ].some(
+        (bar) =>
+            bar.dataset.pinned !== 'false' &&
+            bar.getClientRects().length > 0 &&
+            ['sticky', 'fixed'].includes(getComputedStyle(bar).position),
+    );
     // Only the content above the marker counts, so showing this cannot itself make the page long enough to show it.
-    shown.value = !pinnedBar && marker.value.getBoundingClientRect().top - main.getBoundingClientRect().top > window.innerHeight * 1.5;
+    shown.value =
+        !pinnedBar &&
+        marker.value.getBoundingClientRect().top -
+            main.getBoundingClientRect().top >
+            window.innerHeight * 1.5;
 }
 function later(): void {
     cancelAnimationFrame(frame);
@@ -28,11 +54,17 @@ function later(): void {
 }
 function jump(id?: string): void {
     const main = marker.value?.closest('main');
-    const target = id ? document.getElementById(id) : (main?.querySelector<HTMLElement>('h1') ?? main);
+    const target = id
+        ? document.getElementById(id)
+        : (main?.querySelector<HTMLElement>('h1') ?? main);
     if (!(target instanceof HTMLElement)) return;
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true });
-    const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    const behavior: ScrollBehavior = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+    ).matches
+        ? 'instant'
+        : 'smooth';
     if (id) target.scrollIntoView({ behavior, block: 'start' });
     else window.scrollTo({ top: 0, behavior });
 }
@@ -44,7 +76,12 @@ onMounted(() => {
         resize.observe(main);
     }
     mutations = new MutationObserver(later);
-    mutations.observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'data-pinned'] });
+    mutations.observe(main, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-pinned'],
+    });
     window.addEventListener('resize', later);
     later();
 });
@@ -57,11 +94,34 @@ onBeforeUnmount(() => {
 </script>
 <template>
     <div ref="marker" data-page-end-marker>
-        <aside v-if="shown" :aria-label="label" class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4 text-sm" data-page-end>
+        <aside
+            v-if="shown"
+            :aria-label="label"
+            class="border-border mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm"
+            data-page-end
+        >
             <div class="flex flex-wrap items-center gap-3">
-                <Button type="button" variant="secondary" data-back-to-top @click="jump()">{{ topLabel }}</Button>
-                <nav v-if="sections.length" :aria-label="sectionsLabel" class="flex flex-wrap gap-x-3 gap-y-2">
-                    <a v-for="section in sections" :key="section.id" :href="`#${section.id}`" class="rounded-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" :data-page-end-section="section.id" @click.prevent="jump(section.id)">{{ section.label }}</a>
+                <Button
+                    type="button"
+                    variant="secondary"
+                    data-back-to-top
+                    @click="jump()"
+                    >{{ topLabel }}</Button
+                >
+                <nav
+                    v-if="sections.length"
+                    :aria-label="sectionsLabel"
+                    class="flex flex-wrap gap-x-3 gap-y-2"
+                >
+                    <a
+                        v-for="section in sections"
+                        :key="section.id"
+                        :href="`#${section.id}`"
+                        class="focus-visible:outline-ring rounded-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        :data-page-end-section="section.id"
+                        @click.prevent="jump(section.id)"
+                        >{{ section.label }}</a
+                    >
                 </nav>
             </div>
             <slot name="pagination" />

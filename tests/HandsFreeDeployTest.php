@@ -102,12 +102,13 @@ function handsFreeDeployRealBrand(): void
     }
     config(['kit.brand' => $brand]);
 }
-test('up is healthy and fails for a missing key or a brand placeholder in production', function () {
+test('up is healthy and fails for a missing key or debug in production', function () {
     expect(handsFreeDeployMigrate())->toBe(0);
     handsFreeDeployRealBrand();
     $this->get('/up')->assertOk();
 
-    // In production: debug on, no key, and unresolved brand placeholders each fail it.
+    // In production: debug on and no key each fail it. Unresolved brand placeholders fail it only in an app that opts into branded mail
+    // (kit.brand_mail true, read at boot, kit 0.6+); by default a placeholder never takes /up red.
     $this->app['env'] = 'production';
     config(['app.debug' => true]);
     Cache::flush();
@@ -121,7 +122,7 @@ test('up is healthy and fails for a missing key or a brand placeholder in produc
     $this->get('/up')->assertStatus(500);
     config(['app.key' => $key, 'kit.brand.legal_name' => 'Example Company']);
     Cache::flush();
-    $this->get('/up')->assertStatus(500);
+    $this->get('/up')->assertOk();
     config(['kit.brand.legal_name' => 'Real legal_name']);
     Cache::flush();
     $this->get('/up')->assertOk();

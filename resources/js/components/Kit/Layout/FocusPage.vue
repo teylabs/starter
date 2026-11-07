@@ -10,7 +10,10 @@ import { computed, type HTMLAttributes } from 'vue';
  */
 type FocusPageSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
-const props = withDefaults(defineProps<{ size?: FocusPageSize; class?: HTMLAttributes['class'] }>(), { size: 'lg' });
+const props = withDefaults(
+    defineProps<{ size?: FocusPageSize; class?: HTMLAttributes['class'] }>(),
+    { size: 'lg' },
+);
 
 const maxWidths: Record<FocusPageSize, string> = {
     xs: 'max-w-2xl',
@@ -24,7 +27,10 @@ const maxWidths: Record<FocusPageSize, string> = {
 const maxWidthClass = computed(() => maxWidths[props.size]);
 </script>
 <template>
-    <div data-slot="focus-page" :class="['mx-auto w-full', maxWidthClass, props.class]">
+    <div
+        data-slot="focus-page"
+        :class="['mx-auto w-full', maxWidthClass, props.class]"
+    >
         <slot />
     </div>
 </template>

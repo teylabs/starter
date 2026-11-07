@@ -12,8 +12,14 @@ export function syncTimezoneCookie(): void {
     if (typeof document === 'undefined') return;
     const zone = browserTimezone();
     if (!zone) return;
-    const current = document.cookie.split('; ').find((part) => part.startsWith('tz='))?.slice(3);
+    const current = document.cookie
+        .split('; ')
+        .find((part) => part.startsWith('tz='))
+        ?.slice(3);
     if (current !== undefined && decodeURIComponent(current) === zone) return;
-    const secure = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
+    const secure =
+        typeof location !== 'undefined' && location.protocol === 'https:'
+            ? '; Secure'
+            : '';
     document.cookie = `tz=${encodeURIComponent(zone)}; path=/; max-age=31536000; SameSite=Lax${secure}`;
 }

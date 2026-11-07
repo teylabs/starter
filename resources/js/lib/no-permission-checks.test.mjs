@@ -6,9 +6,11 @@ import test from 'node:test';
 // Guard 4: the client never decides what a viewer may do. It renders the action descriptors the server sends (absent, or disabled with a reason); a role or
 // permission check in a page or component is a bug, however it is spelled.
 const root = new URL('../', import.meta.url).pathname;
+// A mail recipient's role (to, cc, bcc: kit's Deliver panel) is an address field, not a viewer's role, and a method named can() on another object
+// (the rich-text editor's editor.can().undo()) asks that object, not the server.
 const banned = [
-    /\brole\s*===/,
-    /\bcan\(/,
+    /(?<!recipient\.)\brole\s*===/,
+    /(?<!\.)\bcan\(/,
     /\bhasRole\b/,
     /\bhasPermission\b/,
     /\bprops\.can\b/,

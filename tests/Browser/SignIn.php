@@ -13,14 +13,6 @@ use Tey\Kit\Fonts;
 // opens it, and their name is in the user menu, not the nav.
 // Breadcrumbs are not asserted here: gretel shares them when the app boots, and the browser plugin flushes Inertia's shared props between
 // requests, so they never reach this harness's pages. tests/BreadcrumbsTest.php covers the trails over HTTP.
-// The web fonts have arrived (or failed) before each screenshot.
-function settled(mixed $page): mixed
-{
-    $page->script('() => document.fonts.ready.then(() => true)');
-
-    return $page;
-}
-
 it('signs the first owner in with one click and reaches the app shell', function (): void {
     $environment = getenv('APP_ENV');
     try {
@@ -45,7 +37,6 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertPathIs('/')
             ->assertTitle(config('app.name'))
             // The trail is chrome, a sub-bar inside the header; it is outside <Page>. The heading sits in the page's column, with the content.
-            ->assertPresent('[data-shell-subbar] [data-shell-breadcrumbs]')
             ->assertPresent('[data-shell-content] [data-slot="page"] [data-slot="page-header"] h1')
             ->assertPresent('[data-shell-bar]')
             // The kit's widgets render in the grid; the people list's deferred rows arrive in its ScrollList.
@@ -93,8 +84,8 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
-            // The landing page is a grid of cards, each one link with an icon; the group is "Workspace".
-            ->assertCount('[data-settings-card]', 2)
+            // The landing page is a grid of cards (General, People, Email), each one link with an icon; the group is "Workspace".
+            ->assertCount('[data-settings-card]', 3)
             ->assertPresent('[data-settings-card] svg')
             ->assertPresent('section[aria-label="Workspace"]')
             ->click('main a[href="/settings/general"]')

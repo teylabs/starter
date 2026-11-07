@@ -7,6 +7,8 @@ export type { MenuAlign } from '@/components/Kit/Menu/menuAlign';
 // The context every kit menu item reads (MenuPanel.md): written here from the spec, on Reka's dropdown menu. `hold`/`release` count a dialog that belongs to an item, so the menu stays open behind it.
 export interface MenuPanelApi {
     close: () => void;
+    /** Closes the menu and runs `fn` once it has closed and focus has settled, so work that re-renders the item's own row can't leave the menu stuck open. */
+    afterClose: (fn: () => void) => void;
     hold: () => void;
     release: () => void;
     isHeld: () => boolean;
@@ -16,21 +18,36 @@ export interface MenuPanelApi {
 
 export const menuPanelKey: InjectionKey<MenuPanelApi> = Symbol('menuPanel');
 
-/** The enclosing menu, or `undefined` outside one. */
+/** The enclosing menu, or `undefined` outside one. Exported for app-built items: `close`, `afterClose`, and `hold`/`release` around an item's own confirm. */
 export const useMenuPanel = () => inject(menuPanelKey, undefined);
 
 /** Whether the element, or an ancestor, can take focus. */
 export function isFocusableLoose(element: Element | null): boolean {
-    return !!element?.closest('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [contenteditable=""], [contenteditable="true"]');
+    return !!element?.closest(
+        'a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [contenteditable=""], [contenteditable="true"]',
+    );
 }
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+    'a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Moves focus to the next (1) or previous (-1) focusable element after `from` in document order, skipping any that refuse focus. */
 export function focusNeighbour(from: HTMLElement, step: 1 | -1): void {
-    const all = [...document.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => !el.closest('[role=menu]') && el.getClientRects().length > 0);
+    const all = [...document.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => !el.closest('[role=menu]') && el.getClientRects().length > 0,
+    );
     const at = all.indexOf(from);
-    const ordered = at === -1 ? all.filter((el) => (from.compareDocumentPosition(el) & (step === 1 ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING)) !== 0) : all.slice(step === 1 ? at + 1 : 0, step === 1 ? undefined : at);
+    const ordered =
+        at === -1
+            ? all.filter(
+                  (el) =>
+                      (from.compareDocumentPosition(el) &
+                          (step === 1
+                              ? Node.DOCUMENT_POSITION_FOLLOWING
+                              : Node.DOCUMENT_POSITION_PRECEDING)) !==
+                      0,
+              )
+            : all.slice(step === 1 ? at + 1 : 0, step === 1 ? undefined : at);
     const queue = step === 1 ? ordered : [...ordered].reverse();
 
     for (const el of queue) {

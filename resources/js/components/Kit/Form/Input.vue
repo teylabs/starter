@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useAttrs } from 'vue';
 import { Input as BaseInput } from '@/components/ui/input';
+import { useFieldAria } from './fieldAria';
 import { useLocked } from './useLocked';
 
 // The text input; `invalid` marks it for the error state, `autofocus` focuses it when the page arrives (an Inertia visit does not trigger the browser's own autofocus; a read-only input is never focused), and the other attributes pass through. A read-only input (the native `readonly`, so it stays focusable, selectable and
@@ -11,15 +12,31 @@ const props = defineProps<{ invalid?: boolean; autofocus?: boolean }>();
 const model = defineModel<string | number>();
 const attrs = useAttrs();
 const lock = useLocked();
+// Inside a Field: described only by what it renders, and invalid while it has an error.
+const aria = useFieldAria(attrs, () => props.invalid);
 const set = (value: unknown) => value !== undefined && value !== false;
 const locked = computed(() => lock.locked && !set(attrs.disabled));
 const field = ref<{ $el?: HTMLElement } | HTMLElement | null>(null);
 onMounted(() => {
     if (!props.autofocus || set(attrs.readonly) || locked.value) return;
-    const el = field.value && '$el' in field.value ? field.value.$el : field.value;
+    const el =
+        field.value && '$el' in field.value ? field.value.$el : field.value;
     (el as HTMLElement | null | undefined)?.focus();
 });
 </script>
 <template>
-    <BaseInput ref="field" v-bind="$attrs" v-model="model" :readonly="locked || (attrs.readonly as boolean | undefined)" :aria-invalid="invalid || undefined" :data-locked="locked || undefined" :class="locked ? 'cursor-default border-border bg-muted text-foreground shadow-none dark:bg-muted' : 'read-only:not-disabled:cursor-default read-only:not-disabled:border-dashed read-only:not-disabled:bg-muted read-only:not-disabled:text-muted-foreground read-only:not-disabled:shadow-none read-only:not-disabled:focus-visible:border-input read-only:not-disabled:focus-visible:ring-0'" />
+    <BaseInput
+        ref="field"
+        v-bind="$attrs"
+        v-model="model"
+        :readonly="locked || (attrs.readonly as boolean | undefined)"
+        :aria-describedby="aria['aria-describedby']"
+        :aria-invalid="aria['aria-invalid']"
+        :data-locked="locked || undefined"
+        :class="
+            locked
+                ? 'border-border bg-muted text-foreground dark:bg-muted cursor-default shadow-none'
+                : 'read-only:not-disabled:bg-muted read-only:not-disabled:text-muted-foreground read-only:not-disabled:focus-visible:border-input read-only:not-disabled:cursor-default read-only:not-disabled:border-dashed read-only:not-disabled:shadow-none read-only:not-disabled:focus-visible:ring-0'
+        "
+    />
 </template>

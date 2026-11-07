@@ -16,7 +16,7 @@ import Wordmark from './Wordmark.vue';
  * links under the card ("Create an account") and `mark` for the host's own symbol. The product comes from `product`, else the server's shared `shell.product`.
  */
 type Product = { name: string; url: string; logomark: string | null };
-const props = withDefaults(defineProps<{ title?: string; description?: string; width?: 'narrow' | 'wide'; backUrl?: string | null; backLabel?: string; appearance?: boolean; product?: Product | null }>(), { title: undefined, description: undefined, width: 'narrow', backUrl: null, backLabel: 'Back to the site', appearance: true, product: null });
+const props = withDefaults(defineProps<{ title?: string; description?: string; width?: 'narrow' | 'wide'; backUrl?: string | null; backLabel?: string; appearance?: boolean; product?: Product | null; toaster?: boolean }>(), { title: undefined, description: undefined, width: 'narrow', backUrl: null, backLabel: 'Back to the site', appearance: true, product: null, toaster: true });
 const page = usePage<{ shell?: { product?: Product }; layout?: { documentTitle?: string } }>();
 const product = computed(() => props.product ?? page.props.shell?.product ?? null);
 </script>
@@ -34,7 +34,7 @@ const product = computed(() => props.product ?? page.props.shell?.product ?? nul
         <main id="main" :class="['mx-auto w-full flex-1 px-4 pt-4 pb-10 sm:px-6 sm:pt-10 lg:px-8', props.width === 'wide' ? 'max-w-7xl' : 'max-w-md sm:max-w-lg']">
             <div class="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-xs sm:p-8" data-guest-card>
                 <div v-if="props.title" class="mb-6 space-y-2">
-                    <h1 class="font-serif text-2xl font-(weight:--font-display-weight) tracking-tight">{{ props.title }}</h1>
+                    <h1 class="font-display text-2xl font-(weight:--font-display-weight) tracking-tight">{{ props.title }}</h1>
                     <p v-if="props.description" class="text-sm text-muted-foreground">{{ props.description }}</p>
                 </div>
                 <slot />
@@ -42,6 +42,7 @@ const product = computed(() => props.product ?? page.props.shell?.product ?? nul
             <div v-if="$slots.footer" class="mt-6 text-center text-sm text-muted-foreground" data-guest-footer><slot name="footer" /></div>
         </main>
         <!-- The one toast renderer: it shows what the server flashed, where kit.toasts.position puts it. -->
-        <Toaster />
+        <!-- `toaster` false: a host whose own app shell already mounts the persistent Toaster keeps one, so toasts don't double. -->
+        <Toaster v-if="props.toaster" />
     </div>
 </template>

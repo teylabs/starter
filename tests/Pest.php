@@ -46,3 +46,27 @@ foreach ([...$tests($arch), ...$tests($plain)] as $index => $file) {
     $target = 'tests/'.basename($file);
     $tia->watch($index < count($arch) ? ['app/**' => $target, '.github/workflows/**' => $target] : ['tests/**' => $target]);
 }
+
+/** @return list<string> the project-relative files tey/kit's installed lineage records (.mod-maintenance/installed) list as generated: kit:add writes them byte for byte, so the kit's own checks hold them */
+function kitOwnedFiles(): array
+{
+    static $owned = null;
+    if ($owned === null) {
+        $owned = [];
+        foreach (glob(dirname(__DIR__).'/.mod-maintenance/installed/*.json') ?: [] as $record) {
+            $owned = [...$owned, ...array_keys(json_decode((string) file_get_contents($record), true)['artifact']['files'] ?? [])];
+        }
+    }
+
+    return $owned;
+}
+
+// Browser screenshots wait for the web fonts to arrive (or fail). Shared here so every browser file has it under --parallel.
+if (! function_exists('settled')) {
+    function settled(mixed $page): mixed
+    {
+        $page->script('() => document.fonts.ready.then(() => true)');
+
+        return $page;
+    }
+}

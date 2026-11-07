@@ -20,22 +20,25 @@ use function Laravel\Prompts\text;
  * so the app is provisioned exactly as in production. Refuses outside the local environment. Idempotent: the local owner
  * (the one-click sign-in's account) who exists without a workspace, as after a first click on an older database, gets one;
  * once they belong to a workspace, or other users exist without them, nothing is created. There is no default password for
- * a new owner: it is prompted for, or generated and shown once without --interaction.
+ * a new owner: it is prompted for, or generated and shown once without --interaction. --dry-run says what a run would create and writes nothing.
  */
 final class FirstOwnerCommand extends Command
 {
-    protected $signature = 'starter:first-owner {--name= : The owner\'s name} {--email= : The owner\'s email} {--workspace= : The workspace\'s name}';
+    protected $signature = 'starter:first-owner {--name= : The owner\'s name} {--email= : The owner\'s email} {--workspace= : The workspace\'s name} {--dry-run : Say what would be created, and create nothing}';
 
     protected $description = 'Create the first local owner and workspace (local environment only)';
 
     public function handle(): int
     {
-        if (! $this->laravel->environment('local')) {
+        if ($this->laravel->isProduction() || ! $this->laravel->environment('local')) {
             $this->error('starter:first-owner runs in the local environment only; nothing was created.');
 
             return self::FAILURE;
         }
         $existing = User::query()->where('email', $this->option('email') ?: (config('concierge.local_login.account.email') ?: 'owner@example.com'))->first();
+        if ($this->option('dry-run')) {
+            return $this->dryRun($existing);
+        }
         if ($existing instanceof User) {
             return $this->provisionFor($existing);
         }
@@ -64,6 +67,19 @@ final class FirstOwnerCommand extends Command
         if ($generated !== null) {
             $this->line('Sign in with this password; it is shown once and not stored: '.$generated);
         }
+
+        return self::SUCCESS;
+    }
+
+    /** What a run would create, read-only: the same decisions as handle(), with no prompt and no write. */
+    private function dryRun(?User $existing): int
+    {
+        $this->info(match (true) {
+            $existing instanceof User && Workspace::query()->memberOf($existing)->exists() => 'Dry run: '.$existing->email.' already belongs to a workspace; nothing would be created.',
+            $existing instanceof User => 'Dry run: would create '.($this->option('workspace') ?: 'Local workspace').' for '.$existing->email.'.',
+            User::query()->exists() => 'Dry run: users already exist; nothing would be created.',
+            default => 'Dry run: would create '.($this->option('email') ?: 'owner@example.com').' as the owner of '.($this->option('workspace') ?: 'Local workspace').'.',
+        });
 
         return self::SUCCESS;
     }

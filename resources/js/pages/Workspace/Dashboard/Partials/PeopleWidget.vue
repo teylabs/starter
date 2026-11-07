@@ -6,5 +6,5 @@ import type { WidgetFrame } from './types';
 defineProps<{ widget: WidgetFrame & { list: string } }>();
 </script>
 <template>
-    <ScrollList :list-key="widget.list" :title="widget.title" density="compact" style="--scroll-list-height: 18rem" />
+    <ScrollList :list-key="widget.list" :title="widget.title" density="compact" class="[--scroll-list-height:18rem]" />
 </template>

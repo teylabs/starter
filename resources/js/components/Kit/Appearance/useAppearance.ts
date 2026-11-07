@@ -52,7 +52,16 @@ const getStoredAppearance = () => {
         return null;
     }
 
-    return localStorage.getItem('appearance') as Appearance | null;
+    try {
+        const stored = localStorage.getItem('appearance');
+
+        return stored === 'light' || stored === 'dark' || stored === 'system'
+            ? stored
+            : null;
+    } catch {
+        // Storage may be blocked (site data off, some private modes): fall back to 'system'.
+        return null;
+    }
 };
 
 const prefersDark = (): boolean => {
@@ -86,9 +95,7 @@ const appearance = ref<Appearance>('system');
 
 export function useAppearance(): UseAppearanceReturn {
     onMounted(() => {
-        const savedAppearance = localStorage.getItem(
-            'appearance',
-        ) as Appearance | null;
+        const savedAppearance = getStoredAppearance();
 
         if (savedAppearance) {
             appearance.value = savedAppearance;
@@ -106,8 +113,12 @@ export function useAppearance(): UseAppearanceReturn {
     function updateAppearance(value: Appearance) {
         appearance.value = value;
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', value);
+        // Store in localStorage for client-side persistence; a blocked write is ignored...
+        try {
+            localStorage.setItem('appearance', value);
+        } catch {
+            // The cookie below still carries the choice.
+        }
 
         // Store in cookie for SSR...
         setCookie('appearance', value);

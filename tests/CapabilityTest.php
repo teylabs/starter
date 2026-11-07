@@ -59,7 +59,7 @@ test('the person beats the workspace and the workspace beats the default', funct
     $this->expectExceptionMessage('unknown_capability');
     $capabilities->setForWorkspace('no.such.capability', $workspace, true);
 });
-test('off is a 404 and the page is not in the navigation and on restores it', function () {
+test('off leaves the navigation and the workspace opens its first page and on restores it', function () {
     require dirname(__DIR__).'/database/fixture.php';
     expect(Artisan::call('kit:permissions:sync', ['--no-interaction' => true]))->toBe(0);
     capabilitySignIn(1);
@@ -69,9 +69,9 @@ test('off is a 404 and the page is not in the navigation and on restores it', fu
     $this->get('/@alpha', capabilityInertia())->assertOk();
 
     capabilityInside(fn () => app(Capabilities::class)->setForWorkspace('workspace.dashboard', $workspace, false));
-    $this->get('/@alpha', capabilityInertia())->assertNotFound();
-    $this->getJson('/@alpha')->assertNotFound();
+    // kit 0.8+: without the dashboard, the workspace root redirects to the first primary navigation page the viewer may open, or to the chooser when there is none.
     expect($navigation())->not->toContain('Dashboard');
+    $this->get('/@alpha', capabilityInertia())->assertRedirect();
 
     capabilityInside(fn () => app(Capabilities::class)->setForWorkspace('workspace.dashboard', $workspace, null));
     $this->get('/@alpha', capabilityInertia())->assertOk();

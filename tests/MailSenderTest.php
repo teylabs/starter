@@ -17,7 +17,7 @@ test('the mail sender follows the app name', function () {
     $renamed = Dotenv::parse(preg_replace('/^APP_NAME=.*$/m', 'APP_NAME="Renamed App"', $contents)."\n");
     expect($renamed)->toHaveKey('MAIL_FROM_NAME');
     expect($renamed)->toHaveKey('KIT_BRAND_MAIL_FROM_ADDRESS');
-    $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'KIT_BRAND_MAIL_FROM_ADDRESS' => $renamed['KIT_BRAND_MAIL_FROM_ADDRESS']];
+    $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'KIT_BRAND_MAIL_FROM_ADDRESS' => $renamed['KIT_BRAND_MAIL_FROM_ADDRESS'], 'MAIL_FROM_ADDRESS' => $renamed['MAIL_FROM_ADDRESS']];
     $script = '$app = require "'.__DIR__.'/application.php"; echo json_encode([config("app.name"), config("mail.from.name"), config("mail.from.address")]);';
     $process = proc_open([PHP_BINARY, '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, dirname(__DIR__), [...getenv(), ...$env]);
     $out = stream_get_contents($pipes[1]);

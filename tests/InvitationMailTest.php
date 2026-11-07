@@ -34,7 +34,8 @@ test('an invitation sends one branded email with the inviter the message and one
     $mail = $mails[0];
     expect($mail->getSubject())->toBe($owner->name.' invited you to '.$workspace->name);
     expect($mail->getTo()[0]->getAddress())->toBe('mail.person@example.test');
-    expect($mail->getFrom()[0]->getName())->toBe(config('app.name'));
+    // Workspace mail (kit 0.13+): the sender name is the workspace's own, on the platform's address.
+    expect($mail->getFrom()[0]->getName())->toBe($workspace->name);
     expect($mail->getFrom()[0]->getAddress())->toBe(config('kit.brand.mail_from_address'));
     expect($mail->getReplyTo()[0]->getAddress())->toBe(config('kit.brand.support_email'));
 

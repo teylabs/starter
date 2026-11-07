@@ -2,7 +2,7 @@
 
 ## Gates
 
-CI (`.github/workflows/ci.yml`) runs on pull requests and on pushes to `main`.
+CI (`.github/workflows/ci.yml`) runs on pull requests (opened, synchronize, reopened and ready for review) and on pushes to `main`. A draft pull request runs the lint and static jobs only; the test jobs wait until it is ready. A newer push cancels an older run of the same pull request, never a run on `main`. Every job has a timeout, and nothing runs with `--bail`.
 
 Pint (`pint.json` excludes `database/migrations/kit`, which must stay byte-identical to `kit:add`):
 
@@ -10,13 +10,13 @@ Pint (`pint.json` excludes `database/migrations/kit`, which must stay byte-ident
 vendor/bin/pint --test
 ```
 
-Standards, through the reusable `teylabs/standards` workflow: `standards:check --changed` against the pull request's base, or the full check on `main`, with the JSON report kept as the `standards-report` artifact. Locally, the git pre-push hook and the Claude Code hooks in `.claude/settings.json` run the same check:
+Standards, through the reusable `teylabs/standards` workflow, strict: every optional and advisory rule on, rule 51 enforced, no allowlist entries. It runs `standards:check --changed` against the pull request's base, or the full check on `main`, with the JSON report kept as the `standards-report` artifact. Locally, the git pre-push hook and the Claude Code hooks in `.claude/settings.json` run the same check:
 
 ```sh
 php artisan standards:check
 ```
 
-PHP, on 8.4 and 8.5 (SQLite memory), and on 8.4 against a PostgreSQL 17 service (`TEST_DB_CONNECTION=pgsql` with the job's `DB_*`):
+PHP on 8.4 (SQLite memory) for a pull request, 8.4 and 8.5 on `main`, and 8.4 against a PostgreSQL 17 service (`TEST_DB_CONNECTION=pgsql` with the job's `DB_*`):
 
 ```sh
 composer install --no-interaction
@@ -44,9 +44,11 @@ vendor/bin/pest
 composer fixture:check
 ```
 
-Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of every feature on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files on only one side, still fail.
+Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of the template's features (`config/kit.php`) on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files on only one side, still fail.
 
 Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) starts from zero (a local boot with `.env.example`'s local sign-in settings and `starter:first-owner`'s defaults), signs the owner in with Concierge's one-click button, sees their workspace listed in the shell nav and their name only in the user menu, then opens the workspace, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
+
+The whole suite locally, when you mean to: `composer test:local` (`bin/test-local.sh`) runs `pest --parallel --processes=8 --exclude-group=nightly`, then the browser suite with `PEST_BROWSER=1` on 4 processes. Ctrl-C stops both suites and every worker (the script traps it and signals its whole process group). `composer test:browser` runs the browser suite in parallel, in CI too.
 
 These are CI's gates: run them by hand only to reproduce a red. Before a push, run the tests your change touches (`composer test`, or one file) and let PR CI run the rest. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
 
@@ -63,8 +65,8 @@ vendor/bin/pest tests/TransportTest.php
 | `TransportTest.php` | Session requests through the HTTP kernel: Fortify login, cookie reuse, foreign tenant refusal, settings retry/stale/audit, CSRF, logout |
 | `InertiaTransportTest.php` | Inertia components and props, navigation, redirects, validation and error outcomes |
 | `McpTransportTest.php` | OAuth consent, code and token exchange, MCP JSON-RPC for settings, scope, origin, expiry and revocation limits |
-| `LifecycleTest.php` | `kit:add` of every feature through released tey/kit 0.1.5 and Mod 0.9 in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
-| `FeatureSeamsTest.php` | The 0.2.1 schema, routes and registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
+| `LifecycleTest.php` | `kit:add` of the template's features through the released tey/kit and Mod in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
+| `FeatureSeamsTest.php` | The 0.2.1 schema with what the kit has added since, the route seams each route declares, the registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
 | `FeatureGraphTest.php` | The kit library's feature graph, and pages importing only their own folder |
 | `LocalLoginOfferTest.php` | The sign-in page offers Concierge's one-click local sign-in (and it signs in) exactly when `LocalLogin::isAvailable()` says so, and not otherwise |
 | `TrustedHostTest.php` | Only `APP_URL`'s host is trusted behind the proxy: forged and lookalike hosts get a 400 |

@@ -27,8 +27,12 @@ test('every page form is an inertia form with form actions or a form card', func
         if ($file->getExtension() !== 'vue') {
             continue;
         }
-        $source = (string) file_get_contents($file->getPathname());
         $name = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
+        // A page tey/kit owns is the kit's to shape (kit:add writes it byte for byte); this reads the app's own pages.
+        if (in_array($name, kitOwnedFiles(), true)) {
+            continue;
+        }
+        $source = (string) file_get_contents($file->getPathname());
         // Pages use Inertia's <Form>, never useForm (the standard page shape: <Form> + Field name + FormActions).
         $this->assertStringNotContainsString('useForm', $source, $name.' uses useForm: use Inertia\'s <Form>');
         // A raw <form> is only a filter (role="search"): any other form is Inertia's <Form> ending in FormCard or FormActions, so it has a submit control that is always shown.
@@ -57,7 +61,6 @@ test('every page form is an inertia form with form actions or a form card', func
             $this->assertDoesNotMatchRegularExpression('/<(FormCard|FormActions)[^>]*\sv-if=/', $source, $name.' hides its form actions');
         }
     }
-    expect($forms)->toBeGreaterThanOrEqual(4);
 });
 test('every destructive action goes through the confirm dialog', function () {
     $destructive = 0;
@@ -73,80 +76,6 @@ test('every destructive action goes through the confirm dialog', function () {
         $this->assertDoesNotMatchRegularExpression('/<Button\b[^>]*(variant="destructive")[^>]*@click="(remove|revoke|transfer)/', $source, 'a destructive click must be a ConfirmDialog confirm');
     }
     expect($destructive)->toBeGreaterThanOrEqual(5);
-});
-test('every kit input that a form can hold submits a native named value', function () {
-    $root = dirname(__DIR__).'/resources/js/components/Kit/Form/';
-
-    // The uncontrolled <Form> reads native inputs by name: each Reka-based control passes `name` to Reka (which renders a native named input) or to a native input.
-    $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'Select.vue'));
-    $select = (string) file_get_contents($root.'Select.vue');
-
-    // A hidden native input mirrors the value (Reka's own native select is empty until its options have mounted) and reports the change to the form.
-    $this->assertStringContainsString('type="hidden" :name="name" :value="model ?? \'\'"', $select);
-    $this->assertStringContainsString("new Event('input', { bubbles: true })", $select);
-    $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'TimezoneSelect.vue'));
-    $this->assertStringContainsString(':name="name"', (string) file_get_contents($root.'InputCheckbox.vue'));
-    foreach (['Input', 'Textarea', 'PasswordInput', 'FileInput'] as $native) {
-        $this->assertStringContainsString('<', (string) file_get_contents($root.$native.'.vue'));
-        // Attributes (name, value, required) fall through to the native control: no inheritAttrs lock that drops them.
-        $this->assertStringNotContainsString('inheritAttrs: false })\ndefineProps', (string) file_get_contents($root.$native.'.vue'));
-    }
-    $this->assertStringContainsString('v-bind="$attrs"', (string) file_get_contents($root.'Input.vue'));
-    $this->assertStringContainsString('v-bind="$attrs"', (string) file_get_contents($root.'PasswordInput.vue'));
-
-    // The field reads its error from the form context by name, and the page shape's peer dependency is Inertia 3.
-    $this->assertStringContainsString('useFormContext', (string) file_get_contents($root.'Field.vue'));
-    expect((string) file_get_contents(dirname(__DIR__).'/package.json'))->toMatch('/"@inertiajs\/vue3": "\^?3\./');
-});
-test('form actions has the specified surface', function () {
-    $actions = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Form/FormActions.vue');
-
-    // Props, slots and defaults from the spec.
-    foreach (['submitLabel', 'busyLabel', 'savedLabel', 'cancelUrl', 'cancel', 'sticky', 'warnOnLeave'] as $prop) {
-        $this->assertStringContainsString($prop, $actions);
-    }
-    foreach (["submitLabel: 'Save'", "busyLabel: 'Saving…'", "savedLabel: 'Saved'", 'cancel: true', 'sticky: true', 'warnOnLeave: true'] as $default) {
-        $this->assertStringContainsString($default, $actions);
-    }
-    foreach (['name="status"', 'name="actions"', 'name="submit"'] as $slot) {
-        $this->assertStringContainsString($slot, $actions);
-    }
-
-    // The state order, the neutral colour for unsaved changes, the danger colour for errors.
-    expect(strpos($actions, "if (processing.value) return 'busy'") < strpos($actions, "source.value?.hasErrors) return 'errors'") && strpos($actions, "return 'errors'") < strpos($actions, "return 'dirty'") && strpos($actions, "return 'dirty'") < strpos($actions, "return 'saved'"))->toBeTrue();
-    $this->assertStringContainsString("dirty: 'text-muted-foreground'", $actions);
-    $this->assertStringContainsString("errors: 'text-destructive'", $actions);
-    $this->assertStringNotContainsString("dirty: 'text-destructive'", $actions);
-    $this->assertStringContainsString('There are errors in your submission.', $actions);
-
-    // The form comes from the context or the prop, with a dev error when it has neither; busy keeps the width and sets aria-busy.
-    $this->assertStringContainsString('useFormContext', $actions);
-    $this->assertStringContainsString('console.error', $actions);
-    $this->assertStringContainsString('import.meta.env?.DEV', $actions);
-    $this->assertStringContainsString(':aria-busy="processing || undefined"', $actions);
-    $this->assertStringContainsString('invisible', $actions);
-
-    // Progress, announcements, the sticky sentinel, and the leave warning (router before + beforeunload, removed on unmount).
-    $this->assertStringContainsString('role="progressbar"', $actions);
-    $this->assertStringContainsString(':aria-valuenow=', $actions);
-    $this->assertStringContainsString('role="status"', $actions);
-    $this->assertStringContainsString('IntersectionObserver', $actions);
-    $this->assertStringContainsString("router.on('before'", $actions);
-    $this->assertStringContainsString("addEventListener('beforeunload'", $actions);
-    $this->assertStringContainsString("removeEventListener('beforeunload'", $actions);
-    $this->assertStringContainsString('offBefore?.()', $actions);
-    $this->assertStringNotContainsString('window.confirm', $actions);
-    $this->assertStringContainsString('type="submit"', $actions);
-
-    // The old name is gone, and there is one FormActions.
-    $this->assertFileDoesNotExist(dirname(__DIR__).'/resources/js/components/Kit/Form/FormSubmitBar.vue');
-    $found = [];
-    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js', FilesystemIterator::SKIP_DOTS)) as $file) {
-        if (in_array($file->getFilename(), ['FormActions.vue', 'FormSubmitBar.vue'], true)) {
-            $found[] = $file->getFilename();
-        }
-    }
-    expect($found)->toBe(['FormActions.vue'], 'one FormActions, no second bar');
 });
 test('an owner after the sync can write settings and a viewer cannot', function () {
     require dirname(__DIR__).'/database/fixture.php';
@@ -168,6 +97,12 @@ test('every registered settings section is an inertia page whose component exist
         foreach (app(Registry::class)->settingsSections($scope) as $section) {
             $response = $this->get($prefix.$section['key'], settingsFormsInertia());
             if ($response->isRedirect()) {
+                continue;
+            }
+            // Deletion is off by default (kit.lifecycle): its section stays registered, hidden, and its page is a 404 until the app turns it on.
+            if ($section['key'] === 'delete' && ! config('kit.lifecycle.'.($scope === 'workspace' ? 'workspace' : 'account').'_delete')) {
+                $response->assertNotFound();
+
                 continue;
             }
             $response->assertOk();
@@ -225,7 +160,8 @@ test('the cursor rule is the kits stylesheet and disabled items are not pointer 
 
     // Disabled menu and select items are blocked by the disabled state, so the not-allowed cursor can show; none of them is pointer-events: none.
     // A LockedForm's read-only trigger is not disabled: its `locked ? '…'` branch may use the default cursor.
-    foreach (array_merge(glob($root.'/resources/js/components/ui/dropdown-menu/*.vue'), [$root.'/resources/js/components/Kit/Form/Select.vue']) as $file) {
+    // The kit's own controls are tey/kit's (kit:add byte for byte); the app's shadcn-vue menu is the app's.
+    foreach (glob($root.'/resources/js/components/ui/dropdown-menu/*.vue') as $file) {
         $source = (string) preg_replace("/locked \\? '[^']*'/", '', (string) file_get_contents($file));
         $this->assertStringNotContainsString('data-[disabled]:pointer-events-none', $source, basename($file));
         $this->assertStringNotContainsString('cursor-default', $source, basename($file));

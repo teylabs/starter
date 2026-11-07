@@ -32,6 +32,28 @@ return new Configuration(
     mediaTrait: 'Spatie\\MediaLibrary\\InteractsWithMedia',
     mediaInterface: 'Spatie\\MediaLibrary\\HasMedia',
     allowlist: [],
+    // The strict gate: rule 51 (CI shape) is enforced, as CI's PREFLIGHT_CI_ENFORCE=true also says.
+    ciEnforce: true,
+    // Every optional and advisory rule is on. A finding is fixed in the code, never allowlisted.
+    optionalRules: [
+        'ui plus',
+        'ui new-tab',
+        'ui back-strip',
+        'ui dropzone',
+        'ui toast',
+        'ui header-actions',
+        'format-lint',
+        'destructive-db',
+        'guards.declared',
+        'operator',
+        'integrations',
+        'vm.typed-pages',
+        'vm.shaped-arrays',
+        'vm.nested-reach',
+        'vm.page-size',
+        'vue.bare-handler-argument',
+        'inertia.pure',
+    ],
     // The default map, except Pest: Boost 2.10 ships no pest-testing skill (Pest is a guideline there), so testing-best-practices stands in for it.
     boostSkills: [
         'laravel/framework' => ['laravel-best-practices'],

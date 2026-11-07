@@ -43,7 +43,8 @@ test('released packages and trusted host binding', function () {
     }
     expect($host->lifecycle()->runtime())->toBe(json_decode(file_get_contents(base_path('config/kit-executor.json')), true));
     expect(($host->operationCheck())())->toBeTrue();
-    expect(config('kit.features'))->toBe(Catalog::package()->featureIds());
+    // The template adopts every catalog feature except the opt-in finalize and deliver, in the catalog's order.
+    expect(config('kit.features'))->toBe(array_values(array_diff(Catalog::package()->featureIds(), ['finalize', 'deliver'])));
 });
 test('adding every feature writes the template files then reruns as a no op', function () {
     $root = lifecycleCheckout();
@@ -61,7 +62,7 @@ test('adding every feature writes the template files then reruns as a no op', fu
     // A second request adopts nothing new and writes nothing.
     $records = lifecycleRecords($root);
     $again = lifecycleLineages()->preview($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS);
-    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, 8, 'adopted'));
+    expect(array_column($again['features'], 'action'))->toBe(array_fill(0, count(lifecycleAll()), 'adopted'));
     lifecycleRefuses(fn () => lifecycleLineages()->resume($root, 'workspace-starter', lifecycleAll(), [], KitHost::INPUTS, 'install', lifecycleCheck($root)), 'already adopted');
     expect(lifecycleRecords($root))->toBe($records);
     expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
@@ -128,7 +129,7 @@ test('kit add command', function () {
         $this->assertNotSame(0, $kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => 'sha256:wrong']));
         expect(lifecycleRecords($root))->toBe([]);
         expect($kernel->call('kit:add', $features + ['--apply' => true, '--expected-plan' => $preview['plan']]))->toBe(0);
-        expect(lifecycleRecords($root))->toHaveCount(8);
+        expect(lifecycleRecords($root))->toHaveCount(count(lifecycleAll()));
         expect(lifecycleFiles($root))->toBe(lifecycleTemplateFiles());
     } finally {
         $this->app->setBasePath($base);
@@ -144,6 +145,8 @@ function lifecycleCheckout(bool $withTemplateFiles = false): string
         }
         copy(base_path($path), $root.'/'.$path);
     }
+    // The host's own shadcn-vue primitives, which core's host_ui step requires before it adds anything (kit 0.7+).
+    (new Filesystem)->copyDirectory(base_path('resources/js/components/ui'), $root.'/resources/js/components/ui');
     foreach ($withTemplateFiles ? lifecycleTemplateFiles() : [] as $path => $bytes) {
         if (! is_dir(dirname($root.'/'.$path))) {
             mkdir(dirname($root.'/'.$path), 0700, true);
@@ -159,10 +162,10 @@ function lifecycleLineages(): Lineages
 {
     return new Lineages(app(LifecycleHost::class)->lifecycle(), Catalog::package());
 }
-/** @return list<string> */
+/** @return list<string> the features the template adopts (config/kit.php), in the catalog's order */
 function lifecycleAll(): array
 {
-    return Catalog::package()->featureIds();
+    return config('kit.features');
 }
 /** The checkout's own operation check, declared in its host-operations input. */
 function lifecycleCheck(string $root): Closure
@@ -183,7 +186,7 @@ function lifecycleTemplateFiles(): array
 function lifecycleFiles(string $root): array
 {
     $files = [];
-    foreach (Catalog::package()->featureIds() as $id) {
+    foreach (lifecycleAll() as $id) {
         foreach (Blueprint::lineage($id, Catalog::package())['feature']['owns'] as $owned) {
             if (is_file($root.'/'.$owned)) {
                 $files[$owned] = file_get_contents($root.'/'.$owned);

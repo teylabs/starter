@@ -71,7 +71,7 @@ test('no response carries a can map or permission flag and denied actions are nu
     $this->assertArrayNotHasKey('leave', $owner);
     expect($this->get('/@alpha', actionDescriptorsInertia())->json('props.shell.workspace.leave'))->toBeNull();
     $rows = $this->get('/@alpha/settings/people', actionDescriptorsInertia())->json('props.table.rows');
-    expect(array_map(fn (array $row) => array_column($row['actions'], 'key'), $rows))->toBe([[], ['change-role', 'transfer-ownership', 'remove']]);
+    expect(array_map(fn (array $row) => array_column($row['actions'], 'key'), $rows))->toBe([[], ['change-role', 'suspend', 'transfer-ownership', 'remove']]);
     actionDescriptorsSignOut();
     actionDescriptorsSignIn(3);
     foreach ($pages as $url) {

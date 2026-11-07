@@ -3,7 +3,8 @@
  * feel for the cursor. Every clickable thing shows the pointer, a disabled one shows not-allowed, and a component that names a cursor itself (a utility) wins over this base layer.
  * The one other rule: on a phone, an open modal or sheet spans the whole viewport. The package's scroll lock reserves a scrollbar gutter on <html>, which narrows the modal's fixed container by
  * the scrollbar's width (15px with classic scrollbars) and left a 390px phone's sheet at 375px; the gutter has nothing to guard there, so it is released while a modal is open.
- * An app that wants the native arrow puts `kit-cursor-native` on <html>. Import it after Tailwind: `@import './kit.css';`.
+ * An app that wants the native arrow puts `kit-cursor-native` on <html>. Import it after Tailwind: `@import './kit.css';`. It also carries the kit's default colour
+ * tokens (at the end), which any theme of the host overrides, and maps the Toaster's rich colours onto the kit's tone tokens (below), so its toasts meet AA.
  */
 @layer base {
     html:not(.kit-cursor-native) {
@@ -20,6 +21,17 @@
         html:has(.im-modal-container) {
             scrollbar-gutter: auto !important;
         }
+
+        /* A picker's panel (InputDate, InputDateRange, InputMonth, InputYear) is a bottom sheet on phones: the popper wrapper pins to the bottom edge, full width. */
+        [data-reka-popper-content-wrapper]:has(> [data-kit-sheet]) {
+            inset: auto 0 0 0 !important;
+            transform: none !important;
+            min-width: 0 !important;
+        }
+
+        [data-kit-sheet] {
+            @apply w-full max-w-none rounded-b-none pb-[max(1rem,env(safe-area-inset-bottom))];
+        }
     }
 }
 
@@ -33,6 +45,7 @@
     --kit-outline-foreground: oklch(37.3% 0.034 259.733);
     --kit-outline-muted: oklch(70.7% 0.022 261.325);
     --kit-outline-wash: oklch(98.5% 0.002 247.839);
+    --kit-scrim: rgb(0 0 0 / 0.5);
 }
 
 .dark {
@@ -40,6 +53,15 @@
     --kit-outline: oklch(37.3% 0.034 259.733);
     --kit-outline-foreground: oklch(92.8% 0.006 264.531);
     --kit-outline-wash: color-mix(in oklab, #fff 20%, transparent);
+    --kit-scrim: rgb(0 0 0 / 0.7);
+}
+
+/*
+ * The display face kit headings use (the Page heading, GuestShell's and the public Markdown page's titles): the serif stack unless the host sets --font-display
+ * in its own @theme or :root (a sans app sets it to its sans stack). `default`, so a host's own value wins.
+ */
+@theme default {
+    --font-display: var(--font-serif);
 }
 
 @theme inline {
@@ -48,4 +70,192 @@
     --color-outline-foreground: var(--kit-outline-foreground);
     --color-outline-muted: var(--kit-outline-muted);
     --color-outline-wash: var(--kit-outline-wash);
+    --color-scrim: var(--kit-scrim);
+}
+
+/*
+ * Overlay scrims: one kit token (`--kit-scrim`, deeper in dark mode) behind every overlay, the kit's Dialog (`bg-scrim`), Modal's sheets and drawers (the modal
+ * package draws its own backdrop, hard-coded black, so this restyles it; a stacked modal's transparent backdrop is left alone) and the host's shadcn Sheet overlay.
+ * Unlayered, so it outranks the package's utilities. The panels themselves are on the semantic tokens (bg-background, text-foreground, border-border).
+ */
+.im-modal-dialog:not(.backdrop\:bg-transparent)::backdrop,
+.im-backdrop,
+[data-slot='sheet-overlay'] {
+    background-color: var(--kit-scrim);
+}
+
+/* The wide page measure the apps share: `max-w-2k` (160rem). `@theme default`, so a host's own --container-2k wins. */
+@theme default {
+    --container-2k: 160rem;
+}
+
+/*
+ * The semantic colour tokens the kit's components use (bg-primary, text-muted-foreground, border-input, ring-ring and the rest), as shadcn-vue names them, at the lowest
+ * precedence: a host theme always wins. `@theme default inline` maps each `--color-*` to its plain variable unless the host's own @theme maps it (a non-default @theme
+ * replaces these). The values are on `:where(:root)` and `:where(.dark)`, so any `:root` or `.dark` of the host overrides them whatever the import order.
+ * They are the Laravel starter kit's neutral palette, so a host with no theme of its own still renders the kit's components in colour.
+ * `--destructive-text` is destructive TEXT on a surface (a destructive menu item, an error message); `--destructive-foreground` stays text ON a destructive background.
+ * `--destructive` as text fails WCAG AA on white (3.76:1), so the kit's own value is darker in light mode and lighter in dark, and meets 4.5:1 on background, card and
+ * popover (6.48:1 light, 7.20:1 dark), on accent, a focused menu item (5.94:1, 5.51:1), and on muted (5.94:1, 5.29:1).
+ * `--success-text`, `--warning-text` and `--info-text` are the same for status text and icons on a surface (FormActions' "Saved", an Alert's icon); a raw palette colour
+ * such as green-600 fails AA on white (about 3.3:1). On background, card and popover they meet 5.80:1, 6.04:1 and 6.06:1 light and 11.36:1, 11.70:1 and 9.71:1 dark, and at
+ * least 5.32:1 light and 7.13:1 dark on accent and muted. Inside the kit's Toaster, Sonner's own `--success-text`, `--warning-text` and `--info-text` take over (below).
+ */
+@theme default inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive-text: var(--destructive-text);
+    --color-success-text: var(--success-text);
+    --color-warning-text: var(--warning-text);
+    --color-info-text: var(--info-text);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+:where(:root) {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(0 0% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 3.9%);
+    --primary: hsl(0 0% 9%);
+    --primary-foreground: hsl(0 0% 98%);
+    --secondary: hsl(0 0% 92.1%);
+    --secondary-foreground: hsl(0 0% 9%);
+    --muted: hsl(0 0% 96.1%);
+    --muted-foreground: hsl(0 0% 45.1%);
+    --accent: hsl(0 0% 96.1%);
+    --accent-foreground: hsl(0 0% 9%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --destructive-text: hsl(0 72% 42%);
+    --success-text: hsl(142 76% 26%);
+    --warning-text: hsl(26 90% 33%);
+    --info-text: hsl(201 90% 32%);
+    --border: hsl(0 0% 92.8%);
+    --input: hsl(0 0% 89.8%);
+    --ring: hsl(0 0% 3.9%);
+}
+/* A subtree that stays light under .dark (the PublicShell's theme="light": a page with no dark styling yet). It restates the neutral surface tokens with their light
+   values, not the brand's primary, so a host's own brand colours stand. */
+.kit-theme-light {
+    color-scheme: light;
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(0 0% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 3.9%);
+    --muted: hsl(0 0% 96.1%);
+    --muted-foreground: hsl(0 0% 45.1%);
+    --accent: hsl(0 0% 96.1%);
+    --accent-foreground: hsl(0 0% 9%);
+    --border: hsl(0 0% 92.8%);
+    --input: hsl(0 0% 89.8%);
+}
+
+:where(.dark) {
+    --background: hsl(0 0% 3.9%);
+    --foreground: hsl(0 0% 98%);
+    --card: hsl(0 0% 3.9%);
+    --card-foreground: hsl(0 0% 98%);
+    --popover: hsl(0 0% 3.9%);
+    --popover-foreground: hsl(0 0% 98%);
+    --primary: hsl(0 0% 98%);
+    --primary-foreground: hsl(0 0% 9%);
+    --secondary: hsl(0 0% 14.9%);
+    --secondary-foreground: hsl(0 0% 98%);
+    --muted: hsl(0 0% 16.08%);
+    --muted-foreground: hsl(0 0% 63.9%);
+    --accent: hsl(0 0% 14.9%);
+    --accent-foreground: hsl(0 0% 98%);
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --destructive-text: hsl(0 91% 71%);
+    --success-text: hsl(142 69% 58%);
+    --warning-text: hsl(43 96% 56%);
+    --info-text: hsl(199 89% 64%);
+    --border: hsl(0 0% 14.9%);
+    --input: hsl(0 0% 14.9%);
+    --ring: hsl(0 0% 83.1%);
+}
+
+/*
+ * The stacking scale the kit's components use (`z-(--z-header)` on the workspace header, `z-(--z-dialog)` on Dialog, and the rest), lowest first: sticky bars, the
+ * page header, dropdowns, dialogs, toasts. On `:where(:root)` rather than in @theme, so the values are always emitted (Tailwind drops @theme variables it doesn't see
+ * used, and an arbitrary `z-(--z-*)` doesn't count) and any `:root` of the host overrides them whatever the import order. A host sticky bar should stay below
+ * `--z-header`, and anything that must cover a dialog above `--z-dialog`.
+ */
+:where(:root) {
+    --z-sticky: 20;
+    --z-header: 30;
+    --z-dropdown: 40;
+    --z-dialog: 50;
+    --z-toast: 60;
+}
+
+/*
+ * The Toaster's rich colours. Sonner's own success, info, warning and error colours fail WCAG AA (its success text on its success background is 4.26:1), so the
+ * kit's Toaster maps every one of Sonner's rich-colour variables onto the kit's tone tokens: a pale background, a strong foreground (at least 6.8:1 on it, above AA's 4.5:1) and a border,
+ * light and dark. The selector outranks Sonner's `[data-sonner-toaster][data-sonner-theme]`; a host theme overrides the `--kit-tone-*` tokens.
+ */
+:is([data-kit-toaster][data-sonner-toaster], [data-kit-toaster] [data-sonner-toaster])[data-sonner-theme] {
+    --success-bg: var(--kit-tone-success-bg);
+    --success-border: var(--kit-tone-success-border);
+    --success-text: var(--kit-tone-success-fg);
+    --info-bg: var(--kit-tone-info-bg);
+    --info-border: var(--kit-tone-info-border);
+    --info-text: var(--kit-tone-info-fg);
+    --warning-bg: var(--kit-tone-warning-bg);
+    --warning-border: var(--kit-tone-warning-border);
+    --warning-text: var(--kit-tone-warning-fg);
+    --error-bg: var(--kit-tone-error-bg);
+    --error-border: var(--kit-tone-error-border);
+    --error-text: var(--kit-tone-error-fg);
+}
+
+:where(:root) {
+    --kit-tone-success-bg: #f0fdf4;
+    --kit-tone-success-border: #bbf7d0;
+    --kit-tone-success-fg: #166534;
+    --kit-tone-info-bg: #eff6ff;
+    --kit-tone-info-border: #bfdbfe;
+    --kit-tone-info-fg: #1e40af;
+    --kit-tone-warning-bg: #fffbeb;
+    --kit-tone-warning-border: #fde68a;
+    --kit-tone-warning-fg: #92400e;
+    --kit-tone-error-bg: #fef2f2;
+    --kit-tone-error-border: #fecaca;
+    --kit-tone-error-fg: #991b1b;
+}
+
+:where(.dark) {
+    --kit-tone-success-bg: #052e16;
+    --kit-tone-success-border: #166534;
+    --kit-tone-success-fg: #bbf7d0;
+    --kit-tone-info-bg: #172554;
+    --kit-tone-info-border: #1e40af;
+    --kit-tone-info-fg: #bfdbfe;
+    --kit-tone-warning-bg: #451a03;
+    --kit-tone-warning-border: #92400e;
+    --kit-tone-warning-fg: #fde68a;
+    --kit-tone-error-bg: #450a0a;
+    --kit-tone-error-border: #991b1b;
+    --kit-tone-error-fg: #fecaca;
 }

@@ -54,19 +54,22 @@ test('inertia session pages share real operations and fresh navigation', functio
     $payload = ['display_name' => 'Inertia Alpha', 'timezone' => 'America/Toronto', 'expected_version' => $settings['settings']['version'], 'intent_key' => $settings['intent_key']];
     $this->put('/@alpha/settings/general', $payload, $inertia)->assertStatus(303)->assertRedirect('/settings/general');
     $payload['intent_key'] = 'stale-inertia';
-    $this->put('/@alpha/settings/general', $payload, $inertia)->assertConflict()->assertHeader('X-Inertia', 'true')
-        ->assertJsonPath('component', 'Workspace/Error/Page')->assertJsonPath('props.status', 409)
-        ->assertJsonPath('props.message', 'These settings changed since you opened the form. Reload and review the current values.');
+    // A stale Inertia visit returns to the form with the conflict as a form error (kit 0.8+), not an error page.
+    $this->put('/@alpha/settings/general', $payload, $inertia)->assertStatus(303)
+        ->assertSessionHasErrors();
+    expect(session('errors')->all())->toContain('These settings changed since you opened the form. Reload and review the current values.');
     $this->get('/@beta/records', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page')
         ->assertJsonCount(1, 'props.shell.switcher.choices')->assertJsonPath('props.shell.workspace.id', 1)->assertJsonPath('props.shell.workspace.all.url', '/me/workspaces');
     config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.records' => true]]);
     Feature::define('workspace.records', fn (): bool => false);
-    $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonCount(2, 'props.shell.navigation')->assertJsonPath('props.shell.navigation.1.label', 'Settings')
-        ->assertJsonPath('props.shell.navigation.1.current', true)->assertJsonPath('props.shell.switcher.choices.0.url', '/');
+    Feature::flushCache();
+    $navigation = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('props.shell.switcher.choices.0.url', '/')->json('props.shell.navigation');
+    expect(collect($navigation)->firstWhere('current', true)['label'])->toBe('Settings');
 
     // A capability that is off is absent: a 404, not a 403.
     $this->get('/@alpha/records', $inertia)->assertNotFound()->assertJsonPath('component', 'Workspace/Error/Page');
     Feature::define('workspace.records', fn (): bool => true);
+    Feature::flushCache();
     config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true]]);
     $this->postJson('/logout')->assertNoContent();
     User::findOrFail(3)->update(['password' => Hash::make($password)]);

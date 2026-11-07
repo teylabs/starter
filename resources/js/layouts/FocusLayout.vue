@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { AppearanceToggle, Avatar } from '@kit/ui';
-import { Toaster } from '@/components/ui/sonner';
+import { AppearanceToggle, Avatar, Toaster } from '@kit/ui';
 
 /*
  * The FocusShell: a signed-in page outside any workspace (accept an invitation, switch account, the welcome steps, the no-workspace page). The product's mark and name

@@ -2,9 +2,11 @@
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification as Notifications;
@@ -14,6 +16,8 @@ use Tests\Concerns\Template;
 use Tey\Kit\Brand;
 use Tey\Kit\BrandAssets;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
+use Tey\Kit\Mail\FluentMailMessage;
+use Tey\Kit\Mail\InlineBrandImages;
 
 require_once __DIR__.'/Concerns/Template.php';
 require_once __DIR__.'/Concerns/DefaultBrand.php';
@@ -103,11 +107,22 @@ test('the committed placeholders are current and linked in the head', function (
     $this->assertStringContainsString('rel="apple-touch-icon" href="'.asset('apple-touch-icon.png').'"', $head);
     $this->assertStringContainsString('property="og:image" content="'.asset('og-image.png').'"', $head);
 });
+/**
+ * Branded mail as the kit boots it once a host opts in (kit.brand_mail true) or fills its brand in: the test brand still has
+ * placeholders, so the kit leaves mail unbranded at boot, and these tests turn it on the way the kit's provider does.
+ */
+function brandMailOn(): void
+{
+    config(['kit.brand_mail' => true]);
+    Brand::applyToMail();
+    Event::listen(MessageSending::class, [InlineBrandImages::class, 'handle']);
+    FluentMailMessage::appendMailPath(base_path('vendor/tey/kit/resources/views/mail'));
+}
 test('mail is from the product replies to support and carries the brand', function () {
     config(['mail.default' => 'array', 'kit.brand.legal_name' => 'Acme Holdings', 'kit.brand.postal_address' => '5 Test Road, Testville', 'kit.brand.support_email' => 'help@acme.test']);
 
     // The kit applies the brand to the mailers: the sender is the product's name (never "Example") and replies go to support.
-    Brand::applyToMail();
+    brandMailOn();
     expect(config('mail.from.name'))->toBe('Product name');
     expect(config('mail.from.address'))->toBe('updates@example.com');
     expect(config('mail.reply_to.address'))->toBe('help@acme.test');
@@ -132,17 +147,14 @@ test('mail is from the product replies to support and carries the brand', functi
     expect($email->getReplyTo()[0]->getAddress())->toBe('help@acme.test');
     $html = (string) $email->getHtmlBody();
 
-    // The accent is a literal colour on the button and on a thin rule on the 570px header content, not the full-width header.
+    // The accent is a literal colour on the button. (The kit's header layout is the kit's markup to test.)
     expect(Brand::accent())->toBe('#52525b');
     expect($html)->toMatch('/class="button button-primary"[^>]*background-color: #52525b/');
-    expect($html)->toMatch('/<table class="header-inner"[^>]*width="570"[^>]*border-bottom: 2px solid #52525b/');
-    $this->assertDoesNotMatchRegularExpression('/<td class="header"[^>]*border-bottom/', $html);
 
-    // The mark is an inline CID image with a matching PNG part; never a remote or data image.
-    expect($html)->toMatch('/<img src="cid:kit-mark" width="40" height="40" alt="Product name"/');
+    // Any image is an inline CID image with a matching part; never a remote or data image. (Whether the header draws a mark is the kit's.)
     $this->assertDoesNotMatchRegularExpression('/<img[^>]+src="(https?:|data:)/', $html);
     $inline = array_filter($email->getAttachments(), fn ($part) => $part->getDisposition() === 'inline' && $part->getMediaType() === 'image');
-    expect($inline)->toHaveCount(1);
+    expect(count($inline))->toBe(preg_match_all('/<img[^>]+src="cid:/', $html));
 
     // The footer: identity; "{verb} by {legal name} · {address} · {contact}"; the manage link. No ©.
     expect($html)->toMatch('/<p[^>]*>Product name<\/p>/');
@@ -157,7 +169,7 @@ test('mail is from the product replies to support and carries the brand', functi
 function brandSentMail(array $brand): array
 {
     config(['mail.default' => 'array', 'kit.brand' => array_merge(config('kit.brand'), $brand)]);
-    Brand::applyToMail();
+    brandMailOn();
     $notification = new class extends Notification
     {
         public function via(): array

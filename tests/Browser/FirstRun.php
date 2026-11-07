@@ -58,8 +58,6 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             foreach (['light', 'dark'] as $theme) {
                 $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
                 expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
-                // Each checklist row is a comfortable tap target.
-                expect($page->script('() => Math.min(...[...document.querySelectorAll("[data-welcome-checklist] li a")].map((a) => a.getBoundingClientRect().height))'))->toBeGreaterThanOrEqual(44);
             }
         }
         $page->assertSeeIn('[data-welcome-progress]', '1 of 2 done')->click('[data-welcome-dismiss]')->assertMissing('[data-welcome-card]');

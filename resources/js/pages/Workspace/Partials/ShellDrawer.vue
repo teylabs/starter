@@ -6,7 +6,8 @@ import UserAvatar from './UserAvatar.vue';
 import { Button, Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
 
 // Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
-defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData }>();
+// `pages` false leaves the workspace's pages out: the Layout's `nav` slot shows them at every width instead. The `nav` slot replaces them either way.
+withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData; pages?: boolean }>(), { pages: true });
 
 const open = ref(false);
 const stop = router.on('navigate', () => {
@@ -35,7 +36,9 @@ onBeforeUnmount(stop);
                     <span v-else class="flex min-h-11 items-center px-3 text-sm text-muted-foreground">{{ choice.name }} · unavailable</span>
                 </template>
             </nav>
-            <nav v-if="shell.navigation.length" :aria-label="shell.workspace?.name ?? shell.product.name" class="grid gap-1 px-2 pt-4">
+            <!-- The nav slot (the Layout's drawer-nav) replaces the kit's pages with the app's own list. -->
+            <div v-if="$slots.nav" class="px-2 pt-4" data-shell-drawer-nav><slot name="nav" /></div>
+            <nav v-else-if="pages && shell.navigation.length" :aria-label="shell.workspace?.name ?? shell.product.name" class="grid gap-1 px-2 pt-4">
                 <Link v-for="item in shell.navigation" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
             </nav>
             <div class="mt-auto border-t border-border px-2 py-4">

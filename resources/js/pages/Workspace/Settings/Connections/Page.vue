@@ -18,7 +18,6 @@ async function copy(text: string, key: string) {
     }
 }
 const empty = computed(() => !props.approve && props.table.rows.length === 0);
-const date = (iso: unknown) => (typeof iso === 'string' && iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 </script>
 <template>
     <Page md>
