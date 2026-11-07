@@ -132,3 +132,28 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         $page->click('[data-shell-switcher]')->assertSee('Second workspace')->assertSee('Workspace settings');
     });
 });
+
+it('renders the footer as one slim line whose links are separated by a visible dot a screen reader skips', function (): void {
+    shellEnvironment(function (): void {
+        $page = shellSignIn();
+        $read = '() => { const f = document.querySelector("[data-shell-footer]"); const seps = [...f.querySelectorAll("[data-shell-footer-separator]")]; const links = [...f.querySelectorAll("a")]; return { text: f.innerText, lines: new Set([...f.children].map((c) => Math.round(c.getBoundingClientRect().top))).size, links: links.map((a) => a.textContent.trim()), seps: seps.map((s) => { const r = s.getBoundingClientRect(); const prev = s.previousElementSibling.getBoundingClientRect(); const next = s.nextElementSibling.getBoundingClientRect(); return { hidden: s.getAttribute("aria-hidden"), width: r.width, before: r.top === prev.top ? r.left - prev.right : null, after: r.top === next.top ? next.left - r.right : null }; }), overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth }; }';
+
+        $wide = $page->resize(1280, 900)->script($read);
+        // The links come from the brand config, so read their labels rather than pinning them.
+        $links = $wide['links'];
+        expect(count($links))->toBeGreaterThanOrEqual(2);
+        expect($wide['text'])->toContain(implode(' · ', $links))->not->toContain("\n");
+        expect($wide['lines'])->toBe(1);
+        foreach ($wide['seps'] as $separator) {
+            expect($separator['hidden'])->toBe('true');
+            expect($separator['width'])->toBeGreaterThan(0);
+            // A real gap on both sides, not a dot flush against the words.
+            expect($separator['before'])->toBeGreaterThan(0);
+            expect($separator['after'])->toBeGreaterThan(0);
+        }
+
+        $phone = $page->resize(375, 800)->script($read);
+        expect($phone['overflow'])->toBeFalse();
+        expect(str_replace("\n", ' ', $phone['text']))->toContain(implode(' · ', $links));
+    });
+});
