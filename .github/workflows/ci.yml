@@ -51,8 +51,9 @@ jobs:
       - run: composer install --no-interaction
       - run: vendor/bin/pint --test
 
+  # The PHP suite runs on PostgreSQL, in parallel, each worker on its own database `{DB_DATABASE}_w{token}` (tests/environment.php).
   php:
-    name: PHP ${{ matrix.php }} (SQLite)
+    name: PHP ${{ matrix.php }} (PostgreSQL)
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -61,22 +62,6 @@ jobs:
       matrix:
         # One deploy PHP version on pull requests; the next one too on main.
         php: ${{ github.event_name == 'pull_request' && fromJSON('["8.4"]') || fromJSON('["8.4", "8.5"]') }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ env.PHP_EXTENSIONS }}
-          coverage: none
-      - run: composer install --no-interaction
-      - run: vendor/bin/pest
-      - run: composer fixture:check
-
-  postgres:
-    name: PHP 8.4 (PostgreSQL)
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17
@@ -88,7 +73,6 @@ jobs:
         options: >-
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      TEST_DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
       DB_DATABASE: starter
@@ -98,12 +82,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php }}
           extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: none
       - run: composer install --no-interaction
-      - run: vendor/bin/pest
+      - run: vendor/bin/pest --parallel
       - run: composer fixture:check
+      # The released-schema comparison reads a SQLite dump, so that one file also runs on SQLite memory (an explicit opt-in).
+      - run: vendor/bin/pest tests/FeatureSeamsTest.php
+        env:
+          TEST_DB_CONNECTION: sqlite
 
   deploy:
     name: Deploy order (PostgreSQL, queue ${{ matrix.queue }})
@@ -261,6 +249,16 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: starter
+          POSTGRES_USER: starter
+          POSTGRES_PASSWORD: starter
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -292,13 +290,26 @@ jobs:
           test "$(curl -sk -o login.html -w '%{http_code}' https://localhost:8443/login)" = 200
           grep -q 'Auth\\/Login\\/Page' login.html
           grep -q 'https://localhost:8443/build/assets/' login.html
+      # The browser tests boot the app on the PostgreSQL service (a database per worker); composer setup above keeps .env's own database.
       - name: Browser smoke test
         working-directory: app
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: starter
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
         run: |
           npx playwright install --with-deps chromium
           composer test:browser
       - name: Browser smoke test with another font set
         working-directory: app
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: starter
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
         run: KIT_FONTS=instrument-inter composer test:browser
       - uses: actions/upload-artifact@v4
         if: always()

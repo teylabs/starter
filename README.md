@@ -28,22 +28,20 @@ npm run typecheck && npm run build && npm test
 sh bin/privacy-check.sh
 ```
 
-The PHP suites run on SQLite memory. To run them on PostgreSQL, set `TEST_DB_CONNECTION=pgsql` and the `DB_*` variables for the run; both `pest` and `composer fixture:check` honour them and print the database in use. With Herd's PostgreSQL, for example:
+The PHP suites run on PostgreSQL, as production does, and in parallel with a database per worker (`{DB_DATABASE}_w{token}`, created on first use). The connection comes from the committed `.env.testing` (Herd's PostgreSQL on `127.0.0.1:5432`, user `root`, database `starter_testing`), and any `DB_*` variable set for the run overrides it; `.env` is never read. Each run wipes its database, so name a disposable one. `pest` and `composer fixture:check` print the database in use:
 
 ```sh
-createdb starter_test   # a disposable database: the tests wipe it
-export TEST_DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=starter_test DB_USERNAME=root DB_PASSWORD=
-vendor/bin/pest
-composer fixture:check
+vendor/bin/pest --tia --parallel     # or composer test
+DB_DATABASE=my_branch_testing composer fixture:check
 ```
 
-`DB_CONNECTION` alone doesn't switch the tests, and `DB_DATABASE` must be set for the run; a database named in `.env` is never used.
+SQLite stays only for the few checks that read a SQLite dump (`TEST_DB_CONNECTION=sqlite vendor/bin/pest --no-tia tests/FeatureSeamsTest.php`) and for pure unit tests that touch no database.
 
 `composer test:local` runs the whole suite on a laptop when you mean to: the PHP suite on 8 processes (without the `nightly` group), then the browser suite on 4. Ctrl-C stops both and every worker. CI is the gate, so a push never waits for it.
 
 `php artisan standards:check` runs tey/standards' conformance rules (configured in `tests/Arch/configuration.php`) and must exit 0. The gate is strict: every optional and advisory rule is on (`optionalRules`), rule 51 (CI shape) is enforced (`ciEnforce`, and `PREFLIGHT_CI_ENFORCE=true` in CI), and the allowlist is empty. A finding is fixed in the code, never allowlisted. Before building a page, action, MCP tool or setting, find its pattern with `bakery.find` (offline: `php artisan standards:pattern "<intent>"`). `standards:install` also adds Claude Code hooks in `.claude/settings.json` (a pre-commit and Stop check, a pattern lookup for new files, and a check after each edit) and a git pre-push hook running `standards:check --changed`. Laravel Boost (`boost.json`, `.ai/guidelines`) publishes the guidelines and skills to Claude Code and Codex; refresh them with `php artisan boost:update`.
 
-CI checks Pint and standards, runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
+CI checks Pint and standards, runs the PHP suites in parallel on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
 
 ## Status
 

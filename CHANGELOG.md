@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Tests run on PostgreSQL by default, in parallel.** `phpunit.xml` and a committed `.env.testing` select PostgreSQL (Herd's defaults, database `starter_testing`); any `DB_*` set for the run overrides it, and `.env` is never read. Each parallel worker gets its own database, `{DB_DATABASE}_w{token}`, created on first use. `composer test` runs `pest --tia --parallel`. CI runs the suite on a PostgreSQL service on every PHP version, and the browser tests on one too; the SQLite job is gone, and SQLite memory stays an explicit opt-in (`TEST_DB_CONNECTION=sqlite`) for the released-schema comparison. Jasper's ruling, 2026-11-07.
 - **Notes is opt-in.** A new app no longer ships the kit's `notes` feature: no `kit_notes` table, notes pages, dashboard card, navigation link or MCP tools. Add it with `php artisan kit:add notes` (docs/lifecycle.md). Existing apps keep theirs. The notes tests stay and switch on with the feature.
 
 ## v0.4.0

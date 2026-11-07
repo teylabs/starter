@@ -11,7 +11,7 @@ if (! defined('STARTER_TEST_DATABASE')) {
     define('STARTER_TEST_DATABASE', config('database.default') === 'pgsql' ? "pgsql {$connection['username']}@{$connection['host']}:{$connection['port']}/{$connection['database']}" : 'sqlite::memory:');
     fwrite(STDERR, 'Test database: '.STARTER_TEST_DATABASE."\n");
 }
-// A PostgreSQL run starts each app on an empty database, as SQLite memory does.
+// A PostgreSQL run starts each app on an empty database.
 if (config('database.default') === 'pgsql') {
     $app->make(Kernel::class)->call('db:wipe', ['--force' => true]);
 }
