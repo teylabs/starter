@@ -1,6 +1,7 @@
 <?php
 
-/** Direct requirements; the allowed set is their transitive closure. */
+/** Direct requirements of each feature's PHP classes; the allowed set is their transitive closure. Since kit 0.6 session-ui's manifest needs only core
+ * and shell, but its PHP classes still read Workspaces and Access, so its PHP edges stay. */
 const FEATURE_GRAPH_REQUIRES = [
     'Core' => [],
     'Workspaces' => ['Core'],
@@ -9,7 +10,10 @@ const FEATURE_GRAPH_REQUIRES = [
     'Mcp' => ['Workspaces', 'Access'],
     'Shell' => ['Core'],
     'SessionUi' => ['Workspaces', 'Access', 'Shell'],
-    'Notes' => ['Workspaces', 'Access', 'SessionUi'],
+    'WorkspaceUi' => ['Workspaces', 'Access', 'Shell', 'SessionUi'],
+    'Notes' => ['Workspaces', 'Access', 'WorkspaceUi'],
+    'Finalize' => ['Workspaces', 'Access'],
+    'Deliver' => ['Workspaces', 'Access', 'Finalize'],
 ];
 /** Library features use no host class; everything else under Tey\Kit\ belongs to the composition root or the lifecycle. */
 const FEATURE_GRAPH_PREFIX = 'Tey\\Kit\\';

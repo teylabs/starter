@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { FormDataConvertible } from '@inertiajs/core';
 import { Form } from '@inertiajs/vue3';
 import { Button, Field, FileInput, FormActions, Input, InputCheckbox, InputSelect, Textarea } from '@kit/ui';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -23,7 +22,8 @@ watch(picked, (file) => {
     if (files.value.length < props.composer.media.max_files) files.value = [...files.value, file];
     chooser.value?.clear();
 });
-const withFiles = (data: Record<string, FormDataConvertible>): Record<string, FormDataConvertible> => ({ ...data, intent_key: key.value, ...(files.value.length ? { files: files.value } : {}) });
+// Generic over Inertia's own form-data type, so the page names no @inertiajs/core type (it imports UI only from @kit/ui).
+const withFiles = <T extends Record<string, unknown>>(data: T) => ({ ...data, intent_key: key.value, ...(files.value.length ? { files: files.value } : {}) });
 const fileError = (errors: Record<string, string>) => errors.files ?? Object.entries(errors).find(([name]) => name.startsWith('files.'))?.[1];
 async function saved() {
     files.value = [];

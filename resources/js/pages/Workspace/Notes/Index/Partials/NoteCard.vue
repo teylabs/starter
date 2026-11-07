@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
 import { FileText, Pin } from '@lucide/vue';
-import { Button, Dropdown, DropdownConfirm, DropdownItem, Field, FormActions, Input, InputSelect, Textarea } from '@kit/ui';
+import { Button, DateTime, Dropdown, DropdownConfirm, DropdownItem, Field, FormActions, Input, InputSelect, Textarea } from '@kit/ui';
 import { computed, nextTick, ref } from 'vue';
 import { dot, intentKey, tone } from './colours';
 
@@ -14,7 +14,6 @@ const options = computed(() => props.colours.map((colour) => ({ value: colour.ke
 const editing = ref(false);
 const editor = ref<{ $el?: HTMLElement } | null>(null);
 const key = ref('');
-const when = (at: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(at));
 async function edit() {
     key.value = intentKey();
     editing.value = true;
@@ -32,7 +31,7 @@ const remove = () => new Promise<void>((resolve) => router.delete(props.item.del
         <header class="flex items-start justify-between gap-3">
             <p :id="`note-${note.id}-by`" class="text-xs opacity-80">
                 <Pin v-if="note.pinned" class="mr-1 inline size-3 fill-current" aria-label="Pinned" />
-                <span class="font-medium">{{ note.author ?? 'Unknown author' }}</span> · <time :datetime="note.created_at">{{ when(note.created_at) }}</time>
+                <span class="font-medium">{{ note.author ?? 'Unknown author' }}</span> · <DateTime :value="note.created_at" />
             </p>
             <Dropdown v-if="item.update || item.delete" horizontal :aria-label="`Actions for note ${note.id}`" data-note-menu>
                 <DropdownItem v-if="item.update" as="button" data-note-edit @click="edit">Edit</DropdownItem>

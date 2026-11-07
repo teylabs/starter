@@ -18,19 +18,32 @@ export function isSelected(selection: Selection, id: Id): boolean {
 }
 
 export function toggle(selection: Selection, id: Id): Selection {
-    return isSelected(selection, id) ? { ids: selection.ids.filter((picked) => key(picked) !== key(id)) } : { ids: [...selection.ids, id] };
+    return isSelected(selection, id)
+        ? { ids: selection.ids.filter((picked) => key(picked) !== key(id)) }
+        : { ids: [...selection.ids, id] };
 }
 
 export function pageState(selection: Selection, page: Id[]): PageState {
     const picked = page.filter((id) => isSelected(selection, id)).length;
-    return page.length > 0 && picked === page.length ? 'all' : picked > 0 ? 'some' : 'none';
+    return page.length > 0 && picked === page.length
+        ? 'all'
+        : picked > 0
+          ? 'some'
+          : 'none';
 }
 
 /** Every visible row selected clears the visible rows; otherwise selects them (keeping rows picked on other pages). */
 export function togglePage(selection: Selection, page: Id[]): Selection {
     if (pageState(selection, page) === 'all') {
         const visible = new Set(page.map(key));
-        return { ids: selection.ids.filter((picked) => !visible.has(key(picked))) };
+        return {
+            ids: selection.ids.filter((picked) => !visible.has(key(picked))),
+        };
     }
-    return { ids: [...selection.ids, ...page.filter((id) => !isSelected(selection, id))] };
+    return {
+        ids: [
+            ...selection.ids,
+            ...page.filter((id) => !isSelected(selection, id)),
+        ],
+    };
 }

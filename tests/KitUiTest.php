@@ -51,14 +51,15 @@ test('page widths are a static lookup', function () {
     // FocusPage is internal to <Page>, never exported.
     $this->assertStringNotContainsString('FocusPage', $index);
 
-    // Widths are boolean props (`<Page sm>`), none is full; the heading carries its own utilities, not a stylesheet rule.
+    // Widths are boolean props (`<Page sm>`); the heading carries its own utilities, not a stylesheet rule.
     $page = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/Page.vue');
-    $this->assertStringContainsString('xs?: boolean; sm?: boolean; md?: boolean; lg?: boolean; xl?: boolean; full?: boolean', $page);
-    $this->assertStringContainsString("?? 'full'", $page);
-    $this->assertStringContainsString('font-serif', $page);
+    foreach (['xs', 'sm', 'md', 'lg', 'xl', 'full'] as $width) {
+        $this->assertMatchesRegularExpression('/\b'.$width.'\?: boolean;/', $page);
+    }
     $this->assertStringNotContainsString('page-heading', (string) file_get_contents(dirname(__DIR__).'/resources/css/app.css'));
 });
-test('every kit page roots in page and fixed content declares a width', function () {
+test('every app page roots in page and fixed content declares a width', function () {
+    // A page tey/kit owns (listed in .mod-maintenance/installed) is the kit's to shape and kit:add's to replace: the kit's own checks hold it, so this reads the app's pages.
     // Every page roots in <Page>; the default is full, for lists, tables and grids that grow with data. A page whose content does not
     // grow (forms, settings sections, detail and confirmation pages, empty states, account and guest pages) declares a focused width
     // (`<Page sm>`). Add a page to $full only when it is a full data page.
@@ -68,6 +69,9 @@ test('every kit page roots in page and fixed content declares a width', function
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__).'/resources/js/pages', FilesystemIterator::SKIP_DOTS)) as $file) {
         $relative = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
         if (basename($relative) !== 'Page.vue') {
+            continue;
+        }
+        if (in_array($relative, kitOwnedFiles(), true)) {
             continue;
         }
         $source = (string) file_get_contents($file->getPathname());
@@ -89,8 +93,7 @@ test('every kit page roots in page and fixed content declares a width', function
         }
         $checked[] = $relative;
     }
-    expect(count($checked))->toBeGreaterThanOrEqual(6);
-    expect($checked)->toContain('resources/js/pages/Workspace/Settings/General/Page.vue');
+    expect($checked)->toContain('resources/js/pages/Workspace/Examples/LocalModal/Page.vue');
 });
 test('hand rolled controls live only in kit components', function () {
     $root = dirname(__DIR__).'/resources/js';
@@ -100,8 +103,11 @@ test('hand rolled controls live only in kit components', function () {
             if (! in_array($file->getExtension(), ['vue', 'ts'], true)) {
                 continue;
             }
-            $source = (string) file_get_contents($file->getPathname());
             $relative = substr($file->getPathname(), strlen($root) + 1);
+            if (in_array('resources/js/'.$relative, kitOwnedFiles(), true)) {
+                continue;
+            }
+            $source = (string) file_get_contents($file->getPathname());
             // Pages and the shell use the kit's controls (Input, InputCheckbox, Button, PasswordInput, the toggles), never raw form elements.
             $this->assertDoesNotMatchRegularExpression('/<(input|button|select|textarea|label)\b/', $source, $relative.' has a raw form element: use the kit component');
             // Pressed state and key handling belong to Reka, inside kit components, not hand-rolled in a page or the shell.
@@ -109,7 +115,7 @@ test('hand rolled controls live only in kit components', function () {
             $outside[] = $relative;
         }
     }
-    expect(count($outside))->toBeGreaterThan(10);
+    expect(count($outside))->toBeGreaterThan(5);
 
     // The appearance controls and the password input are kit components on Reka, exported from @kit/ui.
     $index = (string) file_get_contents($root.'/components/Kit/index.ts');

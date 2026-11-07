@@ -2,6 +2,7 @@
 
 use App\Support\KitMigrationRepository;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
@@ -12,8 +13,10 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\DeleteNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\ListNotes;
 use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\WriteNote;
+use Tey\Kit\Features\Settings\Integrations\Mcp\ReadMailIdentity;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
+use Tey\Kit\Features\Workspaces\Http\Middleware\ResolveWorkspace;
 use Tey\Kit\Search\SearchWorkspace;
 
 test('fresh schema equals the released schema', function () {
@@ -39,7 +42,7 @@ test('databases migrated before the split keep their schema and data', function 
 });
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
-    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class, ReadDashboard::class, SearchWorkspace::class]);
+    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class, ReadDashboard::class, SearchWorkspace::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary'], ['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']]);
     $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard', 'search.read' => 'Search the workspace', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, change and delete your workspace notes'];
     expect($registry->tokenScopes())->toBe($scopes);
@@ -61,14 +64,23 @@ test('registry contributions match the released wiring', function () {
     }
     expect($registry->status('something_else'))->toBeNull();
 
-    $routes = [];
+    // The route seams, read from each route's own declaration rather than a stored table: every workspace page under `/@{workspace}` is signed in,
+    // active and resolves its workspace (a bare `/@{workspace}/dashboard` is the short redirect to it, open to any method); the chooser is at
+    // /me/workspaces, and the old /workspaces URLs still answer, signed in, to redirect.
+    $workspacePages = 0;
     foreach (Route::getRoutes() as $route) {
-        $routes[] = implode('|', $route->methods()).' '.$route->uri().' '.implode(',', $route->gatherMiddleware());
+        if (! str_starts_with($route->uri(), '@{workspace}') || $route->uri() === '@{workspace}/dashboard') {
+            continue;
+        }
+        $workspacePages++;
+        expect($route->gatherMiddleware())->toContain('auth:web', 'concierge.active', ResolveWorkspace::class);
     }
-    sort($routes);
-
-    // The route table, with the workspace pages under `/@{workspace}` (and short, without it), the chooser at /me/workspaces and the old /workspaces URLs redirecting.
-    expect($routes)->toBe(json_decode(file_get_contents(__DIR__.'/Fixtures/routes.json'), true));
+    expect($workspacePages)->toBeGreaterThan(0);
+    foreach (['me/workspaces', 'workspaces', 'workspaces/{workspace}/{path?}'] as $uri) {
+        $route = Route::getRoutes()->match(Request::create('/'.str_replace(['{workspace}', '/{path?}'], ['1', ''], $uri)));
+        expect($route->uri())->toBe($uri);
+        expect($route->gatherMiddleware())->toContain('auth:web', 'concierge.active');
+    }
 });
 /** @param list<string> $legacy the template ids the database recorded */
 function featureSeamsAssertKeptOnUpgrade(array $legacy): void
@@ -91,7 +103,7 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(20);
+    expect($kit)->toHaveCount(33);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -143,9 +155,28 @@ function featureSeamsReleased(bool $withNotes): array
     // The kit's notes feature (0.4.9): its own kit_notes and kit_note_intents, beside any legacy notes tables, which it never touches.
     $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-notes.json'), true)];
 
+    // kit 0.14 with Concierge 0.9. Concierge: an invitation and a membership scoped below the workspace, and guest members. The kit: an audit
+    // event outlives its workspace (nullable, null on delete, with the workspace's name kept), an MCP connection names its OAuth client, a
+    // workspace or account deletion runs in the background, MCP clients register and run tools as tracked runs, and a workspace has its own mail identity.
+    $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-0.14.json'), true)];
+    $schema['concierge_invitations']['columns'][] = ['scope_type', 'varchar', 0, null, 0];
+    $schema['concierge_invitations']['columns'][] = ['scope_id', 'varchar', 0, null, 0];
+    $schema['concierge_invitations']['indexes'][] = [0, 'c', ['workspace_id', 'scope_type', 'scope_id']];
+    sort($schema['concierge_invitations']['indexes']);
+    $schema['concierge_memberships']['columns'][] = ['guest', 'tinyint(1)', 1, "'0'", 0];
+    $schema['audit_events']['columns'] = array_map(fn (array $column): array => $column[0] === 'workspace_id' ? ['workspace_id', 'integer', 0, null, 0] : $column, $schema['audit_events']['columns']);
+    $schema['audit_events']['columns'][] = ['workspace_name', 'varchar', 0, null, 0];
+    $schema['audit_events']['foreign_keys'] = [['workspace_id', 'workspaces', 'id', 'NO ACTION', 'SET NULL']];
+    // An upgraded database gets the index on audit_events.workspace_id a fresh one has (the workspaces migration's missing-index step).
+    $schema['audit_events']['indexes'] = [[0, 'c', ['workspace_id']]];
+    $schema['connections']['columns'][] = ['oauth_client_id', 'varchar', 0, null, 0];
+
     // The kit's slug migration: a workspace's slug is the segment after the `@` in its pages' URLs.
     $schema['workspaces']['columns'][] = ['slug', 'varchar', 0, null, 0];
     $schema['workspaces']['indexes'][] = [1, 'c', ['slug']];
+    // kit 0.14: a workspace being deleted in the background, and who asked.
+    $schema['workspaces']['columns'][] = ['deleting_at', 'datetime', 0, null, 0];
+    $schema['workspaces']['columns'][] = ['deleting_by', 'integer', 0, null, 0];
     sort($schema['workspaces']['indexes']);
     ksort($schema);
 

@@ -17,8 +17,19 @@ function choose(value: unknown) {
 }
 </script>
 <template>
-    <ToggleGroupRoot type="single" :model-value="appearance" aria-label="Appearance" class="inline-flex rounded-md bg-muted p-0.5" @update:model-value="choose">
-        <ToggleGroupItem v-for="option in options" :key="option.value" :value="option.value" class="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-xs">
+    <ToggleGroupRoot
+        type="single"
+        :model-value="appearance"
+        aria-label="Appearance"
+        class="bg-muted inline-flex rounded-md p-0.5"
+        @update:model-value="choose"
+    >
+        <ToggleGroupItem
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+            class="text-muted-foreground hover:text-foreground focus-visible:ring-ring data-[state=on]:bg-background data-[state=on]:text-foreground rounded-md px-2 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none data-[state=on]:shadow-xs"
+        >
             {{ option.label }}
         </ToggleGroupItem>
     </ToggleGroupRoot>

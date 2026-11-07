@@ -9,12 +9,13 @@ import { Dialog, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMe
 // the full name in `title`.
 type Shell = Tey.Kit.Features.Shell.Data.ShellData;
 defineOptions({ inheritAttrs: false });
-const props = defineProps<{ workspace: Shell['workspace']; switcher: Shell['switcher']; account: Shell['account'] }>();
+// `placeholder`: the label when there is no current workspace (e.g. the chooser for someone with two or more); not "Workspaces", which the nav link beside it already says.
+const props = defineProps<{ workspace: Shell['workspace']; switcher: Shell['switcher']; account: Shell['account']; placeholder?: string }>();
 // Leave workspace is the server's action, there only for a member who can leave; it asks first (opened after the menu has closed, or the menu's own dismissal swallows it).
 const asking = ref(false);
 const ask = () => setTimeout(() => (asking.value = true), 0);
 const leave = computed(() => props.workspace?.leave ?? null);
-const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? 'Workspaces';
+const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? props.placeholder ?? 'Choose a workspace';
 </script>
 <template>
     <!-- A split control: the name goes to the workspace's home (the server's URL), the caret opens the menu. Two focus targets in one group with no line between them: each half has its own hover background, so the split shows only on interaction; the name truncates, the caret never shrinks. -->
@@ -47,7 +48,7 @@ const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? 'Wo
                 <DropdownMenuItem v-if="workspace?.settings" as-child>
                     <Link :href="workspace.settings.url" class="min-h-9 w-full">{{ workspace.settings.label }}</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem v-if="leave" class="text-destructive focus:text-destructive" data-shell-leave @select="ask">{{ leave.label }}</DropdownMenuItem>
+                <DropdownMenuItem v-if="leave" class="text-destructive-text focus:text-destructive-text" data-shell-leave @select="ask">{{ leave.label }}</DropdownMenuItem>
             </template>
             <DropdownMenuSeparator />
             <DropdownMenuItem as-child>

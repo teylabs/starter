@@ -8,7 +8,7 @@ import type { WidgetFrame } from './Partials/types';
 // The workspace home. The greeting is the page heading; below it the welcome card (the one welcome: a greeting for a new member, then the "Finish setting up"
 // checklist of skipped steps), then the widget grid (`Registry::widget()`), or the empty state when the viewer has no widgets. An app adds widgets rather than forking
 // this page; it can still replace it by registering its own dashboard component, which receives the same props and can render <WidgetGrid> where it likes.
-const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.DashboardViewModel>();
+const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.WorkspaceDashboardViewModel>();
 // The page heading greets by name; while the welcome card is up it greets the person itself, so the heading drops the name (no double greeting).
 const heading = computed(() => (props.welcome ? props.greeting.split(',')[0] : props.greeting));
 const icons: Record<string, unknown> = { timezone: Globe, photo: Camera };
@@ -25,7 +25,7 @@ const percent = computed(() => (props.welcome && props.welcome.total > 0 ? Math.
             <div class="grid gap-1.5">
                 <p class="text-xs font-medium text-muted-foreground" data-welcome-progress>{{ welcome.done }} of {{ welcome.total }} done</p>
                 <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Setup progress" aria-valuemin="0" :aria-valuemax="welcome.total" :aria-valuenow="welcome.done">
-                    <div class="h-full rounded-full bg-primary transition-[width] motion-reduce:transition-none" :style="{ width: percent + '%' }" />
+                    <div class="h-full w-(--kit-meter) rounded-full bg-primary transition-[width] motion-reduce:transition-none" :style="{ '--kit-meter': percent + '%' }" />
                 </div>
             </div>
             <ul class="grid gap-2">

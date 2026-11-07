@@ -32,3 +32,12 @@ test('it creates nothing outside the local environment', function () {
     expect(firstOwnerCommandRunCommand('starter:first-owner'))->toBe(1);
     expect(User::query()->count())->toBe(0);
 });
+test('a dry run says what it would create and writes nothing', function () {
+    expect(firstOwnerCommandRunCommand('starter:first-owner', ['--dry-run' => true]))->toBe(0);
+    expect(User::query()->count())->toBe(0);
+    expect(app(Kernel::class)->output())->toContain('would create owner@example.com');
+
+    $owner = User::create(['name' => 'Local owner', 'email' => 'owner@example.com', 'email_verified_at' => now()]);
+    expect(firstOwnerCommandRunCommand('starter:first-owner', ['--dry-run' => true]))->toBe(0);
+    expect(Workspace::query()->memberOf($owner)->count())->toBe(0);
+});

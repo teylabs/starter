@@ -18,7 +18,11 @@ const { resolvedAppearance, updateAppearance } = useAppearance();
         data-appearance-toggle
         @update:model-value="updateAppearance($event ? 'dark' : 'light')"
     >
-        <Sun v-if="resolvedAppearance === 'dark'" class="size-4" aria-hidden="true" />
+        <Sun
+            v-if="resolvedAppearance === 'dark'"
+            class="size-4"
+            aria-hidden="true"
+        />
         <Moon v-else class="size-4" aria-hidden="true" />
     </Toggle>
 </template>

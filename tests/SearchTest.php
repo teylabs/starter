@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Laravel\Pennant\Feature;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\UserState;
 
@@ -46,7 +47,10 @@ test('session search', function () {
     $this->getJson('/@alpha/search?q=a')->assertStatus(429);
 
     // With the search capability off, the page is absent and the shell offers no search.
-    config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.search' => false]]);
+    // The limiter is spent from above, and Pennant remembers a capability until its cache is flushed, as a new request would.
+    config(['kit.search.per_minute' => 60, 'kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.search' => false]]);
+    RateLimiter::clear('kit-search:3');
+    Feature::flushCache();
     $this->get('/@alpha/search?q=a', $inertia)->assertNotFound();
     $this->get('/@alpha', $inertia)->assertOk()->assertJsonPath('props.shell.search', null);
 });

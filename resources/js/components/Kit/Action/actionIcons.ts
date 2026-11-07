@@ -1,4 +1,49 @@
-import { Banknote, Check, Copy, CreditCard, FileText, MessageSquare, Pencil, Plus, Send, type LucideIcon } from '@lucide/vue';
+import {
+    Banknote,
+    ChartColumn,
+    Check,
+    Copy,
+    CreditCard,
+    Eye,
+    EyeOff,
+    FileText,
+    ArrowDown,
+    ArrowUp,
+    Image,
+    MessageSquare,
+    Pencil,
+    Plus,
+    Send,
+    TextAlignCenter,
+    TextAlignEnd,
+    TextAlignStart,
+    Trash,
+    Vote,
+    type LucideIcon,
+} from '@lucide/vue';
 
-// The icons an action descriptor may name (`icon`, kebab case). An unknown name renders no icon rather than an unrelated one.
-export const actionIcons: Record<string, LucideIcon> = { 'banknote': Banknote, 'check': Check, 'copy': Copy, 'credit-card': CreditCard, 'file-text': FileText, 'message-square': MessageSquare, 'pencil': Pencil, 'plus': Plus, 'send': Send };
+// The icons an action descriptor or a toolbar item may name (`icon`, kebab case), imported by name so a bundler keeps only these. An unknown name renders no icon
+// rather than an unrelated one. The editor set: align-left/center/right, arrow-up/down (move earlier or later), trash, image, eye/eye-off (a visibility toggle),
+// plus, copy, chart and poll.
+export const actionIcons: Record<string, LucideIcon> = {
+    'align-center': TextAlignCenter,
+    'align-left': TextAlignStart,
+    'align-right': TextAlignEnd,
+    'arrow-down': ArrowDown,
+    'arrow-up': ArrowUp,
+    banknote: Banknote,
+    chart: ChartColumn,
+    check: Check,
+    copy: Copy,
+    'credit-card': CreditCard,
+    eye: Eye,
+    'eye-off': EyeOff,
+    'file-text': FileText,
+    image: Image,
+    'message-square': MessageSquare,
+    pencil: Pencil,
+    plus: Plus,
+    poll: Vote,
+    send: Send,
+    trash: Trash,
+};

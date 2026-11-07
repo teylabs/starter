@@ -2,19 +2,28 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
 permissions:
   contents: read
 
+# Draft and ready runs keep separate groups, so a draft snapshot never cancels the full run; a newer push to a PR cancels its older run, never main's.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.draft }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   PHP_EXTENSIONS: pdo_sqlite, sqlite3, pdo_pgsql, exif, sockets, intl, zip
+  # The strict gate: tey/standards rule 51 (CI shape) fails instead of advising.
+  PREFLIGHT_CI_ENFORCE: 'true'
 
 jobs:
   privacy:
     name: Privacy
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - run: sh bin/privacy-check.sh
@@ -23,13 +32,15 @@ jobs:
 
   standards:
     name: Standards
-    uses: teylabs/standards/.github/workflows/standards.yml@v0.11.0
+    uses: teylabs/standards/.github/workflows/standards.yml@v0.11.74
     with:
       base-ref: ${{ github.base_ref }}
+      timeout-minutes: 15
 
   pint:
     name: Pint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -42,11 +53,14 @@ jobs:
 
   php:
     name: PHP ${{ matrix.php }} (SQLite)
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.4', '8.5']
+        # One deploy PHP version on pull requests; the next one too on main.
+        php: ${{ github.event_name == 'pull_request' && fromJSON('["8.4"]') || fromJSON('["8.4", "8.5"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -60,7 +74,9 @@ jobs:
 
   postgres:
     name: PHP 8.4 (PostgreSQL)
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17
@@ -92,6 +108,7 @@ jobs:
   deploy:
     name: Deploy order (PostgreSQL, queue ${{ matrix.queue }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # As a platform with a database attached sets it: the database cache and sessions, and either queue (sync runs jobs in the request).
     strategy:
       fail-fast: false
@@ -137,7 +154,7 @@ jobs:
           openssl genrsa -out oauth-private.pem 4096 2>/dev/null
           openssl rsa -in oauth-private.pem -pubout -out oauth-public.pem 2>/dev/null
           { echo 'PASSPORT_PRIVATE_KEY<<PEM'; cat oauth-private.pem; echo PEM; echo 'PASSPORT_PUBLIC_KEY<<PEM'; cat oauth-public.pem; echo PEM; } >> "$GITHUB_ENV"
-      - name: A throwaway brand, as an app configures its own (production /up refuses the template's placeholders)
+      - name: A throwaway brand, as an app configures its own
         run: |
           {
             echo 'APP_NAME=CI Product'
@@ -160,6 +177,7 @@ jobs:
   rehearsal:
     name: Production rehearsal (queue ${{ matrix.queue }}, keys ${{ matrix.keys }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # The deploy before the deploy: .env.production.example filled with throwaway values, migrated on PostgreSQL, then kit:preflight with the production-only checks ON (the mail
     # transport's package, the cache/session/queue tables, the key forms). It catches what CI used to skip because it ran the preflight with --ci.
     strategy:
@@ -204,7 +222,9 @@ jobs:
 
   node:
     name: Node
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -221,6 +241,7 @@ jobs:
   parity:
     name: Kit parity
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -237,7 +258,9 @@ jobs:
 
   fresh-clone:
     name: Fresh clone
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:

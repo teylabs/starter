@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -7,10 +8,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /** The user model's table and key: the kit's configured user model, else the `users` auth provider's. */
+    /**
+     * The user model's table and key: the kit's configured user model, else the `users` auth provider's.
+     *
+     * @return array{string, string}
+     */
     private function user(): array
     {
-        $model = new (config('kit.models.user') ?? config('auth.providers.users.model'));
+        /** @var class-string<Model> $class */
+        $class = config('kit.models.user') ?? config('auth.providers.users.model');
+        $model = new $class;
 
         return [$model->getTable(), $model->getKeyName()];
     }

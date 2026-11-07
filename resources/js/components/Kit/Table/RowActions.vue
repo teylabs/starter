@@ -1,27 +1,71 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import DropdownMenuContent from '@/components/Kit/Menu/MenuContent.vue';
 import Button from '@/components/Kit/Form/Button.vue';
 import Dialog from '@/components/Kit/Overlay/Dialog.vue';
+import { Link } from '@inertiajs/vue3';
+import {
+    opensNewTab,
+    rendersAsLink,
+} from '@/components/Kit/Action/actionPlacement';
+import { confirmationData } from '@/components/Kit/Overlay/confirmText';
 
 // One row's actions, as the server decided them: nothing here checks a permission, an action that is not in the list is not shown. One or two plain actions
 // show inline; three or more become the first inline plus a menu. A destructive action is a menu item whenever another action exists (a lone one is a button), and
-// always asks first with the action's own `confirm` text. `intercept` names actions the page performs itself (a dialog) instead of an Inertia visit.
-type RowAction = { key: string | null; label: string; url: string; method: string; destructive: boolean; confirm: { title: string; description: string; label: string } | null };
-const props = defineProps<{ actions: RowAction[]; label: string; intercept?: string[] }>();
+// always asks first with the action's own `confirm` text (and its `typed` text to type, sent as `confirmation`). `intercept` names actions the page performs itself (a dialog) instead of an Inertia visit.
+type RowAction = {
+    key: string | null;
+    label: string;
+    url: string;
+    method: string;
+    destructive: boolean;
+    disabled?: boolean;
+    newTab?: boolean | null;
+    intent?: string | null;
+    confirm: {
+        title: string;
+        description: string;
+        label: string;
+        typed?: string | null;
+    } | null;
+};
+const props = defineProps<{
+    actions: RowAction[];
+    label: string;
+    intercept?: string[];
+}>();
 const emit = defineEmits<{ act: [action: RowAction] }>();
-const plain = computed(() => props.actions.filter((action) => !action.destructive));
-const destructive = computed(() => props.actions.filter((action) => action.destructive));
-const inline = computed(() => (plain.value.length >= 3 ? plain.value.slice(0, 1) : plain.value));
-const menu = computed(() => [...(plain.value.length >= 3 ? plain.value.slice(1) : []), ...(plain.value.length ? destructive.value : [])]);
+const plain = computed(() =>
+    props.actions.filter((action) => !action.destructive),
+);
+const destructive = computed(() =>
+    props.actions.filter((action) => action.destructive),
+);
+const inline = computed(() =>
+    plain.value.length >= 3 ? plain.value.slice(0, 1) : plain.value,
+);
+const menu = computed(() => [
+    ...(plain.value.length >= 3 ? plain.value.slice(1) : []),
+    ...(plain.value.length ? destructive.value : []),
+]);
 const lone = computed(() => (plain.value.length ? [] : destructive.value));
 const asking = ref<RowAction | null>(null);
 // The dialog closes itself on Confirm (clearing `asking`) around the same click, so the action to run is kept apart.
 let pending: RowAction | null = null;
 // Its text stays after the dialog closes: the dialog must not be removed in the middle of the click that confirms it, or the confirm never fires.
 const shown = ref<RowAction['confirm']>(null);
-const asked = computed({ get: () => asking.value !== null, set: (open: boolean) => { if (!open) asking.value = null; } });
+const asked = computed({
+    get: () => asking.value !== null,
+    set: (open: boolean) => {
+        if (!open) asking.value = null;
+    },
+});
 
 function perform(action: RowAction) {
     if (props.intercept?.includes(action.key ?? '')) return emit('act', action);
@@ -34,25 +78,108 @@ function perform(action: RowAction) {
     }
     run(action);
 }
-function run(action: RowAction) {
-    router.visit(action.url, { method: action.method as 'get' | 'post' | 'put' | 'patch' | 'delete', preserveScroll: true, preserveState: true });
+function run(action: RowAction, confirmation?: string) {
+    router.visit(action.url, {
+        method: action.method as 'get' | 'post' | 'put' | 'patch' | 'delete',
+        data: confirmationData(confirmation),
+        preserveScroll: true,
+        preserveState: true,
+    });
 }
-function confirmed() {
-    if (pending) run(pending);
+function confirmed(confirmation?: string) {
+    if (pending) run(pending, confirmation);
     pending = null;
     asking.value = null;
 }
 </script>
 <template>
-    <div v-if="actions.length" class="flex items-center justify-end gap-2" data-row-actions>
-        <Button v-for="action in inline" :key="action.key ?? action.label" variant="secondary" type="button" :data-action="action.key" @click="perform(action)">{{ action.label }}</Button>
-        <Button v-for="action in lone" :key="action.key ?? action.label" variant="destructive" type="button" :data-action="action.key" @click="perform(action)">{{ action.label }}</Button>
+    <div
+        v-if="actions.length"
+        class="flex items-center justify-end gap-2"
+        data-row-actions
+    >
+        <template v-for="action in inline" :key="action.key ?? action.label">
+            <Button
+                v-if="rendersAsLink(action, intercept)"
+                variant="secondary"
+                :href="action.url"
+                :external="opensNewTab(action)"
+                :target="opensNewTab(action) ? '_blank' : undefined"
+                :data-action="action.key"
+                >{{ action.label }}</Button
+            >
+            <Button
+                v-else
+                variant="secondary"
+                type="button"
+                :data-action="action.key"
+                @click="perform(action)"
+                >{{ action.label }}</Button
+            >
+        </template>
+        <Button
+            v-for="action in lone"
+            :key="action.key ?? action.label"
+            variant="destructive"
+            type="button"
+            :data-action="action.key"
+            @click="perform(action)"
+            >{{ action.label }}</Button
+        >
         <DropdownMenu v-if="menu.length">
-            <DropdownMenuTrigger as-child><Button variant="secondary" type="button" :aria-label="label" data-row-menu>…</Button></DropdownMenuTrigger>
+            <DropdownMenuTrigger as-child
+                ><Button
+                    variant="secondary"
+                    type="button"
+                    :aria-label="label"
+                    data-row-menu
+                    >…</Button
+                ></DropdownMenuTrigger
+            >
             <DropdownMenuContent align="end">
-                <DropdownMenuItem v-for="action in menu" :key="action.key ?? action.label" :class="action.destructive ? 'text-destructive focus:text-destructive' : ''" :data-action="action.key" @select="perform(action)">{{ action.label }}</DropdownMenuItem>
+                <template
+                    v-for="action in menu"
+                    :key="action.key ?? action.label"
+                >
+                    <DropdownMenuItem
+                        v-if="rendersAsLink(action, intercept)"
+                        as-child
+                        :data-action="action.key"
+                    >
+                        <a
+                            v-if="opensNewTab(action)"
+                            :href="action.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >{{ action.label }}</a
+                        >
+                        <Link v-else :href="action.url">{{
+                            action.label
+                        }}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        v-else
+                        :class="
+                            action.destructive
+                                ? 'text-destructive-text focus:text-destructive-text'
+                                : ''
+                        "
+                        :data-action="action.key"
+                        @select="perform(action)"
+                        >{{ action.label }}</DropdownMenuItem
+                    >
+                </template>
             </DropdownMenuContent>
         </DropdownMenu>
-        <Dialog variant="danger" v-if="shown" v-model:open="asked" :title="shown.title" :description="shown.description" :confirm-label="shown.label" @confirm="confirmed" />
+        <Dialog
+            variant="danger"
+            v-if="shown"
+            v-model:open="asked"
+            :title="shown.title"
+            :description="shown.description"
+            :confirm-label="shown.label"
+            :confirm-text="shown.typed ?? null"
+            @confirm="confirmed"
+        />
     </div>
 </template>

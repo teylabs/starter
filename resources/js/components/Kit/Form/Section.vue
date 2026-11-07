@@ -5,8 +5,10 @@ import SectionHeader from '@/components/Kit/Layout/SectionHeader.vue';
 defineProps<{ title?: string; description?: string }>();
 </script>
 <template>
-    <section class="rounded-xl border bg-card text-card-foreground shadow-xs">
-        <div v-if="title" class="border-b px-6 py-4"><SectionHeader :title="title" :description="description" /></div>
+    <section class="bg-card text-card-foreground rounded-xl border shadow-xs">
+        <div v-if="title" class="border-b px-6 py-4">
+            <SectionHeader :title="title" :description="description" />
+        </div>
         <div class="grid gap-6 p-6"><slot /></div>
     </section>
 </template>

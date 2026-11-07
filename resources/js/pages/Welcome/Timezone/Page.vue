@@ -27,7 +27,7 @@ watch(zone, (value, before) => {
             </Field>
             <div class="flex flex-wrap items-center justify-end gap-3">
                 <span class="sr-only" role="status" aria-live="polite" data-welcome-saved>{{ saved ? 'Saved' : '' }}</span>
-                <Button :disabled="processing" data-welcome-submit>{{ submit.label }}</Button>
+                <Button type="submit" :disabled="processing" data-welcome-submit>{{ submit.label }}</Button>
             </div>
         </Form>
     </div>

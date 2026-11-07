@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Token;
+use Laravel\Pennant\Feature;
 use Tey\Concierge\Concierge;
 use Tey\Concierge\Enums\AccountStatus;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
@@ -39,7 +40,8 @@ test('delegated settings', function () {
     $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
     $query = ['client_id' => $client->id, 'redirect_uri' => 'https://client.example.test/callback', 'response_type' => 'code', 'scope' => 'mcp:use settings.read settings.write', 'state' => Str::random(24), 'code_challenge' => $challenge, 'code_challenge_method' => 'S256', 'prompt' => 'consent'];
     $this->get('/oauth/authorize?'.http_build_query($query))->assertOk()->assertSee('Authorize')->assertSee('Read workspace settings');
-    $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken')])->assertRedirect();
+    // kit 0.7+: the consent binds the connection to a workspace the person chose, and makes the connection.
+    $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken'), 'workspace' => 1])->assertRedirect();
     parse_str(parse_url($approval->headers->get('Location'), PHP_URL_QUERY), $callback);
     self::assertSame($query['state'], $callback['state']);
     $exchange = ['grant_type' => 'authorization_code', 'client_id' => $client->id, 'redirect_uri' => $query['redirect_uri'], 'code' => $callback['code'], 'code_verifier' => $verifier];
@@ -51,18 +53,18 @@ test('delegated settings', function () {
     self::assertIsString($bearer);
     $token = Token::query()->where('user_id', 1)->where('client_id', $client->id)->firstOrFail();
     $grant = ['token_id' => $token->id, 'scopes' => ['settings.read', 'settings.write'], 'intent_key' => 'approve-one'];
-    $connection = $this->postJson('/@alpha/settings/connections', $grant)->assertCreated()->json('id');
-    $this->postJson('/@alpha/settings/connections', $grant)->assertOk()->assertJsonPath('id', $connection);
-    $duplicate = $grant;
-    $duplicate['intent_key'] = 'duplicate-approval';
-    $this->postJson('/@alpha/settings/connections', $duplicate)->assertConflict()->assertJsonPath('error', 'connection_active');
+    // The approved consent made the connection in the chosen workspace, for this person and client; a second approval of the same token is refused.
+    $connection = (int) DB::table('connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->value('id');
+    self::assertNotSame(0, $connection);
+    $this->postJson('/@alpha/settings/connections', $grant)->assertConflict()->assertJsonPath('error', 'connection_active');
     self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.connection.approved')->count());
     $this->postJson('/@beta/settings/connections', $grant)->assertNotFound();
     $this->withToken('invalid');
     mcpTransportRpc($connection, 'tools/list')->assertUnauthorized();
     $this->withToken($bearer);
     mcpTransportRpc($connection, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => new stdClass, 'clientInfo' => ['name' => 'Synthetic client', 'version' => '1']])->assertOk()->assertJsonPath('result.serverInfo.name', 'Workspace operations');
-    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(8, 'result.tools');
+    // kit 0.7+: a narrow connection lists only the tools its scopes cover: the settings reads and the update.
+    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(3, 'result.tools');
     // A connection granted settings only stays narrow: the dashboard read tool needs dashboard.read (or acts-as-me).
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     // So does global search: workspace_search needs search.read.
@@ -97,10 +99,13 @@ test('delegated settings', function () {
     mcpTransportRpc($connection, 'tools/list')->assertForbidden();
     $account->forceFill(['status' => AccountStatus::Active])->save();
 
-    // A capability that is off is absent: the endpoint answers 404, not 403.
+    // Pennant remembers a capability for the request's scope; a changed config is read after its cache is flushed, as a new request would.
     config(['kit.capabilities' => ['workspace.settings' => false]]);
+    Feature::flushCache();
+    mcpTransportRpc($connection, 'tools/list')->assertNotFound();
     mcpTransportRpc($connection, 'tools/list')->assertNotFound();
     config(['kit.capabilities' => ['workspace.settings' => true, 'workspace.dashboard' => true, 'workspace.notes' => true]]);
+    Feature::flushCache();
     $this->withoutToken();
     Auth::forgetGuards();
 
@@ -113,23 +118,26 @@ test('delegated settings', function () {
     self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.connection.revoked')->count());
     $this->withToken($bearer);
 
-    mcpTransportRpc($connection, 'tools/list')->assertForbidden();
+    // Revoking the connection revokes its token too: the bearer is no longer valid at all.
+    mcpTransportRpc($connection, 'tools/list')->assertUnauthorized();
     $this->withoutToken();
     Auth::forgetGuards();
     $verifier = Str::random(64);
     $query['scope'] = 'mcp:use settings.read dashboard.read notes.read notes.write';
     $query['code_challenge'] = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
     $this->get('/oauth/authorize?'.http_build_query($query))->assertOk();
-    $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken')])->assertRedirect();
+    // kit 0.7+: the consent binds the connection to a workspace the person chose, and makes the connection.
+    $approval = $this->post('/oauth/authorize', ['auth_token' => session('authToken'), 'workspace' => 1])->assertRedirect();
     parse_str(parse_url($approval->headers->get('Location'), PHP_URL_QUERY), $callback);
     $exchange['code'] = $callback['code'];
     $exchange['code_verifier'] = $verifier;
     $newBearer = $this->postJson('/oauth/token', $exchange)->assertOk()->json('access_token');
     $newToken = Token::query()->where('user_id', 1)->where('client_id', $client->id)->where('id', '!=', $token->id)->firstOrFail();
-    $newGrant = ['token_id' => $newToken->id, 'scopes' => ['settings.read', 'dashboard.read', 'notes.read', 'notes.write'], 'intent_key' => 'approve-reconnected'];
-    $newConnection = $this->postJson('/@alpha/settings/connections', $newGrant)->assertCreated()->json('id');
+    // The second consent made a new connection; the revoked first one is not reused.
+    $newConnection = (int) DB::table('connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->whereNull('revoked_at')->value('id');
+    self::assertNotSame($connection, $newConnection);
     $this->withToken($bearer);
-    mcpTransportRpc($newConnection, 'tools/list')->assertForbidden();
+    mcpTransportRpc($newConnection, 'tools/list')->assertUnauthorized();
     $this->withToken($newBearer);
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.display_name', 'MCP Alpha');
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');

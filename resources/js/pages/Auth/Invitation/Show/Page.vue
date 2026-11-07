@@ -60,7 +60,7 @@ const body = computed(() => {
         </div>
         <Form v-if="state === 'ready'" v-slot="{ processing }" :action="accept_url" method="post" class="mt-6 grid gap-4">
             <Input type="hidden" name="timezone" :model-value="timezone" />
-            <Button class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
+            <Button type="submit" class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
             <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">{{ other_email ? 'Switch account' : `Not ${signed_in_as}? Switch account` }}</Link>
             <Link v-if="other_email" href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
         </Form>
@@ -74,10 +74,10 @@ const body = computed(() => {
         <Form v-else-if="state === 'register_required'" v-slot="{ processing }" :action="register_url" method="post" :reset-on-success="['password', 'password_confirmation']" class="mt-6 grid gap-4">
             <Input type="hidden" name="timezone" :model-value="timezone" />
             <Field id="invite-email" label="Email address"><Input id="invite-email" :model-value="invitation?.email" type="email" readonly /></Field>
-            <Field id="name" name="name" label="Your name"><Input id="name" name="name" required autofocus autocomplete="name" aria-describedby="name-error" /></Field>
-            <Field id="password" name="password" label="Password"><PasswordInput id="password" name="password" required autocomplete="new-password" aria-describedby="password-error" /></Field>
+            <Field id="name" name="name" label="Your name"><Input id="name" name="name" required autofocus autocomplete="name" /></Field>
+            <Field id="password" name="password" label="Password"><PasswordInput id="password" name="password" required autocomplete="new-password" rules /></Field>
             <Field id="password_confirmation" name="password_confirmation" label="Confirm password"><PasswordInput id="password_confirmation" name="password_confirmation" required autocomplete="new-password" /></Field>
-            <Button class="w-full" :disabled="processing" data-test="invitation-register">{{ processing ? 'Creating…' : 'Create account' }}</Button>
+            <Button type="submit" class="w-full" :disabled="processing" data-test="invitation-register">{{ processing ? 'Creating…' : 'Create account' }}</Button>
         </Form>
         <div v-else-if="state === 'wrong_account'" class="mt-6 grid gap-3" data-invitation-wrong-account>
             <Link href="/switch-account" method="post" as="button" class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-switch-account">Switch account</Link>

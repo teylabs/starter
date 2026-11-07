@@ -10,5 +10,10 @@ onMounted(() => menu?.setTrigger(trigger.value?.$el ?? null));
 onBeforeUnmount(() => menu?.setTrigger(null));
 </script>
 <template>
-    <DropdownMenuTrigger ref="trigger" as-child @keydown.up="menu?.openFromEnd($event)"><slot /></DropdownMenuTrigger>
+    <DropdownMenuTrigger
+        ref="trigger"
+        as-child
+        @keydown.up="menu?.openFromEnd($event)"
+        ><slot
+    /></DropdownMenuTrigger>
 </template>

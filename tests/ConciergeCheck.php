@@ -96,18 +96,15 @@ check('repeat tenant acceptance returns same workspace without replacing roles',
     same('already_provisioned', $repeat['outcome']);
     same($before, DB::table('model_has_roles')->get()->toJson());
 });
-check('wrong unverified expired and revoked invitations cannot provision', function (): void {
-    $user = User::create(['name' => 'Delta', 'email' => 'delta@example.test', 'email_verified_at' => null]);
+check('wrong expired and revoked invitations cannot provision, and accepting verifies the invited address', function (): void {
+    $user = User::create(['name' => 'Delta', 'email' => 'delta@example.test', 'email_verified_at' => now()]);
     $issued = InviteTenant::run(User::findOrFail(99), $user->email);
     $before = Workspace::count();
-    foreach ([new Principal(1), new Principal($user->id)] as $principal) {
-        try {
-            app(AcceptWorkspaceInvitation::class)->handle($principal, $issued->token);
-            throw new RuntimeException('Invalid invitation accepted');
-        } catch (InvitationRejected $e) {
-        }
+    try {
+        app(AcceptWorkspaceInvitation::class)->handle(new Principal(1), $issued->token);
+        throw new RuntimeException('Invalid invitation accepted');
+    } catch (InvitationRejected $e) {
     }
-    $user->forceFill(['email_verified_at' => now()])->save();
     $issued->invitation->forceFill(['expires_at' => now()->subMinute()])->save();
     try {
         app(AcceptWorkspaceInvitation::class)->handle(new Principal($user->id), $issued->token);
@@ -121,6 +118,13 @@ check('wrong unverified expired and revoked invitations cannot provision', funct
     } catch (InvitationRejected $e) {
     }
     same($before, Workspace::count());
+
+    // Concierge 0.8.3+: an unverified account whose email is the invited one is verified by accepting, inside the accept transaction.
+    $unverified = User::create(['name' => 'Delta Two', 'email' => 'delta2@example.test', 'email_verified_at' => null]);
+    $issued = InviteTenant::run(User::findOrFail(99), $unverified->email);
+    app(AcceptWorkspaceInvitation::class)->handle(new Principal($unverified->id), $issued->token);
+    same(true, $unverified->fresh()->email_verified_at !== null);
+    same($before + 1, Workspace::count());
 });
 check('host settings failure rolls back package onboarding atomically', function (): void {
     $user = User::create(['name' => 'Epsilon', 'email' => 'epsilon@example.test', 'email_verified_at' => now()]);

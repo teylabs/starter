@@ -1,4 +1,4 @@
-import type { Method } from '@inertiajs/core';
+import type { Method } from '@/components/Kit/types';
 import { http } from '@inertiajs/vue3';
 
 /**
@@ -7,30 +7,62 @@ import { http } from '@inertiajs/vue3';
  * it falls back to localStorage. Writes are not debounced, ordered or retried.
  */
 export type SplitPreference = { url: string; method: string };
-export type SplitSend = (preference: SplitPreference, body: { key: string; value: string }) => Promise<boolean>;
+export type SplitSend = (
+    preference: SplitPreference,
+    body: { key: string; value: string },
+) => Promise<boolean>;
 type Local = Pick<Storage, 'getItem' | 'setItem'>;
 
 export function splitFallbackKey(scope: string, key: string): string {
     return `kit:split:${scope}:${key}`;
 }
 
-export function splitStorage(options: { key: string; scope: string; state?: string | null; preference?: SplitPreference | null; send?: SplitSend; local?: () => Local | undefined; saved?: (value: string) => void }) {
+export function splitStorage(options: {
+    key: string;
+    scope: string;
+    state?: string | null;
+    preference?: SplitPreference | null;
+    send?: SplitSend;
+    local?: () => Local | undefined;
+    saved?: (value: string) => void;
+}) {
     let serialized = options.state ?? null;
     const fallbackKey = splitFallbackKey(options.scope, options.key);
     const local = options.local ?? (() => globalThis.localStorage);
-    const fallback = (value: string) => { try { local()?.setItem(fallbackKey, value); } catch { /* Storage may be blocked. */ } };
+    const fallback = (value: string) => {
+        try {
+            local()?.setItem(fallbackKey, value);
+        } catch {
+            /* Storage may be blocked. */
+        }
+    };
     return {
         getItem: (): string | null => {
             if (serialized !== null) return serialized;
-            try { return local()?.getItem(fallbackKey) ?? null; } catch { return null; }
+            try {
+                return local()?.getItem(fallbackKey) ?? null;
+            } catch {
+                return null;
+            }
         },
         setItem: (_key: string, value: string): void => {
             if (serialized === value) return;
             serialized = value;
             const preference = options.preference;
-            if (!preference) { fallback(value); return; }
-            (options.send ?? sendPreference)(preference, { key: options.key, value })
-                .then(ok => { if (ok) options.saved?.(value); else fallback(value); }, () => fallback(value));
+            if (!preference) {
+                fallback(value);
+                return;
+            }
+            (options.send ?? sendPreference)(preference, {
+                key: options.key,
+                value,
+            }).then(
+                (ok) => {
+                    if (ok) options.saved?.(value);
+                    else fallback(value);
+                },
+                () => fallback(value),
+            );
         },
     };
 }
@@ -41,7 +73,12 @@ export function splitStorage(options: { key: string; scope: string; state?: stri
  */
 export const sendPreference: SplitSend = async (preference, body) => {
     try {
-        const response = await http.getClient().request({ method: preference.method.toLowerCase() as Method, url: preference.url, data: body, headers: { Accept: 'application/json' } });
+        const response = await http.getClient().request({
+            method: preference.method.toLowerCase() as Method,
+            url: preference.url,
+            data: body,
+            headers: { Accept: 'application/json' },
+        });
         return response.status >= 200 && response.status < 300;
     } catch {
         return false;

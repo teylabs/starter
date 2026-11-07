@@ -15,7 +15,7 @@ defineExpose({ props });
                     <Input type="hidden" name="expected_version" :model-value="String(settings.version)" />
                     <Input type="hidden" name="intent_key" :model-value="intent_key" />
                     <Field id="display-name" name="display_name" label="Display name" :span="4">
-                        <Input id="display-name" name="display_name" :model-value="settings.display_name" required maxlength="120" aria-describedby="display-name-error" />
+                        <Input id="display-name" name="display_name" :model-value="settings.display_name" required maxlength="120" />
                     </Field>
                     <Field id="timezone" name="timezone" label="Timezone" :span="4">
                         <TimezoneSelect id="timezone" name="timezone" :model-value="settings.timezone" />

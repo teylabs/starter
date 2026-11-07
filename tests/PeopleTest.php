@@ -68,14 +68,14 @@ test('the owner sees the members and the pending invitations', function () {
     expect($page['tab'])->toBe('members');
     expect(peopleNames($rows))->toBe(['Alpha', 'Viewer']);
     expect(array_map(fn (array $row) => $row['roles'][0]['label'], $rows))->toBe(['Owner', 'Viewer']);
-    expect(peopleActionKeys($rows))->toBe([null, 'change-role,transfer-ownership,remove'], 'the owner has no actions; the viewer can be re-roled, made owner and removed (Concierge decides, by rank)');
+    expect(peopleActionKeys($rows))->toBe([null, 'change-role,suspend,transfer-ownership,remove'], 'the owner has no actions; the viewer can be re-roled, suspended, made owner and removed (Concierge decides, by rank)');
     expect(array_map(fn (array $row) => $row['member']['is_you'], $rows))->toBe([true, false]);
     expect($rows[0]['member']['avatar'])->toBeNull();
     expect($rows[1]['joined'])->not->toBeNull();
-    expect(array_column($rows[1]['actions'], 'method'))->toBe(['put', 'post', 'delete']);
+    expect(array_column($rows[1]['actions'], 'method'))->toBe(['put', 'post', 'post', 'delete']);
     expect($rows[1]['actions'][0]['confirm'])->toBeNull('a role change does not ask');
-    expect($rows[1]['actions'][2]['confirm']['label'])->toBe('Remove member', 'removing asks first');
-    expect($rows[1]['actions'][2]['destructive'])->toBeTrue();
+    expect($rows[1]['actions'][3]['confirm']['label'])->toBe('Remove member', 'removing asks first');
+    expect($rows[1]['actions'][3]['destructive'])->toBeTrue();
 
     // The grantable roles come from Concierge's `grantable_by`: an owner grants admin and viewer, never owner.
     expect(array_column($page['roles'], 'value'))->toBe(['admin', 'viewer']);
@@ -93,7 +93,7 @@ test('the owner sees the members and the pending invitations', function () {
 
     // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
     $keys = array_column($this->get('/@alpha/settings', peopleInertia())->json('props.groups.0.sections'), 'key');
-    expect($keys)->toBe(['general', 'people']);
+    expect($keys)->toBe(['general', 'email', 'people']);
 });
 test('a viewer is refused and does not see the section', function () {
     require dirname(__DIR__).'/database/fixture.php';

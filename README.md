@@ -21,7 +21,7 @@ From a fresh clone (or `laravel new app --using=tey/starter` once the template i
 ```sh
 vendor/bin/pint --test
 php artisan standards:check
-vendor/bin/pest --tia
+vendor/bin/pest --tia      # the tests your change touches
 composer fixture:check
 composer test:browser
 npm run typecheck && npm run build && npm test
@@ -39,7 +39,9 @@ composer fixture:check
 
 `DB_CONNECTION` alone doesn't switch the tests, and `DB_DATABASE` must be set for the run; a database named in `.env` is never used.
 
-`php artisan standards:check` runs tey/standards' conformance rules (configured in `tests/Arch/configuration.php`) and must exit 0. Before building a page, action, MCP tool or setting, find its pattern with `bakery.find` (offline: `php artisan standards:pattern "<intent>"`). `standards:install` also adds Claude Code hooks in `.claude/settings.json` (a pre-commit and Stop check, a pattern lookup for new files, and a check after each edit) and a git pre-push hook running `standards:check --changed`. Laravel Boost (`boost.json`, `.ai/guidelines`) publishes the guidelines and skills to Claude Code and Codex; refresh them with `php artisan boost:update`.
+`composer test:local` runs the whole suite on a laptop when you mean to: the PHP suite on 8 processes (without the `nightly` group), then the browser suite on 4. Ctrl-C stops both and every worker. CI is the gate, so a push never waits for it.
+
+`php artisan standards:check` runs tey/standards' conformance rules (configured in `tests/Arch/configuration.php`) and must exit 0. The gate is strict: every optional and advisory rule is on (`optionalRules`), rule 51 (CI shape) is enforced (`ciEnforce`, and `PREFLIGHT_CI_ENFORCE=true` in CI), and the allowlist is empty. A finding is fixed in the code, never allowlisted. Before building a page, action, MCP tool or setting, find its pattern with `bakery.find` (offline: `php artisan standards:pattern "<intent>"`). `standards:install` also adds Claude Code hooks in `.claude/settings.json` (a pre-commit and Stop check, a pattern lookup for new files, and a check after each edit) and a git pre-push hook running `standards:check --changed`. Laravel Boost (`boost.json`, `.ai/guidelines`) publishes the guidelines and skills to Claude Code and Codex; refresh them with `php artisan boost:update`.
 
 CI checks Pint and standards, runs the PHP suites on SQLite memory and on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
 

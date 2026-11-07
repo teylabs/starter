@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
 import { ModalLink, visitModal } from '@inertiaui/modal-vue';
-import { Avatar, BlockStack, Button, Dialog, DataTable, Field, Page, PasswordInput } from '@kit/ui';
+import { Avatar, BlockStack, DataTable, DateTime, Page } from '@kit/ui';
 import { computed, ref } from 'vue';
 
 // Settings › People: the Members and Invitations tabs as one server-driven table. Concierge decides the rows, the counts and each row's actions (an admin has none on
-// the owner); this page only renders them. Removing and revoking ask first (the action's own confirm text, in the table); changing a role and inviting open a dialog.
+// the owner); this page only renders them. Removing and revoking ask first (the action's own confirm text, in the table); changing a role, making someone owner and inviting open a dialog.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.PeopleViewModel>();
 type Row = Record<string, any>;
-const date = (iso: unknown) => (typeof iso === 'string' && iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
+// Named, not inline: vue-tsc 2 can't parse an inline object type in a template expression (TS1005).
+type RoleLabel = { label: string };
 // Server-driven modals over this page, from the descriptors' URLs (the same URL the change is sent to), opened in history so Back closes them. Invite is the package's ModalLink,
 // which prefetches on hover and shows its loading state; a row action's modal opens through `visitModal`.
 const opening = ref(false);
@@ -16,20 +16,10 @@ async function open(url: string) {
     opening.value = true;
     try { await visitModal(url, { navigate: true }); } finally { opening.value = false; }
 }
-type Confirm = { title: string; description: string; label: string };
-const making = ref<{ row: Row; url: string; confirm: Confirm } | null>(null);
-const makeOpen = computed({ get: () => making.value !== null, set: (open: boolean) => { if (!open) { making.value = null; password.value = ''; } } });
-const password = ref('');
-function act(row: Row, action: { key: string | null; url: string; confirm: Confirm | null }) {
-    if (action.key === 'change-role') open(action.url);
-    if (action.key === 'transfer-ownership' && action.confirm) making.value = { row, url: action.url, confirm: action.confirm };
+function act(_row: Row, action: { key: string | null; url: string }) {
+    // Change role and Make owner open their server-driven modals (Make owner's asks for the workspace's name and your password; the server checks both).
+    if (action.key === 'change-role' || action.key === 'transfer-ownership') open(action.url);
 }
-// Make owner confirms with the owner's password; the server checks it again and refuses a wrong one.
-function makeOwner() {
-    if (!making.value) return;
-    router.put(making.value.url, { membership: making.value.row.id, password: password.value }, { preserveScroll: true, onSuccess: () => { making.value = null; password.value = ''; } });
-}
-const passwordError = computed(() => (usePage().props.errors as Record<string, string>).password);
 const members = computed(() => props.tab === 'members');
 </script>
 <template>
@@ -51,10 +41,8 @@ const members = computed(() => props.tab === 'members');
                     </span>
                 </template>
                 <!-- The server's role labels, as sent: the page shows them and checks nothing. -->
-                <template #cell-roles="{ value }">{{ ((value ?? []) as { label: string }[]).map((granted) => granted.label).join(', ') }}</template>
-                <template #cell-joined="{ row }">{{ date(row.joined) }}</template>
-                <template #cell-sent="{ row }">{{ date(row.sent) }}</template>
-                <template #cell-expires="{ row }"><span :class="row.status === 'expired' ? 'text-destructive' : ''">{{ row.status === 'expired' ? 'Expired ' : '' }}{{ date(row.expires) }}</span></template>
+                <template #cell-roles="{ value }">{{ ((value ?? []) as RoleLabel[]).map((granted) => granted.label).join(', ') }}</template>
+                                                <template #cell-expires="{ row }"><span :class="row.status === 'expired' ? 'text-destructive-text' : ''">{{ row.status === 'expired' ? 'Expired ' : '' }}<DateTime v-if="row.expires" :value="row.expires" format="date" /></span></template>
                 <template #empty-first-use>
                     <p class="font-medium">No invitations yet</p>
                     <p class="text-sm text-muted-foreground">Invite someone and they show up here until they join.</p>
@@ -62,10 +50,5 @@ const members = computed(() => props.tab === 'members');
                 <template #empty-no-results><p class="font-medium">{{ members ? 'No members match' : 'No invitations match' }}</p></template>
             </DataTable>
         </BlockStack>
-        <Dialog variant="danger" v-if="making" v-model:open="makeOpen" :title="making.confirm.title" :description="making.confirm.description" :confirm-label="making.confirm.label" @confirm="makeOwner">
-            <template #body>
-                <Field id="make-owner-password" label="Your password" :error="passwordError"><PasswordInput id="make-owner-password" v-model="password" autocomplete="current-password" /></Field>
-            </template>
-        </Dialog>
     </Page>
 </template>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Asserts the template's feature files equal `kit:add` of every catalog feature on a clean Laravel app.
+# Asserts the template's feature files equal `kit:add` of its adopted features on a clean Laravel app.
 # Usage: sh bin/kit-parity.sh <clean-app>, where <clean-app> is a fresh `laravel/laravel` checkout with its
 # dependencies installed. It adds the template's locked tey/kit and the packages the features need, runs
 # kit:install and kit:add, then compares every path a feature owns in both directions.
@@ -19,9 +19,16 @@ php artisan kit:install
 # The workspaces feature's host step (kit 0.1.3+): the user model implements Concierge's Member through the kit's trait,
 # as the template's does. kit:add refuses until it is met, and never writes the model itself.
 php -r '$f = "app/Models/User.php"; $s = file_get_contents($f); $n = preg_replace("/^class User extends Authenticatable\n\{\n/m", "class User extends Authenticatable implements \\Tey\\Concierge\\Contracts\\Member\n{\n    use \\Tey\\Kit\\Features\\Workspaces\\Concerns\\HasWorkspaces;\n", $s, 1, $count); if ($count !== 1) { fwrite(STDERR, "parity: could not apply the user model host step\n"); exit(1); } file_put_contents($f, $n);'
+# core's host_ui step (kit 0.7+): the kit's components import the host's shadcn-vue primitives. They are the host's own
+# files, never a feature's, so the template's copies stand in for `npx shadcn-vue add`.
+mkdir -p resources/js/components
+rm -rf resources/js/components/ui
+cp -R "$template/resources/js/components/ui" resources/js/components/ui
 touch database/database.sqlite
 php artisan migrate --force --path=database/migrations
-features=$(php artisan kit:list --json | php -r 'echo implode(" ", array_column(json_decode(stream_get_contents(STDIN), true), "id"));')
+# The template's adopted features (config/kit.php `features`), not the whole catalog: an opt-in feature the template
+# does not ship (finalize, deliver) is left out.
+features=$(php -r '$c = include $argv[1]; echo implode(" ", $c["features"]);' "$template/config/kit.php")
 # shellcheck disable=SC2086
 plan=$(php artisan kit:add $features --json | php -r 'echo json_decode(stream_get_contents(STDIN), true)["plan"];')
 # shellcheck disable=SC2086
@@ -33,7 +40,7 @@ tweaked() { head -n 5 "$1" 2>/dev/null | grep -q 'kit: tweaked'; }
 reason() { head -n 5 "$1" | grep -o 'kit: tweaked.*' | head -n 1 | sed -e 's/^kit: tweaked[[:space:]]*//' -e 's/[[:space:]]*-->[[:space:]]*$//'; }
 status=0
 tweaks=0
-for owned in $(php artisan kit:list --json | php -r 'foreach (json_decode(stream_get_contents(STDIN), true) as $f) { echo implode("\n", $f["owns"]), "\n"; }'); do
+for owned in $(php artisan kit:list --json | php -r '$want = explode(" ", $argv[1]); foreach (json_decode(stream_get_contents(STDIN), true) as $f) { if (in_array($f["id"], $want, true)) { echo implode("\n", $f["owns"]), "\n"; } }' "$features"); do
     differences=$(diff -rq "$app/$owned" "$template/$owned" || true)
     [ -z "$differences" ] && continue
     while IFS= read -r line; do
