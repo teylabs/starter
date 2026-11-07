@@ -63,9 +63,9 @@ test('each section has its own page in both url forms', function () {
     expect(route('workspaces.connections.index', ['workspace' => 'alpha']))->toEndWith('/@alpha/settings/connections');
 
     // Settings is one link in the nav, to the landing page; the sections are not.
-    $this->get('/settings/general', settingsLandingInertia())->assertJsonPath('props.shell.navigation.2', ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
+    $this->get('/settings/general', settingsLandingInertia())->assertJsonPath('props.shell.navigation.'.(notesAdopted() ? 2 : 1), ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'group' => 'workspace'])
         ->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Settings', 'url' => '/settings', 'current' => false, 'home' => false, 'title' => null], ['label' => 'General', 'url' => '/settings/general', 'current' => true, 'home' => false, 'title' => null]]);
-    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.shell.navigation.2.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false, 'title' => null]]);
+    $this->get('/@alpha/settings', settingsLandingInertia())->assertJsonPath('props.shell.navigation.'.(notesAdopted() ? 2 : 1).'.current', true)->assertJsonPath('props.layout.breadcrumbs', [['label' => 'Product name', 'url' => '/', 'current' => false, 'home' => true, 'title' => null], ['label' => 'Settings', 'url' => '/settings', 'current' => true, 'home' => false, 'title' => null]]);
 });
 test('the personal landing page lists the personal sections', function () {
     require dirname(__DIR__).'/database/fixture.php';

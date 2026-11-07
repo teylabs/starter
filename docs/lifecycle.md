@@ -19,7 +19,18 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 
 ## Kit features
 
-`config/kit.php` adopts every catalog feature except the opt-in `finalize` and `deliver` (`features`). The template ships tey/mod's installed records for them (`.mod-maintenance/installed/*.json`, relative to the checkout, so a clone carries them; the journals, lock and owner file stay local and gitignored). `php artisan kit:status --check` reads them and fails on an unmarked edit to a kit-owned file, and `php artisan kit:update plan --lineage=<feature>` / `apply` updates each feature in place. To add an opt-in feature, run `php artisan kit:add <feature>` and list it in `features`. tey/standards reads the same records, so a kit-owned file is the kit's, not the app's, to the frontend rules. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
+`config/kit.php` adopts every catalog feature except the opt-in `notes`, `finalize` and `deliver` (`features`). The template ships tey/mod's installed records for them (`.mod-maintenance/installed/*.json`, relative to the checkout, so a clone carries them; the journals, lock and owner file stay local and gitignored). `php artisan kit:status --check` reads them and fails on an unmarked edit to a kit-owned file, and `php artisan kit:update plan --lineage=<feature>` / `apply` updates each feature in place. To add an opt-in feature, run `php artisan kit:add <feature>` and list it in `features`. tey/standards reads the same records, so a kit-owned file is the kit's, not the app's, to the frontend rules. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
+
+### Adding notes
+
+New apps do not ship the kit's `notes` feature (the notes wall, its dashboard card, its MCP tools and the `kit_notes` table); apps that already have it keep it. To add it:
+
+1. `php artisan kit:add notes` previews the plan and prints its identity; review it.
+2. `php artisan kit:add notes --apply --expected-plan=<plan>` writes the pages, widget and migration and records the lineage.
+3. Add `'notes'` to `features` and `'workspace.notes' => true` to `capabilities` in `config/kit.php`, then `php artisan migrate`.
+4. Add the notes rows back to `app/Support/McpCapabilities.php` (the notes tools, the `session_notes` test and the page and controller inventory; see this file's history) and run `php bin/mcp-capabilities.php`.
+
+The notes tests stay in the template and switch on with the feature: `tests/NotesTest.php` and `tests/Browser/Notes.php` skip until `notes` is adopted, and the shared pins (`notesAdopted()` in `tests/Pest.php`: dashboard widgets, navigation, breadcrumbs, migrations, MCP scopes and tools, schema) expect the notes contributions once it is.
 
 Never edit a generated feature file (`database/migrations/kit/**`, the kit's pages): copy a page to your own name, or add a migration of your own. CI's parity job runs `kit:add` of the template's features on a clean Laravel app and fails when the template's files differ.
 

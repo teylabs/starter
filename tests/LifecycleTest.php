@@ -43,8 +43,8 @@ test('released packages and trusted host binding', function () {
     }
     expect($host->lifecycle()->runtime())->toBe(json_decode(file_get_contents(base_path('config/kit-executor.json')), true));
     expect(($host->operationCheck())())->toBeTrue();
-    // The template adopts every catalog feature except the opt-in finalize and deliver, in the catalog's order.
-    expect(config('kit.features'))->toBe(array_values(array_diff(Catalog::package()->featureIds(), ['finalize', 'deliver'])));
+    // The template adopts every catalog feature except the opt-in notes, finalize and deliver, in the catalog's order.
+    expect(config('kit.features'))->toBe(array_values(array_diff(Catalog::package()->featureIds(), ['notes', 'finalize', 'deliver'])));
 });
 test('adding every feature writes the template files then reruns as a no op', function () {
     $root = lifecycleCheckout();

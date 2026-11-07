@@ -70,3 +70,9 @@ if (! function_exists('settled')) {
         return $page;
     }
 }
+
+/** Whether this app adopted the kit's opt-in notes feature (`php artisan kit:add notes`). New starters do not; tests pin both. */
+function notesAdopted(): bool
+{
+    return in_array('notes', config('kit.features'), true);
+}

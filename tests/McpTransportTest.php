@@ -125,7 +125,9 @@ test('delegated settings', function () {
     $this->withoutToken();
     Auth::forgetGuards();
     $verifier = Str::random(64);
-    $query['scope'] = 'mcp:use settings.read dashboard.read notes.read notes.write';
+    // Notes is opt-in (kit:add notes): its scopes, dashboard card and tools are proved only when the app adopted it.
+    $notes = in_array('notes', config('kit.features'), true);
+    $query['scope'] = 'mcp:use settings.read dashboard.read'.($notes ? ' notes.read notes.write' : '');
     $query['code_challenge'] = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
     $this->get('/oauth/authorize?'.http_build_query($query))->assertOk();
     // kit 0.7+: the consent binds the connection to a workspace the person chose, and makes the connection.
@@ -145,19 +147,21 @@ test('delegated settings', function () {
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     // The dashboard over MCP: the widgets this connection's grant covers (dashboard.read, and notes.read for the notes card), not the activity widget behind members.manage; extra arguments are refused.
     $dashboard = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.workspace.id', 1);
-    self::assertSame(['kit.you', 'kit.people', 'notes.recent'], array_column($dashboard->json('result.structuredContent.widgets'), 'key'));
+    self::assertSame($notes ? ['kit.you', 'kit.people', 'notes.recent'] : ['kit.you', 'kit.people'], array_column($dashboard->json('result.structuredContent.widgets'), 'key'));
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => ['workspace_id' => 2]])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'unknown_arguments');
-    // Notes over MCP: the same operations as the pages. A write replays on its intent key, a stale version is refused, and a delete asks for confirmation first.
-    $written = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note.version', 1);
-    $noteId = $written->json('result.structuredContent.note_id');
-    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note_id', $noteId);
-    self::assertSame(1, DB::table('kit_notes')->where('body', 'From the assistant')->count());
-    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_read', 'arguments' => ['id' => $noteId]])->assertOk()->assertJsonPath('result.structuredContent.author_id', 1);
-    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_list', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.notes.0.id', $noteId);
-    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['id' => $noteId, 'expected_version' => 9, 'body' => 'Stale', 'intent_key' => 'mcp-note-2']])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'stale_note');
-    $ask = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3']])->assertOk()->assertJsonPath('result.structuredContent.status', 'confirmation_required');
-    self::assertSame(1, DB::table('kit_notes')->whereNull('deleted_at')->where('id', $noteId)->count());
-    mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3', 'confirm_token' => $ask->json('result.structuredContent.confirm_token')]])->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
+    if ($notes) {
+        // Notes over MCP: the same operations as the pages. A write replays on its intent key, a stale version is refused, and a delete asks for confirmation first.
+        $written = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note.version', 1);
+        $noteId = $written->json('result.structuredContent.note_id');
+        mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['body' => 'From the assistant', 'intent_key' => 'mcp-note-1']])->assertOk()->assertJsonPath('result.structuredContent.note_id', $noteId);
+        self::assertSame(1, DB::table('kit_notes')->where('body', 'From the assistant')->count());
+        mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_read', 'arguments' => ['id' => $noteId]])->assertOk()->assertJsonPath('result.structuredContent.author_id', 1);
+        mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_list', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.structuredContent.notes.0.id', $noteId);
+        mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_write', 'arguments' => ['id' => $noteId, 'expected_version' => 9, 'body' => 'Stale', 'intent_key' => 'mcp-note-2']])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'stale_note');
+        $ask = mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3']])->assertOk()->assertJsonPath('result.structuredContent.status', 'confirmation_required');
+        self::assertSame(1, DB::table('kit_notes')->whereNull('deleted_at')->where('id', $noteId)->count());
+        mcpTransportRpc($newConnection, 'tools/call', ['name' => 'notes_delete', 'arguments' => ['id' => $noteId, 'expected_version' => 1, 'intent_key' => 'mcp-note-3', 'confirm_token' => $ask->json('result.structuredContent.confirm_token')]])->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
+    }
 
     // Persisted scopes cannot widen the cryptographically granted JWT scopes.
     $newToken->update(['scopes' => ['mcp:use', 'settings.read', 'settings.write']]);

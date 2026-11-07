@@ -25,7 +25,8 @@ test('fresh schema equals the released schema', function () {
         $this->markTestSkipped('The released schema fixture is a SQLite dump; on PostgreSQL only the migrations are checked.');
     }
 
-    // A fresh starter has the notes feature's kit_notes tables, and none of the legacy notes tables an earlier kit release made.
+    // A fresh starter has none of the legacy notes tables an earlier kit release made, and no kit_notes either: notes is opt-in (kit:add notes).
+    expect(DB::getSchemaBuilder()->hasTable('kit_notes'))->toBe(notesAdopted());
     // A fresh install has core's index on audit_events.workspace_id under the workspaces foreign key; the 0.2.1 dump had the key alone.
     $released = featureSeamsReleased(withNotes: false);
     $released['audit_events']['indexes'] = [[0, 'c', ['workspace_id']]];
@@ -40,15 +41,27 @@ test('databases migrated before the split keep their schema and data', function 
     expect(app(Kernel::class)->call('migrate', ['--force' => true, '--path' => [...array_map(fn (string $id): string => 'tests/Fixtures/v0.2.1-migrations/'.$id.'.php', $paths), 'tests/Fixtures/legacy-migrations/create_starter_domain_tables.php']]))->toBe(0);
     featureSeamsAssertKeptOnUpgrade([...$paths, 'create_starter_domain_tables']);
 });
+test('a new starter does not adopt notes', function () {
+    // Notes is opt-in: apps add it with `php artisan kit:add notes` (README). The template ships no notes files or installed record.
+    expect(config('kit.features'))->not->toContain('notes');
+    expect(config('kit.capabilities'))->not->toHaveKey('workspace.notes');
+    expect(glob(base_path('database/migrations/kit/notes/*')))->toBe([]);
+    expect(file_exists(base_path('resources/js/widgets/Notes.vue')))->toBeFalse();
+    expect(is_dir(base_path('resources/js/pages/Workspace/Notes')))->toBeFalse();
+    expect(Route::has('kit.notes.index') || collect(Route::getRoutes())->contains(fn ($route) => str_contains($route->uri(), 'notes')))->toBeFalse();
+})->skip(fn () => notesAdopted(), 'This app adopted notes.');
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
-    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class, ReadDashboard::class, SearchWorkspace::class]);
-    expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary'], ['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']]);
-    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard', 'search.read' => 'Search the workspace', 'notes.read' => 'Read workspace notes', 'notes.write' => 'Create, change and delete your workspace notes'];
+    // Notes contributes only once adopted (kit:add notes); these pins hold for both.
+    $notes = notesAdopted();
+    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ...($notes ? [ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class] : []), ReadDashboard::class, SearchWorkspace::class]);
+    expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary'], ...($notes ? [['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']] : [])]);
+    $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard', 'search.read' => 'Search the workspace', ...($notes ? ['notes.read' => 'Read workspace notes', 'notes.write' => 'Create, change and delete your workspace notes'] : [])];
     expect($registry->tokenScopes())->toBe($scopes);
     expect(Passport::scopeIds())->toBe(array_keys($scopes));
-    expect($registry->workspaceCapabilities())->toBe(['workspace.settings', 'workspace.dashboard', 'workspace.search', 'workspace.notes']);
-    expect(Feature::defined())->toEqualCanonicalizing(['workspace.settings', 'workspace.dashboard', 'workspace.search', 'workspace.notes']);
+    $capabilities = ['workspace.settings', 'workspace.dashboard', 'workspace.search', ...($notes ? ['workspace.notes'] : [])];
+    expect($registry->workspaceCapabilities())->toBe($capabilities);
+    expect(Feature::defined())->toEqualCanonicalizing($capabilities);
     $statuses = [
         // A capability that is off is absent, not forbidden: a 404 like a page that is not there.
         404 => ['workspace_not_found', 'workspace_mismatch', 'capability_unavailable'],
@@ -103,7 +116,7 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(33);
+    expect($kit)->toHaveCount(notesAdopted() ? 33 : 32);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -152,8 +165,10 @@ function featureSeamsReleased(bool $withNotes): array
     // What the kit remembers about a person: timezone, onboarding steps and dismissed welcome cards.
     $schema['kit_user_state'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-user-state.json'), true);
 
-    // The kit's notes feature (0.4.9): its own kit_notes and kit_note_intents, beside any legacy notes tables, which it never touches.
-    $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-notes.json'), true)];
+    // The kit's notes feature (0.4.9), once an app adopts it (kit:add notes): its own kit_notes and kit_note_intents, beside any legacy notes tables, which it never touches.
+    if (notesAdopted()) {
+        $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-notes.json'), true)];
+    }
 
     // kit 0.14 with Concierge 0.9. Concierge: an invitation and a membership scoped below the workspace, and guest members. The kit: an audit
     // event outlives its workspace (nullable, null on delete, with the workspace's name kept), an MCP connection names its OAuth client, a

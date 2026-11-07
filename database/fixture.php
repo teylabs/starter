@@ -116,8 +116,6 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 (require base_path('database/migrations/kit/core/0001_01_02_000101_create_kit_meta_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000502_create_kit_user_state_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php'))->up();
-// The notes feature's own tables.
-(require base_path('database/migrations/kit/notes/0001_01_02_000701_create_kit_notes_table.php'))->up();
 (require base_path('database/migrations/kit/settings/0001_01_02_000403_create_workspace_mail_identities_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000504_create_kit_account_deletions_table.php'))->up();
 (require base_path('database/migrations/kit/session-ui/0001_01_02_000505_add_finished_at_to_kit_account_deletions_table.php'))->up();

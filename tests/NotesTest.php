@@ -77,4 +77,4 @@ test('session notes', function () {
 
     // The legacy notes tables an earlier release made are not touched by the feature.
     expect(Schema::hasTable('notes'))->toBeFalse();
-});
+})->skip(fn (): bool => ! notesAdopted(), 'Notes is opt-in: this app has not run kit:add notes.');
