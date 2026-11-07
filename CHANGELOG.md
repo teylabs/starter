@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **The FocusShell's account cluster and the LocalModal example group their actions.** Each had adjacent buttons outside an action container, which the standards `ui.action-group` rule (v0.11.78+) reports as advisories in every app made from the starter. The account cluster (Switch account, Sign out, the appearance toggle) and the example's three openers now sit in the kit's `Toolbar`, which sets only the gap and alignment, so neither page looks different.
+
 ### Changed
 
 - **Tests run on PostgreSQL by default, in parallel.** `phpunit.xml` and a committed `.env.testing` select PostgreSQL (Herd's defaults, database `starter_testing`); any `DB_*` set for the run overrides it, and `.env` is never read. Each parallel worker gets its own database, `{DB_DATABASE}_w{token}`, created on first use. `composer test` runs `pest --tia --parallel`. CI runs the suite on a PostgreSQL service on every PHP version, and the browser tests on one too; the SQLite job is gone, and SQLite memory stays an explicit opt-in (`TEST_DB_CONNECTION=sqlite`) for the released-schema comparison. Jasper's ruling, 2026-11-07.
