@@ -58,11 +58,12 @@ it('sets two-factor authentication up with a code and shows the devices section'
         expect($state())->toBe(['kept', 'Password', 'Password', '/me/password']);
         $page->click('[data-settings-sidebar] a[href="/me/profile"]')->assertPathIs('/me/profile');
         expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile']);
+        // The path changes before the restored page has rendered: wait for its heading, then read the state.
         $page->script('() => { history.back(); return true; }');
-        $page->assertPathIs('/me/password');
+        $page->assertPathIs('/me/password')->assertSeeIn('[data-slot=page-heading]', 'Password');
         expect($state())->toBe(['kept', 'Password', 'Password', '/me/password']);
         $page->script('() => { history.forward(); return true; }');
-        $page->assertPathIs('/me/profile');
+        $page->assertPathIs('/me/profile')->assertSeeIn('[data-slot=page-heading]', 'Profile');
         expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile']);
         // Leaving the section for one without a sidebar drops the sublayout and the item does not linger.
         $page->navigate('/')->assertMissing('[data-settings-sidebar]');
