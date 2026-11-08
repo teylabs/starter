@@ -106,11 +106,50 @@ function mcpCapabilitiesSchemaErrors(mixed $data): array
 
     return $result->isValid() ? [] : (new ErrorFormatter)->format($result->error());
 }
-/** The file exists and declares the symbol: a function, class or const, or for a `test_*` name, the Pest test of that name (`test_a_b` is `test('a b')`). */
+/** How a `test_*` name and a Pest description are compared: lowercased, punctuation stripped, runs of whitespace and underscores collapsed to one space. */
+function mcpCapabilitiesTestName(string $name): string
+{
+    return trim((string) preg_replace('/[\s_]+/', ' ', (string) preg_replace('/[^\p{L}\p{N}\s_]+/u', '', mb_strtolower($name))));
+}
+
+/** Whether the source has a Pest `test()` or `it()` whose description, normalised, is the `test_*` name's (`test_a_b` is `it('a, b')`). */
+function mcpCapabilitiesPestDeclares(string $source, string $symbol): bool
+{
+    if (! str_starts_with($symbol, 'test_')) {
+        return false;
+    }
+    $wanted = mcpCapabilitiesTestName(substr($symbol, 5));
+    preg_match_all('/\b(?:test|it)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $source, $matches);
+    foreach ($matches[2] as $index => $description) {
+        // A single-quoted PHP string keeps `\n` as a backslash and an `n` (the backslash is then stripped as punctuation); a double-quoted one decodes escapes.
+        if (mcpCapabilitiesTestName($matches[1][$index] === '"' ? stripcslashes($description) : $description) === $wanted) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/** The file exists and declares the symbol: a function, class or const, or for a `test_*` name, the Pest test of that name (see mcpCapabilitiesPestDeclares). */
 function mcpCapabilitiesAssertDeclares(string $path, string $symbol): void
 {
     expect(base_path($path))->toBeFile();
     $source = file_get_contents(base_path($path));
-    $pest = str_starts_with($symbol, 'test_') && preg_match('/\b(test|it)\(\s*[\'"]'.preg_quote(str_replace('_', ' ', substr($symbol, 5)), '/').'[\'"]/', $source) === 1;
-    expect($pest || preg_match('/\b(function|class|const)\s+'.preg_quote($symbol, '/').'\b/', $source) === 1)->toBeTrue($path.' declares '.$symbol);
+    $declared = mcpCapabilitiesPestDeclares($source, $symbol) || preg_match('/\b(function|class|const)\s+'.preg_quote($symbol, '/').'\b/', $source) === 1;
+    expect($declared)->toBeTrue($path.' declares no '.$symbol.'. A `test_*` name matches a Pest test()/it() whose description, lowercased with punctuation stripped and whitespace and underscores collapsed, is the name after `test_` (test_a_b matches it(\'a, b\')); any other name must be a function, class or const.');
 }
+
+it('matches a test_* name to a Pest description the same way on both sides', function (string $source, string $symbol, bool $declared) {
+    expect(mcpCapabilitiesPestDeclares($source, $symbol))->toBe($declared);
+})->with([
+    'plain' => ["it('a b', fn () => null);", 'test_a_b', true],
+    'a comma' => ["it('a, b', fn () => null);", 'test_a_b', true],
+    'punctuation and case' => ["test(\"Lets an owner's save: go!\", fn () => null);", 'test_lets_an_owners_save_go', true],
+    'extra spaces' => ["it('a   b', fn () => null);", 'test_a__b', true],
+    'escaped quote' => ["it('an owner\\'s save', fn () => null);", 'test_an_owners_save', true],
+    'a single-quoted backslash n' => ["it('a\\nb', fn () => null);", 'test_anb', true],
+    'a double-quoted newline' => ['it("a\\nb", fn () => null);', 'test_a_b', true],
+    'a different name' => ["it('a, c', fn () => null);", 'test_a_b', false],
+    'a prefix only' => ["it('a b c', fn () => null);", 'test_a_b', false],
+    'not a test name' => ["it('a b', fn () => null);", 'a_b', false],
+]);
