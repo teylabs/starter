@@ -76,3 +76,69 @@ function notesAdopted(): bool
 {
     return in_array('notes', config('kit.features'), true);
 }
+
+// Accessibility: every browser test that visits a page calls assertAccessible($page, 'what it shows'). axe checks the page against
+// WCAG 2.2 AA (the wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa tags) at every impact level, once animations have settled.
+// A violation the app cannot fix yet goes in AXE_EXCEPTIONS with a reason and an expiry date; an exception without both, or past
+// its date, fails the test. AXE_SURVEY=1 prints each page's violations to STDERR instead of failing, to size the work.
+const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+/** @var array<string, array{reason: string, until: string, pages?: list<string>}> axe rule id => why it is allowed, until when (Y-m-d), and on which pages (all if left out). */
+const AXE_EXCEPTIONS = [];
+
+/** @return list<array{id: string, impact: string, targets: list<string>}> */
+function axeViolations(object $page): array
+{
+    // Scan settled pixels: wait (up to 5 s) for finite animations and transitions to finish, so contrast is never measured mid-fade.
+    $page->script('async () => { const deadline = Date.now() + 5000; const running = () => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations !== Infinity); while (running().length > 0 && Date.now() < deadline) { await Promise.race([Promise.all(running().map((a) => a.finished.catch(() => null))), new Promise((r) => setTimeout(r, 250))]); } await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }');
+    $violations = $page->script('async () => (await window.axe.run(document, { runOnly: { type: "tag", values: '.json_encode(AXE_TAGS).' } })).violations.map((v) => ({ id: v.id, impact: v.impact ?? "unknown", targets: v.nodes.map((n) => n.target.join(" ")) }))');
+
+    return is_array($violations) ? array_values($violations) : [];
+}
+
+/**
+ * The failures to report: each violation no current exception covers, and each exception that is malformed or expired.
+ *
+ * @param  list<array{id: string, impact: string, targets: list<string>}>  $violations
+ * @param  array<string, array<string, mixed>>  $exceptions
+ * @return list<string>
+ */
+function axeFailures(array $violations, string $what, array $exceptions, DateTimeImmutable $today): array
+{
+    $failures = [];
+    foreach ($exceptions as $id => $exception) {
+        $until = is_string($exception['until'] ?? null) ? DateTimeImmutable::createFromFormat('!Y-m-d', $exception['until']) : false;
+        // A date that does not round-trip (2026-02-31) is not a date.
+        $until = $until !== false && $until->format('Y-m-d') === $exception['until'] ? $until : false;
+        if (trim((string) ($exception['reason'] ?? '')) === '' || $until === false) {
+            $failures[] = "AXE_EXCEPTIONS['{$id}'] needs a reason and an until date (Y-m-d).";
+        } elseif ($until < $today) {
+            $failures[] = "AXE_EXCEPTIONS['{$id}'] expired on {$exception['until']}: fix the violation or renew the exception with a reason.";
+        }
+    }
+    foreach ($violations as $violation) {
+        $exception = $exceptions[$violation['id']] ?? null;
+        $applies = $exception !== null && (! isset($exception['pages']) || in_array($what, $exception['pages'], true));
+        if (! $applies) {
+            $shown = array_slice($violation['targets'], 0, 4);
+            $more = count($violation['targets']) > 4 ? ' … +'.(count($violation['targets']) - 4) : '';
+            $failures[] = "{$what}: {$violation['id']} ({$violation['impact']}): ".implode(' | ', $shown).$more;
+        }
+    }
+
+    return $failures;
+}
+
+/** Assert a page meets WCAG 2.2 AA at every impact level, apart from current AXE_EXCEPTIONS; AXE_SURVEY=1 prints instead of failing. */
+function assertAccessible(object $page, string $what): void
+{
+    $violations = axeViolations($page);
+    if (getenv('AXE_SURVEY') === '1') {
+        fwrite(STDERR, 'AXE '.$what.' '.json_encode($violations, JSON_UNESCAPED_SLASHES).PHP_EOL);
+        // Surveying prints the violations, but a malformed or expired exception still fails.
+        expect(axeFailures([], $what, AXE_EXCEPTIONS, new DateTimeImmutable('today')))->toBe([], 'AXE_EXCEPTIONS');
+
+        return;
+    }
+    expect(axeFailures($violations, $what, AXE_EXCEPTIONS, new DateTimeImmutable('today')))->toBe([], "{$what} is not accessible");
+}

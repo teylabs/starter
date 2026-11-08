@@ -32,6 +32,7 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-local-login]', 'Sign in as owner@example.com')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'sign-in');
+        assertAccessible($page, 'the sign-in page');
 
         $page->click('[data-local-login] button')
             ->assertPathIs('/')
