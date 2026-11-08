@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import FormActions from './FormActions.vue';
 import { focusFirstInvalid } from './formFrame';
 import { provideFormSubmit } from './formSubmit';
+import { provideCard } from '@/components/Kit/Surface/surface';
 import { isSubmitForm } from './submitForm';
 import { provideNoticeOwner, useLockedNotice } from './useLocked';
 
@@ -63,6 +64,8 @@ async function onSubmit(event: Event) {
     if (form.hasErrors && !form.conflict)
         await focusFirstInvalid(() => [card.value], form.errors);
 }
+// A FormCard is a card on any ground: nothing inside draws a ground card.
+provideCard();
 </script>
 <template>
     <component

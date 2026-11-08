@@ -29,6 +29,7 @@ import PaneScroll from '@/components/Kit/Layout/PaneScroll.vue';
 import PaneTabs from '@/components/Kit/Layout/PaneTabs.vue';
 import PaneToggle from '@/components/Kit/Layout/PaneToggle.vue';
 import Modal from '@/components/Kit/Overlay/Modal.vue';
+import { groundCard, useGroundSurface } from '@/components/Kit/Surface/surface';
 import {
     DEFAULT_LABELS,
     documentEscape,
@@ -684,6 +685,8 @@ const FormFrame: FunctionalComponent<{ enabled: boolean }> = (
           )
         : slots.default?.();
 FormFrame.props = ['enabled'];
+// On a tinted page ground (README, "Tinted page grounds") the workbench is one card, unless it already sits on one; on a white ground nothing changes.
+const surface = useGroundSurface();
 </script>
 <template>
     <FormFrame :enabled="hasForm">
@@ -695,7 +698,9 @@ FormFrame.props = ['enabled'];
             :class="[
                 'grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_auto] gap-2',
                 fill && 'h-[calc(100dvh-8rem)] min-h-[28rem]',
+                surface && `${groundCard} p-2`,
             ]"
+            :data-ground-surface="surface || undefined"
             :data-workbench="workbenchKey"
             :data-mode="wb.mode"
             @keydown="onKeydown"

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import InputSelect from '@/components/Kit/Form/InputSelect.vue';
 
 // Tabs that are pages: each is a route link in a `<nav>` landmark, the current one marked `aria-current="page"`. Phones get the kit's InputSelect, which visits the chosen page.
 // For panes inside one page use PaneTabs instead. `current` is the href of the page shown; when it is omitted, the tab flagged `current` wins.
+// Drawn inside a <Page>, these tabs are the page's: the <Page> then draws no `layout.navigation` tabs of its own, so there is one row.
+inject<(() => void) | null>('kit.page.tabs', null)?.();
 const props = defineProps<{
     tabs: { href: string; label: string; current?: boolean }[];
     label: string;
@@ -31,8 +33,10 @@ const go = (href: unknown) => {
                 @update:model-value="go"
             />
         </div>
-        <ul class="border-border hidden gap-6 border-b sm:flex">
-            <li v-for="tab in tabs" :key="tab.href">
+        <ul
+            class="border-border hidden gap-6 overflow-x-auto overscroll-x-contain border-b sm:flex"
+        >
+            <li v-for="tab in tabs" :key="tab.href" class="shrink-0">
                 <Link
                     :href="tab.href"
                     :aria-current="tab.href === active ? 'page' : undefined"

@@ -12,7 +12,7 @@ import {
     watch,
 } from 'vue';
 import ModalPanel from '@/components/Kit/Overlay/ModalPanel.vue';
-import { provideSurface } from '@/components/Kit/Surface/surface';
+import { provideCard, provideSurface } from '@/components/Kit/Surface/surface';
 
 /*
  * The kit's Modal: content and forms in a layer over the page. ONE component, two ways to use it, with the same props, slots and behaviour:
@@ -173,6 +173,8 @@ const close = () => modal.value?.close();
 defineExpose({ close });
 // A modal is its own surface: buttons inside it are ordinary even when it was opened from a pill or inverse toolbar.
 provideSurface(() => ({ tone: 'default', shape: 'default' }));
+// Its panel is the card: nothing inside draws a ground card.
+provideCard();
 </script>
 <template>
     <PackageModal

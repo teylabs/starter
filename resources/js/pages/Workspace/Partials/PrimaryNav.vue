@@ -35,12 +35,14 @@ function fit(): void {
     const box = root.value;
     const ruler = measure.value;
     if (!box || !ruler) return;
-    const available = box.clientWidth;
+    // The room's fractional width: clientWidth rounds, and a row that fits by under a pixel must still fit.
+    const available = box.getBoundingClientRect().width;
     const widths = [...ruler.querySelectorAll<HTMLElement>('[data-measure-item]')].map((el) => el.getBoundingClientRect().width);
     const moreWidth = ruler.querySelector<HTMLElement>('[data-measure-more]')?.getBoundingClientRect().width ?? 0;
     // The row's own gap, read from the ruler, so a host's spacing scale counts.
     const gap = Number.parseFloat(getComputedStyle(ruler.firstElementChild as HTMLElement).columnGap) || 0;
-    const total = widths.reduce((sum, width) => sum + width + gap, 0);
+    // Every page in the bar: their widths and the gaps between them, none after the last (no More follows it).
+    const total = widths.reduce((sum, width) => sum + width, 0) + gap * Math.max(widths.length - 1, 0);
     if (total <= available + 0.5) {
         shown.value = Number.POSITIVE_INFINITY;
 
@@ -64,13 +66,23 @@ function fit(): void {
     shown.value = count;
 }
 
+// The box and the ruler exist only while there are pages (v-if), so the observer follows them: a bar that mounts with no navigation, or loses and regains
+// it, observes the elements that are there now and measures again.
 let observer: ResizeObserver | null = null;
-onMounted(() => {
-    observer = new ResizeObserver(() => fit());
-    if (root.value) observer.observe(root.value);
-    if (measure.value?.firstElementChild) observer.observe(measure.value.firstElementChild);
-    fit();
-});
+watch(
+    [root, measure],
+    ([box, ruler]) => {
+        observer?.disconnect();
+        observer = null;
+        if (!box || !ruler) return;
+        observer = new ResizeObserver(() => fit());
+        observer.observe(box);
+        if (ruler.firstElementChild) observer.observe(ruler.firstElementChild);
+        fit();
+    },
+    { flush: 'post' },
+);
+onMounted(() => fit());
 onBeforeUnmount(() => observer?.disconnect());
 watch(
     () => props.navigation,

@@ -34,3 +34,52 @@ export const inverseFilled =
 // Every other control on an inverse surface: transparent, inherited text, a current-colour hairline and wash.
 export const inverseControl =
     'bg-transparent text-current ring-1 ring-current/20 ring-inset hover:bg-current/10 dark:bg-transparent dark:hover:bg-current/10';
+
+// The page ground (README, "Tinted page grounds"). A theme whose ground is tinted rather than white declares it with one token in its own CSS,
+// `--kit-ground: tinted` (on :root), and the kit's content components then draw their own card on it: DataTable, EmptyState, Workbench and PageSection (the
+// form layouts, FormCard and Section, are cards already). Read from the root's computed style when a component is set up; no declaration, or no document, is
+// the white ground, where nothing changes.
+export function tintedGround(): boolean {
+    if (typeof document === 'undefined') return false;
+    return (
+        getComputedStyle(document.documentElement)
+            .getPropertyValue('--kit-ground')
+            .trim() === 'tinted'
+    );
+}
+
+// Whether what is set up here already sits on a card: a Surface or Card, a FormCard or Section, a dashboard widget, a Dialog or Modal, or a component that drew
+// its ground card. A card is never drawn inside another one.
+const cardKey: InjectionKey<ComputedRef<boolean>> = Symbol('kit.card');
+
+export function provideCard(on: () => boolean = () => true): void {
+    const outer = inject(
+        cardKey,
+        computed(() => false),
+    );
+    provide(
+        cardKey,
+        computed(() => outer.value || on()),
+    );
+}
+
+export function useInCard(): ComputedRef<boolean> {
+    return inject(
+        cardKey,
+        computed(() => false),
+    );
+}
+
+// The card the ground asks a component to draw: on a tinted ground, when `enabled` (a PageSection's `surface`), and never inside a card. What is inside then
+// sits on a card. The card's look matches a dashboard widget's: `bg-card text-card-foreground rounded-xl border`.
+export const groundCard = 'bg-card text-card-foreground rounded-xl border';
+
+export function useGroundSurface(
+    enabled: () => boolean = () => true,
+): ComputedRef<boolean> {
+    const tinted = tintedGround();
+    const inCard = useInCard();
+    const drawn = computed(() => tinted && enabled() && !inCard.value);
+    provideCard(() => drawn.value);
+    return drawn;
+}

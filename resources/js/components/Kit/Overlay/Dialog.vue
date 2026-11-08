@@ -15,6 +15,7 @@ import {
 } from 'reka-ui';
 import { useLayerTarget } from '@/components/Kit/Overlay/layer';
 import SurfaceReset from '@/components/Kit/Surface/SurfaceReset.vue';
+import { provideCard } from '@/components/Kit/Surface/surface';
 import Button from '@/components/Kit/Form/Button.vue';
 import { Input as BaseInput } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,6 +87,8 @@ function confirm() {
 }
 // Inside a Modal its overlay renders into the Modal's <dialog>, over it (layer.ts).
 const layerTarget = useLayerTarget();
+// Its panel is the card: nothing inside draws a ground card.
+provideCard();
 </script>
 <template>
     <AlertDialogRoot v-model:open="open">

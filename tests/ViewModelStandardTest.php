@@ -42,6 +42,27 @@ function viewModelStandardSources(string $directory, string $extension): array
 
     return $files;
 }
+/**
+ * The argument text of each `Inertia::render(` call in a source file. A comment line (trimmed text starting with `*`, `/*`, `//` or `#`)
+ * is prose, not a render site, so a docblock that mentions the call is skipped.
+ *
+ * @return list<string>
+ */
+function viewModelStandardRenderCalls(string $source): array
+{
+    $calls = [];
+    foreach (preg_split('/\R/', $source) ?: [] as $line) {
+        $trimmed = ltrim($line);
+        if (str_starts_with($trimmed, '*') || str_starts_with($trimmed, '/*') || str_starts_with($trimmed, '//') || str_starts_with($trimmed, '#')) {
+            continue;
+        }
+        if (preg_match('/Inertia::render\(([^\n]*)/', $line, $m)) {
+            $calls[] = $m[1];
+        }
+    }
+
+    return $calls;
+}
 /** @return list<class-string<PageViewModel>> */
 function viewModelStandardPageViewModels(): array
 {
@@ -62,8 +83,7 @@ test('page contract every render site passes a view model and data is never the 
         if (! str_contains($source, 'Inertia::render(')) {
             continue;
         }
-        preg_match_all('/Inertia::render\(([^;]*?)\)(?:\)|;|\))/s', $source, $calls);
-        foreach (preg_match_all('/Inertia::render\(([^\n]*)/', $source, $lines) ? $lines[1] : [] as $call) {
+        foreach (viewModelStandardRenderCalls($source) as $call) {
             $sites++;
             $viaVariable = preg_match('/, \$(model|viewModel)\b/', $call) === 1;
             expect(str_contains($call, 'ViewModel(') || str_contains($call, 'ViewModel::') || $viaVariable || str_contains($call, 'new self('))->toBeTrue(basename($file).' renders a page with something that is not a ViewModel: '.trim($call));
@@ -96,6 +116,21 @@ test('page contract every render site passes a view model and data is never the 
     expect(resource_path('js/pages/Workspace/Settings/Layout.vue'))->toBeFile();
     expect(resource_path('js/pages/Workspace/Account/Layout.vue'))->toBeFile();
     $this->assertStringContainsString('nearestPageLayout', (string) file_get_contents(resource_path('js/app.ts')));
+});
+test('the render-site scan skips comment lines and keeps real calls', function () {
+    $source = <<<'PHP'
+        <?php
+        /**
+         * A docblock that mentions Inertia::render('Docs/Page', $data) is prose.
+         * Inertia::render('Also/Prose', [])
+         */
+        /* Inertia::render('Block/Comment', []) */
+        // Inertia::render('Line/Comment', [])
+        # Inertia::render('Hash/Comment', [])
+        return Inertia::render('Real/Page', new ExampleViewModel);
+        PHP;
+
+    expect(viewModelStandardRenderCalls($source))->toBe(["'Real/Page', new ExampleViewModel);"]);
 });
 test('ad hoc view models are for small pages and graduate to a class', function () {
     // The builder: keys are unique, `layout` and `shell` are reserved, and the layout stays typed.

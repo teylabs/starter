@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { Button } from '@kit/ui';
+import { Button, provideCard } from '@kit/ui';
 import type { WidgetFrame } from './types';
 
 // The card every widget renders in: its title and header actions, then its body, its empty state or its error with Retry. The body is the default slot.
+// It is a card on any ground, so a kit component inside (an EmptyState, a DataTable) draws no ground card of its own.
 const props = defineProps<{ widget: WidgetFrame }>();
+provideCard();
 const retry = () => router.reload();
 </script>
 <template>

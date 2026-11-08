@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { provideSurface, type Surface } from './surface';
+import { provideCard, provideSurface, type Surface } from './surface';
 
 // A card-like container (an inspector panel, a toolbar group, a slide's frame): padding, a border, the radius and the card tokens. It provides its tone and
 // shape to what is inside (provideSurface), so a kit Button or ActionBar on it blends in: `inverse` is a dark surface with light controls, `pill` a fully
@@ -27,6 +27,8 @@ const props = withDefaults(
     },
 );
 provideSurface(() => ({ tone: props.tone, shape: props.shape }));
+// What is inside sits on a card, so a component there draws no ground card of its own.
+provideCard();
 const safe =
     'motion-reduce:backdrop-blur-none contrast-more:backdrop-blur-none [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none';
 const translucentDefault = `supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-md contrast-more:supports-[backdrop-filter]:bg-card [@media(prefers-reduced-transparency:reduce)]:supports-[backdrop-filter]:bg-card ${safe}`;

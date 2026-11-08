@@ -475,6 +475,8 @@ export interface PageSectionProps {
     description?: string | null;
     actions?: import('./Action/actionPlacement').ActionDescriptor[];
     level?: 2 | 3 | 4 | 5 | 6;
+    /** On a tinted page ground: `card` (the default) puts the content on a card below the header, `none` leaves it on the ground. No effect on a white ground. */
+    surface?: 'card' | 'none';
 }
 
 /** Page columns: 12 from `md`, stacked below it. `preset` sizes the cells: `main-aside` (8 and 4), `halves` (6 each), `thirds` (4 each); otherwise each cell spans 12 or its PageGridItem `span`. */
