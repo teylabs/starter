@@ -50,7 +50,7 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             ->assertPathIs('/')
             ->assertSeeIn('[data-slot="page-heading"]', 'Good')
             ->assertSeeIn('[data-welcome-title]', 'Welcome to')->assertSeeIn('[data-welcome-title]', 'Bea')->assertPresent('[data-welcome-card] [role="progressbar"]')
-            ->assertSeeIn('[data-welcome-card]', 'Your workspace for '.$workspace->name.' is ready.')
+            ->assertSeeIn('[data-welcome-title]', $workspace->name)->assertSeeIn('[data-welcome-card]', 'Your workspace is ready.')
             ->assertPresent('[data-welcome-checklist]')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();

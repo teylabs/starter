@@ -51,8 +51,8 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $page->assertMissing('[data-form-modal]');
         expect($count('invitations'))->toBe('1');
         $page->click('[data-tab="invitations"]')->assertSee('new.person@example.test')->assertQueryStringHas('tab', 'invitations');
-        // Revoke is behind the menu or a lone destructive button, and asks first.
-        $page->click('[data-row-menu]')->click('[data-action="revoke"]')->assertPresent('[data-confirm-dialog]')->assertSee('Revoke the invitation to new.person@example.test?');
+        // Revoke is behind the row's menu (the "…" trigger, or the split button's chevron), and asks first.
+        $page->click('[data-row]:has-text("new.person@example.test") :is([data-row-menu], [data-button-group-menu])')->click('[data-action="revoke"]')->assertPresent('[data-confirm-dialog]')->assertSee('Revoke the invitation to new.person@example.test?');
         $page->click('[data-confirm-action]');
         $page->assertSee('No invitations yet');
         expect($count('invitations'))->toBe('0');
@@ -72,7 +72,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         expect($actionsOn($owner->name))->toBe(0);
         $page->click('[data-row]:has-text("Vera") [data-action="change-role"]')->assertPresent('[data-form-modal]')->assertSee('Change role for');
         $page->click('[data-modal-cancel]')->assertMissing('[data-form-modal]');
-        $page->click('[data-row]:has-text("Vera") [data-row-menu]')->click('[data-action="remove"]')->assertPresent('[data-confirm-dialog]')->assertSee('They lose access to this workspace straight away.');
+        $page->click('[data-row]:has-text("Vera") :is([data-row-menu], [data-button-group-menu])')->click('[data-action="remove"]')->assertPresent('[data-confirm-dialog]')->assertSee('They lose access to this workspace straight away.');
         $page->click('[data-confirm-action]')->assertDontSee('Vera Viewer')->assertNoJavaScriptErrors();
 
         // Sort by the Member column (ascending by default): it sends the server's own "name" sort, not the column key, with no error modal; a second click returns to the default.
