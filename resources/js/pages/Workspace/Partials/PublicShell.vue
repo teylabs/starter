@@ -13,7 +13,7 @@ import Wordmark from './Wordmark.vue';
  * it to the host (a page that mounts its own). It reads no user, workspace or permission and sets no tracking: a cacheable page. Page meta is PublicMeta's. kit.home stays optional: a host keeps its own
  * landing and uses this shell around it.
  */
-type Product = { name: string; url: string; logomark: string | null; logomark_dark?: string | null; wordmark?: string | null; wordmark_dark?: string | null; lockup?: boolean };
+type Product = { name: string; url: string; logomark: string | null; logomark_dark?: string | null; logomark_bar?: string | null; wordmark?: string | null; wordmark_dark?: string | null; lockup?: boolean };
 type Footer = { identity: string; credit: string; links: { label: string; url: string }[] };
 // The shell knows no session route: the host passes the CTA's URLs (`sign-in-url`, `workspace-url`), and the CTA shows only when the one for the viewer is given.
 // A branded site (all opt-in): `width="site"` (max-w-6xl) with `align-bars` puts the header and footer rows on the same measure; `tone="bar"` colours the header with

@@ -63,7 +63,7 @@ provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
                     <div v-if="$slots.nav" class="ml-3 flex min-w-0 shrink items-center" data-shell-nav-slot>
                         <slot name="nav" :navigation="app.navigation" :label="app.workspace?.name ?? app.product.name" />
                     </div>
-                    <div v-else class="ml-3 hidden shrink-0 items-center gap-0.5 lg:flex">
+                    <div v-else class="ml-3 hidden min-w-0 flex-1 items-center lg:flex" data-shell-nav-room>
                         <PrimaryNav :navigation="app.navigation" :label="app.workspace?.name ?? app.product.name" />
                     </div>
                     <!-- The bar slot: one live copy at every width, so its state, focus and listeners survive crossing lg. It may shrink; the controls after it do not. -->

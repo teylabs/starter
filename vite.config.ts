@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
+import { kitImports } from './resources/js/components/Kit/kitImports.js';
 
 // tey/kit pages type their props with the generated global ViewModel types; the SFC compiler resolves them from here.
 const globalTypeFiles = [decodeURIComponent(new URL('./resources/js/types.generated.d.ts', import.meta.url).pathname)];
@@ -38,6 +39,8 @@ const preBundled = [
 ];
 const warmup = ['./resources/js/app.ts', './resources/js/components/Kit/index.ts', './resources/js/layouts/*.vue', './resources/js/pages/Workspace/Partials/index.ts'];
 
+// Dev only: kitImports rewrites each `@kit/ui` import into imports of the files it names, so a page requests only the kit components it
+// uses instead of every file the barrel lists (tey/kit docs/kit-imports.md). Builds are unchanged: the bundler already tree-shakes the barrel.
 export default defineConfig({
     build: {
         rolldownOptions: {
@@ -49,5 +52,5 @@ export default defineConfig({
     optimizeDeps: { include: preBundled },
     server: { warmup: { clientFiles: warmup } },
     resolve: { alias: { '@kit/ui': kitUi, '@kit/shell': kitShell } },
-    plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } })],
+    plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } }), kitImports()],
 });
