@@ -3,18 +3,28 @@
 // standards-pattern: gap
 
 use Illuminate\Support\Facades\Artisan;
+use Spatie\TypeScriptTransformer\TypeScriptTransformerConfig;
 
 // A bare `php artisan typescript:transform` (not only bin/generate-types.php) exports every nested namespace: a plain `namespace Kit {` inside
-// `declare namespace Tey` is private, so `Tey.Kit.…` doesn't resolve in defineProps and the production build fails. Writes to a temp copy only.
+// `declare namespace Tey` is private, so `Tey.Kit.…` doesn't resolve in defineProps and the production build fails. The transformer writes into a
+// temporary resource path, so the committed file other tests read is never touched.
 test('regenerating the types exports every nested namespace and matches the committed file', function () {
-    $path = resource_path('js/types.generated.d.ts');
-    $committed = (string) file_get_contents($path);
+    $committed = (string) file_get_contents(resource_path('js/types.generated.d.ts'));
+    $temporary = sys_get_temp_dir().'/starter-types-'.bin2hex(random_bytes(6));
+    mkdir($temporary.'/js', 0777, true);
     try {
+        // The app's own config (TypeScriptServiceProvider), with only the output directory moved.
+        $config = app(TypeScriptTransformerConfig::class);
+        app()->instance(TypeScriptTransformerConfig::class, new TypeScriptTransformerConfig(...['outputDirectory' => $temporary.'/js'] + get_object_vars($config)));
         expect(Artisan::call('typescript:transform'))->toBe(0);
-        $generated = (string) file_get_contents($path);
+        $generated = (string) file_get_contents($temporary.'/js/types.generated.d.ts');
     } finally {
-        file_put_contents($path, $committed);
+        app()->forgetInstance(TypeScriptTransformerConfig::class);
+        @unlink($temporary.'/js/types.generated.d.ts');
+        @rmdir($temporary.'/js');
+        @rmdir($temporary);
     }
+    expect(file_get_contents(resource_path('js/types.generated.d.ts')))->toBe($committed, 'the committed file is untouched');
 
     expect($generated)->toMatch('/^declare namespace Tey \{\nexport namespace Kit \{/');
     preg_match_all('/^(?:(export|declare) )?namespace \w+ \{/m', $generated, $namespaces);
