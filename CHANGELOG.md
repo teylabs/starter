@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **The capability manifest's `test_*` names match Pest descriptions with punctuation.** `tests/McpCapabilitiesTest.php` only turned `_` into a space, so `it('a, b')` never matched `test_a_b`. Both sides are now normalised the same way (lowercased, punctuation stripped, whitespace and underscores collapsed), with regression rows including a comma, and a failed match says how names are compared.
 - **Regenerated types export every namespace.** A bare `php artisan typescript:transform` wrote `namespace Kit {` inside `declare namespace Tey`, which keeps it private, so `defineProps` couldn't resolve `Tey.Kit.…` and the production build failed; only `composer types:generate` patched it afterwards. The shipped writer, `App\TypeScript\ExportedNamespaceWriter`, now exports every nested namespace, whichever way the file is regenerated. Covered by `tests/TypeScriptNamespacesTest.php`.
 - **The FocusShell's account cluster and the LocalModal example group their actions.** Each had adjacent buttons outside an action container, which the standards `ui.action-group` rule (v0.11.78+) reports as advisories in every app made from the starter. The account cluster (Switch account, Sign out, the appearance toggle) and the example's three openers now sit in the kit's `Toolbar`, which sets only the gap and alignment, so neither page looks different.
 
