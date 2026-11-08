@@ -64,7 +64,13 @@ export {
 export { default as Toaster } from './Feedback/Toaster.vue';
 export { useStickyBars } from './Layout/stickyBars';
 export { default as Avatar } from './Layout/Avatar.vue';
+// Vertical rhythm (Stack), titled page regions (PageSection) and page columns (PageGrid, PageGridItem): the page's spacing, with no outer margins on children.
+export { default as Stack } from './Layout/Stack.vue';
+// Deprecated: BlockStack renders a Stack and is removed in the next release.
 export { default as BlockStack } from './Layout/BlockStack.vue';
+export { default as PageSection } from './Layout/PageSection.vue';
+export { default as PageGrid } from './Layout/PageGrid.vue';
+export { default as PageGridItem } from './Layout/PageGridItem.vue';
 export { default as Toolbar } from './Layout/Toolbar.vue';
 export { default as Button } from './Form/Button.vue';
 export type { VisitData, VisitValue } from './Form/Button.vue';

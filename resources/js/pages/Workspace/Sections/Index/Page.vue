@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BlockStack, Page, SectionIcon } from '@kit/ui';
+import { Stack, Page, SectionIcon } from '@kit/ui';
 // A settings landing page: the registered sections as cards, grouped and in the registry's order; each card is one link (icon, label, a line saying what it holds).
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
 </script>
 <template>
     <Page md>
-        <BlockStack class="gap-8">
+        <Stack class="gap-8">
         <p v-if="!groups.length" class="text-sm text-muted-foreground">There is nothing to set up here yet.</p>
-        <BlockStack v-for="group in groups" :key="group.label" as="section" class="gap-3" :aria-label="group.label">
+        <Stack v-for="group in groups" :key="group.label" as="section" class="gap-3" :aria-label="group.label">
             <h2 class="text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
             <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <li v-for="section in group.sections" :key="section.url" :data-section="section.key">
@@ -21,7 +21,7 @@ defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
                     </Link>
                 </li>
             </ul>
-        </BlockStack>
-        </BlockStack>
+        </Stack>
+        </Stack>
     </Page>
 </template>

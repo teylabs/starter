@@ -50,8 +50,8 @@ provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
                 <div :class="['mx-auto flex h-16 min-w-0 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <!-- The product lockup (Partials/Wordmark, shared with the GuestShell); the mark slot replaces its symbol. -->
                     <Wordmark :product="app.product" :label="props.wordmarkLabel"><template v-if="$slots.mark" #default><slot name="mark" /></template></Wordmark>
-                    <!-- With no workspace there is nothing to switch: the product's name stands where the switcher would, with no caret (the server decides: no workspace and no switcher). -->
-                    <span v-if="!app.workspace && !app.switcher && !app.product.lockup" class="min-w-0 flex-1 truncate text-sm font-medium lg:flex-none" data-shell-product-name>{{ app.product.name }}</span>
+                    <!-- With no workspace there is nothing to switch: the product's name stands where the switcher would, with no caret (the server decides: no workspace and no switcher). With the lockup in the bar it already shows the name, so this stays for assistive tech and the data-shell-product-name contract. -->
+                    <span v-if="!app.workspace && !app.switcher" :class="app.product.lockup ? 'sr-only' : 'min-w-0 flex-1 truncate text-sm font-medium lg:flex-none'" data-shell-product-name>{{ app.product.name }}</span>
                     <!-- The workspace switcher is always there: with one workspace its menu is just Workspace settings (when the server sends it), with two or more it lists them too. -->
                     <!-- The `workspace-switcher` slot replaces it; its props are the switcher's own, plus the bar's sizing `class`. -->
                     <template v-if="app.workspace || app.switcher">
@@ -119,8 +119,9 @@ provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
             </div>
         </div>
         <main id="main" :class="props.fill ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'flex-1'">
-            <div :class="props.fill ? ['mx-auto flex min-h-0 w-full flex-1 flex-col', props.widthClass] : ['mx-auto w-full px-4 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-10 lg:px-8', props.widthClass]" data-shell-content>
+            <div :class="props.fill ? ['mx-auto flex min-h-0 w-full flex-1 flex-col gap-6', props.widthClass] : ['mx-auto flex w-full flex-col gap-6 px-4 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-10 lg:px-8', props.widthClass]" data-shell-content>
                 <!-- After an invited sign-up, where the app has passkeys: "Add a passkey for next time" (session-ui's PasskeyOffer). -->
+                <!-- The content column gaps the offer and the page (gap-6): neither carries a margin. -->
                 <PasskeyOffer />
                 <slot />
             </div>

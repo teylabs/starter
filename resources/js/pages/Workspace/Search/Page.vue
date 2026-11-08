@@ -16,9 +16,9 @@ function submit(): void {
         <form role="search" class="flex items-center gap-2" data-search-page-form @submit.prevent="submit">
             <Input v-model="term" type="search" name="q" maxlength="100" aria-label="Search" placeholder="Search" class="max-w-md" />
         </form>
-        <p v-if="partial" class="mt-4 text-sm text-muted-foreground" role="status" data-search-partial>Some sources could not be searched, so these results may be incomplete.</p>
-        <p v-if="query && !groups.length" class="mt-6 text-sm text-muted-foreground" data-search-none>No results for “{{ query }}”.</p>
-        <section v-for="group in groups" :key="group.key" class="mt-6" :aria-labelledby="`search-group-${group.key}`" :data-search-group="group.key">
+        <p v-if="partial" class="text-sm text-muted-foreground" role="status" data-search-partial>Some sources could not be searched, so these results may be incomplete.</p>
+        <p v-if="query && !groups.length" class="text-sm text-muted-foreground" data-search-none>No results for “{{ query }}”.</p>
+        <section v-for="group in groups" :key="group.key" :aria-labelledby="`search-group-${group.key}`" :data-search-group="group.key">
             <h2 :id="`search-group-${group.key}`" class="text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
             <ul class="mt-2 divide-y divide-border rounded-lg ring-1 ring-border">
                 <li v-for="result in group.results" :key="result.id" class="px-4 py-3" data-search-result>

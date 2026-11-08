@@ -33,7 +33,7 @@ const formOptions = failureHandlers as FormOptions;
             <h1 class="text-xl font-medium">Verify your email address</h1>
             <p class="text-sm text-muted-foreground">We sent a link to <template v-if="email">{{ email }}</template><template v-else>your email address</template>. Follow it to confirm the address.</p>
         </div>
-        <Form ref="form" v-slot="{ processing }" action="/email/verification-notification" method="post" class="mt-6 grid gap-3" @start="throttled = null" :options="formOptions">
+        <Form ref="form" v-slot="{ processing }" action="/email/verification-notification" method="post" class="grid gap-3" @start="throttled = null" :options="formOptions">
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <FormStatus :message="status === 'verification-link-sent' ? 'A new link is on its way.' : null" data-verification-sent />
             <Button type="submit" class="w-full" :disabled="processing">{{ processing ? 'Sending…' : 'Send the link again' }}</Button>

@@ -151,7 +151,7 @@ const holdFocus = (event: Event) => {
             v-if="pending?.confirm"
             v-model:open="asking"
             :variant="pending.destructive ? 'danger' : 'neutral'"
-            :title="pending.confirm.title"
+            :title="pending.confirm.title ?? `${pending.label}?`"
             :description="pending.confirm.description"
             :confirm-label="pending.confirm.label"
             :confirm-text="pending.confirm.typed ?? null"

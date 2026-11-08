@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ModalLink, visitModal } from '@inertiaui/modal-vue';
-import { Avatar, BlockStack, DataTable, DateTime, Page } from '@kit/ui';
+import { Avatar, Stack, DataTable, DateTime, Page } from '@kit/ui';
 import { computed, ref } from 'vue';
 
 // Settings › People: the Members and Invitations tabs as one server-driven table. Concierge decides the rows, the counts and each row's actions (an admin has none on
@@ -27,7 +27,7 @@ const members = computed(() => props.tab === 'members');
         <template v-if="invite" #actions>
             <ModalLink :href="invite.url" as="a" navigate prefetch :cache-for="30000" class="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium whitespace-nowrap text-primary-foreground hover:bg-primary/90 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none motion-reduce:transition-none" data-invite>{{ invite.label }}</ModalLink>
         </template>
-        <BlockStack>
+        <Stack>
             <p v-if="invite_link" class="text-sm" role="status" data-invite-link>Invitation link (send it to them; it is shown once): <code class="break-all">{{ invite_link }}</code></p>
             <DataTable :table="table as never" :intercept="['change-role', 'transfer-ownership']" :search-label="members ? 'Search members' : 'Search invitations'" @act="act">
                 <template #cell-member="{ row }">
@@ -49,6 +49,6 @@ const members = computed(() => props.tab === 'members');
                 </template>
                 <template #empty-no-results><p class="font-medium">{{ members ? 'No members match' : 'No invitations match' }}</p></template>
             </DataTable>
-        </BlockStack>
+        </Stack>
     </Page>
 </template>

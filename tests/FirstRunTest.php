@@ -59,8 +59,8 @@ test('an invitee signs up walks the welcome steps and lands on the dashboard wit
     expect($dashboard->json('props.greeting'))->toStartWith('Good ');
     expect($dashboard->json('props.greeting'))->toEndWith(', Nora');
     expect(UserState::has((int) User::query()->where('email', 'new.person@example.test')->value('id'), 'onboarding.done'))->toBeTrue();
-    $dashboard->assertJsonPath('props.welcome.title', 'Welcome to '.config('app.name').', Nora.')
-        ->assertJsonPath('props.welcome.body', 'Your workspace for '.$workspace->name.' is ready.')
+    $dashboard->assertJsonPath('props.welcome.title', 'Welcome to '.$workspace->name.', Nora.')
+        ->assertJsonPath('props.welcome.body', 'Your workspace is ready.')
         ->assertJsonPath('props.welcome.checklist', [['id' => 'timezone', 'label' => 'Your timezone', 'hint' => 'Confirm the timezone your dates and times show in', 'url' => '/welcome/timezone', 'state' => 'done'], ['id' => 'photo', 'label' => 'Your photo', 'hint' => 'Add a photo so teammates know who you are', 'url' => '/welcome/photo', 'state' => 'skipped']])
         ->assertJsonPath('props.welcome.done', 1)->assertJsonPath('props.welcome.total', 2)
         ->assertJsonPath('props.welcome.dismiss.label', 'Dismiss welcome')

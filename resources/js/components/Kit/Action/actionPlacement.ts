@@ -1,6 +1,7 @@
 // Where a list of server action descriptors goes: inline or in a menu. Nothing here checks a permission: a forbidden action is absent from the list.
 // `intent` is `dialog`, `document` or `edit` (an action that changes the record; ActionBar hides it inside a locked LockedForm). `checked` (true or false) makes a menu
 // row a checkbox item (role="menuitemcheckbox" with aria-checked); choosing it emits the action as any other, and the host flips `checked`. Null or absent: a plain row.
+// `ariaLabel` is the accessible name when the visible label, a verb, needs its record ("Remove Billing").
 export type ActionDescriptor = {
     label: string;
     url: string;
@@ -8,9 +9,11 @@ export type ActionDescriptor = {
     key?: string | null;
     disabled?: boolean;
     reason?: string | null;
+    ariaLabel?: string | null;
+    description?: string | null;
     destructive?: boolean;
     confirm?: {
-        title: string;
+        title?: string | null;
         description: string;
         label: string;
         typed?: string | null;

@@ -38,7 +38,7 @@ const formOptions = failureHandlers as FormOptions;
             <h1 class="text-xl font-medium">Reset your password</h1>
             <p class="text-sm text-muted-foreground">Enter your email address and we'll send you a link to choose a new password.</p>
         </div>
-        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/forgot-password" method="post" class="mt-6 grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
+        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/forgot-password" method="post" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <FormStatus data-reset-link-sent />
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <Field id="email" name="email" label="Email address">

@@ -21,6 +21,9 @@ import FocusPage from './FocusPage.vue';
  * grow with data (a form, a settings section, a detail or confirmation page, an empty state, an account or guest page) declares a focused width.
  * The title is the page's `layout.title` (the same decision as the breadcrumb and the document title) unless `title` is passed; guest pages outside the shell
  * show none. `state` swaps the content for the `loading`, `empty` or `error` slot (each has a plain default).
+ * Rhythm: the page owns the vertical spacing between its visible direct children (the head, then each block of content) with one gap (`gap-6`), so no child
+ * carries an outer margin (`mt-*`, `mb-*`, `space-y-*`). Out-of-flow children (absolute, fixed, a dialog or a portal, hidden) take no gap. `flush` turns the
+ * gap off, for a page whose content is one full-bleed child (a workbench, a split pane) that lays itself out. Columns are a PageGrid; a titled region a PageSection.
  */
 type PageState = 'ready' | 'loading' | 'empty' | 'error';
 
@@ -32,6 +35,7 @@ const props = withDefaults(
         lg?: boolean;
         xl?: boolean;
         full?: boolean;
+        flush?: boolean;
         title?: string;
         heading?: boolean;
         state?: PageState;
@@ -98,42 +102,63 @@ const size = computed(
 );
 </script>
 <template>
-    <FocusPage :size="size" data-slot="page">
-        <Breadcrumbs v-if="drawsTrail" />
+    <FocusPage
+        :size="size"
+        :class="flush ? undefined : 'flex flex-col gap-6'"
+        :data-flush="flush || undefined"
+        data-slot="page"
+    >
         <div
             v-if="
+                drawsTrail ||
                 headingText ||
                 $slots.actions ||
                 $slots.status ||
                 status ||
                 actions.length
             "
-            class="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-2"
-            data-slot="page-header"
+            class="flex flex-col gap-2"
+            data-slot="page-head"
         >
-            <h1
-                v-if="headingText"
-                data-slot="page-heading"
-                class="font-display text-3xl font-(weight:--font-display-weight) tracking-tight"
-            >
-                {{ headingText }}
-            </h1>
+            <Breadcrumbs v-if="drawsTrail" />
             <div
                 v-if="
-                    $slots.actions || $slots.status || status || actions.length
+                    headingText ||
+                    $slots.actions ||
+                    $slots.status ||
+                    status ||
+                    actions.length
                 "
-                class="flex items-center gap-2"
+                class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"
+                data-slot="page-header"
             >
-                <HeaderStatus v-if="$slots.status"
-                    ><slot name="status" /></HeaderStatus
-                ><HeaderStatus
-                    v-else-if="status"
-                    :status="status"
-                /><HeaderActions
-                    v-if="actions.length"
-                    :actions="actions"
-                    v-bind="listeners"
-                /><slot name="actions" />
+                <h1
+                    v-if="headingText"
+                    data-slot="page-heading"
+                    class="font-display text-3xl font-(weight:--font-display-weight) tracking-tight"
+                >
+                    {{ headingText }}
+                </h1>
+                <div
+                    v-if="
+                        $slots.actions ||
+                        $slots.status ||
+                        status ||
+                        actions.length
+                    "
+                    class="flex items-center gap-2"
+                >
+                    <HeaderStatus v-if="$slots.status"
+                        ><slot name="status" /></HeaderStatus
+                    ><HeaderStatus
+                        v-else-if="status"
+                        :status="status"
+                    /><HeaderActions
+                        v-if="actions.length"
+                        :actions="actions"
+                        v-bind="listeners"
+                    /><slot name="actions" />
+                </div>
             </div>
         </div>
         <div

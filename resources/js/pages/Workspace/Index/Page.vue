@@ -16,7 +16,7 @@ const leaveFor = (id: number) => props.workspaces.find((workspace) => workspace.
         <li v-for="choice in choices" :key="choice.id" class="flex items-center gap-3">
             <Link v-if="choice.url" :href="choice.url" class="text-sm font-medium underline-offset-4 hover:underline">{{ choice.name }}</Link>
             <span v-else class="text-sm text-muted-foreground">{{ choice.name }} · unavailable</span>
-            <Dialog variant="danger" v-if="leaveFor(choice.id)?.confirm && !leaveFor(choice.id)?.disabled" :title="leaveFor(choice.id)!.confirm!.title" :description="leaveFor(choice.id)!.confirm!.description" :confirm-label="leaveFor(choice.id)!.confirm!.label" @confirm="router.delete(leaveFor(choice.id)!.url)">
+            <Dialog variant="danger" v-if="leaveFor(choice.id)?.confirm && !leaveFor(choice.id)?.disabled" :title="leaveFor(choice.id)!.confirm!.title ?? `${leaveFor(choice.id)!.label}?`" :description="leaveFor(choice.id)!.confirm!.description" :confirm-label="leaveFor(choice.id)!.confirm!.label" @confirm="router.delete(leaveFor(choice.id)!.url)">
                 <Button variant="secondary" type="button" data-test="leave-workspace">{{ leaveFor(choice.id)!.label }}</Button>
             </Dialog>
         </li>

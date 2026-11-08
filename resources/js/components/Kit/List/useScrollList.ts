@@ -7,7 +7,11 @@ export type ListAction = {
     url: string;
     method: string;
     destructive: boolean;
-    confirm: { title: string; description: string; label: string } | null;
+    confirm: {
+        title?: string | null;
+        description: string;
+        label: string;
+    } | null;
     disabled?: boolean;
     reason?: string | null;
 };

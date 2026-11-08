@@ -6,7 +6,7 @@ import Button from '@/components/Kit/Form/Button.vue';
  * The end of a long page: Back to top, an optional jump list of the page's sections, and `pagination` / `actions` slots. Place it last in the page's
  * content. It shows only when the content before it runs past one and a half screens (a short page has nothing to return to) and hides while a sticky
  * form bar is pinned in the same <main>, which already holds the page's actions. Jumping moves focus to the target (the page's <h1> for Back to top),
- * and scrolls without animation for reduced motion.
+ * and scrolls without animation for reduced motion. It sits 32px below the content: inside a Page (not flush) the Page's 24px gap plus its own 8px.
  */
 withDefaults(
     defineProps<{
@@ -28,6 +28,23 @@ let resize: ResizeObserver | undefined;
 let mutations: MutationObserver | undefined;
 let frame = 0;
 
+function contentEnd(at: HTMLElement): number {
+    for (
+        let sibling = at.previousElementSibling;
+        sibling;
+        sibling = sibling.previousElementSibling
+    ) {
+        const style = getComputedStyle(sibling);
+        if (
+            style.display !== 'none' &&
+            style.position !== 'absolute' &&
+            style.position !== 'fixed'
+        ) {
+            return sibling.getBoundingClientRect().bottom;
+        }
+    }
+    return at.getBoundingClientRect().top;
+}
 function measure(): void {
     const main = marker.value?.closest('main');
     if (!main || !marker.value) return;
@@ -41,12 +58,13 @@ function measure(): void {
             bar.getClientRects().length > 0 &&
             ['sticky', 'fixed'].includes(getComputedStyle(bar).position),
     );
-    // Only the content above the marker counts, so showing this cannot itself make the page long enough to show it.
+    // Only the content above the marker counts, so showing this cannot itself make the page long enough to show it. While hidden the marker is out of flow
+    // (absolute, so the Page's gap skips it), and its own box no longer marks the end of that content: the last in-flow sibling before it does (a hidden,
+    // absolute or fixed helper just before it is skipped).
+    const end = contentEnd(marker.value);
     shown.value =
         !pinnedBar &&
-        marker.value.getBoundingClientRect().top -
-            main.getBoundingClientRect().top >
-            window.innerHeight * 1.5;
+        end - main.getBoundingClientRect().top > window.innerHeight * 1.5;
 }
 function later(): void {
     cancelAnimationFrame(frame);
@@ -93,11 +111,17 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-    <div ref="marker" data-page-end-marker>
+    <div
+        ref="marker"
+        :class="
+            shown ? '[[data-slot=page]:not([data-flush])>&]:mt-2' : 'absolute'
+        "
+        data-page-end-marker
+    >
         <aside
             v-if="shown"
             :aria-label="label"
-            class="border-border mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm"
+            class="border-border flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm"
             data-page-end
         >
             <div class="flex flex-wrap items-center gap-3">

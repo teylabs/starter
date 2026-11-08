@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { useId, type Directive } from 'vue';
 import { ModalLink } from '@inertiaui/modal-vue';
 import {
     DropdownMenuCheckboxItem,
@@ -27,35 +28,69 @@ const props = defineProps<{
 }>();
 const menuIcon = (action: ActionDescriptor) =>
     actionIcons[actionIconName(action, true) ?? ''];
+// A `disabled` row stays focusable (aria-disabled, not the menu's own disabled, which skips it) so its `reason` shows as a tooltip and is read as its description;
+// choosing it does nothing and the menu stays open.
 const select = (action: ActionDescriptor) =>
     deferSelect(props.onAction, action);
+function choose(action: ActionDescriptor, event: Event) {
+    if (action.disabled) return event.preventDefault();
+    select(action);
+}
+// Reka's menu item writes its own aria-disabled (from its `disabled`, which would also drop the row from keyboard navigation) over a passed one, so a row that
+// stays focusable but cannot be chosen sets the attribute itself once rendered.
+const vAriaDisabled: Directive<HTMLElement, boolean | undefined> = {
+    mounted: (el, { value }) => ariaDisabled(el, value),
+    updated: (el, { value }) => ariaDisabled(el, value),
+};
+function ariaDisabled(el: HTMLElement, value: boolean | undefined) {
+    if (value) el.setAttribute('aria-disabled', 'true');
+    else el.removeAttribute('aria-disabled');
+}
+const baseId = useId();
+const reasonId = (index: number) => `${baseId}-reason-${index}`;
+const describes = (action: ActionDescriptor) =>
+    Boolean(action.disabled && action.reason);
 </script>
 <template>
-    <template v-for="action in actions" :key="action.key ?? action.url">
+    <template
+        v-for="(action, index) in actions"
+        :key="action.key ?? action.url"
+    >
         <DropdownMenuCheckboxItem
             v-if="menuItemRole(action) === 'menuitemcheckbox'"
             :model-value="action.checked === true"
-            :disabled="busy || action.disabled"
-            :class="
-                action.destructive
-                    ? 'text-destructive-text focus:text-destructive-text'
-                    : undefined
-            "
-            :title="action.reason ?? undefined"
+            :disabled="busy"
+            v-aria-disabled="action.disabled"
+            :class="[
+                action.destructive &&
+                    'text-destructive-text focus:text-destructive-text',
+                action.disabled && 'cursor-not-allowed opacity-50',
+            ]"
+            :title="(describes(action) && action.reason) || undefined"
+            :aria-describedby="describes(action) ? reasonId(index) : undefined"
+            :aria-label="action.ariaLabel || undefined"
             :data-action="action.key"
-            @select="select(action)"
+            @select="choose(action, $event)"
         >
             <component
                 :is="menuIcon(action)"
                 v-if="menuIcon(action)"
                 class="size-4"
                 aria-hidden="true"
-            /><ActionLabel :action="action" menu />
+            /><ActionLabel :action="action" menu /><span
+                v-if="describes(action)"
+                :id="reasonId(index)"
+                class="sr-only"
+                aria-hidden="true"
+                data-action-reason
+                >{{ action.reason }}</span
+            >
         </DropdownMenuCheckboxItem>
         <DropdownMenuItem
             v-else-if="action.intent === 'dialog' && !action.disabled"
             as-child
             :disabled="busy"
+            :aria-label="action.ariaLabel || undefined"
             :data-action="action.key"
         >
             <ModalLink
@@ -76,6 +111,7 @@ const select = (action: ActionDescriptor) =>
             v-else-if="action.intent === 'document' && !action.disabled"
             as-child
             :disabled="busy"
+            :aria-label="action.ariaLabel || undefined"
             :data-action="action.key"
         >
             <a :href="action.url" target="_blank" rel="noopener noreferrer"
@@ -90,6 +126,7 @@ const select = (action: ActionDescriptor) =>
             v-else-if="rendersAsLink(action)"
             as-child
             :disabled="busy"
+            :aria-label="action.ariaLabel || undefined"
             :data-action="action.key"
         >
             <a
@@ -113,22 +150,32 @@ const select = (action: ActionDescriptor) =>
         </DropdownMenuItem>
         <DropdownMenuItem
             v-else
-            :disabled="busy || action.disabled"
-            :class="
-                action.destructive
-                    ? 'text-destructive-text focus:text-destructive-text'
-                    : undefined
-            "
-            :title="action.reason ?? undefined"
+            :disabled="busy"
+            v-aria-disabled="action.disabled"
+            :class="[
+                action.destructive &&
+                    'text-destructive-text focus:text-destructive-text',
+                action.disabled && 'cursor-not-allowed opacity-50',
+            ]"
+            :title="(describes(action) && action.reason) || undefined"
+            :aria-describedby="describes(action) ? reasonId(index) : undefined"
+            :aria-label="action.ariaLabel || undefined"
             :data-action="action.key"
-            @select="select(action)"
+            @select="choose(action, $event)"
         >
             <component
                 :is="menuIcon(action)"
                 v-if="menuIcon(action)"
                 class="size-4"
                 aria-hidden="true"
-            /><ActionLabel :action="action" menu />
+            /><ActionLabel :action="action" menu /><span
+                v-if="describes(action)"
+                :id="reasonId(index)"
+                class="sr-only"
+                aria-hidden="true"
+                data-action-reason
+                >{{ action.reason }}</span
+            >
         </DropdownMenuItem>
     </template>
 </template>

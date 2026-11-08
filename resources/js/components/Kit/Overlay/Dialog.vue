@@ -119,13 +119,13 @@ const layerTarget = useLayerTarget();
                         <div class="grid min-w-0 gap-1">
                             <slot name="title"
                                 ><AlertDialogTitle
-                                    class="text-lg font-semibold"
+                                    class="text-lg font-semibold break-words"
                                     >{{ title }}</AlertDialogTitle
                                 ></slot
                             >
                             <AlertDialogDescription
                                 v-if="description"
-                                class="text-muted-foreground text-sm"
+                                class="text-muted-foreground text-sm break-words"
                                 >{{ description }}</AlertDialogDescription
                             >
                             <div

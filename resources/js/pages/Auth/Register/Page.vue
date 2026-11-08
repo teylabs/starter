@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, ref } from 'vue';
-import { Alert, Button, Field, FormStatus, Input, Page, PasswordInput } from '@kit/ui';
+import { Alert, Button, Field, FormStatus, Input, Page, PasswordInput, Stack } from '@kit/ui';
 
 // Creates an account. By default it is Fortify's open registration (/register, while the app turns the `registration` feature on): the account is the app's
 // CreatesNewUsers action's. An app's own sign-up (an invited account, say) renders this page from its own route with its own view model values: where it posts
@@ -58,12 +58,15 @@ const formOptions = failureHandlers as FormOptions;
 <template>
     <Head :title="title" />
     <Page xs :heading="false">
-        <div class="space-y-2">
-            <h1 class="text-xl font-medium">{{ heading }}</h1>
-            <p v-if="lead" class="text-sm text-muted-foreground" data-register-lead>{{ lead }}</p>
-        </div>
-        <FormStatus class="mt-4" data-register-status />
-        <Form ref="form" novalidate v-slot="{ errors, processing }" :action="action" method="post" :transform="(data) => ({ ...data, ...submit })" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="mt-6 grid gap-4" @start="failure = null" @error="refocus" @finish="clearPasswords" :options="formOptions">
+        <!-- A compact auth card: the heading and its flashed status sit closer (gap-4) than the page's blocks (docs/page-rhythm.md). -->
+        <Stack>
+            <div class="space-y-2">
+                <h1 class="text-xl font-medium">{{ heading }}</h1>
+                <p v-if="lead" class="text-sm text-muted-foreground" data-register-lead>{{ lead }}</p>
+            </div>
+            <FormStatus class="self-stretch" data-register-status />
+        </Stack>
+        <Form ref="form" novalidate v-slot="{ errors, processing }" :action="action" method="post" :transform="(data) => ({ ...data, ...submit })" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="grid gap-4" @start="failure = null" @error="refocus" @finish="clearPasswords" :options="formOptions">
             <Alert v-if="otherError(errors)" variant="danger" live="alert" data-register-error>{{ otherError(errors) }}</Alert>
             <Alert v-else-if="failure" variant="danger" live="alert" data-auth-throttled>{{ failure }}</Alert>
             <div v-if="email !== null" class="grid gap-2">

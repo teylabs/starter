@@ -271,7 +271,7 @@ export interface BreadcrumbsProps {
     }>;
 }
 
-/** The root of every page: in the shell, the trail (Breadcrumbs) above the header, drawn whether or not there is a heading; then the header (the `title` prop, or `title` here, and an `actions` slot) and the content in one column. the width is a boolean prop (`<Page sm>`: `xs`, `sm`, `md`, `lg`, `xl`, or `full`); none is full (the default: the whole shell, for lists and tables), and fixed-content pages declare a focused one. `state` swaps the content for the `loading`, `empty` or `error` slot. FocusPage is internal to it. */
+/** The root of every page: in the shell, the trail (Breadcrumbs) above the header, drawn whether or not there is a heading; then the header (the `title` prop, or `title` here, and an `actions` slot) and the content in one column. the width is a boolean prop (`<Page sm>`: `xs`, `sm`, `md`, `lg`, `xl`, or `full`); none is full (the default: the whole shell, for lists and tables), and fixed-content pages declare a focused one. `state` swaps the content for the `loading`, `empty` or `error` slot. FocusPage is internal to it. Rhythm: the page gaps its visible direct children (`gap-6`; out-of-flow children take none), so children carry no outer margins; `flush` turns the gap off, for one full-bleed child. */
 export interface PageProps {
     xs?: boolean;
     sm?: boolean;
@@ -279,6 +279,7 @@ export interface PageProps {
     lg?: boolean;
     xl?: boolean;
     full?: boolean;
+    flush?: boolean;
     title?: string;
     heading?: boolean;
     state?: 'ready' | 'loading' | 'empty' | 'error';
@@ -421,7 +422,8 @@ export interface DialogProps {
  * A server-driven index table (TanStack headless, Tailwind). `table` is the server's TableData: rows, columns, sort, search, filters, tabs, pagination and the empty state, with each
  * row's `actions` already decided, plus the filter `choices` the toolbar shows and the `bulkActions` that make rows selectable. Every change is an Inertia visit with the state in the URL.
  * Slots: `cell-<key>` ({ row, value }), `row-actions`, `toolbar`, `toolbar-end`, `empty-first-use`, `empty-no-results`. `intercept` names row and bulk actions the page performs itself
- * (`@act`, `@bulk` with the selected ids). Nothing here checks a permission.
+ * (`@act`, `@bulk` with the selected ids). Nothing here checks a permission. `rowActions.variant` lays out each row's actions: `split` (the primary joined to a chevron
+ * menu) or `overflow` (quiet inline actions plus "…"); it wins over the server's `table.rowActions`, and without either a row of one primary plus menu items is split.
  */
 export interface DataTableProps {
     table: object;
@@ -434,6 +436,7 @@ export interface DataTableProps {
         | string
         | ((row: Record<string, unknown>) => string | null | undefined)
         | null;
+    rowActions?: { variant?: 'split' | 'overflow' | null } | null;
 }
 
 /** The index toolbar: search (300ms after typing, Enter at once) and one choice per server filter `choice`. It emits `search` and `filter` (name, value or null); the host visits. Slots: default (after the filters), `end`. */
@@ -457,10 +460,33 @@ export interface BulkBarProps {
     label?: string;
 }
 
-/** Vertical rhythm between sibling blocks: `flex flex-col gap-4` (`class="gap-6"` for a deliberate other rhythm). Spacing has one owner: siblings carry no margins. `as` / `asChild` as Reka's Primitive. */
-export interface BlockStackProps {
+/** Vertical rhythm between sibling blocks: `flex flex-col gap-4` (`class="gap-6"` for a deliberate other rhythm). Vertical only. Spacing has one owner: siblings carry no margins. `as` / `asChild` as Reka's Primitive. */
+export interface StackProps {
     as?: string;
     asChild?: boolean;
+}
+
+/** @deprecated BlockStack is now Stack (same props); the alias is removed in the next release. */
+export type BlockStackProps = StackProps;
+
+/** One titled region of a page: a `<section>` named by `title`, with a SectionHeader (`title`, `description`, descriptor `actions`, heading `level`) above its stacked content. No outer margin. Event: `action`. */
+export interface PageSectionProps {
+    title?: string;
+    description?: string | null;
+    actions?: import('./Action/actionPlacement').ActionDescriptor[];
+    level?: 2 | 3 | 4 | 5 | 6;
+}
+
+/** Page columns: 12 from `md`, stacked below it. `preset` sizes the cells: `main-aside` (8 and 4), `halves` (6 each), `thirds` (4 each); otherwise each cell spans 12 or its PageGridItem `span`. */
+export interface PageGridProps {
+    preset?: 'main-aside' | 'halves' | 'thirds';
+}
+
+/** One PageGrid cell: `span` (1 to 12) columns from `md`, overriding the grid's preset; the full width below `md`. `as` / `asChild` as Reka's Primitive. */
+export interface PageGridItemProps {
+    as?: string;
+    asChild?: boolean;
+    span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 }
 
 /** Inline controls in one row that owns the gap and alignment: `overflow` (`wrap` | `scroll`) and `layout` (`inline` | `heading`). It never styles its children. */
