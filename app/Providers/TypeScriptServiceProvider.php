@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\TypeScript\ExportedNamespaceWriter;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;
 use Spatie\TypeScriptTransformer\Transformers\AttributedClassTransformer;
 use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
-use Spatie\TypeScriptTransformer\Writers\GlobalNamespaceWriter;
 use Tey\Kit\TypeScript\ExplanationTypesExtension;
 use Tey\Kit\TypeScript\ViewModelTransformer;
 
@@ -18,7 +18,7 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
             ->transformer(AttributedClassTransformer::class)
             ->transformDirectories(base_path('vendor/tey/kit/src/Features'))
             ->outputDirectory(resource_path('js'))
-            ->writer(new GlobalNamespaceWriter('types.generated.d.ts'))
+            ->writer(new ExportedNamespaceWriter('types.generated.d.ts'))
             // A view model's ExplanationNode list or ExplanationDocument types as the kit's own type instead of `undefined`.
             ->extension(new ExplanationTypesExtension)
             ->withoutManifest();
