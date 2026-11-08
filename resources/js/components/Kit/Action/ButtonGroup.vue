@@ -30,11 +30,12 @@ const props = withDefaults(
 );
 
 const text = computed(() => props.appearance === 'text');
-// Written out in full so Tailwind sees every class: the segment look, once for the menu trigger and once applied to each child of the default slot.
+// Written out in full so Tailwind sees every class: the segment look (every segment, the menu trigger included, is py-2 with a 20px line and its
+// content centred, and a child's own fixed height, such as a small Button's h-8, is dropped, so the labels of both segments share one baseline), once for the menu trigger and once applied to each child of the default slot.
 const trigger = computed(() =>
     text.value
         ? 'inline-flex items-center gap-1 px-2 py-1 text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-ring'
-        : 'inline-flex items-center gap-1 rounded-md bg-paper px-2 py-2 text-sm text-outline-foreground shadow-xs ring-1 ring-outline ring-inset hover:bg-outline-wash focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-ring dark:shadow-none',
+        : 'inline-flex items-center gap-1 rounded-md bg-paper px-2 py-2 text-sm leading-5 text-outline-foreground shadow-xs ring-1 ring-outline ring-inset hover:bg-outline-wash focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-ring dark:shadow-none',
 );
 // The label weight is the container's: ActionBar (a page or section header's actions) passes `semibold`; a toolbar's group keeps `medium`.
 const weights = {
@@ -44,7 +45,7 @@ const weights = {
 const children = computed(() =>
     text.value
         ? '[&>*]:inline-flex [&>*]:items-center [&>*]:gap-1 [&>*]:bg-transparent [&>*]:px-2 [&>*]:py-1 [&>*]:text-sm [&>*]:font-medium [&>*]:text-primary [&>*:hover]:underline'
-        : 'divide-x divide-outline [&>*]:inline-flex [&>*]:items-center [&>*]:gap-1.5 [&>*]:bg-transparent [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:text-outline-foreground [&>*:hover]:opacity-70 [&>*:focus-visible]:z-10',
+        : 'divide-x divide-outline [&>*]:inline-flex [&>*]:h-auto [&>*]:items-center [&>*]:gap-1.5 [&>*]:bg-transparent [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:leading-5 [&>*]:text-outline-foreground [&>*:hover]:opacity-70 [&>*:focus-visible]:z-10',
 );
 </script>
 <template>

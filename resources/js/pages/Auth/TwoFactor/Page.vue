@@ -14,7 +14,7 @@ const recovery = ref(false);
             <h1 class="text-xl font-medium">Two-factor verification</h1>
             <p class="text-sm text-muted-foreground">{{ recovery ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</p>
         </div>
-        <Form v-slot="{ processing }" action="/two-factor-challenge" method="post" :reset-on-success="['code', 'recovery_code']" class="mt-6 grid gap-4">
+        <Form v-slot="{ processing }" action="/two-factor-challenge" method="post" :reset-on-success="['code', 'recovery_code']" class="grid gap-4">
             <Field v-if="!recovery" id="code" name="code" label="Authentication code"><Input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required /></Field>
             <Field v-else id="recovery_code" name="recovery_code" label="Recovery code"><Input id="recovery_code" name="recovery_code" autocomplete="one-time-code" required /></Field>
             <Button type="submit" class="w-full" :disabled="processing" data-test="two-factor-submit">{{ processing ? 'Verifying…' : 'Verify' }}</Button>

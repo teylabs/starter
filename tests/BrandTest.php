@@ -156,14 +156,19 @@ test('mail is from the product replies to support and carries the brand', functi
     $inline = array_filter($email->getAttachments(), fn ($part) => $part->getDisposition() === 'inline' && $part->getMediaType() === 'image');
     expect(count($inline))->toBe(preg_match_all('/<img[^>]+src="cid:/', $html));
 
-    // The footer: identity; "{verb} by {legal name} · {address} · {contact}"; the manage link. No ©.
-    expect($html)->toMatch('/<p[^>]*>Product name<\/p>/');
+    // The footer: "© {year} {identity}" (kit.brand.copyright, on by default); "{verb} by {legal name} · {address} · {contact}"; the manage link.
+    expect($html)->toMatch('/<p[^>]*>© '.date('Y').' Product name<\/p>/u');
     expect($html)->toMatch('/<p[^>]*>Built by Acme Holdings · 5 Test Road, Testville · help@acme\.test<\/p>/');
     $this->assertStringContainsString('>Manage notifications</a>', $html);
-    $this->assertStringNotContainsString('©', $html);
     $text = (string) $email->getTextBody();
     $this->assertStringContainsString('Built by Acme Holdings · 5 Test Road, Testville · help@acme.test', $text);
-    $this->assertStringNotContainsString('©', $text);
+    $this->assertStringContainsString('© '.date('Y').' Product name', $text);
+
+    // With kit.brand.copyright off, neither footer carries the © or the year.
+    config(['kit.brand.copyright' => false]);
+    [$plainHtml, $plainText] = brandSentMail([]);
+    $this->assertStringNotContainsString('©', $plainHtml.$plainText);
+    expect($plainHtml)->toMatch('/<p[^>]*>Product name<\/p>/');
 });
 /** @return array{0: string, 1: string} the rendered HTML and text of a notification, with this brand */
 function brandSentMail(array $brand): array
@@ -202,7 +207,7 @@ test('a private app leaves the legal parts out of the mail and web footers', fun
     $this->assertStringNotContainsString('Built by', $html);
 
     // The web footer has no Terms or Privacy; the credit stays.
-    expect(Brand::webFooter())->toBe(['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => []]);
+    expect(Brand::webFooter())->toBe(['identity' => '© '.date('Y').' Product name', 'credit' => 'Built by Tey Labs Inc.', 'links' => []]);
 
     // Any one part left empty is dropped cleanly even when not private.
     [$html] = brandSentMail(['private' => false, 'legal_name' => '', 'postal_address' => '5 Test Road, Testville', 'support_email' => 'help@acme.test']);
@@ -220,7 +225,7 @@ test('a private app leaves the legal parts out of the mail and web footers', fun
         $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
     }
 });
-test('the web footer is identity credit and legal links without a copyright sign', function () {
+test('the web footer is copyright identity credit and legal links', function () {
     require dirname(__DIR__).'/database/fixture.php';
     $password = Str::random(40);
     User::findOrFail(1)->update(['password' => Hash::make($password)]);
@@ -228,11 +233,11 @@ test('the web footer is identity credit and legal links without a copyright sign
     $this->withCookie(config('session.cookie'), app('session')->getId());
     Auth::forgetGuards();
     $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
-    $this->get('/', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => 'Product name', 'credit' => 'Built by Tey Labs', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy'], ['label' => 'Privacy requests', 'url' => 'mailto:privacy@example.com']]]);
+    $this->get('/', $inertia)->assertOk()->assertJsonPath('props.shell.footer', ['identity' => '© '.date('Y').' Product name', 'credit' => 'Built by Tey Labs Inc.', 'links' => [['label' => 'Terms', 'url' => '/terms'], ['label' => 'Privacy', 'url' => '/privacy'], ['label' => 'Privacy requests', 'url' => 'mailto:privacy@example.com']]]);
 
     // A client build overrides the credit line; the identity can differ from the product name.
     config(['kit.brand.credit_verb' => 'Made', 'kit.brand.credit_org' => 'A Studio', 'kit.brand.credit_for' => 'Client Co', 'kit.brand.identity' => 'Client Co Platform']);
-    $this->get('/', $inertia)->assertJsonPath('props.shell.footer.identity', 'Client Co Platform')->assertJsonPath('props.shell.footer.credit', 'Made by A Studio, for Client Co');
+    $this->get('/', $inertia)->assertJsonPath('props.shell.footer.identity', '© '.date('Y').' Client Co Platform')->assertJsonPath('props.shell.footer.credit', 'Made by A Studio, for Client Co');
     $this->assertDoesNotMatchRegularExpression('/<(p|span|a)[^>]*>[^<]*©/u', (string) file_get_contents(resource_path('js/components/Shell/ShellFooter.vue')));
 });
 test('the default accent is neutral and a configured accent overrides it', function () {

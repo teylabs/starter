@@ -60,5 +60,5 @@ const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? pro
         </DropdownMenuContent>
         </DropdownMenu>
     </div>
-    <Dialog variant="danger" v-if="leave?.confirm" v-model:open="asking" :title="leave.confirm.title" :description="leave.confirm.description" :confirm-label="leave.confirm.label" @confirm="router.delete(leave.url)" />
+    <Dialog variant="danger" v-if="leave?.confirm" v-model:open="asking" :title="leave.confirm.title ?? `${leave.label}?`" :description="leave.confirm.description" :confirm-label="leave.confirm.label" @confirm="router.delete(leave.url)" />
 </template>

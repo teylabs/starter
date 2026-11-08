@@ -40,7 +40,7 @@ export function normalAction(action: SingleAction): NormalAction {
     const danger = Boolean(kit.destructive) || legacy.variant === 'danger';
     const confirm = kit.confirm
         ? {
-              title: kit.confirm.title,
+              title: kit.confirm.title ?? `${action.label}?`,
               description: kit.confirm.description,
               label: kit.confirm.label,
               typed: kit.confirm.typed ?? null,

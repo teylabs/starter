@@ -33,7 +33,7 @@ const ancestors = computed(() =>
         :class="
             bar
                 ? 'flex min-w-0 flex-1 items-center overflow-hidden'
-                : 'mb-2 flex h-5 min-w-0 items-center overflow-hidden'
+                : 'flex h-5 min-w-0 items-center overflow-hidden'
         "
         :data-slot="bar ? 'breadcrumbs-bar' : 'breadcrumbs'"
     >
@@ -80,7 +80,7 @@ const ancestors = computed(() =>
     <div
         v-else-if="!bar"
         aria-hidden="true"
-        class="mb-2 h-5"
+        class="h-5"
         data-slot="breadcrumbs-spacer"
     />
 </template>

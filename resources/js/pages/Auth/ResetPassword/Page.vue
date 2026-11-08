@@ -49,7 +49,7 @@ const formOptions = failureHandlers as FormOptions;
             <h1 class="text-xl font-medium">Choose a new password</h1>
             <p class="text-sm text-muted-foreground">For {{ email }}</p>
         </div>
-        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/reset-password" method="post" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="mt-6 grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
+        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/reset-password" method="post" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <FormStatus data-reset-password-status />
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <Alert v-if="errors.email" variant="danger" live="alert" data-reset-email-error>

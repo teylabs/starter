@@ -2,7 +2,7 @@
 import { Form, Head, Link, http, router, usePage } from '@inertiajs/vue3';
 import { KeyRound } from '@lucide/vue';
 import { nextTick, onMounted, ref } from 'vue';
-import { Alert, Button, Field, FormStatus, Input, InputCheckbox, Page, PasswordInput, passkeySignInSupported, signInWithPasskey } from '@kit/ui';
+import { Alert, Button, Field, FormStatus, Input, InputCheckbox, Page, PasswordInput, Stack, passkeySignInSupported, signInWithPasskey } from '@kit/ui';
 
 // A forgotten password is reset by emailed link (Auth/ForgotPassword). `status`, `localLogin` and `register` are the view model's: an app that offers a one-click local sign-in passes the offer, and one that opens registration (Fortify's `registration` feature) the link to Auth/Register (null elsewhere).
 // A guest card is not a settings form: no sticky FormActions bar, one full-width primary button, everything aligned to the card's left edge.
@@ -62,17 +62,20 @@ async function passkeySignIn(): Promise<void> {
 <template>
     <Head :title="title" />
     <Page xs :heading="false">
-        <div class="space-y-2">
-            <h1 class="text-xl font-medium">Sign in to your account</h1>
-            <p class="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
-        </div>
-        <FormStatus class="mt-4" data-login-status />
-        <Form v-if="localLogin" v-slot="{ errors, processing }" :action="localLogin.url" method="post" class="mt-6 grid gap-2" data-local-login>
+        <!-- A compact auth card: the heading and its flashed status sit closer (gap-4) than the page's blocks (docs/page-rhythm.md). -->
+        <Stack>
+            <div class="space-y-2">
+                <h1 class="text-xl font-medium">Sign in to your account</h1>
+                <p class="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
+            </div>
+            <FormStatus class="self-stretch" data-login-status />
+        </Stack>
+        <Form v-if="localLogin" v-slot="{ errors, processing }" :action="localLogin.url" method="post" class="grid gap-2" data-local-login>
             <Button type="submit" variant="secondary" class="w-full" :disabled="processing">Sign in as {{ localLogin.email }}</Button>
             <p v-if="errors.local_login" role="alert" class="text-sm text-destructive-text">{{ errors.local_login }}</p>
             <p class="text-xs text-muted-foreground">One-click sign-in, offered only locally</p>
         </Form>
-        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/login" method="post" :reset-on-success="['password']" :reset-on-error="['password']" class="mt-6 grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
+        <Form ref="form" novalidate v-slot="{ errors, processing }" action="/login" method="post" :reset-on-success="['password']" :reset-on-error="['password']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <Field id="email" name="email" label="Email address">
                 <Input id="email" name="email" type="email" required autofocus autocomplete="email" placeholder="email@example.com" :invalid="Boolean(errors.email)" />

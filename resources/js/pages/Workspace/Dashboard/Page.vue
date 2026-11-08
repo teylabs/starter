@@ -16,7 +16,7 @@ const percent = computed(() => (props.welcome && props.welcome.total > 0 ? Math.
 </script>
 <template>
     <Page :title="heading">
-    <section v-if="welcome" aria-labelledby="welcome-title" class="mb-8 max-w-xl overflow-hidden rounded-xl border border-l-4 border-l-primary bg-card text-card-foreground shadow-sm" data-welcome-card>
+    <section v-if="welcome" aria-labelledby="welcome-title" class="max-w-xl overflow-hidden rounded-xl border border-l-4 border-l-primary bg-card text-card-foreground shadow-sm" data-welcome-card>
         <div class="grid gap-1 p-5 pb-4 sm:p-6 sm:pb-4">
             <h2 id="welcome-title" class="text-lg font-semibold tracking-tight" data-welcome-title>{{ welcome.title }}</h2>
             <p class="text-sm text-muted-foreground">{{ welcome.body }}</p>

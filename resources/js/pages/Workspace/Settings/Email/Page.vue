@@ -62,7 +62,7 @@ const statusLabel = { none: 'Not added', pending: 'Waiting for DNS', verified: '
             </fieldset>
         </Form>
 
-        <section v-if="identity.domain" class="mt-6 rounded-xl border border-border bg-card p-6" aria-labelledby="domain-heading" data-domain>
+        <section v-if="identity.domain" class="rounded-xl border border-border bg-card p-6" aria-labelledby="domain-heading" data-domain>
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="domain-heading" class="text-base font-semibold">{{ identity.domain }}</h2>
                 <Badge :tone="statusTone[identity.domain_status]" data-domain-status>{{ statusLabel[identity.domain_status] }}</Badge>

@@ -20,6 +20,7 @@ import BulkBar from './BulkBar.vue';
 import IndexToolbar from './IndexToolbar.vue';
 import RowActions from './RowActions.vue';
 import { rowName, type RowLabel } from './rowLabel';
+import type { RowActionVariant } from './rowActionLayout';
 import {
     emptySelection,
     isSelected,
@@ -45,7 +46,11 @@ type Action = {
     url: string;
     method: string;
     destructive: boolean;
-    confirm: { title: string; description: string; label: string } | null;
+    confirm: {
+        title?: string | null;
+        description: string;
+        label: string;
+    } | null;
 };
 type Row = Record<string, any> & { id: string | number; actions?: Action[] };
 type Column = {
@@ -87,8 +92,11 @@ type Table = {
         options: { value: string; label: string }[];
     }[];
     bulkActions?: ActionDescriptor[];
+    rowActions?: { variant: RowActionVariant } | null;
+    noun?: string | null;
 };
-// `rowLabel` names each row for its controls ("Actions for Ana Lopez", "Select Ana Lopez"): a column key or a function of the row; without it, the row's number.
+// `rowActions` picks the row actions' layout (`{ variant: 'split' | 'overflow' }`, RowActions); it wins over the server's `table.rowActions`, and without either
+// each row takes RowActions' default. The server's `table.noun` (TableQuery::noun()) names the record in an untitled confirmation ("Remove this member?"). `rowLabel` names each row for its controls ("Actions for Ana Lopez", "Select Ana Lopez"): a column key or a function of the row; without it, the row's number.
 const props = withDefaults(
     defineProps<{
         table: Table;
@@ -98,6 +106,7 @@ const props = withDefaults(
         intercept?: string[];
         toolbar?: boolean;
         rowLabel?: RowLabel<Row>;
+        rowActions?: { variant?: RowActionVariant | null } | null;
     }>(),
     {
         itemKey: 'id',
@@ -106,7 +115,11 @@ const props = withDefaults(
         intercept: () => [],
         toolbar: true,
         rowLabel: null,
+        rowActions: null,
     },
+);
+const rowActionVariant = computed(
+    () => props.rowActions?.variant ?? props.table.rowActions?.variant ?? null,
 );
 const emit = defineEmits<{
     act: [row: Row, action: Action];
@@ -515,6 +528,15 @@ const showToolbar = computed(
                                                 row.original.actions ?? []
                                             "
                                             :label="`Actions for ${rowName(row.original, row.index, rowLabel)}`"
+                                            :record="
+                                                rowName(
+                                                    row.original,
+                                                    row.index,
+                                                    rowLabel,
+                                                )
+                                            "
+                                            :variant="rowActionVariant"
+                                            :noun="table.noun ?? null"
                                             :intercept="intercept"
                                             @act="
                                                 (action) =>

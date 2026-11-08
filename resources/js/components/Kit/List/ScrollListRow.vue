@@ -44,7 +44,8 @@ const line = computed(() =>
         <RowActions
             v-if="item.actions.length"
             :actions="item.actions"
-            :label="item.title"
+            :label="`Actions for ${item.title}`"
+            :record="item.title"
             class="shrink-0"
         />
     </div>
