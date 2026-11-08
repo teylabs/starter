@@ -120,8 +120,9 @@ function mcpCapabilitiesPestDeclares(string $source, string $symbol): bool
     }
     $wanted = mcpCapabilitiesTestName(substr($symbol, 5));
     preg_match_all('/\b(?:test|it)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $source, $matches);
-    foreach ($matches[2] as $description) {
-        if (mcpCapabilitiesTestName(stripcslashes($description)) === $wanted) {
+    foreach ($matches[2] as $index => $description) {
+        // A single-quoted PHP string keeps `\n` as a backslash and an `n` (the backslash is then stripped as punctuation); a double-quoted one decodes escapes.
+        if (mcpCapabilitiesTestName($matches[1][$index] === '"' ? stripcslashes($description) : $description) === $wanted) {
             return true;
         }
     }
@@ -146,6 +147,8 @@ it('matches a test_* name to a Pest description the same way on both sides', fun
     'punctuation and case' => ["test(\"Lets an owner's save: go!\", fn () => null);", 'test_lets_an_owners_save_go', true],
     'extra spaces' => ["it('a   b', fn () => null);", 'test_a__b', true],
     'escaped quote' => ["it('an owner\\'s save', fn () => null);", 'test_an_owners_save', true],
+    'a single-quoted backslash n' => ["it('a\\nb', fn () => null);", 'test_anb', true],
+    'a double-quoted newline' => ['it("a\\nb", fn () => null);', 'test_a_b', true],
     'a different name' => ["it('a, c', fn () => null);", 'test_a_b', false],
     'a prefix only' => ["it('a b c', fn () => null);", 'test_a_b', false],
     'not a test name' => ["it('a b', fn () => null);", 'a_b', false],
