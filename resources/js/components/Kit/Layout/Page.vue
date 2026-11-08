@@ -1,17 +1,30 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { computed, getCurrentInstance, inject, provide, type Ref } from 'vue';
+import {
+    computed,
+    defineComponent,
+    getCurrentInstance,
+    inject,
+    provide,
+    ref,
+    type Ref,
+} from 'vue';
 import HeaderActions from '@/components/Kit/Action/HeaderActions.vue';
 import HeaderStatus from '@/components/Kit/Action/HeaderStatus.vue';
 import type { ActionDescriptor } from '@/components/Kit/Action/actionPlacement';
 import type { HeaderStatus as HeaderStatusValue } from '@/components/Kit/Action/headerSplit';
 import Breadcrumbs from './Breadcrumbs.vue';
 import FocusPage from './FocusPage.vue';
+import PageTabs from './PageTabs.vue';
 
 /*
  * The root of every page: in the shell, the trail to it (Breadcrumbs, a small line above the heading, drawn whether or not there is a heading; not when the shell
  * draws the trail as a bar, and not again by a <Page> nested in another), then the header
  * (title, status and actions), then the content, in one column.
+ * Tabs: in the shell, a top-level <Page> draws the page's `layout.navigation` (decided on the server: a module's sibling pages from Registry::modulePage(),
+ * or a record's sections its ViewModel sets) as PageTabs at its top, above the heading, the current one marked. It draws none when a nested <Page>, when a
+ * frame draws the navigation itself (SettingsFrame's sidebar), when the page renders its own <PageTabs> anywhere inside it (a record frame placing its tabs
+ * below its header: that PageTabs claims them, so there is one row), or when the Layout keeps the deprecated SubNav strip (`subNav="strip"`).
  * Header actions: `actions` (server descriptors) render through HeaderActions, split by headerSplit into a filled primary, up to two secondaries and a More menu
  * (only the primary below `sm`); three or fewer with no declared `priority` render through ActionBar exactly as the same descriptors in the slot would. A
  * non-navigating action is emitted as `action` when the page listens, else run (confirmation included). The `actions` slot is the escape hatch: whatever it holds
@@ -67,9 +80,33 @@ const shellTrail = inject<Ref<'page' | 'bar'> | null>(
 );
 const nested = inject('kit.page', false);
 provide('kit.page', true);
+// The page's tabs (`layout.navigation`): drawn here unless something inside draws them (a <PageTabs> claims them through the outermost <Page>).
+const claimed = ref(false);
+const outerClaim = inject<(() => void) | null>('kit.page.tabs', null);
+provide(
+    'kit.page.tabs',
+    nested && outerClaim
+        ? outerClaim
+        : () => {
+              claimed.value = true;
+          },
+);
+// The page's own tabs claim nothing: they render inside this, which hides the claim.
+const OwnTabs = defineComponent({
+    setup(_, { slots }) {
+        provide('kit.page.tabs', null);
+        return () => slots.default?.();
+    },
+});
+const framed = inject('kit.navigation.framed', false);
+const subNav = inject<Ref<'tabs' | 'strip'> | null>('kit.shell.subnav', null);
 const page = usePage<{
     layout?: {
         title: string;
+        navigation?: {
+            label: string | null;
+            items: { label: string; url: string; current: boolean }[];
+        }[];
         navigationHeader?: { label: string; url: string } | null;
     };
     title?: string;
@@ -80,6 +117,22 @@ const drawsTrail = computed(
         !nested &&
         shellTrail?.value !== 'bar' &&
         !page.props.layout?.navigationHeader,
+);
+const tabs = computed(() =>
+    inShell && !nested && !framed && !claimed.value && subNav?.value !== 'strip'
+        ? (page.props.layout?.navigation ?? []).flatMap((group) =>
+              group.items.map((item) => ({
+                  href: item.url,
+                  label: item.label,
+                  current: item.current,
+              })),
+          )
+        : [],
+);
+const tabsLabel = computed(
+    () =>
+        page.props.layout?.navigation?.find((group) => group.label)?.label ??
+        'Sections',
 );
 const headingText = computed(() =>
     inShell && props.heading
@@ -108,6 +161,9 @@ const size = computed(
         :data-flush="flush || undefined"
         data-slot="page"
     >
+        <OwnTabs v-if="tabs.length"
+            ><PageTabs :tabs="tabs" :label="tabsLabel" data-page-module-tabs
+        /></OwnTabs>
         <div
             v-if="
                 drawsTrail ||

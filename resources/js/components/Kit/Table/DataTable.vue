@@ -16,6 +16,12 @@ import type { ActionDescriptor } from '@/components/Kit/Action/actionPlacement';
 import DateTime from '@/components/Kit/Data/DateTime.vue';
 import type { DateTimeFormat } from '@/components/Kit/Data/dateTime';
 import Button from '@/components/Kit/Form/Button.vue';
+import {
+    groundCard,
+    tintedGround,
+    useGroundSurface,
+    useInCard,
+} from '@/components/Kit/Surface/surface';
 import BulkBar from './BulkBar.vue';
 import IndexToolbar from './IndexToolbar.vue';
 import RowActions from './RowActions.vue';
@@ -39,6 +45,9 @@ import {
  * at the viewport's foot while anything is selected (the selection survives pages, sorts and filters until cleared or acted on).
  * Slots: `cell-<key>` ({ row, value }), `row-actions` ({ row }), `toolbar`, `toolbar-end`, `empty-first-use`, `empty-no-results`. `intercept` names row and bulk actions the page performs
  * itself (it listens to `act` and `bulk`), such as one that opens a dialog. Nothing here checks a permission: an action that is not in the row or the table is not shown.
+ * On a tinted page ground (README, "Tinted page grounds") the whole table, its tabs, toolbar, filters, rows and pages, is one card, unless it already sits on
+ * one. Its rows and empty states are then flat, and flat too in a card it sits in there (a PageSection's), so no card is nested. On a white ground nothing
+ * changes: the rows sit on their own card.
  */
 type Action = {
     key: string | null;
@@ -128,6 +137,8 @@ const emit = defineEmits<{
 
 // ---- visits: the URL is the state ------------------------------------------------------------------------------------------------------------------
 const busy = ref(false);
+const onCard = tintedGround() && useInCard().value;
+const surface = useGroundSurface();
 const stops = [
     router.on('start', () => (busy.value = true)),
     router.on('finish', () => (busy.value = false)),
@@ -291,7 +302,11 @@ const showToolbar = computed(
 );
 </script>
 <template>
-    <section class="grid gap-4" data-data-table>
+    <section
+        :class="['grid gap-4', surface && `${groundCard} p-4`]"
+        data-data-table
+        :data-ground-surface="surface || undefined"
+    >
         <nav
             v-if="table.tabs.length"
             aria-label="Views"
@@ -353,7 +368,11 @@ const showToolbar = computed(
         </div>
         <div
             v-if="table.emptyState === 'first-use'"
-            class="bg-card text-card-foreground ring-border grid justify-items-start gap-2 rounded-lg p-6 ring-1"
+            :class="
+                surface || onCard
+                    ? 'grid justify-items-start gap-2 p-2'
+                    : 'bg-card text-card-foreground ring-border grid justify-items-start gap-2 rounded-lg p-6 ring-1'
+            "
             data-empty="first-use"
         >
             <slot name="empty-first-use"
@@ -364,7 +383,11 @@ const showToolbar = computed(
         </div>
         <div
             v-else-if="table.emptyState === 'no-results'"
-            class="bg-card text-card-foreground ring-border grid justify-items-start gap-2 rounded-lg p-6 ring-1"
+            :class="
+                surface || onCard
+                    ? 'grid justify-items-start gap-2 p-2'
+                    : 'bg-card text-card-foreground ring-border grid justify-items-start gap-2 rounded-lg p-6 ring-1'
+            "
             data-empty="no-results"
         >
             <slot name="empty-no-results"
@@ -384,8 +407,14 @@ const showToolbar = computed(
         </div>
         <div
             v-else
-            class="bg-card text-card-foreground ring-border overflow-hidden rounded-lg ring-1"
-            :class="busy ? 'opacity-60' : ''"
+            :class="[
+                surface
+                    ? '-mx-4 -mb-4 overflow-hidden border-t first:-mt-4 first:border-t-0'
+                    : onCard
+                      ? 'overflow-hidden'
+                      : 'bg-card text-card-foreground ring-border overflow-hidden rounded-lg ring-1',
+                busy ? 'opacity-60' : '',
+            ]"
             data-table-card
         >
             <div

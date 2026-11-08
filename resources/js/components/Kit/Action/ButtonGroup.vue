@@ -45,8 +45,12 @@ const weights = {
 const children = computed(() =>
     text.value
         ? '[&>*]:inline-flex [&>*]:items-center [&>*]:gap-1 [&>*]:bg-transparent [&>*]:px-2 [&>*]:py-1 [&>*]:text-sm [&>*]:font-medium [&>*]:text-primary [&>*:hover]:underline'
-        : 'divide-x divide-outline [&>*]:inline-flex [&>*]:h-auto [&>*]:items-center [&>*]:gap-1.5 [&>*]:bg-transparent [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:leading-5 [&>*]:text-outline-foreground [&>*:hover]:opacity-70 [&>*:focus-visible]:z-10',
+        : '[&>*]:inline-flex [&>*]:h-auto [&>*]:items-center [&>*]:gap-1.5 [&>*]:bg-transparent [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:leading-5 [&>*]:text-outline-foreground [&>*:hover]:opacity-70 [&>*:focus-visible]:z-10',
 );
+// The divider between segments. Not `divide-x`: Tailwind v4 sets its width under `:where()`, so the `[&>*]:border-0` reset above (which strips each
+// child's own border) wins and erases it. A right border on every segment but the last, listed after the reset, outranks it.
+const dividers =
+    '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-solid [&>*:not(:last-child)]:border-outline';
 </script>
 <template>
     <div
@@ -63,6 +67,7 @@ const children = computed(() =>
                     'bg-paper text-outline-foreground ring-outline overflow-hidden rounded-md shadow-xs ring-1 ring-inset dark:shadow-none',
                 !text && $slots.menu && 'rounded-r-none',
                 children,
+                !text && dividers,
                 !text && weights[weight],
             ]"
         >

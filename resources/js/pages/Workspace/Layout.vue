@@ -18,13 +18,14 @@ import Wordmark from './Partials/Wordmark.vue';
  * (`bar`, rendered once and never in the drawer: a compact control such as a search opener, which shrinks before the switcher and the drawer button do), the workspace's
  * pages themselves (`nav`, with `navigation` and `label`: replaces PrimaryNav at every width, one live copy, and the drawer then lists no pages), the drawer's page list (`drawer-nav`, same props: in place of the kit's pages, usually paired with `nav`), the footer and the
  * width (`widthClass`); the chrome comes from the server's `layout` props. Opt-ins: `wordmarkLabel` names the wordmark link (a tenant's name, say; the product's
- * by default), `guestHeader` draws the header for a guest too (no user menu, no drawer), `breadcrumbs="bar"` draws the trail as a full-width bar under the header
- * (the whole trail, the current page included; <Page> then draws none), and the page ground is `--shell-ground` (the theme's background unless
+ * by default), `guestHeader` draws the header for a guest too (no user menu, no drawer), `breadcrumbs` places the trail: `bar` (the default) is a full-width bar
+ * under the header (the whole trail, the current page included; <Page> then draws none), `page` is <Page>'s small line of ancestors above its heading, and the page ground is `--shell-ground` (the theme's background unless
  * the host sets it). For a host's own root shell: `toaster` false leaves the toasts to the host's single Toaster, `documentTitle` false leaves the <title> to the
  * pages' own <Head>, and `fill` makes an editor page (a Workbench) the viewport's height with no page scroll: the content area fills what the header leaves, unpadded
- * and overflow hidden, and the page scrolls its own panes. Each defaults to today's behaviour. With no pages to list (no `nav` or `drawer-nav` slot and no navigation) there is no drawer: the account menu stays in the bar at every width. A module's pages (the server's `shell.subNavigation`) show as the SubNav strip under the header.
+ * and overflow hidden, and the page scrolls its own panes. Each defaults to today's behaviour. With no pages to list (no `nav` or `drawer-nav` slot and no navigation) there is no drawer: the account menu stays in the bar at every width. A module's pages reach the page as its `layout.navigation` and its <Page> draws them as PageTabs at the top of the content;
+ * `subNav="strip"` (deprecated) keeps the old SubNav strip under the header, from the server's `shell.subNavigation`, and <Page> then draws no tabs.
  */
-const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData | FocusShellShape; widthClass?: string; wordmarkLabel?: string; guestHeader?: boolean; breadcrumbs?: 'page' | 'bar'; toaster?: boolean; documentTitle?: boolean; fill?: boolean }>(), { widthClass: 'max-w-7xl', wordmarkLabel: undefined, guestHeader: false, breadcrumbs: 'page', toaster: true, documentTitle: true, fill: false });
+const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData | FocusShellShape; widthClass?: string; wordmarkLabel?: string; guestHeader?: boolean; breadcrumbs?: 'page' | 'bar'; subNav?: 'tabs' | 'strip'; toaster?: boolean; documentTitle?: boolean; fill?: boolean }>(), { widthClass: 'max-w-7xl', wordmarkLabel: undefined, guestHeader: false, breadcrumbs: 'bar', subNav: 'tabs', toaster: true, documentTitle: true, fill: false });
 const slots = useSlots();
 // The drawer holds the pages below lg; with none to hold it is left out, and the account menu and actions stay in the bar.
 // A focus shell (a signed-in page outside any workspace: welcome steps, no workspace yet) renders as FocusShell; everything below reads the app shell.
@@ -32,11 +33,13 @@ const focus = computed((): FocusShellShape | null => (props.shell.kind === 'focu
 const app = computed(() => props.shell as Tey.Kit.Features.Shell.Data.ShellData);
 const drawer = computed(() => !focus.value && Boolean(app.value.user) && (Boolean(slots.nav) || Boolean(slots['drawer-nav']) || (app.value.navigation?.length ?? 0) > 0));
 // The document title comes from the page's `layout` (composed on the server), never set per page.
-const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null }; environment?: { label: string; colour: string } | null }>();
+const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null; breadcrumbs?: unknown[] }; environment?: { label: string; colour: string } | null }>();
 // Pages in this shell render their heading (the layout's `title`) and actions inside their <Page>, so it aligns with the content column.
 provide('kit.shell', true);
 // Where the trail is drawn: by each <Page> above its heading (`page`), or here as a full-width bar under the header (`bar`), the current page included.
 provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
+// Where a module's pages show: as <Page>'s tabs (`tabs`, the default), or as the deprecated SubNav strip under the header (`strip`), never both.
+provide('kit.shell.subnav', computed(() => props.subNav));
 </script>
 <template>
     <Head v-if="props.documentTitle" :title="page.props.layout?.documentTitle" />
@@ -100,14 +103,14 @@ provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
                 </div>
             </header>
             <!-- The trail as a bar, unless the page has a "Back to <parent>" strip, which replaces the trail. -->
-            <div v-if="props.breadcrumbs === 'bar' && app.user && !page.props.layout?.navigationHeader" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground backdrop-blur-(--shell-subbar-blur)" data-shell-breadcrumbs>
+            <div v-if="props.breadcrumbs === 'bar' && app.user && page.props.layout?.breadcrumbs?.length && !page.props.layout?.navigationHeader" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground backdrop-blur-(--shell-subbar-blur)" data-shell-breadcrumbs>
                 <div :class="['mx-auto flex h-10 min-w-0 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <Breadcrumbs bar />
                 </div>
             </div>
         </div>
-        <!-- The active module's pages: a strip under the header that scrolls with the page, in the subbar's tones and the content measure. -->
-        <div v-if="app.user && app.subNavigation?.items.length" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground">
+        <!-- Deprecated (`subNav="strip"`): the active module's pages as a strip under the header that scrolls with the page, in the subbar's tones and the content measure. By default <Page> draws them as tabs. -->
+        <div v-if="props.subNav === 'strip' && app.user && app.subNavigation?.items.length" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground">
             <div :class="['mx-auto min-w-0 px-4 sm:px-6 lg:px-8', props.widthClass]">
                 <SubNav :label="app.subNavigation.label" :items="app.subNavigation.items" />
             </div>

@@ -323,7 +323,15 @@ export {
     type SearchResult,
 } from './Search/search';
 export { default as Surface } from './Surface/Surface.vue';
-export { provideSurface, useSurface } from './Surface/surface';
+export {
+    groundCard,
+    provideCard,
+    provideSurface,
+    tintedGround,
+    useGroundSurface,
+    useInCard,
+    useSurface,
+} from './Surface/surface';
 export type { Surface as SurfaceContext } from './Surface/surface';
 export { default as ActionBar } from './Action/ActionBar.vue';
 export { default as ActionLabel } from './Action/ActionLabel.vue';

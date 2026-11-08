@@ -2,12 +2,14 @@
 import { type Component, useId } from 'vue';
 import ActionBar from '@/components/Kit/Action/ActionBar.vue';
 import type { ActionDescriptor } from '@/components/Kit/Action/actionPlacement';
+import { groundCard, useGroundSurface } from '@/components/Kit/Surface/surface';
 
 /*
  * Nothing here yet: an icon, a title, a line of body and what to do next. The next step is the `action` slot (a kit Button) or server `actions` descriptors (an
  * ActionBar, whose `action` event is re-emitted). `compact` is the small form for a panel, a list or a table body; the default is centred for a whole page section.
  * It is a plain region labelled by its title, never a live region: it is there when the view renders, so announcing it would be noise. The `icon` slot replaces
- * the `icon` component, and the default slot the `body` text. Utilities and tokens only.
+ * the `icon` component, and the default slot the `body` text. Utilities and tokens only. On a tinted page ground it draws its own card (README, "Tinted page
+ * grounds"), unless it already sits on one.
  */
 const props = withDefaults(
     defineProps<{
@@ -27,6 +29,7 @@ const original = (action: ActionDescriptor) =>
         ? props.actions.find((item) => item.key === action.key)
         : undefined) ?? action;
 const titleId = `empty-state-${useId()}`;
+const surface = useGroundSurface();
 </script>
 <template>
     <section
@@ -34,8 +37,10 @@ const titleId = `empty-state-${useId()}`;
         :class="[
             'grid min-w-0 justify-items-center text-center',
             compact ? 'gap-2 px-4 py-6' : 'gap-3 px-6 py-12',
+            surface && groundCard,
         ]"
         :data-compact="compact || undefined"
+        :data-ground-surface="surface || undefined"
         data-empty-state
     >
         <div

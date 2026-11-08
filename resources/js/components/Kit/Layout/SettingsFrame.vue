@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
+import { provide } from 'vue';
 import SectionIcon from './SectionIcon.vue';
 
 /*
@@ -16,6 +17,8 @@ type Item = {
 };
 type Group = { label: string | null; items: Item[] };
 const page = usePage<{ layout?: { navigation: Group[] } }>();
+// The sidebar is this page's navigation: the <Page> inside draws no tabs of it.
+provide('kit.navigation.framed', true);
 </script>
 <template>
     <div
