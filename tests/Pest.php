@@ -108,6 +108,8 @@ function axeFailures(array $violations, string $what, array $exceptions, DateTim
     $failures = [];
     foreach ($exceptions as $id => $exception) {
         $until = is_string($exception['until'] ?? null) ? DateTimeImmutable::createFromFormat('!Y-m-d', $exception['until']) : false;
+        // A date that does not round-trip (2026-02-31) is not a date.
+        $until = $until !== false && $until->format('Y-m-d') === $exception['until'] ? $until : false;
         if (trim((string) ($exception['reason'] ?? '')) === '' || $until === false) {
             $failures[] = "AXE_EXCEPTIONS['{$id}'] needs a reason and an until date (Y-m-d).";
         } elseif ($until < $today) {
@@ -133,6 +135,8 @@ function assertAccessible(object $page, string $what): void
     $violations = axeViolations($page);
     if (getenv('AXE_SURVEY') === '1') {
         fwrite(STDERR, 'AXE '.$what.' '.json_encode($violations, JSON_UNESCAPED_SLASHES).PHP_EOL);
+        // Surveying prints the violations, but a malformed or expired exception still fails.
+        expect(axeFailures([], $what, AXE_EXCEPTIONS, new DateTimeImmutable('today')))->toBe([], 'AXE_EXCEPTIONS');
 
         return;
     }

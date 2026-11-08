@@ -20,9 +20,10 @@ test('a current exception with a reason covers its rule, on the pages it names o
 });
 
 test('an exception without a reason or a date, or past its date, fails even when nothing violates it', function () use ($today) {
-    expect(axeFailures([], 'home', ['a' => ['until' => '2026-12-01'], 'b' => ['reason' => 'x', 'until' => 'soon'], 'c' => ['reason' => 'x', 'until' => '2026-11-06'], 'd' => ['reason' => 'x', 'until' => '2026-11-07']], $today))->toBe([
+    expect(axeFailures([], 'home', ['a' => ['until' => '2026-12-01'], 'b' => ['reason' => 'x', 'until' => 'soon'], 'e' => ['reason' => 'x', 'until' => '2026-02-31'], 'c' => ['reason' => 'x', 'until' => '2026-11-06'], 'd' => ['reason' => 'x', 'until' => '2026-11-07']], $today))->toBe([
         "AXE_EXCEPTIONS['a'] needs a reason and an until date (Y-m-d).",
         "AXE_EXCEPTIONS['b'] needs a reason and an until date (Y-m-d).",
+        "AXE_EXCEPTIONS['e'] needs a reason and an until date (Y-m-d).",
         "AXE_EXCEPTIONS['c'] expired on 2026-11-06: fix the violation or renew the exception with a reason.",
     ]);
 });
