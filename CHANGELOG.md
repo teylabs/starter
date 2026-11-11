@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- **Laravel's image API is installed.** `intervention/image:^4.0` backs `Illuminate\Support\Facades\Image`; `config/images.php` (the framework's shape) reads `IMAGE_DRIVER` and defaults to `imagick`, and `.env.example` sets `IMAGE_DRIVER=imagick`. Userland image code uses this API; Media Library keeps spatie/image, and raw Imagick or GD is only for pixel reading, with a why-comment. `tests/ImageConfigTest.php` checks the config loads.
+
 ### Fixed
 
 - **The render-site scan skips comments.** `tests/ViewModelStandardTest.php` matched `Inertia::render(` anywhere in a line, so the kit 0.15.30 `ViewModel.php` docblock that mentions it failed "every render site passes a view model". Lines whose trimmed text starts with `*`, `/*`, `//` or `#` are now skipped, with a regression case.
