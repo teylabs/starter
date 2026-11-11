@@ -17,3 +17,9 @@ test('the images config loads with imagick as the default driver', function () {
     expect(imageConfigFor([]))->toBe(['default' => 'imagick']);
     expect(imageConfigFor(['IMAGE_DRIVER' => 'gd'])['default'])->toBe('gd', 'IMAGE_DRIVER picks the driver');
 });
+
+test('the configured image driver has its PHP extension loaded', function () {
+    $driver = config('images.default');
+
+    expect(extension_loaded($driver))->toBeTrue("IMAGE_DRIVER={$driver} needs ext-{$driver}; install it or set IMAGE_DRIVER to a loaded driver");
+});

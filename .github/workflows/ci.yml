@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  PHP_EXTENSIONS: pdo_sqlite, sqlite3, pdo_pgsql, exif, sockets, intl, zip
+  PHP_EXTENSIONS: pdo_sqlite, sqlite3, pdo_pgsql, exif, sockets, intl, zip, imagick
   # The strict gate: tey/standards rule 51 (CI shape) fails instead of advising.
   PREFLIGHT_CI_ENFORCE: 'true'
 
