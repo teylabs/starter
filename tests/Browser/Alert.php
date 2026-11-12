@@ -30,6 +30,7 @@ it('shows the account notice as a polite, readable, undismissable alert', functi
             ->assertSeeIn('[data-account-notice]', 'Your password was changed.')
             ->assertMissing('[data-account-notice] [data-slot="alert-dismiss"]')
             ->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Password page with the account notice');
         $contrast = '() => { const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true }); const norm = (c) => { ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = c; ctx.fillRect(0, 0, 1, 1); const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data; return [r, g, b, a / 255]; }; const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); }; const el = document.querySelector("[data-account-notice]"); const s = getComputedStyle(el); const page = norm(getComputedStyle(document.body).backgroundColor); const bg = norm(s.backgroundColor); const over = [0, 1, 2].map((i) => bg[i] * bg[3] + page[i] * (1 - bg[3])); const text = norm(s.color); const a = lum(over) + 0.05; const b = lum(text) + 0.05; return Math.max(a, b) / Math.min(a, b); }';
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {

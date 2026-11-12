@@ -46,6 +46,7 @@ it('lays the sign-in and invitation cards out as full-width guest forms', functi
             expect($layout['scroll'])->toBeTrue();
             // Remember me sits on its own row above the Sign in button.
             expect($page->script('() => { const box = document.querySelector("#remember").getBoundingClientRect(); const button = document.querySelector("[data-test=login-button]").getBoundingClientRect(); return box.bottom <= button.top && Math.abs(box.left - document.querySelector("#email").getBoundingClientRect().left) < 2; }'))->toBeTrue();
+            assertAccessible($page, 'the sign-in page at '.$width);
             settled($page)->screenshot(filename: 'sign-in-'.$width);
 
             $page = visit('/invitations/'.$invite->token);
@@ -57,6 +58,7 @@ it('lays the sign-in and invitation cards out as full-width guest forms', functi
             expect($layout['lines'][0])->toStartWith('1:');
             expect($layout['heading'])->toBeIn(['start', 'left']);
             expect($layout['scroll'])->toBeTrue();
+            assertAccessible($page, 'the invitation page at '.$width);
             settled($page)->screenshot(filename: 'invitation-'.$width);
         }
     } finally {

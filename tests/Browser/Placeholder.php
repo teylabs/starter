@@ -28,6 +28,7 @@ it('renders a placeholder page and a planned settings section', function (): voi
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/orders')->assertSeeIn('[data-slot="placeholder"]', 'Not built yet')->assertSeeIn('[data-placeholder-milestone]', 'Planned for the Orders release')
             ->assertPresent('[data-slot="placeholder"] a')->assertMissing('main form, main [role="status"]')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Orders placeholder page');
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {
                 $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
@@ -37,7 +38,9 @@ it('renders a placeholder page and a planned settings section', function (): voi
         $page->script('() => document.documentElement.classList.remove("dark")');
         // Pinned to its own card and its own sidebar entry, so an app with other planned sections still passes.
         $page->resize(1440, 900)->navigate('/settings')->assertSeeIn('[data-section="billing"] [data-planned-tag]', 'Planned')->assertMissing('[data-section="general"] [data-planned-tag]');
+        assertAccessible($page, 'the settings index with a planned section');
         $page->navigate('/settings/billing')->assertSeeIn('[data-slot="placeholder"]', 'Not built yet')->assertSeeIn('[data-settings-sidebar] [data-section-url$="/settings/billing"] [data-planned-tag]', 'Planned')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the planned Billing settings section');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
