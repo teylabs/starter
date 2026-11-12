@@ -78,8 +78,8 @@ case "$HOOKS_DIR" in ''|/*) ;; *) HOOKS_DIR="$TOP/$HOOKS_DIR" ;; esac
 resolve() {
     local path="$1" rest=""
     while [ ! -d "$path" ]; do
-        # A symlink that is not a directory (dangling, or to a file) fails closed too.
-        [ -L "$path" ] && return 0
+        # Anything in the way that is not a directory (a file, a dangling or file symlink) fails closed too.
+        { [ -e "$path" ] || [ -L "$path" ]; } && return 0
         case "${path##*/}" in . | ..) return 0 ;; esac
         rest="/${path##*/}$rest"; path="${path%/*}"; [ -n "$path" ] || path="/"
     done

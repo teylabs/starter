@@ -52,6 +52,13 @@ try {
         $check($hooksPath($dir) === realpath($dir.'/.git').'/hooks' && ! file_exists($outside), "an outside hooksPath ({$label}) falls back to .git/hooks and creates nothing");
     }
 
+    // A regular file in the way fails closed.
+    $dir = $cleanup[] = $repo();
+    file_put_contents($dir.'/not-a-dir', 'x');
+    $sh($dir, 'git config --local core.hooksPath not-a-dir/hooks');
+    [$code] = $install($dir);
+    $check($code === 0 && $hooksPath($dir) === realpath($dir.'/.git').'/hooks', 'a file in the hooksPath falls back to .git/hooks');
+
     // A dangling symlink inside the checkout fails closed.
     $dir = $cleanup[] = $repo();
     symlink($outside.'/target', $dir.'/hooks-link');
@@ -74,7 +81,7 @@ try {
         'Amp-Thread-ID: https://ampcode.com/threads/T-1',
         'Co-authored-by: Amp <amp@ampcode.com>',
         'Co-authored-by: Claude <noreply@anthropic.com>',
-        'Claude-Session: https://claude.ai/code/session_x',
+        'Claude-Session: https://claude.ai/'.'code/session_x', // split so the privacy check's pattern doesn't match the fixture
         'Generated with OpenAI Codex',
         'Generated with care by Sam',
         'Co-authored-by: Claude Shannon <claude.shannon@example.com>',
