@@ -22,6 +22,7 @@ it('writes, edits and deletes a note on the wall', function (): void {
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/notes')->assertPresent('[data-note-composer]')->assertSee('No notes yet')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the empty notes wall');
         $page->fill('note-body', 'Call the venue about Friday')->click('[data-note-composer] [data-action="save"]');
         $page->assertSeeIn('[data-scroll-list="notes"]', 'Call the venue about Friday')->assertSee('Note added');
         expect((string) $page->script('() => document.querySelector("#note-body").value'))->toBe('');
@@ -39,10 +40,13 @@ it('writes, edits and deletes a note on the wall', function (): void {
 
         // The dashboard's notes card has it.
         $page->navigate('/')->assertSeeIn('[data-widget="notes.recent"]', 'Call the venue about Saturday');
+        assertAccessible($page, 'the dashboard with a note');
         $page->screenshot(filename: 'notes-widget');
 
         // Delete asks first; confirming removes it.
-        $page->navigate('/notes')->click('[data-note-menu]')->click('[data-note-delete]')->assertSee('Delete this note?')->click('Delete note');
+        $page->navigate('/notes')->assertSee('Call the venue about Saturday');
+        assertAccessible($page, 'the notes wall with a note');
+        $page->click('[data-note-menu]')->click('[data-note-delete]')->assertSee('Delete this note?')->click('Delete note');
         $page->assertSee('No notes yet')->assertNoJavaScriptErrors();
         expect(DB::table('kit_notes')->whereNull('deleted_at')->count())->toBe(0);
     } finally {

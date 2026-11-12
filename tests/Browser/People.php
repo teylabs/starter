@@ -39,6 +39,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $count = fn (string $tab): string => (string) $page->script('() => document.querySelector(`[data-tab="'.$tab.'"] [data-tab-count]`).textContent.trim()');
         expect([$count('members'), $count('invitations')])->toBe(['3', '0']);
         $page->assertPresent('[data-tab="members"][aria-current="page"]');
+        assertAccessible($page, 'the People settings page');
 
         // The tab is in the URL; an empty tab is the first-use state with its own words, and the toolbar is hidden.
         $page->click('[data-tab="invitations"]')->assertQueryStringHas('tab', 'invitations')->assertSee('No invitations yet')->assertPresent('[data-empty="first-use"]')->assertMissing('[data-table-toolbar]');

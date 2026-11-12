@@ -22,6 +22,7 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/settings/general')->assertPresent('form:first-of-type [data-form-actions]');
+        assertAccessible($page, 'the General settings page');
         $status = fn (): array => $page->script('() => { const s = document.querySelector("[data-form-status]"); return [s.dataset.state, s.textContent.trim(), s.className]; }');
         // Every state seen, whenever it happens: recorded as the DOM changes.
         $page->script('() => { window.__seen = []; new MutationObserver(() => { const s = document.querySelector("[data-form-status]"); const b = document.querySelector("[data-form-submit]"); if (s) window.__seen.push(s.dataset.state + ":" + s.textContent.trim() + ":" + (b && b.getAttribute("aria-busy") ? "busy" : "")); }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true }); return true; }');
@@ -100,8 +101,11 @@ it('shows the form states, keeps the order, warns on leave and pins only while t
 
         // The other kit forms render on the same pieces, without script errors.
         $page->resize(1440, 900)->navigate('/settings/people')->assertSee('Invite member')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the People settings page');
         $page->navigate('/me/profile')->assertPresent('[data-form-card] [data-form-actions]')->assertSee('Upload photo')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Profile page');
         $page->navigate('/settings/general')->assertSee('General')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the General settings page after a save');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
