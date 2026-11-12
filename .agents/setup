@@ -70,14 +70,18 @@ npx playwright install --with-deps chromium
 # own hooks). A commit-msg hook the repo already had is kept as commit-msg.local and still runs first.
 # A core.hooksPath the repo already set is used only when it resolves inside this checkout (or its git dir);
 # anything outside (a shared or machine-wide hooks folder) is left alone and $GIT_DIR/hooks is used instead.
-TOP="$(git rev-parse --show-toplevel)"; GIT_DIR_ABS="$(git rev-parse --absolute-git-dir)"
+TOP="$(git rev-parse --show-toplevel)"; GIT_DIR_ABS="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)"  # shared by every worktree
 HOOKS_DIR="$(git config --local --get core.hooksPath || true)"
 case "$HOOKS_DIR" in ''|/*) ;; *) HOOKS_DIR="$TOP/$HOOKS_DIR" ;; esac
-# Resolve without creating anything: realpath the nearest existing parent, then re-append the missing tail.
+# Resolve without creating anything: realpath the nearest existing directory, then re-append the missing parts.
+# A missing `.` or `..` part fails closed (an empty result counts as outside).
 resolve() {
-    local path="$1" tail=""
-    while [ ! -e "$path" ]; do tail="/$(basename "$path")$tail"; path="$(dirname "$path")"; done
-    echo "$(cd "$path" && pwd -P)$tail"
+    local path="$1" rest=""
+    while [ ! -d "$path" ]; do
+        case "${path##*/}" in . | ..) return 0 ;; esac
+        rest="/${path##*/}$rest"; path="${path%/*}"; [ -n "$path" ] || path="/"
+    done
+    printf '%s%s\n' "$(cd "$path" && pwd -P)" "$rest"
 }
 [ -n "$HOOKS_DIR" ] && HOOKS_DIR="$(resolve "$HOOKS_DIR")"
 case "$HOOKS_DIR" in
