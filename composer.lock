@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7885240ed36c5eaa59efa37be15d7de2",
+    "content-hash": "1aa2e2ab9b995ac04213ff91dd2e3ca0",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10382,16 +10382,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.11.74",
+            "version": "v0.11.94",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "36e24bb7e92dc419683f8a79dbd6171074472351"
+                "reference": "f7b3cf295b27f7847a123e920a5a3d9547f95aec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/36e24bb7e92dc419683f8a79dbd6171074472351",
-                "reference": "36e24bb7e92dc419683f8a79dbd6171074472351",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/f7b3cf295b27f7847a123e920a5a3d9547f95aec",
+                "reference": "f7b3cf295b27f7847a123e920a5a3d9547f95aec",
                 "shasum": ""
             },
             "require": {
@@ -10466,7 +10466,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.11.74"
+                "source": "https://github.com/teylabs/standards/tree/v0.11.94"
             },
             "funding": [
                 {
@@ -10474,7 +10474,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-06T13:43:48+00:00"
+            "time": "2026-11-12T02:07:20+00:00",
+            "published-time": "2026-11-12T02:07:25+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
