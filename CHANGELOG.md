@@ -8,7 +8,7 @@
 
 ### Added
 
-- **Laravel's image API is installed.** `intervention/image:^4.0` backs `Illuminate\Support\Facades\Image`; `config/images.php` (the framework's shape) reads `IMAGE_DRIVER` and defaults to `imagick`, and `.env.example` sets `IMAGE_DRIVER=imagick`. Userland image code uses this API; Media Library keeps spatie/image, and raw Imagick or GD is only for pixel reading, with a why-comment. `tests/ImageConfigTest.php` checks the config loads and that the configured driver's PHP extension is loaded; CI installs `imagick`.
+- **Laravel's image API is installed.** `intervention/image:^4.2` backs `Illuminate\Support\Facades\Image`; `config/images.php` (the framework's shape) reads `IMAGE_DRIVER` and defaults to `imagick`, and `.env.example` sets `IMAGE_DRIVER=imagick`. Userland image code uses this API; Media Library keeps spatie/image, and raw Imagick or GD is only for pixel reading, with a why-comment. `tests/ImageConfigTest.php` checks the config loads and that the configured driver's PHP extension is loaded; CI installs `imagick`.
 
 ### Fixed
 
