@@ -24,7 +24,7 @@ pest()->extend(BrowserCase::class)->in('Browser');
 $records = ['Breadcrumbs', 'InertiaTransport', 'PageTitle', 'UrlConvention'];
 $storage = ['Storage'];
 // These need no application: they stay plain PHPUnit cases.
-$plain = ['Artisan', 'FeatureGraph', 'MailSender', 'NightwatchConfig', 'TiaGuard'];
+$plain = ['AgentsSetupHook', 'Artisan', 'FeatureGraph', 'MailSender', 'NightwatchConfig', 'TiaGuard'];
 $tests = static fn (array $names): array => array_map(static fn (string $name): string => __DIR__.'/'.$name.'Test.php', $names);
 
 pest()->extend(RecordsCase::class)->in(...$tests($records));
