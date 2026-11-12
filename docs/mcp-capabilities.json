@@ -54,17 +54,6 @@
             }
         },
         {
-            "path": "resources/js/pages/Workspace/Dashboard/Page.vue",
-            "capabilities": [
-                "workspace.dashboard.read"
-            ],
-            "variants": {
-                "workspace.dashboard.read": [
-                    "default"
-                ]
-            }
-        },
-        {
             "path": "vendor/tey/kit/src/Features/SessionUi/Http/DashboardController.php",
             "capabilities": [
                 "workspace.dashboard.read"
@@ -533,10 +522,6 @@
             "id": "workspace.dashboard.read",
             "kind": "read",
             "ui": [
-                {
-                    "path": "resources/js/pages/Workspace/Dashboard/Page.vue",
-                    "symbol": "props"
-                },
                 {
                     "path": "vendor/tey/kit/src/Features/SessionUi/Http/DashboardController.php",
                     "symbol": "show"

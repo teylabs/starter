@@ -281,7 +281,7 @@ test('config/brand.php is the sender address source, over env', function () {
 
     $saved = config()->all();
     try {
-        // A brand.php sender beats both the deprecated KIT_BRAND_MAIL_FROM_ADDRESS and Laravel's MAIL_FROM_ADDRESS.
+        // A brand.php sender beats Laravel's MAIL_FROM_ADDRESS, and a leftover brand env value (kit.brand_env, ignored since tey/kit 0.17) changes nothing.
         config([
             'brand' => [...(array) config('brand'), 'mail_from_address' => 'brand-file@example.test'],
             'kit.brand_env' => [...(array) config('kit.brand_env'), 'mail_from_address' => 'kit-env@example.test'],

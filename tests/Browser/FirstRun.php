@@ -12,7 +12,7 @@ use Tey\Kit\Features\SessionUi\UserState;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 // The invitee's first run in a real browser: the invitation creates the account and joins, the FocusShell walks the steps ("Step n of m"), skipping never blocks,
-// and the dashboard greets them by name, with what was skipped on the You card's checklist (kit 0.16 has no welcome card).
+// and the dashboard greets them by name, with what was skipped on the You card's checklist (tey/kit 0.17 removed the welcome card).
 it('walks an invitee from the invitation through the welcome steps to the dashboard card', function (): void {
     $environment = getenv('APP_ENV');
     try {
