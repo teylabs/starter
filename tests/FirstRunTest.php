@@ -32,7 +32,7 @@ function firstRunInertia(): array
 {
     return ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
 }
-test('an invitee signs up walks the welcome steps and lands on the dashboard with the welcome card', function () {
+test('an invitee signs up walks the welcome steps and lands on the dashboard with their setup checklist', function () {
     $workspace = Workspace::query()->firstOrFail();
     $owner = app(Concierge::class)->ownerOf($workspace)->user;
     $token = InviteMember::run($owner, $workspace, 'new.person@example.test', new GrantSet(['viewer']))->token;
@@ -59,17 +59,11 @@ test('an invitee signs up walks the welcome steps and lands on the dashboard wit
     expect($dashboard->json('props.greeting'))->toStartWith('Good ');
     expect($dashboard->json('props.greeting'))->toEndWith(', Nora');
     expect(UserState::has((int) User::query()->where('email', 'new.person@example.test')->value('id'), 'onboarding.done'))->toBeTrue();
-    $dashboard->assertJsonPath('props.welcome.title', 'Welcome to '.$workspace->name.', Nora.')
-        ->assertJsonPath('props.welcome.body', 'Your workspace is ready.')
-        ->assertJsonPath('props.welcome.checklist', [['id' => 'timezone', 'label' => 'Your timezone', 'hint' => 'Confirm the timezone your dates and times show in', 'url' => '/welcome/timezone', 'state' => 'done'], ['id' => 'photo', 'label' => 'Your photo', 'hint' => 'Add a photo so teammates know who you are', 'url' => '/welcome/photo', 'state' => 'skipped']])
-        ->assertJsonPath('props.welcome.done', 1)->assertJsonPath('props.welcome.total', 2)
-        ->assertJsonPath('props.welcome.dismiss.label', 'Dismiss welcome')
-        ->assertJsonPath('props.welcome.dismiss.url', '/me/welcome/'.$workspace->id);
-
-    // Dismissing it removes the card for good, on every device.
-    $this->delete('/me/welcome/'.$workspace->id)->assertRedirect();
-    $after = $this->get(WorkspaceUrl::to($workspace, '', 'session-ui', request()), firstRunInertia())->assertOk();
-    $after->assertJsonPath('props.welcome', null);
+    // Kit 0.16 has no welcome card: the personal steps are the You card's checklist, what was skipped still there to set up.
+    expect($dashboard->json('props.welcome'))->toBeNull();
+    expect($dashboard->json('props.widgets.0.key'))->toBe('kit.you');
+    $checklist = array_map(fn (array $item): array => [$item['key'], $item['label'], $item['state'], $item['action']['url'] ?? null], $dashboard->json('props.widgets.0.checklist'));
+    expect($checklist)->toBe([['timezone', 'Your timezone', 'done', null], ['photo', 'Your photo', 'skipped', '/welcome/photo']]);
 });
 test('the demo command prints a fresh link each time and only runs locally', function () {
     expect(app(Kernel::class)->call('kit:first-run-demo'))->toBe(0);
@@ -170,7 +164,7 @@ test('someone who joined but skipped the welcome steps is sent through them befo
     $this->post('/welcome/photo/skip')->assertRedirect('/welcome');
     $this->get('/welcome')->assertRedirect();
     $page = $this->get($dashboard, firstRunInertia())->assertOk();
-    $page->assertJsonPath('props.welcome.done', 1)->assertJsonPath('props.welcome.checklist.0.state', 'done');
+    $page->assertJsonPath('props.widgets.0.key', 'kit.you')->assertJsonPath('props.widgets.0.checklist.0.state', 'done');
 });
 test('the signed in forks print one click links that only work locally', function () {
     expect(app(Kernel::class)->call('kit:first-run-demo', ['--fork' => 'already-member']))->toBe(0);
@@ -249,8 +243,9 @@ test('a person with no workspace lands on the focus page and never gets a 403', 
     InviteMember::run($owner, $workspace, 'left+1@example.test', new GrantSet(['viewer']), 'Come back.');
     $this->actingAs($left);
 
-    // Every way in lands there: the list, the old workspace's own address, the page itself. Nothing is a 403.
-    $this->get('/me/workspaces', firstRunInertia())->assertRedirect('/no-workspace');
+    // Every way in lands somewhere they can use: the list renders its own empty state (kit 0.15.33 dropped its redirect), the old workspace's own address and
+    // the page itself. Nothing is a 403.
+    $this->get('/me/workspaces', firstRunInertia())->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')->assertJsonPath('props.workspaces', []);
     $this->get('/no-workspace')->assertOk();
     $page = $this->get('/no-workspace', firstRunInertia())->assertOk();
     $page->assertJsonPath('component', 'Provision/NoWorkspace/Page')->assertJsonPath('props.shell.kind', 'focus');
@@ -258,10 +253,11 @@ test('a person with no workspace lands on the focus page and never gets a 403', 
     expect(Arr::only($page->json('props.invitations.0'), ['workspace', 'inviter']))->toBe(['workspace' => $workspace->name, 'inviter' => $owner->name]);
     expect($page->json('props.invitations.0.message'))->toBe('Come back.');
 
-    // invite_only: no create action. Self-serve would offer one.
+    // invite_only: no create action. Self-serve offers one only once the app registers GET /me/workspaces/create (kit 0.15.33), which the starter does not,
+    // so it never links to a 404.
     expect($page->json('props.create'))->toBeNull();
     config(['kit.workspaces.provisioning' => 'self_serve']);
-    expect($this->get('/no-workspace', firstRunInertia())->json('props.create.label'))->toBe('Create a workspace');
+    expect($this->get('/no-workspace', firstRunInertia())->json('props.create'))->toBeNull();
     config(['kit.workspaces.provisioning' => 'invite_only']);
 
     // The shell around the account pages has no workspace and no switcher, so it names the product where the switcher would be.
