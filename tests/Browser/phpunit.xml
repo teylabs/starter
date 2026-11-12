@@ -20,6 +20,7 @@
             <file>Placeholder.php</file>
             <file>Notes.php</file>
             <file>AxeSettle.php</file>
+            <file>Accessible.php</file>
         </testsuite>
     </testsuites>
 </phpunit>
