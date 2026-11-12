@@ -319,11 +319,24 @@ export async function directUpload(
                     .catch(() => null);
             throw error;
         }
-        confirmed = await transport.json(routes.complete, {
-            id: ticket.id,
-            file_name: file.name,
-            parts,
-        });
+        try {
+            confirmed = await transport.json(routes.complete, {
+                id: ticket.id,
+                file_name: file.name,
+                parts,
+            });
+        } catch (error) {
+            if (routes.abort)
+                await transport
+                    .json(routes.abort, { id: ticket.id })
+                    .catch(() => null);
+            throw error;
+        }
+        // A failed or refused complete leaves the multipart upload open on storage: abort it, as a failed part does.
+        if (!ok(confirmed.status) && routes.abort)
+            await transport
+                .json(routes.abort, { id: ticket.id })
+                .catch(() => null);
     } else if (ticket.method === 'PUT' && ticket.url) {
         const status = await transport.put(
             ticket.url,

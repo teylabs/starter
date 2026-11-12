@@ -2,7 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
 import { AppearanceToggle, Toaster } from '@kit/ui';
-import { computed } from 'vue';
+import { computed, provide } from 'vue';
 import Wordmark from './Wordmark.vue';
 
 /*
@@ -19,6 +19,8 @@ type Product = { name: string; url: string; logomark: string | null; lockup?: bo
 const props = withDefaults(defineProps<{ title?: string; description?: string; width?: 'narrow' | 'wide'; backUrl?: string | null; backLabel?: string; appearance?: boolean; product?: Product | null; toaster?: boolean }>(), { title: undefined, description: undefined, width: 'narrow', backUrl: null, backLabel: 'Back to the site', appearance: true, product: null, toaster: true });
 const page = usePage<{ shell?: { product?: Product }; layout?: { documentTitle?: string } }>();
 const product = computed(() => props.product ?? page.props.shell?.product ?? null);
+// With a title the shell draws the page's h1, so a page that would draw its own (the error page) leaves it out.
+provide('kit.shell.titled', computed(() => Boolean(props.title)));
 </script>
 <template>
     <Head v-if="page.props.layout?.documentTitle" :title="page.props.layout.documentTitle" />
