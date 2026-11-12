@@ -35,7 +35,8 @@ const product = computed(() => page.props.shell?.product.name ?? '');
         >
             <Wordmark href="/" :product="product" data-guest-wordmark />
         </header>
-        <div
+        <main
+            id="main"
             class="w-full min-w-0 rounded-lg bg-card text-card-foreground shadow-xs ring-1 ring-border"
             :class="
                 wide
@@ -53,6 +54,6 @@ const product = computed(() => page.props.shell?.product.name ?? '');
                 </p>
             </div>
             <slot />
-        </div>
+        </main>
     </div>
 </template>
