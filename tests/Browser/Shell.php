@@ -75,6 +75,7 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         $page = shellSignIn();
         $workspace = Workspace::query()->firstOrFail();
         $page->resize(1440, 900)->navigate('/settings/people')->assertPresent('[data-shell-switcher]');
+        assertAccessible($page, 'the People settings page');
         // The bar is the product symbol and the switcher: no product-name text, no separator.
         expect(trim((string) $page->script('() => document.querySelector("[data-shell-wordmark]").textContent')))->toBe('');
         expect((string) $page->script('() => document.querySelector("[data-shell-bar] > div").textContent'))->not->toContain('/')->not->toContain(config('app.name'));
@@ -90,11 +91,13 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         $baseline = [];
         foreach ([390, 820, 1440] as $width) {
             $page->resize($width, 900)->navigate('/settings/people')->assertPresent('[data-shell-switcher]');
+            assertAccessible($page, 'the People settings page at '.$width);
             $baseline[$width] = $measure();
         }
         $workspace->forceFill(['name' => $long])->save();
         foreach ([390, 820, 1440] as $width) {
             $page->resize($width, 900)->navigate('/settings/people')->assertPresent('[data-shell-switcher]');
+            assertAccessible($page, 'the People settings page with a long workspace name at '.$width);
             $now = $measure();
             expect([$now['bar'], $now['sub']])->toBe([$baseline[$width]['bar'], $baseline[$width]['sub']], $width.': the bars keep their heights');
             expect([$now['rowFits'], $now['pageFits'], $now['crumbsFit']])->toBe([true, true, true], $width.': nothing overflows');
@@ -109,6 +112,7 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         try {
             config(['kit.brand.logomark' => '/wide-mark-test.svg']);
             $page->resize(390, 900)->navigate('/settings/people')->assertPresent('[data-shell-switcher]');
+            assertAccessible($page, 'the People settings page with a wide logomark at 390');
             $wide = $measure();
             expect($wide['bar'])->toBe($baseline[390]['bar']);
             expect([$wide['menuIn'], $wide['pageFits'], $wide['rowFits']])->toBe([true, true, true]);
@@ -129,6 +133,7 @@ it('always has the workspace switcher in the bar (one workspace or two) beside t
         AcceptInvitation::run($owner, InviteMember::run($other, Workspace::findOrFail($second), $owner->email, new GrantSet(['viewer']))->token);
         $page->resize(1440, 900)->navigate('/');
         $page->assertPresent('[data-shell-switcher]')->assertSee('Local workspace');
+        assertAccessible($page, 'the dashboard with two workspaces');
         $page->click('[data-shell-switcher]')->assertSee('Second workspace')->assertSee('Workspace settings');
     });
 });
@@ -138,6 +143,7 @@ it('renders the footer as one slim line whose links are separated by a visible d
         $page = shellSignIn();
         $read = '() => { const f = document.querySelector("[data-shell-footer]"); const seps = [...f.querySelectorAll("[data-shell-footer-separator]")]; const links = [...f.querySelectorAll("a")]; return { text: f.innerText, lines: new Set([...f.children].map((c) => Math.round(c.getBoundingClientRect().top))).size, links: links.map((a) => a.textContent.trim()), seps: seps.map((s) => { const r = s.getBoundingClientRect(); const prev = s.previousElementSibling.getBoundingClientRect(); const next = s.nextElementSibling.getBoundingClientRect(); return { hidden: s.getAttribute("aria-hidden"), width: r.width, before: r.top === prev.top ? r.left - prev.right : null, after: r.top === next.top ? next.left - r.right : null }; }), overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth }; }';
 
+        assertAccessible($page, 'the dashboard');
         $wide = $page->resize(1280, 900)->script($read);
         // The links come from the brand config, so read their labels rather than pinning them.
         $links = $wide['links'];
