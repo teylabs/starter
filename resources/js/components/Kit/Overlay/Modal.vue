@@ -63,6 +63,8 @@ const server = Boolean(injected?.value);
 const localName = `kit-modal-${useId()}`;
 // The package ships no declaration for its Modal component, so its instance is typed here by the one method used.
 const modal = ref<{ close: () => void } | null>(null);
+// The panel ends its opening focus window before every close the Modal starts, so nothing queued moves focus into a leaving panel.
+const panel = ref<{ settle: () => void } | null>(null);
 const checks = new Set<() => boolean>();
 provide('kit.modal-guard', {
     register: (check: () => boolean) => checks.add(check),
@@ -163,13 +165,17 @@ watch(
                 }),
             );
         } else if (!now && handle) {
+            panel.value?.settle();
             handle.close();
         }
     },
     { immediate: true, flush: 'post' },
 );
 onBeforeUnmount(() => query?.removeEventListener('change', track));
-const close = () => modal.value?.close();
+const close = () => {
+    panel.value?.settle();
+    modal.value?.close();
+};
 defineExpose({ close });
 // A modal is its own surface: buttons inside it are ordinary even when it was opened from a pill or inverse toolbar.
 provideSurface(() => ({ tone: 'default', shape: 'default' }));
@@ -199,6 +205,7 @@ provideCard();
             @success="close()"
         >
             <ModalPanel
+                ref="panel"
                 :title="title"
                 :description="description"
                 :form-mode="true"
@@ -219,6 +226,7 @@ provideCard();
         </Form>
         <ModalPanel
             v-else
+            ref="panel"
             :title="title"
             :description="description"
             :form-mode="false"

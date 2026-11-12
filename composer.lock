@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91965b357488de3fee1fb776bb8099e7",
+    "content-hash": "5d2426f21c0d502bac2f985971def9f3",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10293,16 +10293,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.16.13",
+            "version": "v0.16.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "af63d683a9db304bb568576a7e6a2a21000a0658"
+                "reference": "aadc8e88b5ec5e174910ce0963ed5ce8f74d52a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/af63d683a9db304bb568576a7e6a2a21000a0658",
-                "reference": "af63d683a9db304bb568576a7e6a2a21000a0658",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/aadc8e88b5ec5e174910ce0963ed5ce8f74d52a0",
+                "reference": "aadc8e88b5ec5e174910ce0963ed5ce8f74d52a0",
                 "shasum": ""
             },
             "require": {
@@ -10362,7 +10362,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.16.13"
+                "source": "https://github.com/teylabs/kit/tree/v0.16.14"
             },
             "funding": [
                 {
@@ -10370,8 +10370,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-12T07:55:33+00:00",
-            "published-time": "2026-11-12T07:56:44+00:00"
+            "time": "2026-11-12T13:07:17+00:00",
+            "published-time": "2026-11-12T13:07:36+00:00"
         },
         {
             "name": "tey/mod",
