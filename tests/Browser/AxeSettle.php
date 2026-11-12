@@ -24,7 +24,7 @@ it('scans the rendered page right after a full load', function (): void {
         $found = [];
         for ($round = 0; $round < 4; $round++) {
             foreach (['/', '/me/profile'] as $path) {
-                $page->navigate($path);
+                $page->navigate($path)->assertNoJavaScriptErrors();
                 foreach (axeScan($page)['violations'] as $violation) {
                     if (in_array($violation['id'], ['landmark-one-main', 'page-has-heading-one'], true)) {
                         $found[] = $violation['id'].' @ '.$path;
