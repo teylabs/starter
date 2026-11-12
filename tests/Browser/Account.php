@@ -30,6 +30,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->assertPresent('[data-sessions-unsupported]')->assertSee('SESSION_DRIVER=database');
         // The sign-in is in the log.
         $page->assertPresent('[data-security-log] [data-event="sign_in"]');
+        assertAccessible($page, 'the Security page');
 
         // Start: the password, then the QR code and the key.
         $page->type('#two-factor-password', 'account-test-pass-1')->click('Turn on')->assertPresent('[data-two-factor-qr] svg')->assertPresent('[data-two-factor-key]');
@@ -42,6 +43,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->assertSee('Two-factor authentication is on')->assertCount('[data-recovery-codes] li', 8)->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'account-two-factor');
         $page->navigate('/me/security')->assertMissing('[data-recovery-codes]')->assertSee('8 recovery codes left');
+        assertAccessible($page, 'the Security page with two-factor on');
 
         // Turning it off asks for the password and confirms first.
         $page->type('#off-password', 'account-test-pass-1')->click('Turn off')->assertPresent('[data-confirm-dialog]');
@@ -51,6 +53,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         // Sibling sections keep one persistent sublayout: a sentinel on the sidebar's frame survives moving between them (a client visit, no reload) while the current item,
         // the heading and the trail change; back and forward restore them.
         $page->navigate('/me/security')->assertPresent('[data-settings-frame]');
+        assertAccessible($page, 'the Security page with two-factor off');
         $page->script('() => { document.querySelector("[data-settings-frame]").dataset.sentinel = "kept"; return true; }');
         $state = fn (): array => $page->script('() => [document.querySelector("[data-settings-frame]").dataset.sentinel ?? null, document.querySelector("[data-settings-sidebar] [aria-current=page]")?.textContent.trim(), document.querySelector("[data-slot=page-heading]")?.textContent.trim(), location.pathname]');
         expect($state())->toBe(['kept', 'Security', 'Security', '/me/security']);
@@ -67,10 +70,13 @@ it('sets two-factor authentication up with a code and shows the devices section'
         expect($state())->toBe(['kept', 'Profile', 'Profile', '/me/profile']);
         // Leaving the section for one without a sidebar drops the sublayout and the item does not linger.
         $page->navigate('/')->assertMissing('[data-settings-sidebar]');
+        assertAccessible($page, 'the dashboard');
 
         // Password page and profile page render on the same pieces.
         $page->navigate('/me/password')->assertPresent('[data-form-card] [data-form-actions]')->assertSee('Update password')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Password page');
         $page->navigate('/me/profile')->assertPresent('#profile-email')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Profile page');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

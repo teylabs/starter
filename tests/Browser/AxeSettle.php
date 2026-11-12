@@ -33,6 +33,8 @@ it('scans the rendered page right after a full load', function (): void {
             }
         }
         expect($found)->toBe([]);
+        // The loop's scans test the settle race; this is the page's own verdict, on where the loop ends.
+        assertAccessible($page, 'the Profile page');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

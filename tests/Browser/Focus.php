@@ -28,6 +28,7 @@ it('renders a signed-in page outside a workspace in the FocusShell at phone and 
             ->assertMissing('[data-shell-breadcrumbs]')
             ->assertMissing('[data-focus-step]')
             ->assertNoJavaScriptErrors();
+        assertAccessible($page, 'an unknown invitation link in the FocusShell');
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {
                 $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');

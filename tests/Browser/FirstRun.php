@@ -24,6 +24,7 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
         $token = InviteMember::run(app(Concierge::class)->ownerOf($workspace)->user, $workspace, 'browser.person@example.test', new GrantSet(['viewer']), 'Glad to have you.')->token;
 
         $page = visit('/invitations/'.$token)->assertSee('Join '.$workspace->name.' on '.config('app.name'))->assertSee('invited you')->assertPresent('[data-invitation-note]')->assertPresent('[data-guest-card]');
+        assertAccessible($page, 'the invitation page');
         // The locked email reads as read-only, not as an editable field: a muted surface, the default cursor, in both themes; it is still a native readonly input.
         foreach (['light', 'dark'] as $theme) {
             $page->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
@@ -41,7 +42,9 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             ->assertScript('document.activeElement.id', 'timezone')
             ->assertMissing('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the timezone welcome step');
         $page->click('[data-welcome-submit]')->assertPathIs('/welcome/photo')->assertSeeIn('[data-focus-step]', 'Step 2 of 2')->assertScript('document.activeElement.id', 'avatar');
+        assertAccessible($page, 'the photo welcome step');
         foreach ([[390, 844], [1440, 900]] as [$width, $height]) {
             $page->resize($width, $height);
             expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
@@ -53,6 +56,7 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             ->assertSeeIn('[data-widget-you-setup]', 'Finish setting up')->assertSeeIn('[data-widget-you-setup]', 'Your timezone')->assertSeeIn('[data-widget-you-setup]', 'Your photo')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the dashboard with the setup checklist');
         foreach ([[390, 844], [1440, 900]] as [$width, $height]) {
             foreach (['light', 'dark'] as $theme) {
                 $page->resize($width, $height)->script('() => document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
@@ -79,17 +83,20 @@ it('lands a person with no workspace on their empty workspace list, and shows th
 
         $page = visit($link[0])->assertPathIs('/me/workspaces');
         $page->assertSeeIn('[data-workspaces-empty]', 'No workspaces yet')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the empty workspace list');
         $page->navigate('/no-workspace')
             ->assertPresent('[data-focus-shell] [data-no-workspace]')
             ->assertSeeIn('[data-no-workspace-explanation]', "You're not in a workspace yet.")
             ->assertMissing('[data-test="create-workspace"]')
             ->assertMissing('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the no-workspace page');
         foreach ([[1440, 900], [390, 844]] as [$width, $height]) {
             $page->resize($width, $height);
             expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
         }
         $page->navigate('/me/profile')->assertPresent('[data-shell-bar] [data-shell-product-name]')->assertMissing('[data-shell-switcher]')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Profile page without a workspace');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
@@ -111,7 +118,9 @@ it('sets the tz cookie on the first load and the server saves the zone from it',
         $page = visit('/login');
         $zone = $page->script('() => Intl.DateTimeFormat().resolvedOptions().timeZone');
         expect($page->script('() => document.cookie.split("; ").find((c) => c.startsWith("tz="))'))->toBe('tz='.rawurlencode($zone));
+        assertAccessible($page, 'the sign-in page');
         $page->click('[data-local-login] button')->assertPathIs('/')->navigate('/me/profile')->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the Profile page');
         expect(UserState::get(1, 'timezone'))->toBe($zone);
     } finally {
         putenv('APP_ENV='.$environment);

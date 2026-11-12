@@ -39,6 +39,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         $count = fn (string $tab): string => (string) $page->script('() => document.querySelector(`[data-tab="'.$tab.'"] [data-tab-count]`).textContent.trim()');
         expect([$count('members'), $count('invitations')])->toBe(['3', '0']);
         $page->assertPresent('[data-tab="members"][aria-current="page"]');
+        assertAccessible($page, 'the People settings page');
 
         // The tab is in the URL; an empty tab is the first-use state with its own words, and the toolbar is hidden.
         $page->click('[data-tab="invitations"]')->assertQueryStringHas('tab', 'invitations')->assertSee('No invitations yet')->assertPresent('[data-empty="first-use"]')->assertMissing('[data-table-toolbar]');
@@ -58,7 +59,8 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         expect($count('invitations'))->toBe('0');
 
         // Search is debounced: typing alone changes the URL (replace), and the rows follow; no results has its own state and a way back.
-        $page->navigate('/settings/people');
+        $page->navigate('/settings/people')->assertSee('Walt Watcher');
+        assertAccessible($page, 'the People settings page after a revoke');
         $page->type('[data-table-search]', 'vera');
         $page->assertSee('Vera Viewer')->assertDontSee('Walt Watcher');
         expect(urldecode((string) $page->script('() => window.location.search')))->toBe('?filter[search]=vera');
@@ -68,6 +70,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
 
         // The row menu: the owner has none; the viewer's Change role is inline and opens a dialog, Remove is in the menu and confirms first.
         $page->navigate('/settings/people')->assertSee($owner->name);
+        assertAccessible($page, 'the People settings page after a search');
         $actionsOn = fn (string $name): int => (int) $page->script('() => [...document.querySelectorAll("[data-row]")].find((row) => row.textContent.includes("'.$name.'"))?.querySelectorAll("[data-row-actions] button").length ?? -1');
         expect($actionsOn($owner->name))->toBe(0);
         $page->click('[data-row]:has-text("Vera") [data-action="change-role"]')->assertPresent('[data-form-modal]')->assertSee('Change role for');
@@ -91,6 +94,7 @@ it('lists people in tabs with search, a row menu and the invite dialog', functio
         expect((bool) $page->script('() => document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
         expect((string) $page->script('() => getComputedStyle(document.querySelector("[data-row]")).display'))->toBe('grid');
         $page->assertNoJavaScriptErrors();
+        assertAccessible($page, 'the People settings page on a phone');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;

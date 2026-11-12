@@ -46,6 +46,7 @@ it('opens, validates, submits and closes the form modals over People', function 
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->resize(1440, 900)->navigate('/settings/people')->assertSee('People');
+        assertAccessible($page, 'the People settings page');
         $count = fn (string $tab): string => (string) $page->script('() => document.querySelector(`[data-tab="'.$tab.'"] [data-tab-count]`).textContent.trim()');
 
         // Opening: the modal is over People, at its own URL, with focus in the first field.
@@ -88,6 +89,7 @@ it('opens, validates, submits and closes the form modals over People', function 
 
         // Opened directly, the URL shows People with the modal on top.
         $page->navigate('/settings/people/invitations')->assertPresent('[data-form-modal]')->assertSee('People');
+        assertAccessible($page, 'the Invite member modal over People');
         $page->click('[data-modal-close]')->assertMissing('[data-form-modal]');
         modalsWaitForPath($page, '/settings/people');
         expect($page->script('() => location.pathname'))->toBe('/settings/people');
@@ -98,8 +100,10 @@ it('opens, validates, submits and closes the form modals over People', function 
         $sheet = $page->script('() => { const panel = document.querySelector("[data-form-modal]").closest(".im-modal-content"); const r = panel.getBoundingClientRect(); const s = getComputedStyle(panel); return { left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom), viewport: window.innerHeight, clientWidth: panel.closest(".im-modal-container").clientWidth, topRadius: s.borderTopLeftRadius, bottomRadius: s.borderBottomLeftRadius, scrolls: document.documentElement.scrollWidth <= window.innerWidth }; }');
         expect([$sheet['left'], $sheet['right'], $sheet['bottom']])->toBe([0, $sheet['clientWidth'], $sheet['viewport']]);
         expect($sheet['topRadius'])->not->toBe('0px')->and($sheet['bottomRadius'])->toBe('0px')->and($sheet['scrolls'])->toBeTrue();
+        assertAccessible($page, 'the Invite member bottom sheet on a phone');
         $page->click('[data-modal-close]')->assertMissing('[data-form-modal]');
-        $page->resize(1440, 900)->navigate('/settings/people');
+        $page->resize(1440, 900)->navigate('/settings/people')->assertSee('Modal Member');
+        assertAccessible($page, 'the People settings page with an invitation');
 
         // Change role is the same pattern, from the row menu.
         $page->click('[data-row]:has-text("Modal Member") [data-action="change-role"]')->assertPresent('[data-form-modal]')->assertSee('Change role for Modal Member');
@@ -124,6 +128,7 @@ it('works locally with v-model:open: the same Modal and Dialog', function (): vo
         app('router')->middleware(['web', 'auth:web', 'concierge.active'])->get('/_test/local-modal', fn () => Inertia\Inertia::render('Workspace/Examples/LocalModal/Page', ['title' => 'Local modal']));
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->resize(1440, 900)->navigate('/_test/local-modal')->assertPresent('[data-open-local]');
+        assertAccessible($page, 'the local modal example page');
         $page->click('[data-open-local]')->assertSee('A local modal')->assertSee('Local content.');
         $page->click('[data-local-done]')->assertDontSee('A local modal');
         // Edits make closing ask; the ask is a Dialog over the modal.
