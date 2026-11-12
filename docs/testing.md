@@ -52,6 +52,8 @@ Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 ove
 
 The whole suite locally, when you mean to: `composer test:local` (`bin/test-local.sh`) runs `pest --parallel --processes=8 --exclude-group=nightly`, then the browser suite with `PEST_BROWSER=1` on 4 processes. Ctrl-C stops both suites and every worker (the script traps it and signals its whole process group). `composer test:browser` runs the browser suite in parallel, in CI too.
 
+Accessibility: every browser test that visits a page calls `assertAccessible($page, 'what it shows')` (`tests/Pest.php`). axe's WCAG 2.2 AA rules fail the test; its best-practice rules (`landmark-one-main`, `region`, `heading-order` and the rest) only warn, printing `AXE WARNING <rule> (<impact>) <selector> @ <url>` to STDERR. A parallel run (`composer test:browser`, `composer test:local`, or any `--parallel`) swallows its workers' STDERR, so the warnings never show there, in CI either. To see them, run the accessibility test on its own without `--parallel`, for example `PEST_BROWSER=1 vendor/bin/pest --no-tia --configuration=tests/Browser/phpunit.xml tests/Browser/SignIn.php`. The scan waits for the Inertia root (`#app`) to render before it runs: a full load fires `load` before the page component has loaded (slowest on the Vite dev server), and a scan of the empty root reports `landmark-one-main` and `page-has-heading-one` on pages that have both.
+
 These are CI's gates: run them by hand only to reproduce a red. Before a push, run the tests your change touches (`composer test`, or one file) and let PR CI run the rest. `composer types:generate` regenerates the TypeScript types; it is not a CI gate.
 
 ## Focused checks
