@@ -26,7 +26,7 @@
         "tey/concierge": "^0.9",
         "tey/kit": "^0.15.30",
         "tey/mod": "^0.11",
-        "tey/standards": "^0.11.74"
+        "tey/standards": "^0.11.94"
     },
     "require-dev": {
         "larastan/larastan": "^3.9",
