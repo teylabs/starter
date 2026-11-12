@@ -81,19 +81,49 @@ function notesAdopted(): bool
 // WCAG 2.2 AA (the wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa tags) at every impact level, once animations have settled.
 // A violation the app cannot fix yet goes in AXE_EXCEPTIONS with a reason and an expiry date; an exception without both, or past
 // its date, fails the test. AXE_SURVEY=1 prints each page's violations to STDERR instead of failing, to size the work.
+// The same scan also runs axe's best-practice rules (heading-order, landmark-unique, region, ...) as warnings: each finding is
+// printed to STDERR once per run as "AXE WARNING rule (impact) selector @ url" and never fails the test. A rule that carries a
+// WCAG tag too still fails. AXE_EXCEPTIONS silences a warning the same way; AXE_BEST_PRACTICE=0 skips the best-practice rules.
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+const AXE_BEST_PRACTICE_TAGS = ['best-practice'];
 
 /** @var array<string, array{reason: string, until: string, pages?: list<string>}> axe rule id => why it is allowed, until when (Y-m-d), and on which pages (all if left out). */
 const AXE_EXCEPTIONS = [];
 
-/** @return list<array{id: string, impact: string, targets: list<string>}> */
-function axeViolations(object $page): array
+function axeBestPracticeEnabled(): bool
+{
+    return getenv('AXE_BEST_PRACTICE') !== '0';
+}
+
+/**
+ * The page's URL and its violations; a violation that carries none of AXE_TAGS is a best-practice warning (`wcag` false).
+ *
+ * @return array{url: string, violations: list<array{id: string, impact: string, targets: list<string>, wcag: bool}>}
+ */
+function axeScan(object $page): array
 {
     // Scan settled pixels: wait (up to 5 s) for finite animations and transitions to finish, so contrast is never measured mid-fade.
     $page->script('async () => { const deadline = Date.now() + 5000; const running = () => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations !== Infinity); while (running().length > 0 && Date.now() < deadline) { await Promise.race([Promise.all(running().map((a) => a.finished.catch(() => null))), new Promise((r) => setTimeout(r, 250))]); } await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }');
-    $violations = $page->script('async () => (await window.axe.run(document, { runOnly: { type: "tag", values: '.json_encode(AXE_TAGS).' } })).violations.map((v) => ({ id: v.id, impact: v.impact ?? "unknown", targets: v.nodes.map((n) => n.target.join(" ")) }))');
+    $tags = axeBestPracticeEnabled() ? [...AXE_TAGS, ...AXE_BEST_PRACTICE_TAGS] : AXE_TAGS;
+    $scan = $page->script('async () => ({ url: location.href, violations: (await window.axe.run(document, { runOnly: { type: "tag", values: '.json_encode($tags).' } })).violations.map((v) => ({ id: v.id, impact: v.impact ?? "unknown", targets: v.nodes.map((n) => n.target.join(" ")), wcag: v.tags.some((t) => '.json_encode(AXE_TAGS).'.includes(t)) })) })');
 
-    return is_array($violations) ? array_values($violations) : [];
+    return [
+        'url' => is_array($scan) && is_string($scan['url'] ?? null) ? $scan['url'] : '',
+        'violations' => is_array($scan) && is_array($scan['violations'] ?? null) ? array_values($scan['violations']) : [],
+    ];
+}
+
+/** @return list<array{id: string, impact: string, targets: list<string>}> the WCAG violations only. */
+function axeViolations(object $page): array
+{
+    return array_values(array_filter(axeScan($page)['violations'], fn (array $v): bool => $v['wcag'] ?? true));
+}
+
+/** @param array<string, mixed>|null $exception */
+function axeExceptionApplies(?array $exception, string $what): bool
+{
+    return $exception !== null && (! isset($exception['pages']) || in_array($what, $exception['pages'], true));
 }
 
 /**
@@ -117,9 +147,7 @@ function axeFailures(array $violations, string $what, array $exceptions, DateTim
         }
     }
     foreach ($violations as $violation) {
-        $exception = $exceptions[$violation['id']] ?? null;
-        $applies = $exception !== null && (! isset($exception['pages']) || in_array($what, $exception['pages'], true));
-        if (! $applies) {
+        if (! axeExceptionApplies($exceptions[$violation['id']] ?? null, $what)) {
             $shown = array_slice($violation['targets'], 0, 4);
             $more = count($violation['targets']) > 4 ? ' … +'.(count($violation['targets']) - 4) : '';
             $failures[] = "{$what}: {$violation['id']} ({$violation['impact']}): ".implode(' | ', $shown).$more;
@@ -129,10 +157,44 @@ function axeFailures(array $violations, string $what, array $exceptions, DateTim
     return $failures;
 }
 
-/** Assert a page meets WCAG 2.2 AA at every impact level, apart from current AXE_EXCEPTIONS; AXE_SURVEY=1 prints instead of failing. */
-function assertAccessible(object $page, string $what): void
+/**
+ * The best-practice warnings to print, one line per rule, selector and URL, each at most once per run: `$seen` carries what was printed.
+ *
+ * @param  list<array{id: string, impact: string, targets: list<string>}>  $warnings
+ * @param  array<string, array<string, mixed>>  $exceptions
+ * @param  array<string, true>  $seen
+ * @return list<string>
+ */
+function axeWarnings(array $warnings, string $what, string $url, array $exceptions, array &$seen): array
 {
-    $violations = axeViolations($page);
+    $lines = [];
+    foreach ($warnings as $warning) {
+        if (axeExceptionApplies($exceptions[$warning['id']] ?? null, $what)) {
+            continue;
+        }
+        foreach ($warning['targets'] as $target) {
+            $key = $warning['id']."\0".$target."\0".$url;
+            if (! isset($seen[$key])) {
+                $seen[$key] = true;
+                $lines[] = "AXE WARNING {$warning['id']} ({$warning['impact']}) {$target} @ {$url}";
+            }
+        }
+    }
+
+    return $lines;
+}
+
+/** Assert a page meets WCAG 2.2 AA at every impact level, apart from current AXE_EXCEPTIONS, and print best-practice warnings; AXE_SURVEY=1 prints instead of failing. */
+function assertAccessible(object $page, string $what, ?Closure $warn = null): void
+{
+    $warn ??= fn (string $line) => fwrite(STDERR, $line.PHP_EOL);
+    static $seen = [];
+    $scan = axeScan($page);
+    $violations = array_values(array_filter($scan['violations'], fn (array $v): bool => $v['wcag'] ?? true));
+    $warnings = array_values(array_filter($scan['violations'], fn (array $v): bool => ! ($v['wcag'] ?? true)));
+    foreach (axeWarnings($warnings, $what, $scan['url'], AXE_EXCEPTIONS, $seen) as $line) {
+        $warn($line);
+    }
     if (getenv('AXE_SURVEY') === '1') {
         fwrite(STDERR, 'AXE '.$what.' '.json_encode($violations, JSON_UNESCAPED_SLASHES).PHP_EOL);
         // Surveying prints the violations, but a malformed or expired exception still fails.

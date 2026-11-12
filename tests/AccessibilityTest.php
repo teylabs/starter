@@ -28,25 +28,81 @@ test('an exception without a reason or a date, or past its date, fails even when
     ]);
 });
 
-test('the scan asks axe for WCAG 2.2 AA after animations settle, and survey mode prints instead of failing', function () {
-    $page = new class
+// A stand-in page: the axe call returns these violations from this URL, so no browser or external service is involved.
+$fixturePage = fn (array $violations, string $url = 'http://starter.test/dashboard') => new class($violations, $url)
+{
+    public array $scripts = [];
+
+    public function __construct(private array $violations, private string $url) {}
+
+    public function script(string $js): mixed
     {
-        public array $scripts = [];
+        $this->scripts[] = $js;
 
-        public function script(string $js): mixed
-        {
-            $this->scripts[] = $js;
+        return str_contains($js, 'axe.run') ? ['url' => $this->url, 'violations' => $this->violations] : null;
+    }
+};
 
-            return str_contains($js, 'axe.run') ? [['id' => 'region', 'impact' => 'minor', 'targets' => ['main']]] : null;
-        }
-    };
+test('the scan asks axe for WCAG 2.2 AA and best practice after animations settle, and survey mode prints instead of failing', function () use ($fixturePage) {
+    $page = $fixturePage([['id' => 'color-contrast', 'impact' => 'serious', 'targets' => ['main'], 'wcag' => true]]);
     putenv('AXE_SURVEY=1');
     try {
-        assertAccessible($page, 'home');
+        assertAccessible($page, 'home', fn () => null);
     } finally {
         putenv('AXE_SURVEY');
     }
     expect($page->scripts)->toHaveCount(2)->and($page->scripts[0])->toContain('getAnimations')
-        ->and($page->scripts[1])->toContain('"wcag22aa"')->toContain('"wcag2a"')->not->toContain('impact ===');
-    expect(fn () => assertAccessible($page, 'home'))->toThrow(ExpectationFailedException::class);
+        ->and($page->scripts[1])->toContain('"wcag22aa"')->toContain('"wcag2a"')->toContain('"best-practice"')->toContain('location.href')->not->toContain('impact ===');
+    expect(fn () => assertAccessible($page, 'home', fn () => null))->toThrow(ExpectationFailedException::class);
+});
+
+test('a page with only best-practice findings passes and reports each rule, impact, selector and URL', function () use ($fixturePage) {
+    $page = $fixturePage([
+        ['id' => 'heading-order', 'impact' => 'moderate', 'targets' => ['h3.title'], 'wcag' => false],
+        ['id' => 'region', 'impact' => 'moderate', 'targets' => ['#banner', '#footer'], 'wcag' => false],
+    ], 'http://starter.test/fixture-best-practice');
+    $printed = [];
+
+    assertAccessible($page, 'the best-practice fixture', function (string $line) use (&$printed) {
+        $printed[] = $line;
+    });
+
+    expect($printed)->toBe([
+        'AXE WARNING heading-order (moderate) h3.title @ http://starter.test/fixture-best-practice',
+        'AXE WARNING region (moderate) #banner @ http://starter.test/fixture-best-practice',
+        'AXE WARNING region (moderate) #footer @ http://starter.test/fixture-best-practice',
+    ]);
+});
+
+test('a WCAG violation still fails when best-practice warnings come with it', function () use ($fixturePage) {
+    $page = $fixturePage([
+        ['id' => 'landmark-unique', 'impact' => 'moderate', 'targets' => ['nav'], 'wcag' => false],
+        ['id' => 'image-alt', 'impact' => 'critical', 'targets' => ['img.logo'], 'wcag' => true],
+    ]);
+
+    expect(fn () => assertAccessible($page, 'the WCAG fixture', fn () => null))->toThrow(ExpectationFailedException::class, 'the WCAG fixture is not accessible');
+});
+
+test('warnings print once per rule, selector and URL, and AXE_EXCEPTIONS silences them', function () {
+    $seen = [];
+    $warning = ['id' => 'region', 'impact' => 'moderate', 'targets' => ['#a', '#a']];
+
+    expect(axeWarnings([$warning], 'home', 'http://x.test/', [], $seen))->toBe(['AXE WARNING region (moderate) #a @ http://x.test/'])
+        ->and(axeWarnings([$warning], 'home', 'http://x.test/', [], $seen))->toBe([])
+        ->and(axeWarnings([$warning], 'home', 'http://x.test/other', [], $seen))->toBe(['AXE WARNING region (moderate) #a @ http://x.test/other']);
+
+    $fresh = [];
+    expect(axeWarnings([$warning], 'home', 'http://x.test/', ['region' => ['reason' => 'New shell.', 'until' => '2026-12-01']], $fresh))->toBe([])
+        ->and(axeWarnings([$warning], 'home', 'http://x.test/', ['region' => ['reason' => 'New shell.', 'until' => '2026-12-01', 'pages' => ['settings']]], $fresh))->toHaveCount(1);
+});
+
+test('AXE_BEST_PRACTICE=0 runs only the WCAG rules', function () use ($fixturePage) {
+    $page = $fixturePage([]);
+    putenv('AXE_BEST_PRACTICE=0');
+    try {
+        assertAccessible($page, 'home', fn () => null);
+    } finally {
+        putenv('AXE_BEST_PRACTICE');
+    }
+    expect($page->scripts[1])->toContain('"wcag22aa"')->not->toContain('"best-practice"');
 });
