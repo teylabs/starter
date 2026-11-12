@@ -17,7 +17,7 @@ test('the mail sender follows the app name', function () {
     $renamed = Dotenv::parse(preg_replace('/^APP_NAME=.*$/m', 'APP_NAME="Renamed App"', $contents)."\n");
     expect($renamed)->toHaveKey('MAIL_FROM_NAME');
     // The brand's updates@ address comes from config/brand.php (the kit's default in the template), not env.
-    expect($renamed)->not->toHaveKey('KIT_BRAND_MAIL_FROM_ADDRESS');
+    expect(array_filter(array_keys($renamed), fn (string $key): bool => str_starts_with($key, 'KIT_BRAND_')))->toBe([]);
     // Laravel's own MAIL_FROM_ADDRESS gets an address of its own, and no KIT_BRAND_* reaches the child, so nothing here is the .env.example value: while the
     // template's brand is all placeholders the kit leaves the sender to Laravel's mail.from, and the brand's address is the kit's default, not env.
     // tests/BrandTest.php covers config/brand.php winning over env.

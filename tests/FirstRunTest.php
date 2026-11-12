@@ -59,7 +59,7 @@ test('an invitee signs up walks the welcome steps and lands on the dashboard wit
     expect($dashboard->json('props.greeting'))->toStartWith('Good ');
     expect($dashboard->json('props.greeting'))->toEndWith(', Nora');
     expect(UserState::has((int) User::query()->where('email', 'new.person@example.test')->value('id'), 'onboarding.done'))->toBeTrue();
-    // Kit 0.16 has no welcome card: the personal steps are the You card's checklist, what was skipped still there to set up.
+    // tey/kit 0.17 removed the welcome card: the personal steps are the You card's checklist, what was skipped still there to set up.
     expect($dashboard->json('props.welcome'))->toBeNull();
     expect($dashboard->json('props.widgets.0.key'))->toBe('kit.you');
     $checklist = array_map(fn (array $item): array => [$item['key'], $item['label'], $item['state'], $item['action']['url'] ?? null], $dashboard->json('props.widgets.0.checklist'));
