@@ -42,7 +42,8 @@ function productionRehearsalRoot(): string
         }
     }
     (new Process([PHP_BINARY, $source.'/bin/ci-brand-config.php', '--path='.$root.'/config/brand.php', 'hello_email=hello@rehearsal.test', 'support_email=support@rehearsal.test',
-        'privacy_email=privacy@rehearsal.test', 'mail_from_address=updates@rehearsal.test', 'legal_name=Rehearsal Ltd', 'postal_address=9 Rehearsal Street, Testville'], $source))->mustRun();
+        'privacy_email=privacy@rehearsal.test', 'mail_from_address=updates@rehearsal.test', 'legal_name=Rehearsal Ltd', 'postal_address=9 Rehearsal Street, Testville',
+        'terms_url=/legal/terms', 'privacy_url=/legal/privacy'], $source))->mustRun();
 
     return $root;
 }
@@ -223,6 +224,7 @@ test('the rehearsal brand comes from config and the brand writer refuses to over
     expect($output)->toContain('hello@rehearsal.test');
     expect($output)->toContain('"config"');
     $this->assertStringNotContainsString('"env"', $output, 'no brand key resolves from env');
+    expect(trim($output))->toEndWith(',[]]', 'no brand key is left at its placeholder');
 
     // Without CI=true or --force it never touches the committed config/brand.php.
     $before = file_get_contents(dirname(__DIR__).'/config/brand.php');
