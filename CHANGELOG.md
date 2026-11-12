@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **The mail-sender tests prove where the address comes from.** `tests/MailSenderTest.php` gave its child process `.env.example`'s `MAIL_FROM_ADDRESS`, which equals the kit's default brand sender, so it passed whatever the source. The child now gets an address of its own (`laravel-env@example.test`) and no `KIT_BRAND_*`, and the test asserts that the sender is Laravel's (the template's brand is all placeholders, so the kit leaves it alone) and that the brand's address is the kit's default, not env. A new `tests/BrandTest.php` case asserts that Laravel loads `config/brand.php` as `brand`, and that a sender set there wins over both `KIT_BRAND_MAIL_FROM_ADDRESS` and `MAIL_FROM_ADDRESS` (source `config`). Config is restored in `finally`.
+
 - **The dashboard and People settings pass axe's WCAG 2.2 AA scan.** `tests/Browser/Accessible.php` calls `assertAccessible` on both. axe flagged `color-contrast` on the search field's `⌘K` hint (`text-muted-foreground` on `bg-muted`, about 4.4:1); the light `--muted-foreground` token in `resources/css/app.css` goes from `hsl(0 0% 45.1%)` to `hsl(0 0% 42%)`, which clears 4.5:1 on `--muted` and darkens muted text everywhere slightly. Dark mode is unchanged and not scanned.
 
 - **An invitation link the route cannot match has an h1.** A guest who opens `/invitations/<token>` with a token the route rejects (one with a dot, say) gets the 404 error page outside the shell, where the Page draws no heading; `ShellLayout.vue` now hands the guest card that page's title, so it shows it as the h1 (the kit's `Workspace/Error/Page.vue` is unchanged). An unknown but well-formed token already showed "This link is not valid" as its h1. Both are asserted in `tests/Browser/Accessible.php`.
