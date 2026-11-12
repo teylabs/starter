@@ -142,19 +142,12 @@ jobs:
           openssl genrsa -out oauth-private.pem 4096 2>/dev/null
           openssl rsa -in oauth-private.pem -pubout -out oauth-public.pem 2>/dev/null
           { echo 'PASSPORT_PRIVATE_KEY<<PEM'; cat oauth-private.pem; echo PEM; echo 'PASSPORT_PUBLIC_KEY<<PEM'; cat oauth-public.pem; echo PEM; } >> "$GITHUB_ENV"
-      - name: A throwaway brand, as an app configures its own
-        run: |
-          {
-            echo 'APP_NAME=CI Product'
-            echo 'KIT_BRAND_LOGOMARK=/favicon.svg'
-            echo 'KIT_BRAND_ACCENT=#0f766e'
-            echo 'KIT_BRAND_HELLO_EMAIL=hello@ci.test'
-            echo 'KIT_BRAND_SUPPORT_EMAIL=support@ci.test'
-            echo 'KIT_BRAND_PRIVACY_EMAIL=privacy@ci.test'
-            echo 'KIT_BRAND_MAIL_FROM_ADDRESS=updates@ci.test'
-            echo 'KIT_BRAND_PRIVATE=true'
-          } >> "$GITHUB_ENV"
           rm oauth-private.pem oauth-public.pem
+      # An app commits its brand in config/brand.php; the job writes a throwaway one (never committed), with no KIT_BRAND_* env.
+      - name: A throwaway brand in config/brand.php, as an app commits its own
+        run: |
+          echo 'APP_NAME=CI Product' >> "$GITHUB_ENV"
+          php bin/ci-brand-config.php private=true
       # docs/deploy.md: a deploy is these two lines; the role and permission syncs run when the migrations end.
       - run: npm ci && npm run build
       - run: php artisan migrate --force && php artisan optimize
@@ -198,8 +191,10 @@ jobs:
           node-version: 22
       - run: composer install --no-interaction --no-dev
       - run: npm ci && npm run build
+      - name: A throwaway brand in config/brand.php, as an app commits its own
+        run: php bin/ci-brand-config.php hello_email=hello@rehearsal.test support_email=support@rehearsal.test privacy_email=privacy@rehearsal.test mail_from_address=updates@rehearsal.test 'legal_name=Rehearsal Ltd' 'postal_address=9 Rehearsal Street, Testville'
       - name: A throwaway production environment from .env.production.example
-        run: php bin/rehearsal-env.php --${{ matrix.keys }} DB_HOST=127.0.0.1 DB_DATABASE=starter DB_USERNAME=starter DB_PASSWORD=starter QUEUE_CONNECTION=${{ matrix.queue }} > "$RUNNER_TEMP/rehearsal.env"
+        run: php bin/rehearsal-env.php --${{ matrix.keys }} --no-brand-env DB_HOST=127.0.0.1 DB_DATABASE=starter DB_USERNAME=starter DB_PASSWORD=starter QUEUE_CONNECTION=${{ matrix.queue }} > "$RUNNER_TEMP/rehearsal.env"
       - name: Migrate as the platform would
         run: |
           cp "$RUNNER_TEMP/rehearsal.env" .env.rehearsal

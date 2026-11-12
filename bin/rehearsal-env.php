@@ -5,14 +5,16 @@ use Dotenv\Dotenv;
 // Builds a throwaway production environment from .env.production.example: every stand-in replaced with a value that is well-formed and worth nothing (a real APP_KEY, real RSA
 // keys, a RESEND_KEY that is only a string), so `php artisan kit:preflight --env-file=` can rehearse the deploy with the production-only checks ON, in CI and locally.
 //
-//   php bin/rehearsal-env.php [--escaped|--base64] [KEY=VALUE ...] > rehearsal.env
+//   php bin/rehearsal-env.php [--escaped|--base64] [--no-brand-env] [KEY=VALUE ...] > rehearsal.env
 //
 // `--escaped` writes the PEM keys with literal backslash-n newlines, `--base64` base64-encodes them: the forms a dashboard that cannot hold newlines forces. KEY=VALUE overrides.
+// `--no-brand-env` leaves out the KIT_BRAND_* lines (deprecated, removed in tey/kit 0.17): CI's rehearsal writes its brand to config/brand.php (bin/ci-brand-config.php) instead.
 
 require __DIR__.'/../vendor/autoload.php';
 
 $args = array_slice($argv, 1);
 $form = in_array('--escaped', $args, true) ? 'escaped' : (in_array('--base64', $args, true) ? 'base64' : 'pem');
+$brandEnv = ! in_array('--no-brand-env', $args, true);
 $overrides = [];
 foreach ($args as $arg) {
     if (str_contains($arg, '=') && ! str_starts_with($arg, '--')) {
@@ -43,14 +45,16 @@ $values = [
     'DB_PASSWORD' => bin2hex(random_bytes(8)),
     'PASSPORT_PRIVATE_KEY' => $key($private),
     'PASSPORT_PUBLIC_KEY' => $key($public),
-    'KIT_BRAND_LOGOMARK' => '/favicon.svg',
-    'KIT_BRAND_ACCENT' => '#0f766e',
-    'KIT_BRAND_HELLO_EMAIL' => 'hello@rehearsal.test',
-    'KIT_BRAND_SUPPORT_EMAIL' => 'support@rehearsal.test',
-    'KIT_BRAND_PRIVACY_EMAIL' => 'privacy@rehearsal.test',
-    'KIT_BRAND_MAIL_FROM_ADDRESS' => 'updates@rehearsal.test',
-    'KIT_BRAND_LEGAL_NAME' => 'Rehearsal Ltd',
-    'KIT_BRAND_POSTAL_ADDRESS' => '9 Rehearsal Street, Testville',
+    ...($brandEnv ? [
+        'KIT_BRAND_LOGOMARK' => '/favicon.svg',
+        'KIT_BRAND_ACCENT' => '#0f766e',
+        'KIT_BRAND_HELLO_EMAIL' => 'hello@rehearsal.test',
+        'KIT_BRAND_SUPPORT_EMAIL' => 'support@rehearsal.test',
+        'KIT_BRAND_PRIVACY_EMAIL' => 'privacy@rehearsal.test',
+        'KIT_BRAND_MAIL_FROM_ADDRESS' => 'updates@rehearsal.test',
+        'KIT_BRAND_LEGAL_NAME' => 'Rehearsal Ltd',
+        'KIT_BRAND_POSTAL_ADDRESS' => '9 Rehearsal Street, Testville',
+    ] : []),
     ...$overrides,
 ];
 foreach ($values as $name => $value) {

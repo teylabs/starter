@@ -163,3 +163,15 @@ test('the file takes precedence over the shell and nothing the shell set leaks i
     expect($output)->toMatch('/Your shell sets [A-Z_, ]*CACHE_STORE/', 'a shell variable that overrides a key in the file is warned about, by name');
     $this->assertDoesNotMatchRegularExpression('/Your shell sets [A-Z_, ]*MAIL_MAILER/', $output, 'a shell variable the file does not set is not in the warning: it is simply not passed on');
 });
+test('the rehearsal environment can leave the brand to config and the brand writer refuses to run outside CI', function () {
+    $process = new Process([PHP_BINARY, dirname(__DIR__).'/bin/rehearsal-env.php', '--no-brand-env'], dirname(__DIR__));
+    $process->mustRun();
+    expect(array_filter(array_keys(Dotenv::parse($process->getOutput())), fn (string $key): bool => str_starts_with($key, 'KIT_BRAND_')))->toBe([]);
+
+    // Without CI=true or --force it never touches the committed config/brand.php.
+    $before = file_get_contents(dirname(__DIR__).'/config/brand.php');
+    $writer = new Process([PHP_BINARY, dirname(__DIR__).'/bin/ci-brand-config.php'], dirname(__DIR__), ['CI' => 'false']);
+    $writer->run();
+    expect($writer->getExitCode())->toBe(1);
+    expect(file_get_contents(dirname(__DIR__).'/config/brand.php'))->toBe($before);
+});
