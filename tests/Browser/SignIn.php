@@ -28,7 +28,9 @@ it('signs the first owner in with one click and reaches the app shell', function
 
         $page = visit('/login')
             ->assertSee('Sign in to your account')
-            ->assertPresent('[data-guest-card]')
+            // The card is the page's one main landmark (axe's landmark-one-main and region best-practice rules).
+            ->assertPresent('main[data-guest-card]')
+            ->assertCount('main', 1)
             ->assertSeeIn('[data-local-login]', 'Sign in as owner@example.com')
             ->assertNoJavaScriptErrors();
         settled($page)->screenshot(filename: 'sign-in');
