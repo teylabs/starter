@@ -1,7 +1,8 @@
 <?php
 
 // The app's brand, read by tey/kit as `kit.brand` (the product's name is APP_NAME). Same keys and nesting as the kit's stub,
-// vendor/tey/kit/resources/stubs/brand.php, which lists every key with its default.
+// vendor/tey/kit/resources/stubs/brand.php, which lists every supported key with its default (identity, icon, the dark and bar marks,
+// the colour companions, manage_url, font and the rest). This file lists only the keys the template used to set in env.
 //
 // A key set here wins over its KIT_BRAND_* env value; a key left out uses env (deprecated, removed in tey/kit 0.17), then the kit's
 // default. Colours are a #rgb or #rrggbb; null means "use the theme"; an empty string is refused.
