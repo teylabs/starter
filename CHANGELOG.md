@@ -14,6 +14,8 @@
 
 ### Fixed
 
+- **The account-notice browser test waits for the dashboard to finish loading.** `tests/Browser/Alert.php` left the dashboard while its people list's partial reload was still in flight; when that request reached the session after the notice was flashed, it spent the flash and the notice page rendered without it (3 of 30 probe runs locally, and a CI failure). It now waits for the list first, as `SignIn.php` does (0 of 30).
+
 - **The guest layout has a `<main>` landmark.** `resources/js/layouts/GuestLayout.vue` rendered the sign-in card as a plain `<div>`, so axe's best-practice rules reported `landmark-one-main` and eight `region` findings on `/login`. The card is now `<main id="main">` with the same classes, so nothing moves; the wordmark stays in the `<header>`. `tests/Browser/SignIn.php` asserts the card is the page's one `main`.
 - **The invite modal's focus check no longer races the focus trap** (#103). Opening a form modal moves focus three times: the panel puts it in the first field, the modal package's trap moves it to Close when the enter animation ends, and the panel takes it back. `tests/Browser/Modals.php` read focus after a fixed 500 ms pause, which on a busy runner landed while focus was on Close. It now uses the browser plugin's retrying `assertScript` and waits until the enter animation has finished and focus is in the email field.
 
