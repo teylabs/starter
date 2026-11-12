@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Prepares a fresh checkout for a cloud agent: PHP 8.5, Composer, PostgreSQL and Node, then `composer setup`.
+# The tests read .env.testing: PostgreSQL on 127.0.0.1 as `root` with no password, database starter_testing (wiped by the suite).
+set -euo pipefail
+
+if ! command -v php >/dev/null || ! php -r 'exit(PHP_VERSION_ID >= 80500 ? 0 : 1);'; then
+    sudo add-apt-repository -y ppa:ondrej/php
+    sudo apt-get update
+    sudo apt-get install -y php8.5-cli php8.5-mbstring php8.5-xml php8.5-curl php8.5-zip php8.5-pgsql php8.5-sqlite3 php8.5-intl php8.5-bcmath php8.5-gd php8.5-pcov unzip
+fi
+
+if ! command -v composer >/dev/null; then
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/tmp
+    sudo mv /tmp/composer.phar /usr/local/bin/composer
+fi
+
+if ! command -v psql >/dev/null; then
+    sudo apt-get install -y postgresql
+fi
+sudo service postgresql start || true
+# The role .env.testing names; it creates the per-worker test databases itself.
+sudo -u postgres psql -tc "select 1 from pg_roles where rolname = 'root'" | grep -q 1 \
+    || sudo -u postgres psql -c "create role root login superuser"
+sudo -u postgres psql -tc "select 1 from pg_database where datname = 'starter_testing'" | grep -q 1 \
+    || sudo -u postgres createdb -O root starter_testing
+PG_HBA=$(sudo -u postgres psql -tAc "show hba_file")
+if ! sudo grep -q '^host all root 127.0.0.1/32 trust' "$PG_HBA"; then
+    # First match wins in pg_hba.conf, so the trust lines go above the distribution's password rules.
+    sudo sed -i '1i host all root 127.0.0.1/32 trust\nhost all root ::1/128 trust' "$PG_HBA"
+    sudo service postgresql reload
+fi
+
+if ! command -v node >/dev/null; then
+    curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+fi
+
+composer setup
+npx playwright install --with-deps chromium
