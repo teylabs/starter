@@ -78,7 +78,7 @@ if [ -n "$HOOKS_DIR" ]; then
     HOOKS_DIR="$(cd "$HOOKS_DIR" && pwd -P)"
 fi
 case "$HOOKS_DIR" in
-    "$(cd "$TOP" && pwd -P)"/*|"$(cd "$GIT_DIR_ABS" && pwd -P)"/*) ;;
+    "$(cd "$TOP" && pwd -P)"|"$(cd "$TOP" && pwd -P)"/*|"$(cd "$GIT_DIR_ABS" && pwd -P)"|"$(cd "$GIT_DIR_ABS" && pwd -P)"/*) ;;
     *) HOOKS_DIR="$GIT_DIR_ABS/hooks" ;;
 esac
 mkdir -p "$HOOKS_DIR"
