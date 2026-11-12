@@ -32,6 +32,11 @@ it('passes axe on the dashboard and the People settings page', function (): void
 
         $page->navigate('/settings/people')->assertSee('Members')->assertPresent('[data-data-table]')->assertNoJavaScriptErrors();
         assertAccessible($page, 'the People settings page');
+
+        // Signed in, the same rejected invitation token is the 404 inside the shell: the Page draws the h1, and the guest card's does not double it.
+        $page->navigate('/invitations/not.a.token')->assertSee('Page not found');
+        expect((int) $page->script('() => document.querySelectorAll("h1").length'))->toBe(1);
+        expect(trim((string) $page->script('() => document.querySelector("h1")?.textContent ?? ""')))->toBe('Page not found');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
@@ -40,13 +45,14 @@ it('passes axe on the dashboard and the People settings page', function (): void
 
 // An unknown token is the invitation page's "not valid" state; a token the route cannot match (here one with a dot) is the guest 404
 // error page, outside the shell, which names itself in its own h1 since the shell's Page heading is not drawn there.
-it('heads an unknown invitation link with one h1 and passes axe', function (string $token, string $heading): void {
+it('heads an unknown invitation link with one h1 and passes axe', function (string $token, string $heading, int $status): void {
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
+    $this->get('/invitations/'.$token)->assertStatus($status);
     $page = visit('/invitations/'.$token)->assertSee($heading)->assertNoJavaScriptErrors();
     expect((int) $page->script('() => document.querySelectorAll("h1").length'))->toBe(1);
     expect(trim((string) $page->script('() => document.querySelector("h1")?.textContent ?? ""')))->toBe($heading);
     assertAccessible($page, 'an unknown invitation link');
 })->with([
-    'no such invitation' => ['no-such-invitation-token', 'This link is not valid'],
-    'a token the route cannot match' => ['not.a.token', 'Page not found'],
+    'no such invitation' => ['no-such-invitation-token', 'This link is not valid', 200],
+    'a token the route cannot match' => ['not.a.token', 'Page not found', 404],
 ]);
