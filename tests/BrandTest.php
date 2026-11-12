@@ -15,6 +15,7 @@ use Tests\Concerns\DefaultBrand;
 use Tests\Concerns\Template;
 use Tey\Kit\Brand;
 use Tey\Kit\BrandAssets;
+use Tey\Kit\BrandConfig;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Mail\FluentMailMessage;
 use Tey\Kit\Mail\InlineBrandImages;
@@ -268,4 +269,25 @@ test('placeholders lists the defaults and is empty once configured', function ()
     // Only keys are named, never values.
     config(['kit.brand.accent' => '#52525b']);
     expect(Brand::placeholders())->toBe(['brand.accent']);
+});
+
+test('config/brand.php is the sender address source, over env', function () {
+    // Laravel loads the app's file as `brand`, which the kit reads first.
+    expect(config('brand'))->toBe(require config_path('brand.php'));
+
+    $saved = config()->all();
+    try {
+        // A brand.php sender beats both the deprecated KIT_BRAND_MAIL_FROM_ADDRESS and Laravel's MAIL_FROM_ADDRESS.
+        config([
+            'brand' => [...(array) config('brand'), 'mail_from_address' => 'brand-file@example.test'],
+            'kit.brand_env' => [...(array) config('kit.brand_env'), 'mail_from_address' => 'kit-env@example.test'],
+            'mail.from.address' => 'laravel-env@example.test',
+        ]);
+        BrandConfig::resolve(config(), 'testing');
+        Brand::applyToMail();
+        expect(config('kit.brand_sources.mail_from_address'))->toBe(BrandConfig::SOURCE_CONFIG);
+        expect(config('mail.from.address'))->toBe('brand-file@example.test');
+    } finally {
+        config()->set($saved);
+    }
 });

@@ -18,12 +18,16 @@ test('the mail sender follows the app name', function () {
     expect($renamed)->toHaveKey('MAIL_FROM_NAME');
     // The brand's updates@ address comes from config/brand.php (the kit's default in the template), not env.
     expect($renamed)->not->toHaveKey('KIT_BRAND_MAIL_FROM_ADDRESS');
-    $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'MAIL_FROM_ADDRESS' => $renamed['MAIL_FROM_ADDRESS']];
-    $script = '$app = require "'.__DIR__.'/application.php"; echo json_encode([config("app.name"), config("mail.from.name"), config("mail.from.address")]);';
-    $process = proc_open([PHP_BINARY, '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, dirname(__DIR__), [...getenv(), ...$env]);
+    // Laravel's own MAIL_FROM_ADDRESS gets an address of its own, and no KIT_BRAND_* reaches the child, so nothing here is the .env.example value: while the
+    // template's brand is all placeholders the kit leaves the sender to Laravel's mail.from, and the brand's address is the kit's default, not env.
+    // tests/BrandTest.php covers config/brand.php winning over env.
+    $env = ['APP_NAME' => $renamed['APP_NAME'], 'MAIL_FROM_NAME' => $renamed['MAIL_FROM_NAME'], 'MAIL_FROM_ADDRESS' => 'laravel-env@example.test'];
+    $inherited = array_filter(getenv(), fn (string $name): bool => ! str_starts_with($name, 'KIT_BRAND_'), ARRAY_FILTER_USE_KEY);
+    $script = '$app = require "'.__DIR__.'/application.php"; echo json_encode([config("app.name"), config("mail.from.name"), config("mail.from.address"), config("kit.brand_sources.mail_from_address")]);';
+    $process = proc_open([PHP_BINARY, '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, dirname(__DIR__), [...$inherited, ...$env]);
     $out = stream_get_contents($pipes[1]);
     fclose($pipes[1]);
     fclose($pipes[2]);
     proc_close($process);
-    expect(json_decode(substr($out, (int) strrpos($out, '[')), true))->toBe(['Renamed App', 'Renamed App', 'updates@example.com'], $out);
+    expect(json_decode(substr($out, (int) strrpos($out, '[')), true))->toBe(['Renamed App', 'Renamed App', 'laravel-env@example.test', 'default'], $out);
 });
