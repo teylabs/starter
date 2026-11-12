@@ -45,11 +45,12 @@ $fixturePage = fn (array $violations, string $url = 'http://starter.test/dashboa
 
 test('the scan asks axe for WCAG 2.2 AA and best practice after animations settle, and survey mode prints instead of failing', function () use ($fixturePage) {
     $page = $fixturePage([['id' => 'color-contrast', 'impact' => 'serious', 'targets' => ['main'], 'wcag' => true]]);
+    $previous = getenv('AXE_SURVEY');
     putenv('AXE_SURVEY=1');
     try {
         assertAccessible($page, 'home', fn () => null);
     } finally {
-        putenv('AXE_SURVEY');
+        putenv($previous === false ? 'AXE_SURVEY' : 'AXE_SURVEY='.$previous);
     }
     expect($page->scripts)->toHaveCount(2)->and($page->scripts[0])->toContain('getAnimations')
         ->and($page->scripts[1])->toContain('"wcag22aa"')->toContain('"wcag2a"')->toContain('"best-practice"')->toContain('location.href')->not->toContain('impact ===');
@@ -98,11 +99,12 @@ test('warnings print once per rule, selector and URL, and AXE_EXCEPTIONS silence
 
 test('AXE_BEST_PRACTICE=0 runs only the WCAG rules', function () use ($fixturePage) {
     $page = $fixturePage([]);
+    $previous = getenv('AXE_BEST_PRACTICE');
     putenv('AXE_BEST_PRACTICE=0');
     try {
         assertAccessible($page, 'home', fn () => null);
     } finally {
-        putenv('AXE_BEST_PRACTICE');
+        putenv($previous === false ? 'AXE_BEST_PRACTICE' : 'AXE_BEST_PRACTICE='.$previous);
     }
     expect($page->scripts[1])->toContain('"wcag22aa"')->not->toContain('"best-practice"');
 });
