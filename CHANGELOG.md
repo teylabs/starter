@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **`assertAccessible` also runs axe's best-practice rules, as warnings.** The same scan adds the `best-practice` tag (heading-order, landmark-unique, region and the rest). A finding whose rule carries none of the WCAG tags is printed to STDERR once per run as `AXE WARNING <rule> (<impact>) <selector> @ <url>` and never fails the test; WCAG rules fail as before, and `AXE_EXCEPTIONS` silences a warning the same way it covers a violation. `AXE_BEST_PRACTICE=0` skips the best-practice rules. Covered in `tests/AccessibilityTest.php` with stand-in pages, no browser.
+
 - **`intervention/image` is constrained to `^4.2`.** Laravel's image package requires `^4.2`, so the starter's `^4.0` allowed versions it can't install with; the lock already resolves 4.4.1.
 
 ### Added
