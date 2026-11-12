@@ -50,8 +50,10 @@ it('opens, validates, submits and closes the form modals over People', function 
 
         // Opening: the modal is over People, at its own URL, with focus in the first field.
         $page->click('[data-invite]')->assertPresent('[data-form-modal]')->assertPathIs('/settings/people/invitations')->assertSee('Invite member');
-        $page->script('() => new Promise((resolve) => setTimeout(() => resolve(true), 500))');
-        expect((string) $page->script('() => document.activeElement?.id'))->toBe('invite-email');
+        // Focus moves twice as the modal opens: the panel puts it in the first field, the package's trap moves it to Close when the enter animation ends, and the
+        // panel takes it back. A fixed pause lands inside that window on a busy machine, so this retries (the plugin's waiting assertion) until the enter animation
+        // has finished (a looping spinner never does) and focus has settled in the field.
+        $page->assertScript('() => document.activeElement?.id === "invite-email" && document.querySelector("[data-form-modal]").closest("[role=dialog]").getAnimations({ subtree: true }).every((animation) => animation.playState !== "running" || animation.effect?.getComputedTiming().iterations === Infinity)', true);
         // The modal stack sits above all shell chrome: at the header's and the sub-bar's own coordinates the top element is the backdrop or the modal, never the chrome, and the
         // panel is centred in the viewport (not in the area below the header).
         $layers = $page->script('() => { const at = (x, y) => document.elementFromPoint(x, y); const inChrome = (el) => !!el?.closest("[data-shell-top]"); const panel = document.querySelector("[data-form-modal]").closest(".im-modal-content").getBoundingClientRect(); return { header: inChrome(at(200, 30)), subbar: inChrome(at(200, 84)), centreY: Math.round(panel.top + panel.height / 2), viewportY: Math.round(window.innerHeight / 2) }; }');

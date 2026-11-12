@@ -14,6 +14,8 @@
 
 ### Fixed
 
+- **The invite modal's focus check no longer races the focus trap** (#103). Opening a form modal moves focus three times: the panel puts it in the first field, the modal package's trap moves it to Close when the enter animation ends, and the panel takes it back. `tests/Browser/Modals.php` read focus after a fixed 500 ms pause, which on a busy runner landed while focus was on Close. It now uses the browser plugin's retrying `assertScript` and waits until the enter animation has finished and focus is in the email field.
+
 - **The render-site scan skips comments.** `tests/ViewModelStandardTest.php` matched `Inertia::render(` anywhere in a line, so the kit 0.15.30 `ViewModel.php` docblock that mentions it failed "every render site passes a view model". Lines whose trimmed text starts with `*`, `/*`, `//` or `#` are now skipped, with a regression case.
 - **The capability manifest's `test_*` names match Pest descriptions with punctuation.** `tests/McpCapabilitiesTest.php` only turned `_` into a space, so `it('a, b')` never matched `test_a_b`. Both sides are now normalised the same way (lowercased, punctuation stripped, whitespace and underscores collapsed), with regression rows including a comma, and a failed match says how names are compared.
 - **Regenerated types export every namespace.** A bare `php artisan typescript:transform` wrote `namespace Kit {` inside `declare namespace Tey`, which keeps it private, so `defineProps` couldn't resolve `Tey.Kit.…` and the production build failed; only `composer types:generate` patched it afterwards. The shipped writer, `App\TypeScript\ExportedNamespaceWriter`, now exports every nested namespace, whichever way the file is regenerated. Covered by `tests/TypeScriptNamespacesTest.php`.
