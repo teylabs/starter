@@ -32,10 +32,13 @@ if ! compgen -G '/usr/lib/postgresql/*/bin/postgres' >/dev/null; then
 fi
 sudo service postgresql start
 # The role .env.testing names. CREATEDB is all the suite needs (it creates the per-worker databases), so no superuser.
+# An image may already have either: reconcile them rather than only creating when missing.
 sudo -u postgres psql -tc "select 1 from pg_roles where rolname = 'root'" | grep -q 1 \
-    || sudo -u postgres psql -c "create role root login createdb"
+    || sudo -u postgres psql -c "create role root"
+sudo -u postgres psql -c "alter role root login createdb"
 sudo -u postgres psql -tc "select 1 from pg_database where datname = 'starter_testing'" | grep -q 1 \
     || sudo -u postgres createdb -O root starter_testing
+sudo -u postgres psql -c "alter database starter_testing owner to root"
 PG_HBA=$(sudo -u postgres psql -tAc "show hba_file")
 if ! sudo grep -q '^host all root 127.0.0.1/32 trust' "$PG_HBA"; then
     # First match wins in pg_hba.conf, so the trust lines go above the distribution's password rules. Only `root`, only localhost.
