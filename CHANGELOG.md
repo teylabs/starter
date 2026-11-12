@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- **The dashboard and People settings pass axe's WCAG 2.2 AA scan.** `tests/Browser/Accessible.php` calls `assertAccessible` on both. axe flagged `color-contrast` on the search field's `⌘K` hint (`text-muted-foreground` on `bg-muted`, about 4.4:1); the light `--muted-foreground` token in `resources/css/app.css` goes from `hsl(0 0% 45.1%)` to `hsl(0 0% 42%)`, which clears 4.5:1 on `--muted` and darkens muted text everywhere slightly. Dark mode is unchanged and not scanned.
+
+- **An invitation link the route cannot match has an h1.** A guest who opens `/invitations/<token>` with a token the route rejects (one with a dot, say) gets the 404 error page outside the shell, where the Page draws no heading; `Workspace/Error/Page.vue` now shows its title as the h1 when it is not in the shell. An unknown but well-formed token already showed "This link is not valid" as its h1. Both are asserted in `tests/Browser/Accessible.php`.
+
 ### Changed
 
 - **`assertAccessible` also runs axe's best-practice rules, as warnings.** The same scan adds the `best-practice` tag (heading-order, landmark-unique, region and the rest). A finding whose rule carries none of the WCAG tags is printed to STDERR once per run as `AXE WARNING <rule> (<impact>) <selector> @ <url>` and never fails the test; WCAG rules fail as before, and `AXE_EXCEPTIONS` silences a warning the same way it covers a violation. `AXE_BEST_PRACTICE=0` skips the best-practice rules. Covered in `tests/AccessibilityTest.php` with stand-in pages, no browser.
