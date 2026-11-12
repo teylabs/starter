@@ -20,7 +20,12 @@ if ! php_ready; then
         php8.5-intl php8.5-bcmath php8.5-gd php8.5-imagick php8.5-pcov unzip
 fi
 
-if ! command -v composer >/dev/null; then
+# composer.lock needs composer-runtime-api ^2.2.
+composer_ready() {
+    command -v composer >/dev/null || return 1
+    composer --version 2>/dev/null | grep -Eq 'Composer (version )?(2\.([2-9]|[1-9][0-9])|[3-9])\.'
+}
+if ! composer_ready; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/tmp
     sudo mv /tmp/composer.phar /usr/local/bin/composer
 fi
@@ -35,16 +40,16 @@ sudo service postgresql start
 # An image may already have either: reconcile them rather than only creating when missing.
 sudo -u postgres psql -tc "select 1 from pg_roles where rolname = 'root'" | grep -q 1 \
     || sudo -u postgres psql -c "create role root"
-sudo -u postgres psql -c "alter role root login createdb"
+sudo -u postgres psql -c "alter role root login createdb nosuperuser nocreaterole noreplication nobypassrls"
 sudo -u postgres psql -tc "select 1 from pg_database where datname = 'starter_testing'" | grep -q 1 \
     || sudo -u postgres createdb -O root starter_testing
 sudo -u postgres psql -c "alter database starter_testing owner to root"
 PG_HBA=$(sudo -u postgres psql -tAc "show hba_file")
-if ! sudo grep -q '^host all root 127.0.0.1/32 trust' "$PG_HBA"; then
-    # First match wins in pg_hba.conf, so the trust lines go above the distribution's password rules. Only `root`, only localhost.
-    sudo sed -i '1i host all root 127.0.0.1/32 trust\nhost all root ::1/128 trust' "$PG_HBA"
-    sudo service postgresql reload
-fi
+# First match wins in pg_hba.conf: drop any root trust lines wherever they are, then put them first, above every
+# password rule. Only `root`, only localhost.
+sudo sed -i -E '/^host[[:space:]]+all[[:space:]]+root[[:space:]]+(127\.0\.0\.1\/32|::1\/128)[[:space:]]+trust/d' "$PG_HBA"
+sudo sed -i '1i host all root 127.0.0.1/32 trust\nhost all root ::1/128 trust' "$PG_HBA"
+sudo service postgresql reload
 
 # package.json accepts ^22.12.0 || >=24.0.0; anything else gets Node 24.
 node_ready() {
