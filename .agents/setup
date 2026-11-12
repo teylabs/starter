@@ -65,21 +65,29 @@ composer setup
 npx playwright install --with-deps chromium
 
 # House rule: no AI attribution in commits. A repo-local commit-msg hook strips the trailers agents add (Amp-Thread-ID,
-# Co-authored-by Amp/Claude/Anthropic, Claude-Session, "Generated with ...") and keeps human co-authors. Squash-merging
-# stays the backstop. Repo-local only: never write into a global core.hooksPath (it may be the machine's own hooks).
+# Co-authored-by Amp/Claude/Anthropic, Claude-Session, "Generated with <AI tool>") and keeps human co-authors.
+# Squash-merging stays the backstop. Repo-local only: never write into a global core.hooksPath (it may be the machine's
+# own hooks). A commit-msg hook the repo already had is kept as commit-msg.local and still runs first.
 HOOKS_DIR="$(git rev-parse --absolute-git-dir)/hooks"
 mkdir -p "$HOOKS_DIR"
 git config --local core.hooksPath "$HOOKS_DIR"
+if [ -f "$HOOKS_DIR/commit-msg" ] && ! grep -q 'Installed by .agents/setup' "$HOOKS_DIR/commit-msg"; then
+    mv "$HOOKS_DIR/commit-msg" "$HOOKS_DIR/commit-msg.local"
+fi
 cat > "$HOOKS_DIR/commit-msg" <<'HOOK'
+#!/bin/sh
 # Installed by .agents/setup: strip AI attribution trailers, keep human co-authors. Portable (POSIX awk).
+set -e
+local_hook="$(dirname "$0")/commit-msg.local"
+[ -x "$local_hook" ] && "$local_hook" "$@"
 tmp="$1.strip.$$"
 awk '{
     l = tolower($0)
     if (l ~ /^amp-thread(-id)?:/) next
     if (l ~ /^claude-session:/) next
     if (l ~ /^co-authored-by:[ \t]*amp[ \t]*</) next
-    if (l ~ /^co-authored-by:/ && (l ~ /ampcode/ || l ~ /claude/ || l ~ /anthropic/)) next
-    if (l ~ /(generated|created) (with|by) \[?(claude|amp)/) next
+    if (l ~ /^co-authored-by:/ && (l ~ /ampcode/ || l ~ /claude/ || l ~ /anthropic/ || l ~ /openai/ || l ~ /copilot/)) next
+    if (l ~ /(generated|created) (with|by) / && l ~ /(claude|ampcode|(^|[^a-z])amp([^a-z]|$)|codex|openai|chatgpt|copilot|gemini|cursor|(^|[^a-z])ai([^a-z]|$))/) next
     if (l ~ /claude\.ai\/code\/session/) next
     print
 }' "$1" > "$tmp" && mv "$tmp" "$1"
