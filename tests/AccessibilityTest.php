@@ -43,7 +43,7 @@ $fixturePage = fn (array $violations, string $url = 'http://starter.test/dashboa
     }
 };
 
-test('the scan asks axe for WCAG 2.2 AA and best practice after animations settle, and survey mode prints instead of failing', function () use ($fixturePage) {
+test('the scan asks axe for WCAG 2.2 AA and best practice once the Inertia root has rendered and animations settle, and survey mode prints instead of failing', function () use ($fixturePage) {
     $page = $fixturePage([['id' => 'color-contrast', 'impact' => 'serious', 'targets' => ['main'], 'wcag' => true]]);
     $previous = getenv('AXE_SURVEY');
     putenv('AXE_SURVEY=1');
@@ -52,7 +52,7 @@ test('the scan asks axe for WCAG 2.2 AA and best practice after animations settl
     } finally {
         putenv($previous === false ? 'AXE_SURVEY' : 'AXE_SURVEY='.$previous);
     }
-    expect($page->scripts)->toHaveCount(2)->and($page->scripts[0])->toContain('getAnimations')
+    expect($page->scripts)->toHaveCount(2)->and($page->scripts[0])->toContain('getAnimations')->toContain('document.getElementById("app")')->toContain('childElementCount')
         ->and($page->scripts[1])->toContain('"wcag22aa"')->toContain('"wcag2a"')->toContain('"best-practice"')->toContain('location.href')->not->toContain('impact ===');
     expect(fn () => assertAccessible($page, 'home', fn () => null))->toThrow(ExpectationFailedException::class);
 });

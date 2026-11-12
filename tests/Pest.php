@@ -84,6 +84,7 @@ function notesAdopted(): bool
 // The same scan also runs axe's best-practice rules (heading-order, landmark-unique, region, ...) as warnings: each finding is
 // printed to STDERR once per run as "AXE WARNING rule (impact) selector @ url" and never fails the test. A rule that carries a
 // WCAG tag too still fails. AXE_EXCEPTIONS silences a warning the same way; AXE_BEST_PRACTICE=0 skips the best-practice rules.
+// A parallel run swallows the workers' STDERR, so run an accessibility test without --parallel to see the warnings (docs/testing.md).
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 const AXE_BEST_PRACTICE_TAGS = ['best-practice'];
@@ -103,8 +104,10 @@ function axeBestPracticeEnabled(): bool
  */
 function axeScan(object $page): array
 {
-    // Scan settled pixels: wait (up to 5 s) for finite animations and transitions to finish, so contrast is never measured mid-fade.
-    $page->script('async () => { const deadline = Date.now() + 5000; const running = () => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations !== Infinity); while (running().length > 0 && Date.now() < deadline) { await Promise.race([Promise.all(running().map((a) => a.finished.catch(() => null))), new Promise((r) => setTimeout(r, 250))]); } await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }');
+    // Scan the mounted page: a full load fires `load` before Inertia has resolved the page component and rendered it, so the root
+    // (`@inertia`'s #app) is still empty and axe reports a page without a <main> or an <h1>. Wait (up to 5 s) for it to render.
+    // Then scan settled pixels: wait (up to another 5 s, on its own deadline) for finite animations and transitions to finish, so contrast is never measured mid-fade.
+    $page->script('async () => { const deadline = Date.now() + 5000; const root = document.getElementById("app"); while (root && root.childElementCount === 0 && Date.now() < deadline) { await new Promise((r) => setTimeout(r, 50)); } const settleBy = Date.now() + 5000; const running = () => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations !== Infinity); while (running().length > 0 && Date.now() < settleBy) { await Promise.race([Promise.all(running().map((a) => a.finished.catch(() => null))), new Promise((r) => setTimeout(r, 250))]); } await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }');
     $tags = axeBestPracticeEnabled() ? [...AXE_TAGS, ...AXE_BEST_PRACTICE_TAGS] : AXE_TAGS;
     $scan = $page->script('async () => ({ url: location.href, violations: (await window.axe.run(document, { runOnly: { type: "tag", values: '.json_encode($tags).' } })).violations.map((v) => ({ id: v.id, impact: v.impact ?? "unknown", targets: v.nodes.map((n) => n.target.join(" ")), wcag: v.tags.some((t) => '.json_encode(AXE_TAGS).'.includes(t)) })) })');
 

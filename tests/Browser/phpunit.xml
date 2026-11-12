@@ -19,6 +19,7 @@
             <file>Alert.php</file>
             <file>Placeholder.php</file>
             <file>Notes.php</file>
+            <file>AxeSettle.php</file>
         </testsuite>
     </testsuites>
 </phpunit>
