@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Changed
+
+- **`intervention/image` is constrained to `^4.2`.** Laravel's image package requires `^4.2`, so the starter's `^4.0` allowed versions it can't install with; the lock already resolves 4.4.1.
+
 ### Added
 
-- **Laravel's image API is installed.** `intervention/image:^4.0` backs `Illuminate\Support\Facades\Image`; `config/images.php` (the framework's shape) reads `IMAGE_DRIVER` and defaults to `imagick`, and `.env.example` sets `IMAGE_DRIVER=imagick`. Userland image code uses this API; Media Library keeps spatie/image, and raw Imagick or GD is only for pixel reading, with a why-comment. `tests/ImageConfigTest.php` checks the config loads and that the configured driver's PHP extension is loaded; CI installs `imagick`.
+- **Laravel's image API is installed.** `intervention/image:^4.2` backs `Illuminate\Support\Facades\Image`; `config/images.php` (the framework's shape) reads `IMAGE_DRIVER` and defaults to `imagick`, and `.env.example` sets `IMAGE_DRIVER=imagick`. Userland image code uses this API; Media Library keeps spatie/image, and raw Imagick or GD is only for pixel reading, with a why-comment. `tests/ImageConfigTest.php` checks the config loads and that the configured driver's PHP extension is loaded; CI installs `imagick`.
 
 ### Fixed
 
