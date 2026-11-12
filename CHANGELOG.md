@@ -4,6 +4,10 @@
 
 ### Added
 
+- **`.agents/setup` strips AI attribution trailers.** It installs a repo-local commit-msg hook that removes Amp-Thread-ID, Co-authored-by for Amp or Claude, Claude-Session and "Generated with" lines. Squash-merging stays the backstop.
+
+### Added
+
 - **`.agents/setup` for cloud agents.** A fresh checkout gets PHP 8.5, Composer, PostgreSQL (the `root` role and `starter_testing` database that `.env.testing` names) and Node, then `composer setup` and Playwright Chromium. Development tooling only; the app is unchanged.
 
 ### Fixed

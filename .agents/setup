@@ -63,3 +63,23 @@ fi
 
 composer setup
 npx playwright install --with-deps chromium
+
+# House rule: no AI attribution in commits. A commit-msg hook strips the trailers agents add (Amp-Thread-ID,
+# Co-authored-by for Amp or Claude, Claude-Session, "Generated with ..."). Squash-merging stays the backstop.
+# Repo-local only: never write into a global core.hooksPath (it may be the machine's own hooks).
+HOOKS_DIR="$(git rev-parse --absolute-git-dir)/hooks"
+mkdir -p "$HOOKS_DIR"
+git config --local core.hooksPath "$HOOKS_DIR"
+HOOK="$HOOKS_DIR/commit-msg"
+cat > "$HOOK" <<'HOOK'
+#!/bin/sh
+# Installed by .agents/setup: strip AI attribution trailers.
+sed -i.bak -E \
+    -e '/^Amp-Thread(-ID)?:/Id' \
+    -e '/^Co-authored-by:.*(amp|claude|anthropic|ampcode)/Id' \
+    -e '/^Claude-Session:/Id' \
+    -e '/(Generated|Created) (with|by) (\[)?(Claude|Amp)/Id' \
+    -e '/claude\.ai\/code\/session/Id' \
+    "$1" && rm -f "$1.bak"
+HOOK
+chmod +x "$HOOK"
