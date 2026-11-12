@@ -222,7 +222,11 @@ test('a private app leaves the legal parts out of the mail and web footers', fun
     expect(Brand::placeholders())->not->toContain('brand.terms_url');
     expect(Brand::placeholders())->not->toContain('brand.privacy_email');
     if (Template::isTemplate()) {
-        $this->assertStringContainsString('KIT_BRAND_PRIVATE=false', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
+        // The template documents the switch in config/brand.php and sets no brand key in env.
+        $this->assertStringContainsString("// 'private' => false,", (string) file_get_contents(config_path('brand.php')));
+        foreach (['.env.example', '.env.production.example'] as $file) {
+            $this->assertDoesNotMatchRegularExpression('/^\s*KIT_BRAND_/m', (string) file_get_contents(dirname(__DIR__).'/'.$file), $file);
+        }
     }
 });
 test('the web footer is copyright identity credit and legal links', function () {
