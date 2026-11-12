@@ -66,6 +66,18 @@ try {
     [$code] = $install($dir);
     $check($code === 0 && $hooksPath($dir) === realpath($dir.'/.git').'/hooks' && ! file_exists($outside), 'a dangling symlink falls back to .git/hooks');
 
+    // A live symlink inside the checkout to a real directory outside it: resolved, so it falls back and writes nothing there.
+    $live = sys_get_temp_dir().'/agents-hook-live-'.bin2hex(random_bytes(6));
+    mkdir($live);
+    foreach (['the link itself' => 'live-link', 'a missing dir under it' => 'live-link/new'] as $label => $path) {
+        $dir = $cleanup[] = $repo();
+        symlink($live, $dir.'/live-link');
+        $sh($dir, 'git config --local core.hooksPath '.escapeshellarg($path));
+        [$code] = $install($dir);
+        $check($code === 0 && $hooksPath($dir) === realpath($dir.'/.git').'/hooks' && scandir($live) === ['.', '..'], "a symlink to an outside directory ({$label}) falls back to .git/hooks and writes nothing there");
+    }
+    $cleanup[] = $live;
+
     // An existing hook is chained, and a second run keeps it.
     $dir = $cleanup[] = $repo();
     file_put_contents($dir.'/.git/hooks/commit-msg', "#!/bin/sh\necho local-ran >> \"\$1\"\n");
