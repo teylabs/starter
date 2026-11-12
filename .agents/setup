@@ -68,10 +68,19 @@ npx playwright install --with-deps chromium
 # Co-authored-by Amp/Claude/Anthropic, Claude-Session, "Generated with <AI tool>") and keeps human co-authors.
 # Squash-merging stays the backstop. Repo-local only: never write into a global core.hooksPath (it may be the machine's
 # own hooks). A commit-msg hook the repo already had is kept as commit-msg.local and still runs first.
-# A repo-local core.hooksPath the repo already set is kept and used; otherwise $GIT_DIR/hooks.
+# A core.hooksPath the repo already set is used only when it resolves inside this checkout (or its git dir);
+# anything outside (a shared or machine-wide hooks folder) is left alone and $GIT_DIR/hooks is used instead.
+TOP="$(git rev-parse --show-toplevel)"; GIT_DIR_ABS="$(git rev-parse --absolute-git-dir)"
 HOOKS_DIR="$(git config --local --get core.hooksPath || true)"
-HOOKS_DIR="${HOOKS_DIR:-$(git rev-parse --absolute-git-dir)/hooks}"
-case "$HOOKS_DIR" in /*) ;; *) HOOKS_DIR="$(git rev-parse --show-toplevel)/$HOOKS_DIR" ;; esac
+case "$HOOKS_DIR" in ''|/*) ;; *) HOOKS_DIR="$TOP/$HOOKS_DIR" ;; esac
+if [ -n "$HOOKS_DIR" ]; then
+    mkdir -p "$HOOKS_DIR"
+    HOOKS_DIR="$(cd "$HOOKS_DIR" && pwd -P)"
+fi
+case "$HOOKS_DIR" in
+    "$(cd "$TOP" && pwd -P)"/*|"$(cd "$GIT_DIR_ABS" && pwd -P)"/*) ;;
+    *) HOOKS_DIR="$GIT_DIR_ABS/hooks" ;;
+esac
 mkdir -p "$HOOKS_DIR"
 git config --local core.hooksPath "$HOOKS_DIR"
 if [ -f "$HOOKS_DIR/commit-msg" ] && ! grep -q 'Installed by .agents/setup' "$HOOKS_DIR/commit-msg"; then
@@ -87,7 +96,8 @@ cat > "$HOOKS_DIR/commit-msg" <<'HOOK'
 set -e
 local_hook="$(dirname "$0")/commit-msg.local"
 [ -x "$local_hook" ] && "$local_hook" "$@"
-tmp="$1.strip.$$"
+tmp="$(mktemp "$(dirname "$1")/commit-msg.strip.XXXXXX")"
+trap 'rm -f "$tmp"' EXIT
 awk '{
     l = tolower($0)
     if (l ~ /^amp-thread(-id)?:/) next
