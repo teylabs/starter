@@ -8,6 +8,7 @@ use Dotenv\Dotenv;
 //   php bin/rehearsal-env.php [--escaped|--base64] [KEY=VALUE ...] > rehearsal.env
 //
 // `--escaped` writes the PEM keys with literal backslash-n newlines, `--base64` base64-encodes them: the forms a dashboard that cannot hold newlines forces. KEY=VALUE overrides.
+// It sets no brand: an app commits that in config/brand.php, and a rehearsal writes a throwaway one with bin/ci-brand-config.php.
 
 require __DIR__.'/../vendor/autoload.php';
 
@@ -43,14 +44,6 @@ $values = [
     'DB_PASSWORD' => bin2hex(random_bytes(8)),
     'PASSPORT_PRIVATE_KEY' => $key($private),
     'PASSPORT_PUBLIC_KEY' => $key($public),
-    'KIT_BRAND_LOGOMARK' => '/favicon.svg',
-    'KIT_BRAND_ACCENT' => '#0f766e',
-    'KIT_BRAND_HELLO_EMAIL' => 'hello@rehearsal.test',
-    'KIT_BRAND_SUPPORT_EMAIL' => 'support@rehearsal.test',
-    'KIT_BRAND_PRIVACY_EMAIL' => 'privacy@rehearsal.test',
-    'KIT_BRAND_MAIL_FROM_ADDRESS' => 'updates@rehearsal.test',
-    'KIT_BRAND_LEGAL_NAME' => 'Rehearsal Ltd',
-    'KIT_BRAND_POSTAL_ADDRESS' => '9 Rehearsal Street, Testville',
     ...$overrides,
 ];
 foreach ($values as $name => $value) {

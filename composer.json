@@ -57,7 +57,7 @@
         ],
         "setup": "@php bin/setup.php",
         "test": "@php vendor/bin/pest --tia --parallel",
-        "test:brand-env": "sh bin/fake-brand-env.sh",
+        "test:brand-config": "sh bin/fake-brand-config.sh",
         "test:local": [
             "Composer\\Config::disableProcessTimeout",
             "sh bin/test-local.sh"

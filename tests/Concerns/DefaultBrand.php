@@ -3,7 +3,7 @@
 namespace Tests\Concerns;
 
 /**
- * Brand-dependent tests assume the unconfigured template, whatever brand the developer's .env sets (KIT_BRAND_ACCENT, STYLE, INK, LOGOMARK, PRESETS, PRIVATE, ...).
+ * Brand-dependent tests assume the unconfigured template, whatever brand config/brand.php sets (accent, style, ink, logomark, presets, private, ...; composer test:brand-config sets one).
  * `defaultBrand()` puts the ENTIRE `kit.brand` config back to the package's own defaults: it reads the kit's `config/kit.php` and evaluates it with `env()` ignored
  * (every `env('KEY', $default)` is its default), so a key added to the kit later is covered without listing it here. Call it in `setUp()` after `parent::setUp()`.
  */

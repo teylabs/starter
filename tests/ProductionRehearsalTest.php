@@ -7,12 +7,61 @@ use Tey\Kit\PassportKeys;
 
 beforeEach(function () {
     $this->made = [];
+    $this->root = productionRehearsalRoot();
 });
 afterEach(function () {
     foreach ($this->made as $file) {
         @unlink($file);
     }
+    productionRehearsalRemoveRoot($this->root);
 });
+/**
+ * A throwaway app root whose config/brand.php is a generated brand (bin/ci-brand-config.php), as an app commits its own, so the rehearsal runs on a configured
+ * brand without KIT_BRAND_* env and without touching the committed config/brand.php. Everything else links back to this checkout; bootstrap, config and artisan
+ * are real files there, because PHP resolves __DIR__ through a symlink and the app's base path is dirname(bootstrap/app.php).
+ */
+function productionRehearsalRoot(): string
+{
+    $source = dirname(__DIR__);
+    $root = sys_get_temp_dir().'/rehearsal-root-'.bin2hex(random_bytes(4));
+    mkdir($root);
+    foreach (scandir($source) as $entry) {
+        if (in_array($entry, ['.', '..', 'bootstrap', 'config', 'artisan'], true) || str_starts_with($entry, '.env')) {
+            continue;
+        }
+        symlink($source.'/'.$entry, $root.'/'.$entry);
+    }
+    copy($source.'/artisan', $root.'/artisan');
+    mkdir($root.'/bootstrap/cache', recursive: true);
+    copy($source.'/bootstrap/app.php', $root.'/bootstrap/app.php');
+    copy($source.'/bootstrap/providers.php', $root.'/bootstrap/providers.php');
+    mkdir($root.'/config');
+    foreach (glob($source.'/config/*') as $file) {
+        if (basename($file) !== 'brand.php') {
+            symlink($file, $root.'/config/'.basename($file));
+        }
+    }
+    (new Process([PHP_BINARY, $source.'/bin/ci-brand-config.php', '--path='.$root.'/config/brand.php', 'hello_email=hello@rehearsal.test', 'support_email=support@rehearsal.test',
+        'privacy_email=privacy@rehearsal.test', 'mail_from_address=updates@rehearsal.test', 'legal_name=Rehearsal Ltd', 'postal_address=9 Rehearsal Street, Testville',
+        'terms_url=/legal/terms', 'privacy_url=/legal/privacy'], $source))->mustRun();
+
+    return $root;
+}
+/** Removes the throwaway root: links are unlinked, never followed. */
+function productionRehearsalRemoveRoot(string $path): void
+{
+    if (is_link($path) || is_file($path)) {
+        @unlink($path);
+
+        return;
+    }
+    if (is_dir($path)) {
+        foreach (array_diff(scandir($path), ['.', '..']) as $entry) {
+            productionRehearsalRemoveRoot($path.'/'.$entry);
+        }
+        @rmdir($path);
+    }
+}
 /** A throwaway production environment on a temp SQLite database, with overrides, as a file path. @return array{0: string, 1: string} the env file and the database file */
 function productionRehearsalEnvironment(array $overrides = [], string $form = '--pem'): array
 {
@@ -30,10 +79,10 @@ function productionRehearsalEnvironment(array $overrides = [], string $form = '-
 function productionRehearsalRunArtisan(string $envFile, array $arguments): array
 {
     $name = 'rehearsal-test-'.bin2hex(random_bytes(3));
-    $copy = dirname(__DIR__).'/.env.'.$name;
+    $copy = test()->root.'/.env.'.$name;
     copy($envFile, $copy);
     try {
-        $process = new Process([PHP_BINARY, dirname(__DIR__).'/artisan', ...$arguments, '--env='.$name, '--no-interaction'], dirname(__DIR__), array_map('strval', Dotenv::parse((string) file_get_contents($envFile))), timeout: 120);
+        $process = new Process([PHP_BINARY, test()->root.'/artisan', ...$arguments, '--env='.$name, '--no-interaction'], test()->root, array_map('strval', Dotenv::parse((string) file_get_contents($envFile))), timeout: 120);
         $process->run();
     } finally {
         @unlink($copy);
@@ -49,7 +98,7 @@ function productionRehearsalMigrate(string $envFile): void
 /** The preflight against an environment file, through the kit's own rehearsal option. */
 function productionRehearsalPreflight(string $envFile, array $options = []): array
 {
-    $process = new Process([PHP_BINARY, dirname(__DIR__).'/artisan', 'kit:preflight', '--env-file='.$envFile, '--skip=install.vite', ...$options], dirname(__DIR__), timeout: 120);
+    $process = new Process([PHP_BINARY, test()->root.'/artisan', 'kit:preflight', '--env-file='.$envFile, '--skip=install.vite', ...$options], test()->root, timeout: 120);
     $process->run();
 
     return [$process->getExitCode(), $process->getOutput().$process->getErrorOutput()];
@@ -73,7 +122,7 @@ test('a throwaway production environment passes the preflight with the productio
             }
         }
     }
-    expect(glob(dirname(__DIR__).'/.env.kit-rehearsal-*') ?: [])->toBe([]);
+    expect(glob($this->root.'/.env.kit-rehearsal-*') ?: [])->toBe([]);
 });
 test('the passport keys pass in every form a dashboard can hold and the form is reported', function () {
     foreach (['--escaped' => 'escaped-newlines', '--base64' => 'base64'] as $flag => $form) {
@@ -162,4 +211,25 @@ test('the file takes precedence over the shell and nothing the shell set leaks i
     $this->assertStringNotContainsString('symfony/postmark-mailer', $output);
     expect($output)->toMatch('/Your shell sets [A-Z_, ]*CACHE_STORE/', 'a shell variable that overrides a key in the file is warned about, by name');
     $this->assertDoesNotMatchRegularExpression('/Your shell sets [A-Z_, ]*MAIL_MAILER/', $output, 'a shell variable the file does not set is not in the warning: it is simply not passed on');
+});
+test('the rehearsal brand comes from config and the brand writer refuses to overwrite the committed file outside CI', function () {
+    $process = new Process([PHP_BINARY, dirname(__DIR__).'/bin/rehearsal-env.php'], dirname(__DIR__));
+    $process->mustRun();
+    expect(array_filter(array_keys(Dotenv::parse($process->getOutput())), fn (string $key): bool => str_starts_with($key, 'KIT_BRAND_')))->toBe([]);
+
+    // The rehearsal's app reads its generated brand.php as config, every key from config and none left at the kit's placeholder.
+    [$env] = productionRehearsalEnvironment();
+    [$exit, $output] = productionRehearsalRunArtisan($env, ['tinker', '--execute=echo json_encode([config("kit.brand.hello_email"), array_unique(array_values(config("kit.brand_sources") ?? [])), Tey\\Kit\\Brand::placeholders()]);']);
+    expect($exit)->toBe(0, $output);
+    expect($output)->toContain('hello@rehearsal.test');
+    expect($output)->toContain('"config"');
+    $this->assertStringNotContainsString('"env"', $output, 'no brand key resolves from env');
+    expect(trim($output))->toEndWith(',[]]', 'no brand key is left at its placeholder');
+
+    // Without CI=true or --force it never touches the committed config/brand.php.
+    $before = file_get_contents(dirname(__DIR__).'/config/brand.php');
+    $writer = new Process([PHP_BINARY, dirname(__DIR__).'/bin/ci-brand-config.php'], dirname(__DIR__), ['CI' => 'false']);
+    $writer->run();
+    expect($writer->getExitCode())->toBe(1);
+    expect(file_get_contents(dirname(__DIR__).'/config/brand.php'))->toBe($before);
 });
