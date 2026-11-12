@@ -1,11 +1,24 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
-import { createApp, h } from 'vue';
+import { createApp, defineComponent, h } from 'vue';
 import type { DefineComponent } from 'vue';
 import '../css/app.css';
 import { initializeTheme, syncTimezoneCookie } from '@kit/ui';
 import { honourReducedMotion } from '@/lib/reduced-motion';
 import ShellLayout from '@/layouts/ShellLayout.vue';
+import PublicShell from '@/pages/Workspace/Partials/PublicShell.vue';
+
+// The kit's public pages (Public/*, a legal or help document) sit in its PublicShell, given its CTA's URLs once (docs/public-shell.md). A guest's error page keeps
+// the GuestShell: ShellLayout gives it the error's title as its h1, which PublicShell does not draw.
+const PublicLayout = defineComponent(
+    (_, { slots }) =>
+        () =>
+            h(
+                PublicShell,
+                { signInUrl: '/login', workspaceUrl: '/me/workspaces' },
+                slots,
+            ),
+);
 
 // Pages live at ./pages/<Resource>/<Section>/Page.vue and declare no layout: the shell is the server's pick (`shell.kind`: guest, focus or app, fed by the
 // backend's shared `shell`), and a page inside a folder that has a Layout.vue (pages/Workspace/Settings, pages/Workspace/Account) is wrapped in that one too,
@@ -45,6 +58,10 @@ createInertiaApp({
         return page();
     },
     layout: (name) => {
+        if (name.startsWith('Public/')) {
+            return PublicLayout;
+        }
+
         const sublayout = nearestPageLayout(name);
 
         // The server names the shell per request (`shell.kind`): app, guest or focus.
