@@ -88,6 +88,11 @@ export interface SubmitForm<T> {
     setError(field: (keyof T & string) | '_form', message: string): void;
     setError(errors: SubmitFormErrors<T>): void;
     resetAndClearErrors(): void;
+    /**
+     * Keep my edits after a conflict: clears `conflict` and the conflict's `_form` line and leaves the data as it is, so Save is enabled again and the next save
+     * sends these values. Does nothing without a conflict.
+     */
+    keepMine(): void;
     /** With no argument the current data becomes the defaults; with values, those fields' defaults. */
     setDefaults(values?: Partial<T>): void;
 }
@@ -287,6 +292,12 @@ export function useSubmitForm<T extends Record<string, unknown>, P = T>(
             form.reset();
             form.clearErrors();
             state.conflict = false;
+        },
+        keepMine() {
+            if (!state.conflict) return;
+            state.conflict = false;
+            if (state.errors._form === SUBMIT_CONFLICT_MESSAGE)
+                form.clearErrors('_form');
         },
         setDefaults(values?: Partial<T>) {
             defaults = values

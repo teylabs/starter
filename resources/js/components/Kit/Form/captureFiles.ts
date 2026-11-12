@@ -52,8 +52,9 @@ export function checkSelection(
     return null;
 }
 
-const megabytes = (bytes: number) => {
-    const value = bytes / 1_000_000;
+/** Bytes as MiB (1024² bytes), rounded down to one decimal place so it never promises more, whole numbers without one: 10, 1.5. */
+const mebibytes = (bytes: number) => {
+    const value = Math.floor((bytes / 1_048_576) * 10 + 1e-9) / 10;
     return Number.isInteger(value) ? String(value) : value.toFixed(1);
 };
 
@@ -66,10 +67,10 @@ export function describeProblem(
         return `Only ${limits.maxFiles ?? 1} ${(limits.maxFiles ?? 1) === 1 ? 'file' : 'files'} at once`;
     return problem.kind === 'type'
         ? `${problem.name} isn't an accepted type`
-        : `${problem.name} is over ${megabytes(limits.maxBytes)} MB`;
+        : `${problem.name} is over ${mebibytes(limits.maxBytes)} MiB`;
 }
 
-/** "Up to 10 MB each": the fallback hint when the host supplies none. */
+/** "Up to 10 MiB each": the fallback hint when the host supplies none. */
 export function sizeHint(maxBytes: number): string {
-    return `Up to ${megabytes(maxBytes)} MB each`;
+    return `Up to ${mebibytes(maxBytes)} MiB each`;
 }

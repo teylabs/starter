@@ -88,7 +88,8 @@ import WorkbenchStage from './WorkbenchStage.vue';
  * useSubmitForm() result (no `save`; the kit calls `form.submit()`). `@submit` replaces the kit's submit with the app's own. Processing is Saving… with Save
  * disabled; a success is Saved; errors show a summary that focuses the first invalid field (revealing a collapsed inspector or another phone tab first); a
  * 409 conflict (a useSubmitForm's, or a visit's errors[<code>]) is the conflict alert with the edits kept; while dirty, leaving asks first (`warn-on-leave` false, or `warnOnLeave: false` on a
- * useSubmitForm, turns that off). Kit Buttons inside stay type=button: only Save submits. At lg the inspector is a drawer outside the <form> (a dialog in the
+ * useSubmitForm, turns that off). `conflict-alert` false drops the kit's conflict alert for a page that shows its own; the page's Keep my edits calls
+ * `useWorkbench(key).keepMine(form)`, which clears the conflict, keeps the values and enables Save again. Kit Buttons inside stay type=button: only Save submits. At lg the inspector is a drawer outside the <form> (a dialog in the
  * top layer), so Enter there does not submit; Save and ⌘S do. Without `:form` nothing of this renders.
  * Save is disabled, and ⌘S and Enter are ignored, while the save cannot succeed (formFrame.ts's useSubmitGate): pending work in flight (an upload), an open
  * conflict, or `can-submit` false (a boolean, Ref or getter; or a useSubmitForm's `canSubmit` option); Save is described by the reason. After a failed save the
@@ -127,6 +128,7 @@ const props = withDefaults(
         navigatorLayout?: WorkbenchNavigatorLayout;
         closeOnSelect?: boolean;
         saveStatus?: 'kit' | 'none';
+        conflictAlert?: boolean;
         form?: WorkbenchForm | null;
         save?: ActionDescriptor | null;
         saveLabel?: string;
@@ -144,6 +146,7 @@ const props = withDefaults(
         warnOnLeave: true,
         onSubmit: null,
         saveStatus: 'kit',
+        conflictAlert: true,
         elementAttribute: null,
         keys: true,
         defaultCollapsed: null,
@@ -1236,6 +1239,7 @@ const surface = useGroundSurface();
                 :actions="actions"
                 :zoom="zoom"
                 :save-status="saveStatus"
+                :conflict-alert="conflictAlert"
                 :inspector-label="names.inspector"
                 :primary="!hasForm"
                 @action="emit('action', $event)"

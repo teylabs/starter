@@ -12,7 +12,7 @@ use Tey\Kit\Features\SessionUi\UserState;
 use Tey\Kit\Features\Workspaces\Models\Workspace;
 
 // The invitee's first run in a real browser: the invitation creates the account and joins, the FocusShell walks the steps ("Step n of m"), skipping never blocks,
-// and the dashboard greets them once, with the welcome card and the checklist of what was skipped.
+// and the dashboard greets them by name, with what was skipped on the You card's checklist (kit 0.16 has no welcome card).
 it('walks an invitee from the invitation through the welcome steps to the dashboard card', function (): void {
     $environment = getenv('APP_ENV');
     try {
@@ -48,10 +48,9 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
         }
         $page->click('[data-welcome-skip]')
             ->assertPathIs('/')
-            ->assertSeeIn('[data-slot="page-heading"]', 'Good')
-            ->assertSeeIn('[data-welcome-title]', 'Welcome to')->assertSeeIn('[data-welcome-title]', 'Bea')->assertPresent('[data-welcome-card] [role="progressbar"]')
-            ->assertSeeIn('[data-welcome-title]', $workspace->name)->assertSeeIn('[data-welcome-card]', 'Your workspace is ready.')
-            ->assertPresent('[data-welcome-checklist]')
+            ->assertSeeIn('[data-slot="page-heading"]', 'Good')->assertSeeIn('[data-slot="page-heading"]', 'Bea')
+            ->assertMissing('[data-welcome-card]')
+            ->assertSeeIn('[data-widget-you-setup]', 'Finish setting up')->assertSeeIn('[data-widget-you-setup]', 'Your timezone')->assertSeeIn('[data-widget-you-setup]', 'Your photo')
             ->assertPresent('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         foreach ([[390, 844], [1440, 900]] as [$width, $height]) {
@@ -60,15 +59,15 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
                 expect($page->script('() => document.documentElement.scrollWidth - document.documentElement.clientWidth'))->toBeLessThanOrEqual(0);
             }
         }
-        $page->assertSeeIn('[data-welcome-progress]', '1 of 2 done')->click('[data-welcome-dismiss]')->assertMissing('[data-welcome-card]');
     } finally {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
     }
 });
 
-// Someone who left lands on the no-workspace page in the FocusShell, and the account pages name the product where the switcher would be.
-it('lands a person with no workspace on the no-workspace page', function (): void {
+// Someone who left lands on their (empty) workspace list, which no longer redirects (kit 0.15.33); the no-workspace page is in the FocusShell,
+// and the account pages name the product where the switcher would be.
+it('lands a person with no workspace on their empty workspace list, and shows the no-workspace page in the FocusShell', function (): void {
     $environment = getenv('APP_ENV');
     try {
         putenv('APP_ENV=local');
@@ -78,7 +77,9 @@ it('lands a person with no workspace on the no-workspace page', function (): voi
         expect(app(Kernel::class)->call('kit:first-run-demo', ['--fork' => 'left']))->toBe(0);
         preg_match('#https?://\S+/demo-login/\d+\?\S+#', app(Kernel::class)->output(), $link);
 
-        $page = visit($link[0])->assertPathIs('/no-workspace')
+        $page = visit($link[0])->assertPathIs('/me/workspaces');
+        $page->assertSeeIn('[data-workspaces-empty]', 'No workspaces yet')->assertNoJavaScriptErrors();
+        $page->navigate('/no-workspace')
             ->assertPresent('[data-focus-shell] [data-no-workspace]')
             ->assertSeeIn('[data-no-workspace-explanation]', "You're not in a workspace yet.")
             ->assertMissing('[data-test="create-workspace"]')

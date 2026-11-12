@@ -15,7 +15,7 @@ import Wordmark from './Wordmark.vue';
  * from a route) and the appearance switch, for an app whose dark theme is designed (`appearance`). Slots: the card body (default), `footer` for secondary
  * links under the card ("Create an account") and `mark` for the host's own symbol. The product comes from `product`, else the server's shared `shell.product`.
  */
-type Product = { name: string; url: string; logomark: string | null };
+type Product = { name: string; url: string; logomark: string | null; lockup?: boolean; lockup_image?: string | null };
 const props = withDefaults(defineProps<{ title?: string; description?: string; width?: 'narrow' | 'wide'; backUrl?: string | null; backLabel?: string; appearance?: boolean; product?: Product | null; toaster?: boolean }>(), { title: undefined, description: undefined, width: 'narrow', backUrl: null, backLabel: 'Back to the site', appearance: true, product: null, toaster: true });
 const page = usePage<{ shell?: { product?: Product }; layout?: { documentTitle?: string } }>();
 const product = computed(() => props.product ?? page.props.shell?.product ?? null);

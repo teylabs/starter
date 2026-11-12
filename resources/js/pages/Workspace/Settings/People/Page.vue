@@ -21,6 +21,8 @@ function act(_row: Row, action: { key: string | null; url: string }) {
     if (action.key === 'change-role' || action.key === 'transfer-ownership') open(action.url);
 }
 const members = computed(() => props.tab === 'members');
+// Each row's controls are named by the person ("Change role Ana Lopez", "Actions for Ana Lopez"), not the row's number: the member's name, or the invitation's address.
+const rowLabel = (row: Row) => row.member?.name ?? row.email;
 </script>
 <template>
     <Page md>
@@ -29,7 +31,7 @@ const members = computed(() => props.tab === 'members');
         </template>
         <Stack>
             <p v-if="invite_link" class="text-sm" role="status" data-invite-link>Invitation link (send it to them; it is shown once): <code class="break-all">{{ invite_link }}</code></p>
-            <DataTable :table="table as never" :intercept="['change-role', 'transfer-ownership']" :search-label="members ? 'Search members' : 'Search invitations'" @act="act">
+            <DataTable :table="table as never" :intercept="['change-role', 'transfer-ownership']" :row-label="rowLabel" :search-label="members ? 'Search members' : 'Search invitations'" @act="act">
                 <template #cell-member="{ row }">
                     <span class="flex items-center gap-3" data-person>
                         <Avatar :initials="row.member.initials" :src="row.member.avatar?.url" :src2x="row.member.avatar?.url_2x" />

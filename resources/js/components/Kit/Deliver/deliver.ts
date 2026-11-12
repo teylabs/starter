@@ -12,7 +12,7 @@ export type DeliverRecipientOption = {
     role: 'to' | 'cc';
 };
 export type DeliveryRecipient = {
-    role: 'to' | 'cc' | 'bcc';
+    role: 'to' | 'cc' | 'bcc' | 'copy';
     address: string;
     name: string | null;
     status: 'pending' | 'sent' | 'delivered' | 'bounced' | 'complained';

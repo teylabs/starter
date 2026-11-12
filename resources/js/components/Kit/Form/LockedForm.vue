@@ -8,19 +8,32 @@ import { provideLocked } from './useLocked';
 // kit edit actions and `intent: 'edit'` descriptors are hidden, caller buttons in EditOnly vanish, each FormCard shows the notice in place of FormActions, and
 // nothing submits: Enter in a field does nothing and a `<form>` inside never sends. With a descriptor it renders its slot unchanged. A locked ancestor locks
 // every nested area. The root describes itself by the first notice. `quantity="one"` picks the singular notice, `notice` replaces it, `reason` adds a muted line.
+// `hideLockFooter` hides this area's notice (the FormCard footer, or a lone fieldset's notice) for a page that already shows a lock alert; it stays locked.
 const props = withDefaults(
     defineProps<{
         save: object | null;
         quantity?: 'many' | 'one';
         notice?: string;
         reason?: string | null;
+        hideLockFooter?: boolean;
     }>(),
-    { quantity: 'many', notice: undefined, reason: null },
+    {
+        quantity: 'many',
+        notice: undefined,
+        reason: null,
+        hideLockFooter: false,
+    },
 );
-const context = provideLocked(() => props, `${useId()}-notice`);
+const context = provideLocked(
+    () => props,
+    `${useId()}-notice`,
+    () => props.hideLockFooter,
+);
 const locked = computed(() => context.state.value.locked);
 const describedBy = computed(() =>
-    locked.value && context.claimed.value ? context.noticeId : undefined,
+    locked.value && context.claimed.value && !props.hideLockFooter
+        ? context.noticeId
+        : undefined,
 );
 // Nothing submits while locked: a submit event is stopped before the form sees it, and Enter in a single-line input loses its implicit submission.
 function guardSubmit(event: Event) {

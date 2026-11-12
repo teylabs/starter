@@ -17,6 +17,15 @@
         }
     }
 
+    /* PageTabs' row scrolls sideways when its tabs don't fit, by touch, trackpad or keyboard, without drawing a scrollbar under the tabs. */
+    [data-page-tabs] > ul {
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
     @media (max-width: 639px) {
         html:has(.im-modal-container) {
             scrollbar-gutter: auto !important;

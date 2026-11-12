@@ -23,6 +23,8 @@ type LockedContext = {
     state: ComputedRef<LockedState>;
     noticeId: string;
     claimed: Ref<boolean>;
+    // LockedForm's `hideLockFooter`: the area stays locked but renders no notice.
+    hidden?: ComputedRef<boolean>;
 };
 const key: InjectionKey<LockedContext> = Symbol('kit.locked');
 // Whether a FormCard sits between this component and the area: the card then owns the notice, so a fieldset inside it renders none.
@@ -32,12 +34,14 @@ const cardKey: InjectionKey<boolean> = Symbol('kit.locked.card');
 export function provideLocked(
     props: () => LockedProps,
     noticeId: string,
+    hidden: () => boolean = () => false,
 ): LockedContext {
     const parent = inject(key, null);
     const context: LockedContext = {
         state: computed(() => resolveLocked(props(), parent?.state.value)),
         noticeId,
         claimed: ref(false),
+        hidden: computed(hidden),
     };
     provide(key, context);
     provide(cardKey, false);
@@ -70,7 +74,7 @@ export function useNoticeOwned(): boolean {
 /** The notice this component renders when the area is locked: the state, and the id the first claimant carries (the area's root describes itself by it). */
 export function useLockedNotice(
     claim = true,
-): Readonly<LockedState & { id: string | undefined }> {
+): Readonly<LockedState & { id: string | undefined; shown: boolean }> {
     const context = inject(key, null);
     const holder = ref(false);
     if (claim && context && !context.claimed.value) {
@@ -86,6 +90,11 @@ export function useLockedNotice(
         reactive({
             ...stateOf(context),
             id: computed(() => (holder.value ? context?.noticeId : undefined)),
+            shown: computed(
+                () =>
+                    (context?.state.value.locked ?? false) &&
+                    !(context?.hidden?.value ?? false),
+            ),
         }),
     );
 }

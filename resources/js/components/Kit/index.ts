@@ -12,6 +12,7 @@ export { default as EmptyState } from './Feedback/EmptyState.vue';
 export { default as Alert } from './Feedback/Alert.vue';
 export { default as PasskeyOffer } from './Feedback/PasskeyOffer.vue';
 export {
+    confirmPasskeyPassword,
     passkeyName,
     passkeySignInSupported,
     passkeysSupported,
@@ -71,12 +72,15 @@ export { default as BlockStack } from './Layout/BlockStack.vue';
 export { default as PageSection } from './Layout/PageSection.vue';
 export { default as PageGrid } from './Layout/PageGrid.vue';
 export { default as PageGridItem } from './Layout/PageGridItem.vue';
+// A page's aside column: sections spaced with the page's gap, sticky only while it fits the viewport (docs/page-rhythm.md).
+export { default as PageAside } from './Layout/PageAside.vue';
 export { default as Toolbar } from './Layout/Toolbar.vue';
 export { default as Button } from './Form/Button.vue';
 export type { VisitData, VisitValue } from './Form/Button.vue';
 export { default as InputCheckbox } from './Form/InputCheckbox.vue';
 /** @deprecated Use InputCheckbox; removed in 0.4. */
 export { default as Checkbox } from './Form/InputCheckbox.vue';
+export { default as InputSwitch } from './Form/InputSwitch.vue';
 export { default as DataTable } from './Table/DataTable.vue';
 export { rowName, type RowLabel } from './Table/rowLabel';
 export { default as Dialog } from './Overlay/Dialog.vue';
@@ -100,6 +104,7 @@ export { default as FormFieldset } from './Form/FormFieldset.vue';
 export { default as FormStatus } from './Form/FormStatus.vue';
 // A download or new-tab submit by a native hidden form on <body>, which outlives a closing modal (docs/form-link.md): the control, the function, and validate-then-open.
 export { default as FormLink } from './Form/FormLink.vue';
+export { default as ScriptForm } from './Form/ScriptForm.vue';
 export { hiddenFields, submitHiddenForm } from './Form/hiddenForm';
 export type {
     HiddenFormMethod,
@@ -439,6 +444,17 @@ export {
     type DateTimeOptions,
 } from './Data/dateTime';
 export { useTimezone } from './Data/useTimezone';
+// Settings › Email sending's labels: the From line, the live address preview, each DNS record's purpose and full name, and Last checked in the viewer's zone.
+export {
+    checkedAtLabel,
+    fromLine,
+    fromPreview,
+    fullRecordName,
+    recordKind,
+    type MailDnsRecord,
+} from './Data/mailSending';
+// A button that copies a value, claiming success only once the clipboard write resolves.
+export { default as CopyButton } from './Action/CopyButton.vue';
 export { default as SortableList } from './Data/SortableList.vue';
 export { default as SortableHandle } from './Data/SortableHandle.vue';
 export {

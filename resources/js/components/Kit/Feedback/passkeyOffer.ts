@@ -2,7 +2,7 @@
 // It uses the browser's own WebAuthn JSON helpers (PublicKeyCredential.parseCreationOptionsFromJSON and credential.toJSON()), so no client library is needed;
 // a browser without them isn't offered a passkey at all.
 
-import { responseJson, type HttpBody } from '../http';
+import { errorJson, responseJson, type HttpBody } from '../http';
 
 type Credentials = {
     create: (options: {
@@ -38,6 +38,41 @@ export function passkeysSupported(
 export function passkeyName(platform: string | undefined): string {
     const name = (platform ?? '').trim();
     return name ? `${name} passkey` : 'Passkey';
+}
+
+/**
+ * Confirms the person's password with Fortify (`confirmUrl`, its password confirmation), which its passkey registration requires by default. Returns null when
+ * it is confirmed (a 2xx), or the refusal to show on the password field (a 422). Anything else throws, as a failed registration does, so the caller never goes
+ * on to the browser's passkey prompt. A client may resolve a refusal rather than reject it, so a resolved answer's status is checked too; one without a status fails closed.
+ */
+export async function confirmPasskeyPassword(
+    http: Http,
+    confirmUrl: string,
+    password: string,
+): Promise<string | null> {
+    let status: number | undefined;
+    let body: unknown;
+    try {
+        const response = await http.request({
+            method: 'post',
+            url: confirmUrl,
+            data: { password },
+            headers: { Accept: 'application/json' },
+        });
+        status = (response as { status?: number }).status;
+        if (status !== undefined && status >= 200 && status < 300) return null;
+        body = errorJson({ response }).body;
+    } catch (error) {
+        ({ status, body } = errorJson(error));
+        if (status !== 422) throw error;
+    }
+    if (status !== 422)
+        throw new Error(
+            `The password could not be confirmed (${status ?? 'no status'}).`,
+        );
+    const errors = (body as { errors?: { password?: string[] } } | null)
+        ?.errors;
+    return errors?.password?.[0] ?? 'That password is not right.';
 }
 
 /** Registers one passkey: options from `optionsUrl`, the browser's create(), then the credential to `storeUrl`. Throws when the person cancels or it fails. */

@@ -1,23 +1,34 @@
 <script setup lang="ts">
 import { Form, http, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
-import { Alert, Button, DateTime, Dialog, Field, FormCard, Input, Page, PasswordInput, Section, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
+import { Alert, Button, DateTime, Dialog, Field, FormCard, Input, Page, PasswordInput, ScriptForm, Section, confirmPasskeyPassword, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
 
 // Security: passkeys, two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
 // you are signed in on, and your own security log. Turning two-factor off, regenerating the recovery codes and signing out other sessions each ask first.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.SecurityViewModel>();
 
-// Passkeys (`passkeys`, null without Fortify's passkeys feature): add one through Fortify's registration, rename one, or remove one with the password.
+// Passkeys (`passkeys`, null without Fortify's passkeys feature): add one with the password (confirmed with Fortify first, as its registration requires, then
+// Fortify's registration; no password asked when the host turns that confirmation off and `confirm_url` is null), rename one, or remove one with the password.
 const canAdd = ref(false);
 onMounted(() => { canAdd.value = passkeysSupported(); });
 const adding = ref(false);
 const addFailed = ref(false);
+const addPassword = ref('');
+const addError = ref<string | null>(null);
 async function addPasskey(): Promise<void> {
     if (!props.passkeys || adding.value) return;
     adding.value = true;
     addFailed.value = false;
+    addError.value = null;
+    const client = http.getClient() as never;
     try {
-        await registerPasskey(http.getClient() as never, props.passkeys, passkeyName((navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform));
+        // Fortify's password confirmation first, unless the host turned it off (no confirm_url).
+        if (props.passkeys.confirm_url) {
+            addError.value = await confirmPasskeyPassword(client, props.passkeys.confirm_url, addPassword.value);
+            if (addError.value) return;
+        }
+        await registerPasskey(client, props.passkeys, passkeyName((navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform));
+        addPassword.value = '';
         router.reload({ only: ['passkeys', 'events'] });
     } catch {
         addFailed.value = true;
@@ -96,7 +107,7 @@ async function addPasskey(): Promise<void> {
                     <li v-for="passkey in passkeys.items" :key="passkey.id" class="grid gap-3 py-4 text-sm" :data-passkey="passkey.id">
                         <span class="flex flex-col"><span class="font-medium">{{ passkey.name }}</span><span class="text-muted-foreground">Added <DateTime :value="passkey.created" /> · <template v-if="passkey.last_used">Last used <DateTime :value="passkey.last_used" /></template><template v-else>Not used yet</template></span></span>
                         <Form v-slot="{ errors, processing }" :action="`${passkeys.url}/${passkey.id}`" method="patch" :options="{ preserveScroll: true }" class="flex flex-wrap items-end gap-2" data-passkey-rename>
-                            <Field :id="`passkey-name-${passkey.id}`" name="name" label="Name" class="min-w-48 flex-1"><Input :id="`passkey-name-${passkey.id}`" name="name" :value="passkey.name" required maxlength="60" :invalid="Boolean(errors.name)" /></Field>
+                            <Field :id="`passkey-name-${passkey.id}`" name="name" label="Name" class="min-w-48 flex-1"><Input :id="`passkey-name-${passkey.id}`" name="name" :model-value="passkey.name" required maxlength="60" :invalid="Boolean(errors.name)" /></Field>
                             <Button type="submit" variant="secondary" :disabled="processing">Rename</Button>
                         </Form>
                         <Form v-slot="{ submit, processing }" :action="`${passkeys.url}/${passkey.id}`" method="delete" :options="{ preserveScroll: true }" reset-on-success class="flex flex-wrap items-end gap-2" data-passkey-remove>
@@ -108,7 +119,10 @@ async function addPasskey(): Promise<void> {
                     </li>
                 </ul>
                 <div v-if="canAdd" class="grid gap-2 pt-2">
-                    <Button type="button" variant="secondary" class="justify-self-start" :disabled="adding" data-passkey-add @click="addPasskey">{{ adding ? 'Waiting for your device…' : 'Add a passkey' }}</Button>
+                    <ScriptForm class="flex flex-wrap items-end gap-2" data-passkey-add-form :busy="adding" @submit="addPasskey">
+                        <Field v-if="passkeys?.confirm_url" id="passkey-add-password" name="password" label="Your password" class="min-w-48 flex-1" :error="addError ?? undefined"><PasswordInput id="passkey-add-password" v-model="addPassword" name="password" required autocomplete="current-password" /></Field>
+                        <Button type="submit" variant="secondary" :disabled="adding" data-passkey-add>{{ adding ? 'Waiting for your device…' : 'Add a passkey' }}</Button>
+                    </ScriptForm>
                     <Alert v-if="addFailed" variant="danger" live="alert" data-passkey-add-failed>No passkey was added. Try again, or check that your device supports passkeys.</Alert>
                 </div>
             </Section>

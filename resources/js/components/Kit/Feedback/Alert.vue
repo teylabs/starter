@@ -21,6 +21,9 @@ import {
  *
  * Alignment: the icon and the dismiss button each sit in a box one text line tall (`h-5`, text-sm's line height), centred in it, on an `items-start` row, so both
  * line up with the first line of text however many lines follow and whatever padding the host gives the alert. The title, body and actions share the text column.
+ *
+ * `actionsPlacement`: `below` (default) puts the actions under the body; `inline` puts them, from sm up, on the right of the title and body, vertically centred
+ * beside them, and below them on a phone. Opt in for a short alert with one or two actions, such as a lock notice with Reopen.
  */
 const props = withDefaults(
     defineProps<{
@@ -34,6 +37,7 @@ const props = withDefaults(
             url: string;
             method?: 'post' | 'put' | 'patch' | 'delete';
         } | null;
+        actionsPlacement?: 'below' | 'inline';
     }>(),
     {
         variant: 'info',
@@ -42,6 +46,7 @@ const props = withDefaults(
         live: 'none',
         dismissible: false,
         dismiss: null,
+        actionsPlacement: 'below',
     },
 );
 
@@ -72,6 +77,9 @@ onMounted(async () => {
     filled.value = true;
 });
 const canDismiss = computed(() => props.dismissible && props.dismiss !== null);
+const inline = computed(
+    () => props.actionsPlacement === 'inline' && filled.value,
+);
 const dismissName = computed(() => `Dismiss ${props.title ?? props.variant}`);
 
 function dismissed() {
@@ -113,7 +121,7 @@ function dismissed() {
                 :class="alertIconClass(variant, tier)"
                 aria-hidden="true"
         /></span>
-        <div class="min-w-0 flex-1 space-y-1">
+        <div v-if="!inline" class="min-w-0 flex-1 space-y-1">
             <template v-if="filled">
                 <p v-if="title" class="font-semibold" data-slot="alert-title">
                     {{ title }}
@@ -127,6 +135,25 @@ function dismissed() {
                     <slot name="actions" />
                 </div>
             </template>
+        </div>
+        <div
+            v-else
+            class="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
+            data-actions-placement="inline"
+        >
+            <div class="min-w-0 flex-1 space-y-1">
+                <p v-if="title" class="font-semibold" data-slot="alert-title">
+                    {{ title }}
+                </p>
+                <div data-slot="alert-body"><slot /></div>
+            </div>
+            <div
+                v-if="$slots.actions"
+                class="flex shrink-0 flex-wrap items-center gap-3 font-medium"
+                data-slot="alert-actions"
+            >
+                <slot name="actions" />
+            </div>
         </div>
         <!-- The 44px target overhangs its one-line box evenly, so the × stays centred on the first line and reaches the alert's right edge. -->
         <span v-if="canDismiss" class="-mr-4 flex h-5 shrink-0 items-center">

@@ -408,6 +408,9 @@ const showToolbar = computed(
         <div
             v-else
             :class="[
+                // relative: the card and its scroll box clip what they hold, so the row actions' absolutely positioned sr-only text
+                // (a disabled action's reason, the menu label) stays inside them instead of adding blank scroll past the page on a phone.
+                'relative',
                 surface
                     ? '-mx-4 -mb-4 overflow-hidden border-t first:-mt-4 first:border-t-0'
                     : onCard
@@ -418,7 +421,7 @@ const showToolbar = computed(
             data-table-card
         >
             <div
-                class="overflow-x-auto"
+                class="relative overflow-x-auto"
                 :class="stickyHeader ? 'max-h-[70svh] overflow-y-auto' : ''"
             >
                 <table

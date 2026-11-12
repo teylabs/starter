@@ -91,7 +91,7 @@ provideCard();
             <slot />
         </div>
         <div
-            v-if="lock.locked"
+            v-if="lock.shown"
             :id="lock.id"
             class="text-muted-foreground border-t px-4 py-3 text-sm sm:px-6"
             data-form-notice
