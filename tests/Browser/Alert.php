@@ -21,7 +21,10 @@ it('shows the account notice as a polite, readable, undismissable alert', functi
         expect(app(Kernel::class)->call('starter:first-owner', ['--no-interaction' => true]))->toBe(0);
         Route::middleware('web')->get('/_flash-notice', fn () => redirect('/me/password')->with('account_notice', 'Your password was changed.'));
 
-        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
+        // The dashboard's people list loads after the page (a partial reload). Leaving before it lands lets that request reach the session after the
+        // notice is flashed and spend it, so the notice page renders without it: wait for the list first.
+        $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/')
+            ->assertSeeIn('[data-widget="kit.people"] [data-scroll-list="dashboard_people"]', 'Local owner');
         $page->navigate('/_flash-notice')->assertPathIs('/me/password')
             ->assertPresent('[data-account-notice][data-slot="alert"][data-variant="info"][data-tier="pale"][role="status"]')
             ->assertSeeIn('[data-account-notice]', 'Your password was changed.')
