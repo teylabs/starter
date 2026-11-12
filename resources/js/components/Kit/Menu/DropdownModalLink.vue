@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { ModalLink } from '@inertiaui/modal-vue';
+import {
+    provideMenuItemClass,
+    useMenuItemClass,
+} from '@/components/Kit/Action/menuItemClass';
 import DropdownItem from '@/components/Kit/Menu/DropdownItem.vue';
+import { cn } from '@/components/Kit/utils';
 
 // A menu entry that opens a route modal (DropdownModalLink.md): the menu closes first, then the modal opens from the link.
 defineProps<{ href: string }>();
+// A ButtonGroup's `itemClass` goes on the ModalLink, merged last, and the DropdownItem below gets none, so the row is not padded twice.
+const itemClass = useMenuItemClass();
+provideMenuItemClass(() => undefined);
+const linkClass = () =>
+    cn(
+        'text-popover-foreground block w-full px-4 py-2 text-left text-sm/5 outline-hidden',
+        itemClass(),
+    );
 </script>
 <template>
     <DropdownItem>
         <template #wrapper="{ close }">
             <ModalLink
                 :before-open="close"
-                class="text-popover-foreground block w-full px-4 py-2 text-left text-sm/5 outline-hidden"
+                :class="linkClass()"
                 :href="href"
                 tabindex="-1"
             >

@@ -29,9 +29,10 @@ test('session dashboard', function () {
     ]);
 
     // The owner sees the kit's three widgets in order (then the notes card, once the app adopted notes), with this workspace's activity and no event details.
+    // Kit 0.16 adds the workspace setup card, always last, for those who can change settings while a workspace step is open (the timezone here).
     $signIn(1);
     $owner = $this->get('/@alpha', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Dashboard/Page');
-    expect(array_column($owner->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.activity', 'kit.people', ...(notesAdopted() ? ['notes.recent'] : [])]);
+    expect(array_column($owner->json('props.widgets'), 'key'))->toBe(['kit.you', 'kit.activity', 'kit.people', ...(notesAdopted() ? ['notes.recent'] : []), 'kit.setup']);
     $owner->assertJsonPath('props.widgets.0.person.name', 'Alpha')->assertJsonPath('props.widgets.0.person.role', 'Owner')
         ->assertJsonPath('props.widgets.1.items.0.headline.html', '<strong>Alpha</strong> · Workspace settings updated')->assertJsonCount(1, 'props.widgets.1.items')
         ->assertJsonPath('props.widgets.2.list', 'dashboard_people')->assertJsonMissingPath('props.dashboard_people');
@@ -41,7 +42,7 @@ test('session dashboard', function () {
     $people = $this->get('/@alpha', [...$inertia, 'X-Inertia-Partial-Component' => 'Workspace/Dashboard/Page', 'X-Inertia-Partial-Data' => 'dashboard_people'])->assertOk();
     expect(array_column($people->json('props.dashboard_people.data'), 'title'))->toBe(['Alpha', 'Viewer']);
 
-    // A viewer does not see the activity widget, which needs members.manage; another workspace's dashboard is not theirs.
+    // A viewer does not see the activity widget, which needs members.manage, nor the setup card; another workspace's dashboard is not theirs.
     $this->postJson('/logout')->assertNoContent();
     $signIn(3);
     $viewer = $this->get('/@alpha', $inertia)->assertOk();

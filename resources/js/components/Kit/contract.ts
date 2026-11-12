@@ -20,6 +20,7 @@ export interface InputProps {
  * An inline message in the page's content (slots: default body, `actions`). `variant`: info (default), success, warning, danger, primary, brand, muted; `tier`: pale (default) or
  * solid; `title` is one short line; `icon` is on by default (by variant), `false` hides it. `live`: none (default, already on the page at load), status (polite, appears after
  * something the person did) or alert (assertive, blocks them; sparingly). `dismiss` is a server descriptor and `dismissible` shows the close button: only for what can be ignored.
+ * `actionsPlacement`: below (default, under the body) or inline (from sm up, on the right, vertically centred beside the title and body; below them on a phone).
  */
 export interface AlertProps {
     variant?:
@@ -39,6 +40,7 @@ export interface AlertProps {
         url: string;
         method?: 'post' | 'put' | 'patch' | 'delete';
     } | null;
+    actionsPlacement?: 'below' | 'inline';
 }
 
 /**
@@ -65,6 +67,14 @@ export interface StageNoticeProps {
 export interface BadgeProps {
     tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
     size?: 'sm' | 'md';
+}
+/** A button that copies `value`: success is spoken only after the clipboard write resolves; a refusal shows the value read-only to copy by hand. `label` names it; `icon` is a small icon button named by `label`; `copiedLabel` replaces the label while copied. */
+export interface CopyButtonProps {
+    value: string;
+    label?: string;
+    copiedLabel?: string;
+    icon?: boolean;
+    variant?: 'secondary' | 'ghost';
 }
 export interface PlaceholderProps {
     description: string;
@@ -369,6 +379,9 @@ export interface FormLinkProps {
     as?: string | object;
     disabled?: boolean;
 }
+export interface ScriptFormProps {
+    busy?: boolean;
+}
 export interface FormStatusProps {
     message?: string | null;
     flashKey?: string;
@@ -393,13 +406,14 @@ export interface FormFieldsetProps {
 /**
  * A form someone may read but not change: locked when `save`, the page's save descriptor, is `null` (the server decides). Every kit control inside turns read-only (never disabled), kit edit
  * actions and `intent: 'edit'` descriptors are hidden, each FormCard shows the notice in place of FormActions and nothing submits. `quantity` picks the plural (default) or singular notice,
- * `notice` replaces it, `reason` adds a muted line. Slot props `{ locked }`. `EditOnly` (no props) renders its slot only while editable; `useLocked()` returns `{ locked, notice, reason }`.
+ * `notice` replaces it, `reason` adds a muted line. `hideLockFooter` hides that notice (for a page that already shows a lock alert); the area stays locked. Slot props `{ locked }`. `EditOnly` (no props) renders its slot only while editable; `useLocked()` returns `{ locked, notice, reason }`.
  */
 export interface LockedFormProps {
     save: object | null;
     quantity?: 'many' | 'one';
     notice?: string;
     reason?: string | null;
+    hideLockFooter?: boolean;
 }
 export type EditOnlyProps = Record<string, never>;
 
@@ -479,9 +493,15 @@ export interface PageSectionProps {
     surface?: 'card' | 'none';
 }
 
-/** Page columns: 12 from `md`, stacked below it. `preset` sizes the cells: `main-aside` (8 and 4), `halves` (6 each), `thirds` (4 each); otherwise each cell spans 12 or its PageGridItem `span`. */
+/** A page's aside column: its sections sit `gap-6` apart. From `md` it sticks below the shell header while it fits the viewport, and scrolls with the page when taller; `sticky: false` never sticks. `label` names the landmark. */
+export interface PageAsideProps {
+    label: string;
+    sticky?: boolean;
+}
+
+/** Page columns: 12 from `md`, stacked below it. `preset` sizes the cells: `main-aside` (8 and 4), `main-aside-wide` (7 and 5), `halves` (6 each), `thirds` (4 each); otherwise each cell spans 12 or its PageGridItem `span`. */
 export interface PageGridProps {
-    preset?: 'main-aside' | 'halves' | 'thirds';
+    preset?: 'main-aside' | 'main-aside-wide' | 'halves' | 'thirds';
 }
 
 /** One PageGrid cell: `span` (1 to 12) columns from `md`, overriding the grid's preset; the full width below `md`. `as` / `asChild` as Reka's Primitive. */
@@ -808,7 +828,7 @@ export interface SearchBoxProps {
 /**
  * Server action descriptors as button groups: declared `group`/`menu` (layoutActions: menu-bearing groups last), else the placement rule (placeActions). Dialog intent opens the
  * route modal, document intent a new tab, ordinary GETs navigate; other actions are emitted (`@action`) for the host to run. `busy` blocks all but a standalone document link;
- * `dialogOpen` holds menu focus for the host's dialog; `primary` fills each group's leading segment. When the full layout does not fit
+ * `dialogOpen` holds menu focus for the host's dialog; `primary` fills each group's leading segment on a pill surface and makes it semibold on the outline; `filled` (opt-in) fills it there too. When the full layout does not fit
  * the bar's own width (a ResizeObserver on its root, never the viewport), it compacts to the main action and a ⌄ menu (fitActions).
  */
 export interface ActionBarProps {
@@ -816,11 +836,29 @@ export interface ActionBarProps {
     busy?: boolean;
     dialogOpen?: boolean;
     primary?: boolean;
+    /** Opt-in: the leading segment takes the primary fill on the outline (ButtonGroup) path too, not only semibold. Implies `primary`. */
+    filled?: boolean;
+    /** Opt-in, for a phone header: never compacts into a More menu; every action stays visible and the bar wraps onto rows. */
+    wrap?: boolean;
+    /** Opt-in, on a pill surface: the whole group is one primary-filled pill (py-2, first segment pl-3.5, the rest px-3). No effect elsewhere. */
+    fillAll?: boolean;
+    /** With `fillAll`: the host's classes for the divider between segments (its colour, say), in place of the default outline token (the primary text at 20%), or `border-r-0` to drop it. No effect elsewhere. */
+    dividerClass?: string;
+    /** The host's classes, added last to the ⌄ menu trigger, in the full and compact layouts: the fillAll segment on a pill, ButtonGroup's trigger elsewhere (its padding, `[&>svg]:size-5` for the chevron, a ring, `-ml-px rounded-l-none`). Not on a plain (non-fillAll) pill. */
+    triggerClass?: string;
+    /** A menu-only group's trigger text (no inline segment, ButtonGroup path): unset is 'Actions', a string replaces it, null leaves the ⌄ alone, still named "More actions" (ButtonGroup's menuLabel). */
+    menuTriggerLabel?: string | null;
+    /** The host's own classes for each menu row (its row height, say), added after the row's own; destructive and disabled still apply. */
+    itemClass?: string;
 }
 /** ButtonGroup (ButtonGroup.md): raw `button`/`a`/`Link` children in the default slot, styled by the group; menu entries in `menu`; `label` names the trigger; `offset` is [skid, gap]. */
 export interface ButtonGroupProps {
     label?: string | null;
     offset?: [number, number];
+    /** The host's own classes for each row in `menu`, added after the row's own; destructive and disabled still apply. */
+    itemClass?: string;
+    /** The host's classes, added last to the menu trigger. */
+    triggerClass?: string;
 }
 
 /**
@@ -962,6 +1000,8 @@ export interface BulkDropProps {
     handleDrops?: boolean;
     prompt?: string;
     hint?: string;
+    /** Show the size limit as the hint when no `hint` is given (default true). */
+    showLimit?: boolean;
     disabled?: boolean;
     compact?: boolean;
     busy?: string;

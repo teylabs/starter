@@ -14,6 +14,7 @@ import WorkbenchZoom from './WorkbenchZoom.vue';
  * actions as kit action descriptors through HeaderActions (the page header's split, headerSplit: three or fewer with no `priority` stay ActionBar's, the first
  * filled, as before; more fold into a primary, two secondaries and More, only the primary below `sm`), so `Toast::success(...)->from('publish')` finds its trigger. Actions it does not navigate to are emitted. `save-status="none"`
  * leaves the save state and the conflict to the app (its own form bar's status in #actions): no kit status region renders, and `wb.saveState` is still there to read.
+ * `conflict-alert` false drops only the conflict alert, for a page that renders its own (a Compare / Keep my edits flow); the status still reads "Changed elsewhere".
  * A Workbench with `:form` puts its errors summary in #summary and its Save in #save, last, as the bar's primary; `primary` false then keeps the app's actions secondary.
  */
 const props = withDefaults(
@@ -24,12 +25,14 @@ const props = withDefaults(
         label?: string;
         inspectorLabel: string;
         conflictLabel?: string;
+        conflictAlert?: boolean;
         saveStatus?: 'kit' | 'none';
         pinned?: boolean;
         primary?: boolean;
     }>(),
     {
         primary: true,
+        conflictAlert: true,
         saveStatus: 'kit',
         pinned: false,
         actions: () => [],
@@ -74,7 +77,11 @@ const covered = computed(() => modals.stack.value.length > 0);
             {{ status }}
         </p>
         <p
-            v-if="saveStatus === 'kit' && wb.saveState === 'conflict'"
+            v-if="
+                saveStatus === 'kit' &&
+                conflictAlert &&
+                wb.saveState === 'conflict'
+            "
             role="alert"
             class="text-destructive-text min-w-0 text-sm font-medium"
             data-workbench-conflict

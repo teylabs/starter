@@ -17,29 +17,34 @@ import { usePendingWork } from './pendingWork';
  * The one dropzone (BulkDrop.md §9): a dashed, focusable surface that takes files by drop, paste (focus it and paste) or a native browse button, into a visually
  * hidden native file input that stays the form's value. It starts no upload: it emits `files` and the host sends them. `compact` is the overlay-only form for a
  * host that draws its own tile; the host then supplies the labelled picker. `handleDrops` makes this control consume drops; otherwise the host owns them.
- * `busy` only changes the look; `disabled` blocks attaching and removing. `hasFiles` and `empty` are accepted and not yet rendered.
+ * `busy` only changes the look; `disabled` blocks attaching and removing, and shows as a muted, not-allowed surface with aria-disabled and the input
+ * disabled, its text kept at full contrast (no opacity). `hasFiles` and `empty` are accepted and not yet rendered.
  * `direct` (request and confirm routes) makes this control upload itself: each file goes straight to the bucket (directUpload.ts) with progress, then
  * `uploaded` carries the confirm routes' results. The input is cleared afterwards, so no bytes are also submitted with the form. An upload in flight is pending
  * work (pendingWork.ts): the leave-page guard asks before leaving until it ends.
  */
-const props = defineProps<{
-    name: string;
-    label: string;
-    accept: string[];
-    maxBytes: number;
-    hasFiles: boolean;
-    empty?: object | null;
-    active?: boolean;
-    multiple?: boolean;
-    maxFiles?: number;
-    handleDrops?: boolean;
-    prompt?: string;
-    hint?: string;
-    disabled?: boolean;
-    compact?: boolean;
-    busy?: string;
-    direct?: DirectRoutes;
-}>();
+const props = withDefaults(
+    defineProps<{
+        name: string;
+        label: string;
+        accept: string[];
+        maxBytes: number;
+        hasFiles: boolean;
+        empty?: object | null;
+        active?: boolean;
+        multiple?: boolean;
+        maxFiles?: number;
+        handleDrops?: boolean;
+        prompt?: string;
+        hint?: string;
+        showLimit?: boolean;
+        disabled?: boolean;
+        compact?: boolean;
+        busy?: string;
+        direct?: DirectRoutes;
+    }>(),
+    { showLimit: true },
+);
 const emit = defineEmits<{
     files: [files: File[]];
     uploaded: [results: unknown[]];
@@ -55,7 +60,9 @@ const input = ref<HTMLInputElement>();
 const dragging = ref(0);
 const error = ref('');
 const filename = ref('');
-const hintText = () => props.hint ?? sizeHint(props.maxBytes);
+// `showLimit: false` drops the size line when no `hint` is given; an empty hint renders nothing.
+const hintText = () =>
+    props.hint ?? (props.showLimit ? sizeHint(props.maxBytes) : '');
 function clear() {
     error.value = '';
     filename.value = '';
@@ -173,15 +180,17 @@ function over(event: DragEvent) {
                       'focus-visible:outline-ring grid gap-2 rounded-lg border-2 border-dashed px-4 py-5 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
                       dragging > 0
                           ? 'border-ring bg-accent/40'
-                          : 'border-border bg-muted/20',
+                          : disabled
+                            ? 'border-border bg-muted/50 cursor-not-allowed'
+                            : 'border-border bg-muted/20',
                       active && 'ring-ring/50 ring-2',
-                      disabled && 'opacity-60',
                   ]
         "
         :tabindex="compact ? undefined : 0"
         :aria-label="
             compact ? undefined : `Add files to ${label}: drop, paste or browse`
         "
+        :aria-disabled="compact || !disabled ? undefined : 'true'"
         data-dropzone
         :data-dragging="dragging > 0 || undefined"
         @paste="paste"
@@ -206,7 +215,13 @@ function over(event: DragEvent) {
                 class="text-muted-foreground size-6"
                 aria-hidden="true"
             />
-            <p class="text-sm font-medium" data-dropzone-prompt>
+            <p
+                :class="[
+                    'text-sm font-medium',
+                    disabled && !busyText() && 'text-muted-foreground',
+                ]"
+                data-dropzone-prompt
+            >
                 <template v-if="busyText()">{{ busyText() }}</template>
                 <template v-else-if="dragging > 0"
                     >Drop to add to {{ label }}</template
@@ -216,7 +231,7 @@ function over(event: DragEvent) {
                     >Drop, paste or
                     <button
                         type="button"
-                        class="text-primary focus-visible:outline-ring rounded-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        class="text-primary focus-visible:outline-ring disabled:text-muted-foreground rounded-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:no-underline"
                         :disabled="disabled"
                         data-dropzone-browse
                         @click="browse"
@@ -225,7 +240,11 @@ function over(event: DragEvent) {
                     </button></template
                 >
             </p>
-            <p class="text-muted-foreground text-xs" data-dropzone-hint>
+            <p
+                v-if="hintText()"
+                class="text-muted-foreground text-xs"
+                data-dropzone-hint
+            >
                 {{ hintText() }}
             </p>
         </div>

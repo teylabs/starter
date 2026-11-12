@@ -244,7 +244,7 @@ testSend: Tey.Kit.Features.Core.Data.Action | null,
 attachmentUrl: string | null,
 };
 export type DeliveryRecipientView = {
-role: 'to' | 'cc' | 'bcc',
+role: 'to' | 'cc' | 'bcc' | 'copy',
 address: string,
 name: string | null,
 status: 'pending' | 'sent' | 'delivered' | 'bounced' | 'complained',
@@ -465,6 +465,7 @@ mime: string,
 size: number,
 url: string,
 thumb_url: string | null,
+thumb_pending: boolean,
 }[],
 created_at: string,
 updated_at: string,
@@ -494,6 +495,7 @@ readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
 readonly actions: Array<any>,
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
 readonly composer: Tey.Kit.Features.Notes.Data.NoteComposerData | null,
 readonly notes: Tey.Kit.Features.Notes.Data.NoteRecord[],
 };
@@ -512,6 +514,7 @@ readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
 readonly actions: Tey.Kit.Features.Core.Data.Action[],
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
 readonly items: Tey.Kit.Features.Core.Data.ActivityEntryData[],
 };
 export type FailedWidget = {
@@ -525,6 +528,7 @@ readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
 readonly actions: Tey.Kit.Features.Core.Data.Action[],
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
 };
 export type PeopleWidget = {
 readonly title: string,
@@ -537,7 +541,22 @@ readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
 readonly actions: Array<any>,
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
 readonly list: string,
+};
+export type SetupWidget = {
+readonly title: string,
+readonly component: string,
+readonly key: string,
+readonly kind: 'task' | 'feed' | 'status' | 'setup',
+readonly region: 'main' | 'aside',
+readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly state: string,
+readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
+readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
+readonly actions: Tey.Kit.Features.Core.Data.Action[],
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
+readonly checklist: Tey.Kit.Features.Core.Data.ChecklistItem[],
 };
 export type Widget = object;
 export type WidgetEmptyData = {
@@ -548,6 +567,17 @@ action: Tey.Kit.Features.Core.Data.Action | null,
 export type WidgetErrorData = {
 message: string,
 retry: Tey.Kit.Features.Core.Data.Action | null,
+};
+export type WidgetSortData = {
+label: string,
+options: {
+key: string,
+label: string,
+}[],
+current: string,
+url: string,
+method: string,
+reload: string[],
 };
 export type WidgetSpanData = {
 md: number,
@@ -564,6 +594,7 @@ readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
 readonly actions: Array<any>,
+readonly sortBy: Tey.Kit.Features.SessionUi.Dashboard.WidgetSortData | null,
 readonly person: {
 name: string,
 email: string,
@@ -574,7 +605,9 @@ url_2x: string,
 } | null,
 role: string | null,
 workspace: string,
+timezone: string,
 },
+readonly checklist: Tey.Kit.Features.Core.Data.ChecklistItem[],
 };
 }
 export namespace Data {
@@ -588,6 +621,7 @@ logomark_bar: string | null,
 wordmark: string | null,
 wordmark_dark: string | null,
 lockup: boolean,
+lockup_image: string | null,
 },
 user: {
 name: string,
@@ -617,6 +651,7 @@ logomark_bar: string | null,
 wordmark: string | null,
 wordmark_dark: string | null,
 lockup: boolean,
+lockup_image: string | null,
 },
 footer: {
 identity: string,
@@ -871,6 +906,7 @@ readonly sessions_url: string,
 readonly passkeys: {
 options_url: string,
 store_url: string,
+confirm_url: string | null,
 url: string,
 items: {
 id: number,
@@ -909,6 +945,7 @@ readonly next_label: string,
 readonly next_url: string,
 readonly greeting: string,
 readonly welcome: Tey.Kit.Features.SessionUi.Data.WelcomeCardData | null,
+readonly aside: 'narrow' | 'wide',
 readonly widgets: {
 key: string,
 title: string,
@@ -1004,6 +1041,7 @@ logomark_bar: string | null,
 wordmark: string | null,
 wordmark_dark: string | null,
 lockup: boolean,
+lockup_image: string | null,
 },
 workspace: {
 id: number,
@@ -1091,8 +1129,19 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 readonly workspaces: {
 id: number,
 name: string,
+initials: string,
+role: string | null,
+members: number,
+current: boolean,
 leave: Tey.Kit.Features.Core.Data.Action | null,
 }[],
+readonly invitations: {
+workspace: string,
+inviter: string | null,
+message: string | null,
+expires: string | null,
+}[],
+readonly create: Tey.Kit.Features.Core.Data.Action | null,
 };
 }
 }

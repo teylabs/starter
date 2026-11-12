@@ -36,29 +36,115 @@ const asking = ref(false);
 const body = ref<HTMLElement>();
 const root = ref<HTMLElement>();
 // Focus enters the first field (the package's trap would start at the Close button); the trap and the return to the opener stay the package's.
-// Twice: the package's own trap takes focus when the enter animation ends, and that must not leave it on the Close button.
 // `initialFocus="body"` (content with no field to start on, such as a popover's working) focuses the body itself, scrolled to the top, instead of the first field.
-function focusFirst() {
-    if (!body.value) return;
-    if (props.initialFocus === 'body') {
-        body.value.scrollTop = 0;
-        if (document.activeElement !== body.value)
-            body.value.focus({ preventScroll: true });
-        return;
-    }
-    if (!body.value.contains(document.activeElement))
-        body.value
-            .querySelector<HTMLElement>(
-                'input:not([type=hidden]), select, textarea, button',
-            )
-            ?.focus();
+// With neither, focus stays where the package puts it.
+function startTarget(): HTMLElement | null {
+    if (!body.value) return null;
+    if (props.initialFocus === 'body') return body.value;
+    return body.value.querySelector<HTMLElement>(
+        'input:not([type=hidden]), select, textarea, button',
+    );
 }
-// The package renders the role=dialog element and gives it no name, so the panel names it by its title (aria-labelledby is a standard attribute, found by role, not by a package class).
+function focusStart(target: HTMLElement) {
+    if (target === body.value) body.value.scrollTop = 0;
+    if (document.activeElement !== target)
+        target.focus({ preventScroll: true });
+}
+// The package's trap takes focus to its first focusable (the Close button) one frame after its enter animation ends, however long that takes. So the panel
+// focuses its start now and, while the modal opens, moves focus back to the start once if it lands on the trap's pick (the container's first focusable).
+// Nothing else is ever pulled back, and the window is short-lived:
+// - any key or pointer press anywhere ends it at once, removing the document listeners; if the viewer moved focus before the trap fired, only a passive watch
+//   on the entered marker stays, to put their focus back where it was when the trap takes it;
+// - the package marking the panel entered (data-inertiaui-modal-entered="true") ends it once the trap's frame has passed;
+// - with no marker to watch it ends after a second, with one it ends after five whatever happens; closing or unmounting the panel ends it too.
+let stopOpening = () => {};
+function watchOpening() {
+    const found = startTarget();
+    const container = root.value?.closest('dialog, [role="dialog"]');
+    if (!found || !container) return;
+    const start: HTMLElement = found;
+    const trapPick = () =>
+        [
+            ...container.querySelectorAll<HTMLElement>(
+                'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            ),
+        ].find(
+            (el) =>
+                el.tabIndex >= 0 &&
+                !el.matches(':disabled, [type=hidden]') &&
+                el.getClientRects().length > 0,
+        ) ?? null;
+    const entered = root.value?.closest('[data-inertiaui-modal-entered]');
+    const isEntered = () =>
+        entered?.getAttribute('data-inertiaui-modal-entered') === 'true';
+    // After the viewer's input: where their focus was before the trap moved it, restored once.
+    let kept: Element | null = null;
+    const afterTrap = (then: () => void) =>
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => requestAnimationFrame(then)),
+        );
+    const onMarker = () => {
+        if (!isEntered()) return;
+        observer.disconnect();
+        // `kept` is read when the trap's frame has passed, so a press during these frames counts.
+        afterTrap(() => {
+            const now = document.activeElement;
+            if (
+                kept instanceof HTMLElement &&
+                kept.isConnected &&
+                now !== kept &&
+                now === trapPick()
+            )
+                kept.focus({ preventScroll: true });
+            stopOpening();
+        });
+    };
+    const observer = new MutationObserver(onMarker);
+    const removeListeners = () => {
+        document.removeEventListener('keydown', onInput, true);
+        document.removeEventListener('pointerdown', onInput, true);
+        document.removeEventListener('focusin', onFocusIn, true);
+    };
+    function onInput() {
+        removeListeners();
+        // Read after the press has moved focus; with no marker pending there is nothing left to watch.
+        setTimeout(() => {
+            kept = document.activeElement;
+            if (!entered || isEntered()) stopOpening();
+        });
+    }
+    function onFocusIn(event: FocusEvent) {
+        if (event.target === start || event.target !== trapPick()) return;
+        stopOpening();
+        focusStart(start);
+    }
+    const cap = setTimeout(() => stopOpening(), entered ? 5000 : 1000);
+    stopOpening = () => {
+        stopOpening = () => {};
+        observer.disconnect();
+        clearTimeout(cap);
+        removeListeners();
+    };
+    if (entered)
+        observer.observe(entered, {
+            attributes: true,
+            attributeFilter: ['data-inertiaui-modal-entered'],
+        });
+    document.addEventListener('keydown', onInput, true);
+    document.addEventListener('pointerdown', onInput, true);
+    document.addEventListener('focusin', onFocusIn, true);
+    focusStart(start);
+    // A zero-length or reduced-motion enter may have set the marker before the panel looks.
+    onMarker();
+}
+onBeforeUnmount(() => stopOpening());
+// The package renders the dialog element (a native <dialog> by default, or a role=dialog one) and gives it no name, so the panel names it by its title
+// (aria-labelledby is a standard attribute, found by element or role, not by a package class).
 onMounted(() => {
     root.value
-        ?.closest('[role="dialog"]')
+        ?.closest('dialog, [role="dialog"]')
         ?.setAttribute('aria-labelledby', titleId);
-    [60, 400].forEach((delay) => setTimeout(focusFirst, delay));
+    nextTick(watchOpening);
 });
 // The package's panel is a native <dialog> in the top layer: the overlays inside it (this confirmation, menus, selects, popovers) render into that <dialog>
 // rather than <body>, or they would paint under it and take no clicks (layer.ts). Escape in one of those overlays must close only the overlay: the trusted key
@@ -102,6 +188,7 @@ const unsaved = computed(
     () => props.dirty || [...props.checks].some((check) => check()),
 );
 function requestClose() {
+    stopOpening();
     if (unsaved.value) asking.value = true;
     else emit('close');
 }

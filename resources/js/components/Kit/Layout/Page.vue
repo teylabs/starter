@@ -24,7 +24,7 @@ import PageTabs from './PageTabs.vue';
  * Tabs: in the shell, a top-level <Page> draws the page's `layout.navigation` (decided on the server: a module's sibling pages from Registry::modulePage(),
  * or a record's sections its ViewModel sets) as PageTabs at its top, above the heading, the current one marked. It draws none when a nested <Page>, when a
  * frame draws the navigation itself (SettingsFrame's sidebar), when the page renders its own <PageTabs> anywhere inside it (a record frame placing its tabs
- * below its header: that PageTabs claims them, so there is one row), or when the Layout keeps the deprecated SubNav strip (`subNav="strip"`).
+ * below its header: that PageTabs claims them, so there is one row), or when the Layout shows the SubNav strip (`subNav="strip"`).
  * Header actions: `actions` (server descriptors) render through HeaderActions, split by headerSplit into a filled primary, up to two secondaries and a More menu
  * (only the primary below `sm`); three or fewer with no declared `priority` render through ActionBar exactly as the same descriptors in the slot would. A
  * non-navigating action is emitted as `action` when the page listens, else run (confirmation included). The `actions` slot is the escape hatch: whatever it holds
@@ -80,15 +80,22 @@ const shellTrail = inject<Ref<'page' | 'bar'> | null>(
 );
 const nested = inject('kit.page', false);
 provide('kit.page', true);
-// The page's tabs (`layout.navigation`): drawn here unless something inside draws them (a <PageTabs> claims them through the outermost <Page>).
-const claimed = ref(false);
-const outerClaim = inject<(() => void) | null>('kit.page.tabs', null);
+// The page's tabs (`layout.navigation`): drawn here unless something inside draws them (a <PageTabs> claims them through the outermost <Page>). A claim lasts
+// while its PageTabs is mounted: the returned release gives the row back when it unmounts (a `v-if` turned off), so the page never ends up with no tabs.
+const claims = ref(0);
+const claimed = computed(() => claims.value > 0);
+const outerClaim = inject<(() => () => void) | null>('kit.page.tabs', null);
 provide(
     'kit.page.tabs',
     nested && outerClaim
         ? outerClaim
         : () => {
-              claimed.value = true;
+              claims.value++;
+              let held = true;
+              return () => {
+                  if (held) claims.value--;
+                  held = false;
+              };
           },
 );
 // The page's own tabs claim nothing: they render inside this, which hides the claim.

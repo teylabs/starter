@@ -3,7 +3,11 @@ import { http, router, usePage } from '@inertiajs/vue3';
 import { KeyRound, X } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import Button from '@/components/Kit/Form/Button.vue';
+import Field from '@/components/Kit/Form/Field.vue';
+import PasswordInput from '@/components/Kit/Form/PasswordInput.vue';
+import ScriptForm from '@/components/Kit/Form/ScriptForm.vue';
 import {
+    confirmPasskeyPassword,
     passkeyName,
     passkeysSupported,
     registerPasskey,
@@ -12,9 +16,16 @@ import {
 /*
  * "Add a passkey for next time": shown once after an invited sign-up (the shared `passkeyOffer`, session-ui's PasskeyOffer), where the app has Fortify passkeys
  * and the browser can create one. Add runs Fortify's passkey registration; Not now closes the offer for good. Either way it doesn't come back. A failed or
- * cancelled attempt says so and leaves the offer open.
+ * cancelled attempt says so and leaves the offer open. Fortify puts that registration behind its password confirmation by default (`confirm_url`), so the
+ * offer asks for the password and confirms it first, as Security's Add a passkey does: a wrong password is an error on that field, and the browser is not
+ * asked for a passkey. With the confirmation off (a null `confirm_url`) no password is asked for.
  */
-type Offer = { options_url: string; store_url: string; dismiss_url: string };
+type Offer = {
+    options_url: string;
+    store_url: string;
+    confirm_url?: string | null;
+    dismiss_url: string;
+};
 const page = usePage();
 const offer = computed(
     () => (page.props as { passkeyOffer?: Offer | null }).passkeyOffer ?? null,
@@ -25,6 +36,8 @@ onMounted(() => {
 });
 const busy = ref(false);
 const failed = ref(false);
+const password = ref('');
+const passwordError = ref<string | null>(null);
 const shown = computed(() => offer.value !== null && supported.value);
 
 function close(): void {
@@ -38,9 +51,19 @@ async function add(): Promise<void> {
     if (!offer.value || busy.value) return;
     busy.value = true;
     failed.value = false;
+    passwordError.value = null;
     try {
+        const client = http.getClient() as never;
+        if (offer.value.confirm_url) {
+            passwordError.value = await confirmPasskeyPassword(
+                client,
+                offer.value.confirm_url,
+                password.value,
+            );
+            if (passwordError.value) return;
+        }
         await registerPasskey(
-            http.getClient() as never,
+            client,
             offer.value,
             passkeyName(
                 (navigator as { userAgentData?: { platform?: string } })
@@ -58,6 +81,7 @@ async function add(): Promise<void> {
                 },
             }),
         );
+        password.value = '';
         close();
     } catch {
         failed.value = true;
@@ -93,14 +117,29 @@ async function add(): Promise<void> {
             >
                 No passkey was added. You can try again, or skip it for now.
             </p>
-            <div class="mt-3 flex flex-wrap gap-2">
-                <Button
-                    type="button"
-                    :disabled="busy"
-                    data-passkey-add
-                    @click="add"
-                    >{{ busy ? 'Adding…' : 'Add a passkey' }}</Button
-                >
+            <ScriptForm
+                class="mt-3 flex flex-wrap items-end gap-2"
+                data-passkey-offer-form
+                :busy="busy"
+                @submit="add"
+            >
+                <Field
+                    v-if="offer?.confirm_url"
+                    id="passkey-offer-password"
+                    name="password"
+                    label="Your password"
+                    class="min-w-48 flex-1"
+                    :error="passwordError ?? undefined"
+                    ><PasswordInput
+                        id="passkey-offer-password"
+                        v-model="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                /></Field>
+                <Button type="submit" :disabled="busy" data-passkey-add>{{
+                    busy ? 'Adding…' : 'Add a passkey'
+                }}</Button>
                 <Button
                     type="button"
                     variant="secondary"
@@ -109,7 +148,7 @@ async function add(): Promise<void> {
                     @click="close"
                     >Not now</Button
                 >
-            </div>
+            </ScriptForm>
         </div>
         <button
             type="button"

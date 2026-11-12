@@ -346,6 +346,33 @@ function createWorkbench(key: string) {
         markConflict() {
             saveState.value = 'conflict';
         },
+        /**
+         * Keep my edits after a conflict (the person compared and chose theirs): clears the form's conflict (a useSubmitForm's `conflict` through its
+         * `keepMine()`, or each conflict-coded error of a useForm: `stale_write`, `stale_*`, `*conflict*`), keeps its values, and puts the bar back to
+         * Unsaved changes, so Save is enabled and the next save sends these values. Without a conflict it does nothing.
+         */
+        keepMine(
+            form?: {
+                errors?: Record<string, unknown>;
+                clearErrors?: (...fields: string[]) => void;
+                conflict?: boolean;
+                keepMine?: () => void;
+            } | null,
+        ) {
+            if (form) {
+                if (typeof form.keepMine === 'function') form.keepMine();
+                else if (typeof form.clearErrors === 'function') {
+                    const codes = Object.keys(form.errors ?? {}).filter(
+                        (code) => isConflict(null, code),
+                    );
+                    if (codes.length) form.clearErrors(...codes);
+                }
+            }
+            if (saveState.value === 'conflict') {
+                dirty.value = true;
+                saveState.value = 'unsaved';
+            }
+        },
         markFailed() {
             saveState.value = 'error';
         },

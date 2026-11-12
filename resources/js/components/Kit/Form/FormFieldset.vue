@@ -47,7 +47,7 @@ const separators = {
 } as const;
 const owned = useNoticeOwned();
 const lock = useLockedNotice(!owned);
-const notice = computed(() => lock.locked && !owned);
+const notice = computed(() => lock.shown && !owned);
 </script>
 <template>
     <fieldset

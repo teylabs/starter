@@ -3,10 +3,11 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from '@lucide/vue';
 import { UserMenu, WorkspaceSwitcher } from '@kit/shell';
 import { Breadcrumbs, PasskeyOffer, Toaster } from '@kit/ui';
-import { computed, provide, useSlots } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue';
 import GlobalSearch from './Partials/GlobalSearch.vue';
 import PrimaryNav from './Partials/PrimaryNav.vue';
 import FocusShell from './Partials/FocusShell.vue';
+import { useDocumentTitle } from './Partials/documentTitle';
 import type { FocusShellShape } from './Partials/focusShell';
 import ShellDrawer from './Partials/ShellDrawer.vue';
 import SubNav from './Partials/SubNav.vue';
@@ -23,7 +24,7 @@ import Wordmark from './Partials/Wordmark.vue';
  * the host sets it). For a host's own root shell: `toaster` false leaves the toasts to the host's single Toaster, `documentTitle` false leaves the <title> to the
  * pages' own <Head>, and `fill` makes an editor page (a Workbench) the viewport's height with no page scroll: the content area fills what the header leaves, unpadded
  * and overflow hidden, and the page scrolls its own panes. Each defaults to today's behaviour. With no pages to list (no `nav` or `drawer-nav` slot and no navigation) there is no drawer: the account menu stays in the bar at every width. A module's pages reach the page as its `layout.navigation` and its <Page> draws them as PageTabs at the top of the content;
- * `subNav="strip"` (deprecated) keeps the old SubNav strip under the header, from the server's `shell.subNavigation`, and <Page> then draws no tabs.
+ * `subNav="strip"` shows the SubNav strip under the header, from the server's `shell.subNavigation`, and <Page> then draws no tabs.
  */
 const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData | FocusShellShape; widthClass?: string; wordmarkLabel?: string; guestHeader?: boolean; breadcrumbs?: 'page' | 'bar'; subNav?: 'tabs' | 'strip'; toaster?: boolean; documentTitle?: boolean; fill?: boolean }>(), { widthClass: 'max-w-7xl', wordmarkLabel: undefined, guestHeader: false, breadcrumbs: 'bar', subNav: 'tabs', toaster: true, documentTitle: true, fill: false });
 const slots = useSlots();
@@ -34,22 +35,59 @@ const app = computed(() => props.shell as Tey.Kit.Features.Shell.Data.ShellData)
 const drawer = computed(() => !focus.value && Boolean(app.value.user) && (Boolean(slots.nav) || Boolean(slots['drawer-nav']) || (app.value.navigation?.length ?? 0) > 0));
 // The document title comes from the page's `layout` (composed on the server), never set per page.
 const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null; breadcrumbs?: unknown[] }; environment?: { label: string; colour: string } | null }>();
+// The document title is the page's `layout.documentTitle`, written by the shell itself in the same flush as the page (documentTitle.ts: Inertia's debounced
+// <Head> could otherwise land an older page's title after Back). <Head> carries it only on the server, for the first HTML.
+useDocumentTitle(() => (props.documentTitle ? page.props.layout?.documentTitle : undefined));
+const ssr = typeof window === 'undefined';
 // Pages in this shell render their heading (the layout's `title`) and actions inside their <Page>, so it aligns with the content column.
 provide('kit.shell', true);
 // Where the trail is drawn: by each <Page> above its heading (`page`), or here as a full-width bar under the header (`bar`), the current page included.
 provide('kit.shell.breadcrumbs', computed(() => props.breadcrumbs));
-// Where a module's pages show: as <Page>'s tabs (`tabs`, the default), or as the deprecated SubNav strip under the header (`strip`), never both.
+// Where a module's pages show: as <Page>'s tabs (`tabs`, the default), or as the SubNav strip under the header (`strip`), never both.
 provide('kit.shell.subnav', computed(() => props.subNav));
+// The bar's and the trail bar's backdrop blur come from the host's `--shell-bar-blur` and `--shell-subbar-blur`. Even `blur(0px)` gives the bar its own
+// compositing layer, repainted on every scroll frame, so the blur class is applied only when the token resolves to a length other than zero (read off the
+// element itself, and again when the root's class, style or data attributes change, as a theme switch does). Unset, empty or zero: no backdrop-filter at all.
+const bar = ref<HTMLElement | null>(null);
+const subbar = ref<HTMLElement | null>(null);
+const barBlur = ref(false);
+const subbarBlur = ref(false);
+const blurs = (element: HTMLElement | null, token: string): boolean => {
+    if (!element) return false;
+    const value = getComputedStyle(element).getPropertyValue(token).trim();
+    if (value === '') return false;
+    // Resolve the token as a length (a `calc()` or `var()` included) on a hidden probe, so `calc(0px)` counts as zero too.
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;height:0;';
+    probe.style.width = value;
+    element.appendChild(probe);
+    const width = Number.parseFloat(getComputedStyle(probe).width);
+    probe.remove();
+    return !Number.isNaN(width) && width > 0;
+};
+const readBlur = () => {
+    barBlur.value = blurs(bar.value, '--shell-bar-blur');
+    subbarBlur.value = blurs(subbar.value, '--shell-subbar-blur');
+};
+// The trail bar mounts and unmounts with the page, so either element appearing reads again.
+watch([bar, subbar], readBlur, { flush: 'post' });
+let rootObserver: MutationObserver | null = null;
+onMounted(() => {
+    readBlur();
+    rootObserver = new MutationObserver(readBlur);
+    rootObserver.observe(document.documentElement, { attributes: true });
+});
+onBeforeUnmount(() => rootObserver?.disconnect());
 </script>
 <template>
-    <Head v-if="props.documentTitle" :title="page.props.layout?.documentTitle" />
+    <Head v-if="ssr && props.documentTitle" :title="page.props.layout?.documentTitle" />
     <FocusShell v-if="focus" :shell="focus" :toaster="props.toaster"><slot /></FocusShell>
     <div v-else :class="['flex flex-col bg-[var(--shell-ground,var(--color-background))] text-foreground', props.fill ? 'h-svh overflow-hidden' : 'min-h-svh']" :data-shell-fill="props.fill || undefined">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
         <div v-if="app.user || props.guestHeader" class="sticky top-0 z-(--z-header)" data-shell-top>
             <!-- Outside production (the server decides; null there): a 2px edge in the environment's colour, with its name for a screen reader. It takes no space beyond its 2px. -->
             <div v-if="page.props.environment" class="h-0.5 w-full bg-(--kit-environment)" :style="{ '--kit-environment': page.props.environment.colour }" data-environment-edge><span class="sr-only">{{ page.props.environment.label }} environment</span></div>
-            <header class="border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground backdrop-blur-(--shell-bar-blur)" data-shell-bar>
+            <header ref="bar" :class="['border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground', barBlur && 'backdrop-blur-(--shell-bar-blur)']" :data-shell-bar-blur="barBlur || undefined" data-shell-bar>
                 <div :class="['mx-auto flex h-16 min-w-0 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <!-- The product lockup (Partials/Wordmark, shared with the GuestShell); the mark slot replaces its symbol. -->
                     <Wordmark :product="app.product" :label="props.wordmarkLabel"><template v-if="$slots.mark" #default><slot name="mark" /></template></Wordmark>
@@ -67,14 +105,16 @@ provide('kit.shell.subnav', computed(() => props.subNav));
                         <slot name="nav" :navigation="app.navigation" :label="app.workspace?.name ?? app.product.name" />
                     </div>
                     <div v-else class="ml-3 hidden min-w-0 flex-1 items-center lg:flex" data-shell-nav-room>
+                        <!-- The pages' room asks for their width (PrimaryNav sets its flex-basis); search, which shrinks ten thousand times as readily, gives way first. -->
                         <PrimaryNav :navigation="app.navigation" :label="app.workspace?.name ?? app.product.name" />
                     </div>
-                    <!-- The bar slot: one live copy at every width, so its state, focus and listeners survive crossing lg. It may shrink; the controls after it do not. -->
-                    <div v-if="$slots.bar" class="ml-auto flex min-w-0 items-center gap-2" data-shell-bar-slot>
+                    <!-- The bar slot: one live copy at every width, so its state, focus and listeners survive crossing lg. It may shrink; the controls after it do not.
+                         It gives way to the pages down to its minimum (PrimaryNav), and its content narrows inside it rather than spilling (max-w-full two levels down). -->
+                    <div v-if="$slots.bar" class="ml-auto flex min-w-0 items-center gap-2 *:min-w-0 *:max-w-full *:*:max-w-full lg:shrink-[10000] lg:min-w-[var(--shell-bar-gives-floor,0px)]" data-shell-bar-gives data-shell-bar-slot>
                         <slot name="bar" />
                     </div>
                     <!-- Global search: only when the server sends it (the viewer may search this workspace). -->
-                    <div v-if="app.search" :class="['flex min-w-0 items-center', $slots.bar ? '' : 'ml-auto']" data-shell-search>
+                    <div v-if="app.search" :class="['flex min-w-0 items-center *:min-w-0 *:max-w-full *:*:max-w-full lg:shrink-[10000] lg:min-w-[var(--shell-bar-gives-floor,0px)]', $slots.bar ? '' : 'ml-auto']" data-shell-bar-gives data-shell-search>
                         <GlobalSearch :search="app.search" />
                     </div>
                     <div :class="['flex shrink-0 items-center gap-2', $slots.bar || app.search ? '' : 'ml-auto']" data-shell-actions>
@@ -103,13 +143,13 @@ provide('kit.shell.subnav', computed(() => props.subNav));
                 </div>
             </header>
             <!-- The trail as a bar, unless the page has a "Back to <parent>" strip, which replaces the trail. -->
-            <div v-if="props.breadcrumbs === 'bar' && app.user && page.props.layout?.breadcrumbs?.length && !page.props.layout?.navigationHeader" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground backdrop-blur-(--shell-subbar-blur)" data-shell-breadcrumbs>
+            <div v-if="props.breadcrumbs === 'bar' && app.user && page.props.layout?.breadcrumbs?.length && !page.props.layout?.navigationHeader" ref="subbar" :class="['border-b border-shell-subbar-border bg-shell-subbar text-foreground', subbarBlur && 'backdrop-blur-(--shell-subbar-blur)']" :data-shell-subbar-blur="subbarBlur || undefined" data-shell-breadcrumbs>
                 <div :class="['mx-auto flex h-10 min-w-0 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <Breadcrumbs bar />
                 </div>
             </div>
         </div>
-        <!-- Deprecated (`subNav="strip"`): the active module's pages as a strip under the header that scrolls with the page, in the subbar's tones and the content measure. By default <Page> draws them as tabs. -->
+        <!-- `subNav="strip"`: the active module's pages as a strip under the header that scrolls with the page, in the subbar's tones and the content measure. By default <Page> draws them as tabs. -->
         <div v-if="props.subNav === 'strip' && app.user && app.subNavigation?.items.length" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground">
             <div :class="['mx-auto min-w-0 px-4 sm:px-6 lg:px-8', props.widthClass]">
                 <SubNav :label="app.subNavigation.label" :items="app.subNavigation.items" />

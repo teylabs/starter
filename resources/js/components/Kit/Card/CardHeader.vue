@@ -8,7 +8,8 @@ import { CARD_GUTTER, CARD_TONES, type CardTone } from './cardTone';
  * and on the other side `#status` and `#actions` (a ButtonGroup of named actions). `tone` colours it as a band; `unstyled` drops the padding, rule and type so
  * the host's classes rule, with every slot still working. `align` places `#leading`, `#avatar` and the title column against each other: `center` (default)
  * centres them across the title and meta, `start` puts them at the top, and `baseline` lines up text in `#leading` or `#avatar` (an index such as "5.")
- * with the title's first line.
+ * with the title's first line. `actionsAlign` places `#status` and `#actions` against the title column: `center` (default) or `start` (pinned to the top). `stackActions` puts them on
+ * their own line under the title below `sm` (a phone), whatever their width.
  */
 const props = withDefaults(
     defineProps<{
@@ -17,8 +18,18 @@ const props = withDefaults(
         tone?: CardTone | null;
         unstyled?: boolean;
         align?: 'center' | 'start' | 'baseline';
+        actionsAlign?: 'center' | 'start';
+        stackActions?: boolean;
     }>(),
-    { title: null, level: 3, tone: null, unstyled: false, align: 'center' },
+    {
+        title: null,
+        level: 3,
+        tone: null,
+        unstyled: false,
+        align: 'center',
+        actionsAlign: 'center',
+        stackActions: false,
+    },
 );
 const heading = computed(() => `h${props.level}`);
 // Whole class strings, never built from the prop (Tailwind finds classes by scanning the source).
@@ -35,7 +46,10 @@ const aligns = {
         :data-tone="tone ?? undefined"
     >
         <div
-            class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2"
+            :class="[
+                'flex min-w-0 flex-wrap justify-between gap-x-3 gap-y-2',
+                actionsAlign === 'start' ? 'items-start' : 'items-center',
+            ]"
         >
             <div :class="['flex min-w-0 gap-x-3', aligns[align]]">
                 <slot name="leading" />
@@ -64,7 +78,10 @@ const aligns = {
             </div>
             <div
                 v-if="$slots.status || $slots.actions"
-                class="flex min-w-0 flex-wrap items-center justify-end gap-3"
+                :class="[
+                    'flex min-w-0 flex-wrap items-center justify-end gap-3',
+                    stackActions && 'max-sm:basis-full max-sm:justify-start',
+                ]"
             >
                 <slot name="status" />
                 <slot name="actions" />

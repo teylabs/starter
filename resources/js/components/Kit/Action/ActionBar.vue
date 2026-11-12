@@ -32,10 +32,12 @@ import { useLocked } from '@/components/Kit/Form/useLocked';
  * the host to run (confirmation included). A host that does not listen to `action` lets the bar run it: its `confirm` first (a typed one when it has `typed`, sent
  * as `confirmation` for the server to re-check), then an Inertia visit. Nothing here checks a permission. `busy` blocks all but a standalone document link; `dialogOpen` holds menu focus for the
  * dialog the host opens (pill surface). On an inverse pill surface (FloatingToolbar) it keeps segments of its own instead of ButtonGroup: the pill's tokens do restyle a
- * ButtonGroup (tone), but ButtonGroup has no hook for the ⌄ trigger's name, the focus hold or the pill's radius and 36px height, and has no filled segment. When its full
+ * ButtonGroup (tone), but ButtonGroup has no hook for the ⌄ trigger's name, the focus hold or the pill's radius and 36px height, and has no filled segment of its own: `filled` fills the leading segment there (opt-in; `primary` alone keeps it semibold on the outline). When its full
  * layout does not fit its own width (a ResizeObserver on its root, never the viewport or a media query: a Workbench's actions bar is narrow at any viewport) the bar
  * keeps one row: the main action and a ⌄ menu with every other action, in order (fitActions). The full layout stays laid out, invisible and inert, so its natural
- * width is still measured and the bar returns to it when there is room. Inside a locked LockedForm (the LockedForm spec) an `intent: 'edit'` descriptor is hidden; the server should not send it, this covers one that slips through.
+ * width is still measured and the bar returns to it when there is room. `wrap` (opt-in, for a phone header) never compacts: nothing goes behind a More menu, every action
+ * (each its own button without declared groups; declared groups and their `menu` kept) stays visible and the row wraps onto as many rows as it needs, so there is no
+ * hidden full layout and nothing is measured. Inside a locked LockedForm (the LockedForm spec) an `intent: 'edit'` descriptor is hidden; the server should not send it, this covers one that slips through.
  */
 const props = withDefaults(
     defineProps<{
@@ -43,8 +45,26 @@ const props = withDefaults(
         busy?: boolean;
         dialogOpen?: boolean;
         primary?: boolean;
+        filled?: boolean;
+        fillAll?: boolean;
+        dividerClass?: string;
+        triggerClass?: string;
+        menuTriggerLabel?: string | null;
+        wrap?: boolean;
+        itemClass?: string;
     }>(),
-    { busy: false, dialogOpen: false, primary: false },
+    {
+        busy: false,
+        dialogOpen: false,
+        primary: false,
+        filled: false,
+        fillAll: false,
+        dividerClass: undefined,
+        triggerClass: undefined,
+        menuTriggerLabel: undefined,
+        wrap: false,
+        itemClass: undefined,
+    },
 );
 const emit = defineEmits<{ action: [action: ActionDescriptor] }>();
 const { pending, asking, run, visit, running, isRunning } =
@@ -64,8 +84,18 @@ const parts = computed(
                       inline: [part.action],
                       menu: [] as ActionDescriptor[],
                   },
-        ) ?? [{ key: 'actions', ...placeActions(shown.value) }],
+        ) ??
+        (props.wrap
+            ? shown.value.map((action, index) => ({
+                  key: `wrap-${index}`,
+                  inline: [action],
+                  menu: [] as ActionDescriptor[],
+              }))
+            : [{ key: 'actions', ...placeActions(shown.value) }]),
 );
+// A segment's place for the leading style: its index in its part, except that wrap's one-action parts count across the bar, so only the first is the lead.
+const at = (key: string, index: number) =>
+    key.startsWith('wrap-') ? Number(key.slice(5)) : index;
 const pill = computed(() => surface.value.shape === 'pill');
 const inverse = computed(() => surface.value.tone === 'inverse');
 const ordered = computed(() =>
@@ -88,6 +118,8 @@ const fit = computed(() =>
         wasCompact.value,
     ),
 );
+// The compact layout is on only outside wrap mode.
+const compacted = computed(() => !props.wrap && fit.value.compact);
 watch(
     () => fit.value.compact,
     (value) => {
@@ -123,6 +155,10 @@ function schedule(): void {
 let observer: ResizeObserver | undefined;
 function observe(): void {
     observer?.disconnect();
+    if (props.wrap) {
+        measured.value = null;
+        return;
+    }
     if (typeof ResizeObserver === 'undefined' || !root.value) return;
     observer = new ResizeObserver(schedule);
     observer.observe(root.value);
@@ -130,21 +166,42 @@ function observe(): void {
     measure();
 }
 onMounted(observe);
-watch([root, () => props.actions], observe, { flush: 'post' });
+watch([root, () => props.actions, () => props.wrap], observe, {
+    flush: 'post',
+});
 onBeforeUnmount(() => {
     observer?.disconnect();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
 });
+// `fillAll` (opt-in, pill surface only): the whole group is one primary pill, every segment on it with the primary text, py-2, the first pl-3.5 and the rest
+// px-3; a disabled segment still dims. Its labels keep ButtonGroup's semibold, and its segments ButtonGroup's divider (a right border on all but the last) in
+// the outline token, `border-outline`, with `--kit-outline` set on the group the way the inverse FloatingToolbar sets it (the current colour, here the primary
+// text, at 20%), so it reads on the fill. The divider rule is under :where() (no specificity), so `dividerClass` (fillAll only, put on each
+// segment) overrides any of it: its colour, or `border-r-0` to drop it. `triggerClass` goes last on the ⌄ trigger (the fillAll segment here; on the ButtonGroup path, ButtonGroup's trigger), so it can set the
+// trigger's padding, its chevron (`[&>svg]:size-5`) or a ring; only a plain (non-fillAll) pill's trigger ignores it. fillAll and `dividerClass` need a pill
+// surface and do nothing without one; the default pill padding is unchanged.
+const fillAll = computed(() => pill.value && props.fillAll);
 const group = computed(() => [
     'inline-flex isolate min-w-0 [&>*+*]:-ml-px',
     pill.value
         ? '[&>*:first-child]:rounded-l-full [&>*:last-child]:rounded-r-full'
         : '[&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md',
+    fillAll.value &&
+        'rounded-full bg-primary text-primary-foreground shadow-xs [--kit-outline:color-mix(in_oklab,currentColor_20%,transparent)] [:where(&>*:not(:last-child))]:border-r [:where(&>*:not(:last-child))]:border-solid [:where(&>*:not(:last-child))]:border-outline',
 ]);
-function segment(filled: boolean): string[] {
+function segment(filled: boolean, first = false): string[] {
+    const base =
+        'inline-flex min-w-0 shrink items-center justify-center rounded-none text-sm font-medium whitespace-nowrap no-underline transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50';
+    if (fillAll.value)
+        return [
+            base.replace('font-medium', 'font-semibold'),
+            'bg-transparent py-2 text-primary-foreground hover:bg-primary-foreground/10',
+            first ? 'pr-3 pl-3.5' : 'px-3',
+            props.dividerClass ?? '',
+        ];
     return [
-        'inline-flex min-w-0 shrink items-center justify-center rounded-none text-sm font-medium whitespace-nowrap no-underline transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
+        base,
         pill.value ? 'h-9 px-3.5' : 'h-9 px-3',
         inverse.value
             ? filled
@@ -155,7 +212,21 @@ function segment(filled: boolean): string[] {
               : 'border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50',
     ];
 }
-const filled = (index: number) => props.primary && index === 0;
+const filled = (index: number) =>
+    (props.primary || props.filled) && index === 0;
+// The ButtonGroup path's leading segment: semibold with `primary`; `filled` also gives it the primary fill. Important, so it outranks the group's transparent
+// segment reset; a disabled segment still dims (ButtonGroup's disabled rule).
+const lead = (index: number) =>
+    filled(index) && [
+        'primary-action font-semibold!',
+        props.filled &&
+            'bg-primary! text-primary-foreground! hover:bg-primary/90!',
+    ];
+// A menu-only group's trigger (no inline segment) on the ButtonGroup path: 'Actions' beside the ⌄ unless the host gives `menuTriggerLabel`; null leaves the ⌄
+// alone, named "More actions" for assistive tech (ButtonGroup's menuLabel default).
+const menuOnlyLabel = computed(() =>
+    props.menuTriggerLabel === undefined ? 'Actions' : props.menuTriggerLabel,
+);
 const holdFocus = (event: Event) => {
     if (props.dialogOpen) event.preventDefault();
 };
@@ -166,17 +237,18 @@ const holdFocus = (event: Event) => {
         ref="root"
         class="grid max-w-full min-w-0 overflow-visible!"
         data-action-bar
-        :data-compact="fit.compact || undefined"
+        :data-compact="compacted || undefined"
+        :data-wrap="wrap || undefined"
     >
         <div
             ref="full"
             :class="[
                 'col-start-1 row-start-1 min-w-0',
-                fit.compact &&
+                compacted &&
                     'pointer-events-none invisible h-0 overflow-hidden',
             ]"
-            :aria-hidden="fit.compact || undefined"
-            :inert="fit.compact || undefined"
+            :aria-hidden="compacted || undefined"
+            :inert="compacted || undefined"
             data-action-layout-full
         >
             <Toolbar v-if="pill" class="shrink-0">
@@ -194,14 +266,20 @@ const holdFocus = (event: Event) => {
                         :action="action"
                         :pending="isRunning(action)"
                         :busy="blocked"
-                        :class="segment(filled(index))"
+                        :class="
+                            segment(filled(at(part.key, index)), index === 0)
+                        "
                         @action="run($event)"
                     />
                     <DropdownMenu v-if="part.menu.length">
                         <DropdownMenuTrigger as-child>
                             <button
                                 type="button"
-                                :class="[segment(false), 'px-2.5']"
+                                :class="[
+                                    segment(false, part.inline.length === 0),
+                                    !fillAll && 'px-2.5',
+                                    fillAll && triggerClass,
+                                ]"
                                 :aria-label="
                                     part.inline.length
                                         ? `More actions: ${part.inline[0].label}`
@@ -223,6 +301,7 @@ const holdFocus = (event: Event) => {
                                 :actions="part.menu"
                                 :busy="blocked"
                                 :on-action="run"
+                                :item-class="itemClass"
                             />
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -230,10 +309,12 @@ const holdFocus = (event: Event) => {
             </Toolbar>
             <Toolbar v-else>
                 <ButtonGroup
+                    :item-class="itemClass"
                     v-for="part in parts"
                     weight="semibold"
                     :key="part.key"
-                    :label="part.inline.length ? undefined : 'Actions'"
+                    :label="part.inline.length ? undefined : menuOnlyLabel"
+                    :trigger-class="triggerClass"
                     data-action-group
                     :data-action-layout="part.key"
                 >
@@ -244,9 +325,7 @@ const holdFocus = (event: Event) => {
                             :action="action"
                             :pending="isRunning(action)"
                             :busy="blocked"
-                            :class="
-                                filled(index) && 'primary-action font-semibold!'
-                            "
+                            :class="lead(at(part.key, index))"
                             @action="run($event)"
                         />
                     </template>
@@ -255,13 +334,14 @@ const holdFocus = (event: Event) => {
                             :actions="part.menu"
                             :busy="blocked"
                             :on-action="run"
+                            :item-class="itemClass"
                         />
                     </template>
                 </ButtonGroup>
             </Toolbar>
         </div>
         <div
-            v-if="fit.compact"
+            v-if="compacted"
             class="col-start-1 row-start-1 flex min-w-0 flex-nowrap"
             data-action-layout-compact
         >
@@ -278,14 +358,18 @@ const holdFocus = (event: Event) => {
                     :action="action"
                     :pending="isRunning(action)"
                     :busy="blocked"
-                    :class="segment(filled(index))"
+                    :class="segment(filled(index), index === 0)"
                     @action="run($event)"
                 />
                 <DropdownMenu v-if="compact.menu.length">
                     <DropdownMenuTrigger as-child>
                         <button
                             type="button"
-                            :class="[segment(false), 'px-2.5']"
+                            :class="[
+                                segment(false, compact.inline.length === 0),
+                                !fillAll && 'px-2.5',
+                                fillAll && triggerClass,
+                            ]"
                             :aria-label="
                                 compact.inline.length
                                     ? `More actions: ${compact.inline[0].label}`
@@ -304,11 +388,14 @@ const holdFocus = (event: Event) => {
                             :actions="compact.menu"
                             :busy="blocked"
                             :on-action="run"
+                            :item-class="itemClass"
                         />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
             <ButtonGroup
+                :item-class="itemClass"
+                :trigger-class="triggerClass"
                 v-else
                 weight="semibold"
                 class="shrink-0"
@@ -322,9 +409,7 @@ const holdFocus = (event: Event) => {
                         :action="action"
                         :pending="isRunning(action)"
                         :busy="blocked"
-                        :class="
-                            filled(index) && 'primary-action font-semibold!'
-                        "
+                        :class="lead(index)"
                         @action="run($event)"
                     />
                 </template>
@@ -333,6 +418,7 @@ const holdFocus = (event: Event) => {
                         :actions="compact.menu"
                         :busy="blocked"
                         :on-action="run"
+                        :item-class="itemClass"
                     />
                 </template>
             </ButtonGroup>

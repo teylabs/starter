@@ -1,5 +1,5 @@
 // Where a list of server action descriptors goes: inline or in a menu. Nothing here checks a permission: a forbidden action is absent from the list.
-// `intent` is `dialog`, `document` or `edit` (an action that changes the record; ActionBar hides it inside a locked LockedForm). `checked` (true or false) makes a menu
+// `intent` is `dialog`, `panel` (opened by the host, like a dialog: always a button that emits, never a link), `document` or `edit` (an action that changes the record; ActionBar hides it inside a locked LockedForm). `checked` (true or false) makes a menu
 // row a checkbox item (role="menuitemcheckbox" with aria-checked); choosing it emits the action as any other, and the host flips `checked`. Null or absent: a plain row.
 // `ariaLabel` is the accessible name when the visible label, a verb, needs its record ("Remove Billing").
 export type ActionDescriptor = {
@@ -33,20 +33,23 @@ export type PlaceableAction = {
     destructive?: boolean;
 };
 
-/** Ordinary GET navigation; a dialog-intent GET or an intercepted key is an operation. */
+/** The intents the host opens itself (a dialog, a panel): a GET with one is an operation, rendered as a button, never a link. */
+const HOST_OPENED = ['dialog', 'panel'];
+
+/** Ordinary GET navigation; a dialog- or panel-intent GET or an intercepted key is an operation. */
 export function isNavigation(
     action: PlaceableAction,
     intercept: string[] = [],
 ): boolean {
     return (
         action.method.toLowerCase() === 'get' &&
-        action.intent !== 'dialog' &&
+        !HOST_OPENED.includes(action.intent ?? '') &&
         !intercept.includes(action.key ?? '')
     );
 }
 
 /**
- * Whether an action renders as a link (an Inertia Link, or an <a> for a new tab) rather than a button: a GET that is not a dialog, asks no confirmation, is not
+ * Whether an action renders as a link (an Inertia Link, or an <a> for a new tab) rather than a button: a GET that is not a dialog or panel, asks no confirmation, is not
  * disabled and is not intercepted. A link can be opened in a new tab, copied and is announced as a link; everything else stays a button.
  */
 export function rendersAsLink(
@@ -61,7 +64,7 @@ export function rendersAsLink(
 ): boolean {
     return (
         action.method.toLowerCase() === 'get' &&
-        action.intent !== 'dialog' &&
+        !HOST_OPENED.includes(action.intent ?? '') &&
         !action.confirm &&
         !action.disabled &&
         !intercept.includes(action.key ?? '')
@@ -152,23 +155,45 @@ export function menuItemRole(action: {
         : 'menuitem';
 }
 
-/** The icon name an action shows: its own, else `plus` for a label starting Add, New or Create, else the menu's key fallbacks (`edit`, `payment`). */
+/**
+ * The icon name an action shows: its own, else `plus` for a label starting Add, New or Create, else, in a menu, the common intents by key, then by label:
+ * `edit` pencil, `payment` credit-card, `reopen`/`re-open` lock-open, `cancel`/`decline` x, `merge` merge, `delete`/`remove` trash, `download` download. An explicit `icon` always wins.
+ */
+const menuKeyIcons = new Map<string, string>(
+    Object.entries({
+        edit: 'pencil',
+        payment: 'credit-card',
+        reopen: 'lock-open',
+        're-open': 'lock-open',
+        cancel: 'x',
+        decline: 'x',
+        merge: 'merge',
+        delete: 'trash',
+        remove: 'trash',
+        download: 'download',
+    }),
+);
+const menuLabelIcons: [RegExp, string][] = [
+    [/^Edit\b/i, 'pencil'],
+    [/^Re-?open\b/i, 'lock-open'],
+    [/^(Cancel|Decline)\b/i, 'x'],
+    [/^Merge\b/i, 'merge'],
+    [/^(Delete|Remove)\b/i, 'trash'],
+    [/^Download\b/i, 'download'],
+];
 export function actionIconName(
     action: { label: string; icon?: string | null; key?: string | null },
     menu = false,
 ): string | null {
     if (action.icon) return action.icon;
     if (/^(Add|New|Create)\b/.test(action.label)) return 'plus';
-    if (menu)
-        return (
-            (
-                { edit: 'pencil', payment: 'credit-card' } as Record<
-                    string,
-                    string
-                >
-            )[action.key ?? ''] ?? null
-        );
-    return null;
+    if (!menu) return null;
+    const key = (action.key ?? '').toLowerCase();
+    return (
+        menuKeyIcons.get(key) ??
+        menuLabelIcons.find(([pattern]) => pattern.test(action.label))?.[1] ??
+        null
+    );
 }
 
 /** Whether the label shows the new-tab arrow: an explicit `newTab`, else document intent. It describes the link; it does not change navigation. */

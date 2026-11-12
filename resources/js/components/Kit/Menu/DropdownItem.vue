@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { DropdownMenuItem } from 'reka-ui';
+import { useMenuItemClass } from '@/components/Kit/Action/menuItemClass';
+import { cn } from '@/components/Kit/utils';
 import type { Component } from 'vue';
 import { useMenuItem, useMenuPanel } from '@/components/Kit/Menu/useMenuPanel';
 
@@ -28,11 +30,16 @@ const captionClass = 'block text-xs text-pretty text-muted-foreground';
 const close = () => menu?.close();
 const chosen = () =>
     menu ? menu.afterClose(() => emit('chosen')) : emit('chosen');
+// A ButtonGroup's `itemClass`, merged last onto the inner control (so its padding replaces the control's own, not adds to it); with the `wrapper` slot there is
+// no inner control, so it goes on the row.
+const itemClass = useMenuItemClass();
+const rowControlClass = () => cn(controlClass, itemClass());
 </script>
 <template>
     <DropdownMenuItem
         as="div"
         class="data-highlighted:bg-accent data-highlighted:text-accent-foreground flex items-start outline-hidden transition-colors"
+        :class="$slots.wrapper ? itemClass() : undefined"
         @click.capture="item.onClickCapture"
         @select="item.onSelect"
     >
@@ -41,7 +48,7 @@ const chosen = () =>
                 v-if="as === 'button' && !inertia"
                 v-bind="$attrs"
                 @click="chosen"
-                :class="controlClass"
+                :class="rowControlClass()"
                 tabindex="-1"
                 type="button"
             >
@@ -58,7 +65,7 @@ const chosen = () =>
             <a
                 v-else-if="as === 'a'"
                 v-bind="$attrs"
-                :class="controlClass"
+                :class="rowControlClass()"
                 :href="href"
                 tabindex="-1"
             >
@@ -76,7 +83,7 @@ const chosen = () =>
                 v-else
                 v-bind="$attrs"
                 :as="as ?? 'a'"
-                :class="controlClass"
+                :class="rowControlClass()"
                 :href="href"
                 tabindex="-1"
             >

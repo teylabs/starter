@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ChevronDown } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, nextTick } from 'vue';
+import { mixedIconsWarning } from '@/components/Kit/Action/actionIcons';
+import { provideMenuItemClass } from '@/components/Kit/Action/menuItemClass';
 import MenuPanel from '@/components/Kit/Menu/MenuPanel.vue';
 import MenuTrigger from '@/components/Kit/Menu/MenuTrigger.vue';
 
@@ -8,9 +10,9 @@ import MenuTrigger from '@/components/Kit/Menu/MenuTrigger.vue';
  * A row of related controls joined into one shape (docs/single-actions.md): the default slot holds the buttons (an InertiaAction per named action, or plain
  * controls), and `#menu` the rest behind a chevron trigger, as DropdownAction / DropdownItem entries in the kit's menu. Children are restyled to sit flush: one
  * outline around the segments, a divider between them, no border or radius of their own, so nothing looks nested; the menu trigger is its own outlined
- * segment beside them. Segments are semibold in the outline's text colour and dim on hover. `appearance="text"` drops the outline and
+ * segment beside them. A disabled segment is dimmed, hover included. Segments are semibold in the outline's text colour and dim on hover. `appearance="text"` drops the outline and
  * fill for link-style actions in a quiet header. `label` puts words beside the chevron; `menuLabel` names the trigger for assistive tech ("More actions" by
- * default). `offset` is the menu's [skid, gap] from the trigger. Layout only: it runs nothing itself. Written clean-room on the kit's paper and outline tokens.
+ * default). `triggerClass` is added last to the menu trigger's classes. `offset` is the menu's [skid, gap] from the trigger. Layout only: it runs nothing itself. Written clean-room on the kit's paper and outline tokens.
  */
 const props = withDefaults(
     defineProps<{
@@ -19,6 +21,8 @@ const props = withDefaults(
         appearance?: 'default' | 'text';
         offset?: [number, number];
         weight?: 'medium' | 'semibold';
+        itemClass?: string;
+        triggerClass?: string;
     }>(),
     {
         label: null,
@@ -26,8 +30,12 @@ const props = withDefaults(
         appearance: 'default',
         offset: () => [0, 10],
         weight: 'medium',
+        itemClass: undefined,
+        triggerClass: undefined,
     },
 );
+// `itemClass`: the host's own classes for each row in #menu (its row height, say), added after the row's own; destructive and disabled still apply.
+provideMenuItemClass(() => props.itemClass);
 
 const text = computed(() => props.appearance === 'text');
 // Written out in full so Tailwind sees every class: the segment look (every segment, the menu trigger included, is py-2 with a 20px line and its
@@ -47,10 +55,32 @@ const children = computed(() =>
         ? '[&>*]:inline-flex [&>*]:items-center [&>*]:gap-1 [&>*]:bg-transparent [&>*]:px-2 [&>*]:py-1 [&>*]:text-sm [&>*]:font-medium [&>*]:text-primary [&>*:hover]:underline'
         : '[&>*]:inline-flex [&>*]:h-auto [&>*]:items-center [&>*]:gap-1.5 [&>*]:bg-transparent [&>*]:px-3 [&>*]:py-2 [&>*]:text-sm [&>*]:leading-5 [&>*]:text-outline-foreground [&>*:hover]:opacity-70 [&>*:focus-visible]:z-10',
 );
+// A disabled segment reads as disabled: a `disabled` child, or an `aria-disabled` one that is not the action in flight (ActionSegment keeps a disabled action
+// focusable for its reason), is dimmed and keeps its dimness on hover. Important, so neither the hover dim nor a host's fill on the segment outranks it.
+const disabled =
+    '[&>*:disabled]:cursor-not-allowed! [&>*:disabled]:opacity-50! [&>*[aria-disabled=true]:not([aria-busy=true])]:cursor-not-allowed! [&>*[aria-disabled=true]:not([aria-busy=true])]:opacity-50!';
 // The divider between segments. Not `divide-x`: Tailwind v4 sets its width under `:where()`, so the `[&>*]:border-0` reset above (which strips each
 // child's own border) wins and erases it. A right border on every segment but the last, listed after the reset, outranks it.
 const dividers =
     '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-solid [&>*:not(:last-child)]:border-outline';
+// Dev builds only: when the open menu's rows mix icons and no icons, warn once for this group (mixedIconsWarning). A row's icon is an svg among its own
+// children or its link's. ActionMenuItems rows warn for themselves (their spacer marks them), so they are not counted twice.
+const warnMixed = mixedIconsWarning('ButtonGroup menu');
+function checkIcons(el: unknown): void {
+    if (!import.meta.env?.DEV || !(el instanceof HTMLElement)) return;
+    void nextTick(() => {
+        if (el.querySelector('[data-menu-icon-spacer]')) return;
+        warnMixed(
+            [
+                ...el.querySelectorAll<HTMLElement>(
+                    '[role="menuitem"], [role="menuitemcheckbox"]',
+                ),
+            ].map((row) =>
+                Boolean(row.querySelector(':scope > svg, :scope > * > svg')),
+            ),
+        );
+    });
+}
 </script>
 <template>
     <div
@@ -69,6 +99,7 @@ const dividers =
                 children,
                 !text && dividers,
                 !text && weights[weight],
+                disabled,
             ]"
         >
             <slot />
@@ -94,6 +125,7 @@ const dividers =
                                 !text &&
                                     $slots.default &&
                                     '-ml-px rounded-l-none',
+                                triggerClass,
                             ]"
                             data-button-group-menu
                         >
@@ -117,7 +149,7 @@ const dividers =
                 >
                     <slot name="menuheader" />
                 </div>
-                <div class="py-1"><slot name="menu" /></div>
+                <div :ref="checkIcons" class="py-1"><slot name="menu" /></div>
             </MenuPanel>
         </div>
     </div>

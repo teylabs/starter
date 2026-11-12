@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { DropdownMenuItem } from 'reka-ui';
+import { useMenuItemClass } from '@/components/Kit/Action/menuItemClass';
+import { cn } from '@/components/Kit/utils';
 import type { Component } from 'vue';
 import { useMenuItem } from '@/components/Kit/Menu/useMenuPanel';
 
@@ -16,6 +18,9 @@ withDefaults(
 );
 
 const item = useMenuItem();
+// A ButtonGroup's `itemClass`, merged last onto the inner control, so its padding replaces the control's own rather than adding to it.
+const itemClass = useMenuItemClass();
+const control = (own: string) => cn(own, itemClass());
 </script>
 <template>
     <DropdownMenuItem
@@ -26,7 +31,11 @@ const item = useMenuItem();
     >
         <button
             v-if="as === 'button'"
-            class="text-popover-foreground block w-full px-4 py-2 text-left text-sm/5 outline-hidden"
+            :class="
+                control(
+                    'text-popover-foreground block w-full px-4 py-2 text-left text-sm/5 outline-hidden',
+                )
+            "
             tabindex="-1"
             type="submit"
         >
@@ -34,14 +43,22 @@ const item = useMenuItem();
         </button>
         <a
             v-else-if="as === 'a'"
-            class="text-popover-foreground block px-4 py-2 text-sm/5 outline-hidden"
+            :class="
+                control(
+                    'text-popover-foreground block px-4 py-2 text-sm/5 outline-hidden',
+                )
+            "
             :href="href"
             tabindex="-1"
             ><slot
         /></a>
         <Link
             v-else
-            class="text-popover-foreground block px-4 py-2 text-sm/5 outline-hidden"
+            :class="
+                control(
+                    'text-popover-foreground block px-4 py-2 text-sm/5 outline-hidden',
+                )
+            "
             :href="href"
             tabindex="-1"
             ><slot

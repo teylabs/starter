@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useAttrs, useSlots } from 'vue';
+import { computed, ref, useAttrs, useId, useSlots } from 'vue';
 import { useFieldAria } from './fieldAria';
 import { Check } from '@lucide/vue';
 import { createCommitter } from './radioCommit';
@@ -36,6 +36,8 @@ export type RadioCardOption =
  *
  * Caller attributes land on the radiogroup; its `aria-describedby` joins the Field's ids. `invalid` sets `aria-invalid`, and `required` sets `aria-required` (and,
  * in the default `change` mode, the native radios' own `required`).
+ *
+ * Without `name` (a `v-model`-only group) nothing is submitted: the radios are grouped under a private name and detached from any enclosing form.
  */
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(
@@ -91,7 +93,13 @@ const groupAttrs = computed(() => {
 });
 // Inside a Field: the group is described only by what the field renders (plus any ids the caller gives), and invalid while it has an error.
 const aria = useFieldAria(attrs, () => props.invalid);
-const groupName = computed(() => props.name ?? props.id);
+// Without a `name` the group submits nothing: the native radios still share a private name (so the browser groups them: one tab stop, arrows select), and a
+// `form` attribute naming no element detaches them from any enclosing form, so they never reach its FormData (and its validation skips them).
+const privateName = `kit-radio-${useId()}`;
+const groupName = computed(() => props.name ?? privateName);
+const detachedForm = computed(() =>
+    props.name == null ? `${privateName}-unsubmitted` : undefined,
+);
 const optionId = (index: number) => `${props.id}-option-${index}`;
 const clickMode = computed(() => props.commit === 'click');
 // commit="click": the focused card (the one tab stop), the buttons to move focus between, and the polite announcement of the committed choice.
@@ -194,6 +202,7 @@ const percent = (option: RadioCardOption) =>
                 type="radio"
                 class="sr-only"
                 :name="groupName"
+                :form="detachedForm"
                 :value="option.value"
                 :disabled="disabled || option.disabled"
                 :required="required || undefined"
@@ -295,8 +304,9 @@ const percent = (option: RadioCardOption) =>
         </component>
         <template v-if="clickMode">
             <input
+                v-if="name != null"
                 type="hidden"
-                :name="groupName"
+                :name="name"
                 :value="model ?? ''"
                 data-radio-card-value
             />
