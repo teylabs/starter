@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- **`.agents/setup` for cloud agents.** A fresh checkout gets PHP 8.5, Composer, PostgreSQL (the `root` role and `starter_testing` database that `.env.testing` names) and Node, then `composer setup` and Playwright Chromium. Development tooling only; the app is unchanged.
+
 ### Fixed
 
 - **The mail-sender tests prove where the address comes from.** `tests/MailSenderTest.php` gave its child process `.env.example`'s `MAIL_FROM_ADDRESS`, which equals the kit's default brand sender, so it passed whatever the source. The child now gets an address of its own (`laravel-env@example.test`) and no `KIT_BRAND_*`, and the test asserts that the sender is Laravel's (the template's brand is all placeholders, so the kit leaves it alone) and that the brand's address is the kit's default, not env. A new `tests/BrandTest.php` case asserts that Laravel loads `config/brand.php` as `brand`, and that a sender set there wins over both `KIT_BRAND_MAIL_FROM_ADDRESS` and `MAIL_FROM_ADDRESS` (source `config`). Config is restored in `finally`.
