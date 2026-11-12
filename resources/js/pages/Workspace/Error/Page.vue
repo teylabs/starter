@@ -1,3 +1,4 @@
+<!-- kit: tweaked a guest error page outside the shell shows its title as the h1 (graduate into tey/kit) -->
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { inject } from 'vue';
