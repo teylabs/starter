@@ -73,10 +73,13 @@ npx playwright install --with-deps chromium
 TOP="$(git rev-parse --show-toplevel)"; GIT_DIR_ABS="$(git rev-parse --absolute-git-dir)"
 HOOKS_DIR="$(git config --local --get core.hooksPath || true)"
 case "$HOOKS_DIR" in ''|/*) ;; *) HOOKS_DIR="$TOP/$HOOKS_DIR" ;; esac
-if [ -n "$HOOKS_DIR" ]; then
-    mkdir -p "$HOOKS_DIR"
-    HOOKS_DIR="$(cd "$HOOKS_DIR" && pwd -P)"
-fi
+# Resolve without creating anything: realpath the nearest existing parent, then re-append the missing tail.
+resolve() {
+    local path="$1" tail=""
+    while [ ! -e "$path" ]; do tail="/$(basename "$path")$tail"; path="$(dirname "$path")"; done
+    echo "$(cd "$path" && pwd -P)$tail"
+}
+[ -n "$HOOKS_DIR" ] && HOOKS_DIR="$(resolve "$HOOKS_DIR")"
 case "$HOOKS_DIR" in
     "$(cd "$TOP" && pwd -P)"|"$(cd "$TOP" && pwd -P)"/*|"$(cd "$GIT_DIR_ABS" && pwd -P)"|"$(cd "$GIT_DIR_ABS" && pwd -P)"/*) ;;
     *) HOOKS_DIR="$GIT_DIR_ABS/hooks" ;;

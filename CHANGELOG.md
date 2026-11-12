@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **`.agents/setup` never creates a hooks folder outside the checkout.** A configured `core.hooksPath` is resolved (the nearest existing parent, realpath-ed) and checked before anything is created; one outside the checkout or git dir is left alone. Development tooling only.
+
 ### Added
 
 - **`.agents/setup` strips AI attribution trailers.** It installs a repo-local commit-msg hook that removes Amp-Thread-ID, Co-authored-by for Amp or Claude, Claude-Session and "Generated with" lines. Squash-merging stays the backstop.
