@@ -194,7 +194,7 @@ jobs:
       - name: A throwaway brand in config/brand.php, as an app commits its own
         run: php bin/ci-brand-config.php hello_email=hello@rehearsal.test support_email=support@rehearsal.test privacy_email=privacy@rehearsal.test mail_from_address=updates@rehearsal.test 'legal_name=Rehearsal Ltd' 'postal_address=9 Rehearsal Street, Testville'
       - name: A throwaway production environment from .env.production.example
-        run: php bin/rehearsal-env.php --${{ matrix.keys }} --no-brand-env DB_HOST=127.0.0.1 DB_DATABASE=starter DB_USERNAME=starter DB_PASSWORD=starter QUEUE_CONNECTION=${{ matrix.queue }} > "$RUNNER_TEMP/rehearsal.env"
+        run: php bin/rehearsal-env.php --${{ matrix.keys }} DB_HOST=127.0.0.1 DB_DATABASE=starter DB_USERNAME=starter DB_PASSWORD=starter QUEUE_CONNECTION=${{ matrix.queue }} > "$RUNNER_TEMP/rehearsal.env"
       - name: Migrate as the platform would
         run: |
           cp "$RUNNER_TEMP/rehearsal.env" .env.rehearsal
