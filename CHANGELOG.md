@@ -6,7 +6,7 @@
 
 - **The dashboard and People settings pass axe's WCAG 2.2 AA scan.** `tests/Browser/Accessible.php` calls `assertAccessible` on both. axe flagged `color-contrast` on the search field's `⌘K` hint (`text-muted-foreground` on `bg-muted`, about 4.4:1); the light `--muted-foreground` token in `resources/css/app.css` goes from `hsl(0 0% 45.1%)` to `hsl(0 0% 42%)`, which clears 4.5:1 on `--muted` and darkens muted text everywhere slightly. Dark mode is unchanged and not scanned.
 
-- **An invitation link the route cannot match has an h1.** A guest who opens `/invitations/<token>` with a token the route rejects (one with a dot, say) gets the 404 error page outside the shell, where the Page draws no heading; `Workspace/Error/Page.vue` now shows its title as the h1 when it is not in the shell. An unknown but well-formed token already showed "This link is not valid" as its h1. Both are asserted in `tests/Browser/Accessible.php`.
+- **An invitation link the route cannot match has an h1.** A guest who opens `/invitations/<token>` with a token the route rejects (one with a dot, say) gets the 404 error page outside the shell, where the Page draws no heading; `ShellLayout.vue` now hands the guest card that page's title, so it shows it as the h1 (the kit's `Workspace/Error/Page.vue` is unchanged). An unknown but well-formed token already showed "This link is not valid" as its h1. Both are asserted in `tests/Browser/Accessible.php`.
 
 ### Changed
 
