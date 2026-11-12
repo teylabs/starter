@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- **The dashboard and People settings pass axe's WCAG 2.2 AA scan.** `tests/Browser/Accessible.php` calls `assertAccessible` on both. axe flagged `color-contrast` on the search field's `⌘K` hint (`text-muted-foreground` on `bg-muted`, about 4.4:1); the light `--muted-foreground` token in `resources/css/app.css` goes from `hsl(0 0% 45.1%)` to `hsl(0 0% 42%)`, which clears 4.5:1 on `--muted` and darkens muted text everywhere slightly. Dark mode is unchanged and not scanned.
+
+- **An invitation link the route cannot match has an h1.** A guest who opens `/invitations/<token>` with a token the route rejects (one with a dot, say) gets the 404 error page outside the shell, where the Page draws no heading; `ShellLayout.vue` now hands the guest card that page's title, so it shows it as the h1 (the kit's `Workspace/Error/Page.vue` is unchanged). An unknown but well-formed token already showed "This link is not valid" as its h1. Both are asserted in `tests/Browser/Accessible.php`.
+
 ### Changed
 
 - **tey/kit is upgraded to v0.16.13** (from v0.15.30; constraint `^0.16.13`). `kit:update` applied for every installed lineage; files changed in `core`, `settings`, `shell` and `workspace-ui`, and `access`, `mcp`, `session-ui` and `workspaces` re-recorded with no file changes. No conflicts. The v0.16.0 card rename (`ActionCard` is the panel, `SummaryCard` the header band) needed no starter change: only kit-owned files use the cards, and `kit:status` reports no pre-0.16 card names. `resources/js/types.generated.d.ts` is regenerated (`composer types:generate`) for the kit's new view-model fields. The lock also moves laravel/framework to v13.42.0 with its dependencies. Tests follow the kit's behaviour since 0.15.30: `tests/DashboardTest.php` expects the owner's new **Set up this workspace** card (`kit.setup`, always last; not the viewer's), and `tests/Browser/FirstRun.php` expects the You card's "Finish setting up" checklist in place of the removed welcome card, and a person with no workspace to land on their empty `/me/workspaces` (it no longer redirects; `/no-workspace` is still checked in the FocusShell). `tests/FirstRunTest.php` follows the same changes without a browser: the skipped steps are read from the You card's checklist, `/me/workspaces` renders an empty list instead of redirecting, and self-serve offers no Create a workspace while the app registers no `/me/workspaces/create` route.
