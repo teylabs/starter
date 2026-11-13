@@ -13,6 +13,6 @@ require dirname(__DIR__).'/vendor/autoload.php';
 // Laravel skips the check locally and in unit tests. `/up` is the monitoring check (the kit adds its cheap production checks to it); nothing deploys on it.
 $app = Application::configure(basePath: dirname(__DIR__))->withRouting(web: dirname(__DIR__).'/routes/web.php', commands: dirname(__DIR__).'/routes/console.php', health: '/up')->withMiddleware(fn ($middleware) => $middleware->trustProxies(at: '*')->trustHosts(at: fn () => ['^'.preg_quote((string) parse_url((string) config('app.url'), PHP_URL_HOST)).'$'], subdomains: false)->web(append: [HandleInertiaRequests::class]))->withExceptions()->withProviders([AppServiceProvider::class])->create();
 
-// Never bootstrap a kernel here: public/index.php's HTTP kernel bootstraps for a request, and the console kernel loaded every
-// deferred provider on every web request (~130 ms). Scripts and tests that need a booted app bootstrap it themselves.
+// Never bootstrap a kernel here: public/index.php's HTTP kernel bootstraps for a request. The console kernel here also loaded
+// its deferred providers and console registration on every web request. Scripts and tests that need a booted app bootstrap it themselves.
 return $app;
