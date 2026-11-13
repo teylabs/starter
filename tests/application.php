@@ -5,6 +5,7 @@ use Illuminate\Contracts\Console\Kernel;
 // The app every check and test boots: synthetic environment first, then the real bootstrap.
 require __DIR__.'/environment.php';
 $app = require dirname(__DIR__).'/bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
 // Say once per run which database the tests use, as connected after .env is read.
 if (! defined('STARTER_TEST_DATABASE')) {
     $connection = config('database.connections.'.config('database.default'));
