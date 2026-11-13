@@ -9,7 +9,7 @@ require_once __DIR__.'/Fixtures/RecordsFixture.php';
 function starterAppWithRecords(): Application
 {
     $app = require __DIR__.'/application.php';
-    // The app arrives booted (see bootstrap/app.php), so the fixture registers and boots itself at once.
+    // The app arrives booted (tests/application.php bootstraps it), so the fixture registers and boots itself at once.
     $app->register(RecordsFixtureProvider::class);
 
     return $app;
