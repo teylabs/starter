@@ -36,8 +36,8 @@
         "laravel/pint": "^1.27",
         "laravel/tinker": "^3.0",
         "opis/json-schema": "^2.4",
-        "pestphp/pest": "^5.0",
-        "pestphp/pest-plugin-browser": "^5.1",
+        "pestphp/pest": "^5.3.6",
+        "pestphp/pest-plugin-browser": "~5.1.2",
         "pestphp/pest-plugin-drift": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
         "spatie/laravel-typescript-transformer": "^3.3"
