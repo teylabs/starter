@@ -1,6 +1,6 @@
 # Roadmap
 
-tey/starter is the new-app template for tenant-aware Laravel apps: `laravel new app --using=tey/starter`. It is built on [tey/kit](https://github.com/teylabs/kit), the library that adds the same features to an app you already have (`composer require tey/kit` and `php artisan kit:add <features>`).
+tey/starter is the new-app template for tenant-aware Laravel apps: `laravel new app --using=tey/starter`. It is built on [tey/kit](https://github.com/teylabs/kit), the library that adds the same features to an app you already have (`composer require tey/kit`, list the features in `config/kit.php`'s `features`, and `php artisan kit:scaffold <feature>` writes a feature's pages).
 
 1.0 means a new app gets every kit feature, upgrades with `kit:update` without overwriting your changes, and the template's public API and support policy are documented and frozen.
 
