@@ -21,7 +21,7 @@ require_once __DIR__.'/StorageCase.php';
 pest()->extend(BrowserCase::class)->in('Browser');
 
 // Two groups boot the application differently: with the test-only Records fixture, and with an object-storage bucket in the environment.
-$records = ['Breadcrumbs', 'InertiaTransport', 'PageTitle', 'UrlConvention'];
+$records = ['Breadcrumbs', 'InertiaTransport', 'PageQueryBudget', 'PageTitle', 'UrlConvention'];
 $storage = ['Storage'];
 // These need no application: they stay plain PHPUnit cases.
 $plain = ['AgentsSetupHook', 'Artisan', 'BootstrapNoKernel', 'FeatureGraph', 'MailSender', 'NightwatchConfig', 'TiaGuard'];
