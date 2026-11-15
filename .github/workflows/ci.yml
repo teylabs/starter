@@ -214,6 +214,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # The kit's shared components, kitImports and alertVariants load from vendor/tey/kit (kit 0.18), so the build and the Node tests need it.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+      - run: composer install --no-interaction
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint:check

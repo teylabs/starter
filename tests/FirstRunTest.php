@@ -302,7 +302,7 @@ test('the browsers zone is a validated cookie that refreshes until confirmed', f
     // No write when it has not changed.
     $writes = 0;
     DB::listen(function ($query) use (&$writes): void {
-        if (str_starts_with(strtolower($query->sql), 'insert') && str_contains($query->sql, 'kit_user_state') || str_starts_with(strtolower($query->sql), 'update') && str_contains($query->sql, 'kit_user_state')) {
+        if (str_starts_with(strtolower($query->sql), 'insert') && str_contains($query->sql, 'user_state') || str_starts_with(strtolower($query->sql), 'update') && str_contains($query->sql, 'user_state')) {
             $writes++;
         }
     });
