@@ -53,4 +53,4 @@ it('writes, edits and deletes a note on the wall', function (): void {
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
     }
-})->skip(fn (): bool => ! in_array('notes', config('kit.features'), true), 'Notes is opt-in: this app has not run kit:add notes.');
+})->skip(fn (): bool => ! in_array('notes', config('kit.features'), true), 'Notes is opt-in: this app has not adopted notes (kit.features).');

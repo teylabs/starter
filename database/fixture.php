@@ -109,16 +109,25 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 // The database cache store's tables and the database queue's.
 (require base_path('database/migrations/0001_01_01_000005_create_cache_table.php'))->up();
 (require base_path('database/migrations/0001_01_01_000006_create_jobs_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000500_create_kit_security_events_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php'))->up();
-(require base_path('database/migrations/kit/access/0001_01_02_000301_create_kit_permission_defaults_table.php'))->up();
-(require base_path('database/migrations/kit/access/0001_01_02_000302_create_kit_capability_overrides_table.php'))->up();
-(require base_path('database/migrations/kit/core/0001_01_02_000101_create_kit_meta_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000502_create_kit_user_state_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php'))->up();
-(require base_path('database/migrations/kit/settings/0001_01_02_000403_create_workspace_mail_identities_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000504_create_kit_account_deletions_table.php'))->up();
-(require base_path('database/migrations/kit/session-ui/0001_01_02_000505_add_finished_at_to_kit_account_deletions_table.php'))->up();
+// The kit's migrations load from the package (0.18), with its 0.18 renames of the infrastructure tables and its 0.24 signed-in devices table.
+foreach ([
+    'session-ui/0001_01_02_000500_create_kit_security_events_table.php',
+    'session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php',
+    'access/0001_01_02_000301_create_kit_permission_defaults_table.php',
+    'access/0001_01_02_000302_create_kit_capability_overrides_table.php',
+    'access/2026_11_14_000304_rename_access_tables.php',
+    'core/0001_01_02_000101_create_kit_meta_table.php',
+    'session-ui/0001_01_02_000502_create_kit_user_state_table.php',
+    'session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php',
+    'settings/0001_01_02_000403_create_workspace_mail_identities_table.php',
+    'session-ui/0001_01_02_000504_create_kit_account_deletions_table.php',
+    'session-ui/0001_01_02_000505_add_finished_at_to_kit_account_deletions_table.php',
+    'session-ui/2026_11_14_000506_rename_session_ui_tables.php',
+    'session-ui/2026_11_14_000507_create_signed_in_devices_table.php',
+    'session-ui/2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table.php',
+] as $migration) {
+    (require base_path('vendor/tey/kit/database/migrations/'.$migration))->up();
+}
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
 foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php', 'update_concierge_invitations_with_scope.php'] as $migration) {

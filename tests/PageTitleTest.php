@@ -53,9 +53,10 @@ test('no page has a blank or url title', function () {
     RecordsFixtureProvider::install();
     pageTitleSignIn(1);
     $checked = 0;
+    // The switcher's JSON of each workspace's page (/me/switcher, kit 0.23) is not a page.
     foreach (Route::getRoutes() as $route) {
         $action = $route->getActionName();
-        if (! in_array('GET', $route->methods(), true) || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_starts_with($route->uri(), '.well-known') || str_contains($route->uri(), '{') && ! str_contains($route->uri(), '{workspace}') && ! str_contains($route->uri(), '{record}')) {
+        if (! in_array('GET', $route->methods(), true) || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'SwitcherController') || str_starts_with($route->uri(), '.well-known') || str_contains($route->uri(), '{') && ! str_contains($route->uri(), '{workspace}') && ! str_contains($route->uri(), '{record}')) {
             continue;
         }
         $path = '/'.preg_replace(['#\{workspace\}#', '#\{record\}#'], ['alpha', '1'], str_replace('@{workspace}', '@alpha', $route->uri()));

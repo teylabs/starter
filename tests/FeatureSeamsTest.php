@@ -25,7 +25,7 @@ test('fresh schema equals the released schema', function () {
         $this->markTestSkipped('The released schema fixture is a SQLite dump; on PostgreSQL only the migrations are checked.');
     }
 
-    // A fresh starter has none of the legacy notes tables an earlier kit release made, and no kit_notes either: notes is opt-in (kit:add notes).
+    // A fresh starter has none of the legacy notes tables an earlier kit release made, and no kit_notes either: notes is opt-in (kit.features, kit:scaffold notes).
     expect(DB::getSchemaBuilder()->hasTable('kit_notes'))->toBe(notesAdopted());
     // A fresh install has core's index on audit_events.workspace_id under the workspaces foreign key; the 0.2.1 dump had the key alone.
     $released = featureSeamsReleased(withNotes: false);
@@ -42,7 +42,7 @@ test('databases migrated before the split keep their schema and data', function 
     featureSeamsAssertKeptOnUpgrade([...$paths, 'create_starter_domain_tables']);
 });
 test('a new starter does not adopt notes', function () {
-    // Notes is opt-in: apps add it with `php artisan kit:add notes` (README). The template ships no notes files or installed record.
+    // Notes is opt-in: apps add it with `php artisan kit:scaffold notes`, listed in kit.features (README). The template ships no notes files or installed record.
     expect(config('kit.features'))->not->toContain('notes');
     expect(config('kit.capabilities'))->not->toHaveKey('workspace.notes');
     expect(glob(base_path('database/migrations/kit/notes/*')))->toBe([]);
@@ -52,7 +52,7 @@ test('a new starter does not adopt notes', function () {
 })->skip(fn () => notesAdopted(), 'This app adopted notes.');
 test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
-    // Notes contributes only once adopted (kit:add notes); these pins hold for both.
+    // Notes contributes only once adopted (kit.features, kit:scaffold notes); these pins hold for both.
     $notes = notesAdopted();
     expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ...($notes ? [ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class] : []), ReadDashboard::class, SearchWorkspace::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary'], ...($notes ? [['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']] : [])]);
@@ -115,8 +115,9 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
             expect($ran)->toContain($kit);
         }
     }
-    $kit = array_map(fn (string $path): string => basename($path, '.php'), glob(base_path('database/migrations/kit/*/*.php')));
-    expect($kit)->toHaveCount(notesAdopted() ? 33 : 32);
+    // Since kit 0.18 each adopted feature's migrations load from the package: the 32 baselines, the three 0.18 renames and 0.24's two signed-in device migrations.
+    $kit = array_map(fn (string $path): string => basename($path, '.php'), array_merge(...array_map(fn (string $feature): array => glob(base_path('vendor/tey/kit/database/migrations/'.$feature.'/*.php')), config('kit.features'))));
+    expect($kit)->toHaveCount(notesAdopted() ? 38 : 37);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -165,7 +166,7 @@ function featureSeamsReleased(bool $withNotes): array
     // What the kit remembers about a person: timezone, onboarding steps and dismissed welcome cards.
     $schema['kit_user_state'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-user-state.json'), true);
 
-    // The kit's notes feature (0.4.9), once an app adopts it (kit:add notes): its own kit_notes and kit_note_intents, beside any legacy notes tables, which it never touches.
+    // The kit's notes feature (0.4.9), once an app adopts it (kit.features, kit:scaffold notes): its own kit_notes and kit_note_intents, beside any legacy notes tables, which it never touches.
     if (notesAdopted()) {
         $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-kit-notes.json'), true)];
     }
@@ -193,6 +194,20 @@ function featureSeamsReleased(bool $withNotes): array
     $schema['workspaces']['columns'][] = ['deleting_at', 'datetime', 0, null, 0];
     $schema['workspaces']['columns'][] = ['deleting_by', 'integer', 0, null, 0];
     sort($schema['workspaces']['indexes']);
+
+    // kit 0.18: the infrastructure tables lose the kit_ prefix (the package's rename migrations), and the foreign keys that name them follow.
+    $renamed = ['kit_user_state' => 'user_state', 'kit_account_deletions' => 'account_deletions', 'kit_entitlements' => 'plan_entitlements', 'kit_permission_defaults' => 'permission_defaults', 'kit_capability_overrides' => 'capability_overrides', 'kit_mcp_intents' => 'mcp_intents', 'kit_mcp_registrations' => 'mcp_registrations', 'kit_mcp_runs' => 'mcp_runs'];
+    foreach ($renamed as $from => $to) {
+        test()->assertArrayHasKey($from, $schema);
+        $schema[$to] = $schema[$from];
+        unset($schema[$from]);
+    }
+    foreach ($schema as $name => $table) {
+        $schema[$name]['foreign_keys'] = array_map(fn (array $key): array => [$key[0], $renamed[$key[1]] ?? $key[1], ...array_slice($key, 2)], $table['foreign_keys']);
+        sort($schema[$name]['foreign_keys']);
+    }
+    // kit 0.24: one row per signed-in session, on every session driver.
+    $schema['signed_in_devices'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-signed-in-devices.json'), true);
     ksort($schema);
 
     return $schema;

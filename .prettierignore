@@ -1,5 +1,4 @@
-# Kit-owned (php artisan kit:list): bin/kit-parity.sh compares these byte for byte with kit:add.
-resources/js/components/Kit/**
+# Kit-scaffolded (kit:scaffold): bin/kit-parity.sh compares these byte for byte with kit:scaffold --diff.
 resources/js/pages/Auth/ConfirmPassword/**
 resources/js/pages/Auth/ForgotPassword/**
 resources/js/pages/Auth/Invitation/**

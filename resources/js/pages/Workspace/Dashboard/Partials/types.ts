@@ -1,3 +1,5 @@
+import type { SeeAll } from '@kit/ui';
+
 // A resolved widget's frame (`Dashboard\Widget`), with whatever typed props its own class adds.
 export type WidgetAction = { label: string; url: string; method: string; key: string | null };
 export type WidgetFrame = {
@@ -16,7 +18,10 @@ export type WidgetFrame = {
     empty: { title: string; description: string; action: WidgetAction | null } | null;
     error: { message: string; retry: WidgetAction | null } | null;
     actions: WidgetAction[];
-    /** The header's Sort by control: the widget's declared orders, the viewer's current one, where a choice is saved and the props it reloads. Null without one. */
-    sortBy?: { label: string; options: { key: string; label: string }[]; current: string; url: string; method: string; reload: string[] } | null;
+    /** The card's one "see all" link (docs/see-all.md): in its footer (the default, for a list) or its header (`placement: 'header'`). Null or absent: none. */
+    seeAll?: SeeAll | null;
+    /** The header's Sort by control: the widget's declared orders, the viewer's current one, where a choice is saved and the props it reloads, and `token`, which
+     * the choice sends back (`X-Kit-Sort`) so the reload merges only this card (docs/dashboard.md). Null without one. */
+    sortBy?: { label: string; options: { key: string; label: string }[]; current: string; url: string; method: string; reload: string[]; token?: string | null } | null;
     [prop: string]: unknown;
 };

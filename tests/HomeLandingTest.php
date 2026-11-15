@@ -42,5 +42,7 @@ test('the workspace list opens a single workspace and lists several in the full 
     AcceptInvitation::run(User::findOrFail(2), $invite->token);
     $this->get('/me/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page')
         ->assertJsonPath('props.shell.user.name', 'Beta')->assertJsonPath('props.shell.product.name', config('app.name'))
-        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.url', '/@alpha');
+        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.slug', 'alpha');
+    // Each workspace's page comes from the switcher's own request (kit 0.23): the shell's choices carry no url.
+    $this->getJson('/me/switcher')->assertOk()->assertJsonPath('workspaces.0.url', '/@alpha');
 });

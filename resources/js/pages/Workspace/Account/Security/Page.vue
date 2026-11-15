@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Form, http, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
-import { Alert, Button, DateTime, Dialog, Field, FormCard, Input, Page, PasswordInput, ScriptForm, Section, confirmPasskeyPassword, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
+import { Alert, Button, CollectionCard, DateTime, Dialog, Field, FormCard, Input, Page, PasswordInput, ScriptForm, Section, confirmPasskeyPassword, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
 
 // Security: passkeys, two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
-// you are signed in on, and your own security log. Turning two-factor off, regenerating the recovery codes and signing out other sessions each ask first.
+// you are signed in on (each but this one signed out on its own, with the password), and your own security log. Turning two-factor off, regenerating the
+// recovery codes, signing out a device and signing out other sessions each ask first.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.SecurityViewModel>();
 
 // Passkeys (`passkeys`, null without Fortify's passkeys feature): add one with the password (confirmed with Fortify first, as its registration requires, then
@@ -29,7 +30,8 @@ async function addPasskey(): Promise<void> {
         }
         await registerPasskey(client, props.passkeys, passkeyName((navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform));
         addPassword.value = '';
-        router.reload({ only: ['passkeys', 'events'] });
+        // `log` too: the security log's card reads its empty or ready state from it, not from `events`.
+        router.reload({ only: ['passkeys', 'events', 'log'] });
     } catch {
         addFailed.value = true;
     } finally {
@@ -127,20 +129,28 @@ async function addPasskey(): Promise<void> {
                 </div>
             </Section>
 
-            <Section title="Signed-in devices" description="Where you are signed in now.">
-                <p v-if="!sessions.supported" class="text-sm text-muted-foreground" data-sessions-unsupported>Signed-in devices can only be listed and ended when sessions are stored in the database. Set SESSION_DRIVER=database to see them here.</p>
+            <Section title="Signed-in devices" description="Where you are signed in now. Sign out a device you don't recognise, or that you no longer use.">
+                <p v-if="!sessions.supported" class="text-sm text-muted-foreground" data-sessions-unsupported>Signed-in devices can't be listed with the array session driver, which is for tests.</p>
                 <template v-else>
                     <ul class="grid divide-y divide-border" data-sessions>
-                        <li v-for="(session, index) in sessions.items" :key="index" class="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
-                            <span class="flex flex-col"><span class="font-medium">{{ session.agent }}<span v-if="session.current" class="font-normal text-muted-foreground"> · this device</span></span><span class="text-muted-foreground">{{ session.ip ?? 'Unknown address' }}</span></span>
-                            <span class="text-muted-foreground"><DateTime :value="session.last_active" /></span>
+                        <li v-for="session in sessions.items" :key="session.id" class="grid gap-3 py-4 text-sm" :data-device="session.id">
+                            <div class="flex flex-wrap items-start justify-between gap-2">
+                                <span class="flex flex-col"><span class="font-medium">{{ session.agent }}<span v-if="session.current" class="font-normal text-muted-foreground" data-this-device> · this device</span></span><span class="text-muted-foreground">{{ session.ip ?? 'Unknown network' }}<template v-if="session.country"> · {{ session.country }}</template> · Signed in <DateTime :value="session.signed_in_at" /></span></span>
+                                <span class="text-muted-foreground">Last active <DateTime :value="session.last_active" /></span>
+                            </div>
+                            <Form v-if="session.url" v-slot="{ submit, processing }" :action="session.url" method="delete" :options="{ preserveScroll: true }" reset-on-success class="flex flex-wrap items-end gap-2" data-device-sign-out>
+                                <Field :id="`device-password-${session.id}`" name="password" label="Your password" class="min-w-48 flex-1"><PasswordInput :id="`device-password-${session.id}`" name="password" required autocomplete="current-password" /></Field>
+                                <Dialog variant="danger" :title="`Sign out ${session.agent}?`" :description="session.remembered ? 'It is signed out straight away. It was remembered, so your other devices will ask you to sign in again next time.' : 'It is signed out straight away. Your other devices stay signed in.'" confirm-label="Sign out device" @confirm="submit()">
+                                    <Button variant="destructive" type="button" :disabled="processing">Sign out</Button>
+                                </Dialog>
+                            </Form>
                         </li>
                     </ul>
                     <Form v-slot="{ submit }" :action="sessions_url" method="delete" :options="{ preserveScroll: true }" reset-on-success>
                         <FormCard title="Sign out other sessions" description="Every other device is signed out. This one stays." submit-label="Sign out other sessions" :cancel="false" :sticky="false">
                             <Field id="sessions-password" name="password" label="Your password" :span="3"><PasswordInput id="sessions-password" name="password" required autocomplete="current-password" /></Field>
                             <template #submit>
-                                <Dialog variant="danger" title="Sign out your other sessions?" description="Every other device is signed out straight away. This one stays." confirm-label="Sign out other sessions" @confirm="submit()">
+                                <Dialog variant="danger" title="Sign out your other sessions?" description="Every other device is signed out straight away, and asked to sign in again next time. This one stays." confirm-label="Sign out other sessions" @confirm="submit()">
                                     <Button variant="destructive" type="button">Sign out other sessions</Button>
                                 </Dialog>
                             </template>
@@ -149,14 +159,13 @@ async function addPasskey(): Promise<void> {
                 </template>
             </Section>
 
-            <Section title="Security log" description="Your recent sign-ins and security changes. Only you can see this.">
-                <p v-if="!events.length" class="text-sm text-muted-foreground">Nothing yet.</p>
-                <ul v-else class="grid divide-y divide-border" data-security-log>
+            <CollectionCard :section="log" :level="2" size="section" data-security-log-card>
+                <ul class="grid divide-y divide-border" data-security-log>
                     <li v-for="(event, index) in events" :key="index" class="flex flex-wrap items-center justify-between gap-2 py-3 text-sm" :data-event="event.type">
                         <span class="flex flex-col"><span class="font-medium">{{ event.label }}</span><span class="text-muted-foreground">{{ event.agent }} · {{ event.ip ?? 'Unknown address' }}</span></span>
                         <span class="text-muted-foreground"><DateTime :value="event.at" /></span>
                     </li>
                 </ul>
-            </Section>
+            </CollectionCard>
     </Page>
 </template>

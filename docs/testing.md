@@ -4,7 +4,7 @@
 
 CI (`.github/workflows/ci.yml`) runs on pull requests (opened, synchronize, reopened and ready for review) and on pushes to `main`. A draft pull request runs the lint and static jobs only; the test jobs wait until it is ready. A newer push cancels an older run of the same pull request, never a run on `main`. Every job has a timeout, and nothing runs with `--bail`.
 
-Pint (`pint.json` excludes `database/migrations/kit`, which must stay byte-identical to `kit:add`):
+Pint:
 
 ```sh
 vendor/bin/pint --test
@@ -46,7 +46,7 @@ composer fixture:check
 
 `TEST_DB_CONNECTION=sqlite` puts a run on SQLite memory instead. It is kept for the released-schema comparison (a SQLite dump) and pure unit tests that touch no database features; nothing else should need it.
 
-Kit parity: `sh bin/kit-parity.sh <clean-app>` runs `kit:install` and `kit:add` of the template's features (`config/kit.php`) on a clean `laravel/laravel` app and fails unless every feature-owned path equals the template's. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files on only one side, still fail.
+Kit parity: `sh bin/kit-parity.sh` runs `kit:scaffold <feature> --diff` of the template's features (`config/kit.php`) from the locked tey/kit and fails unless every file the kit scaffolds equals the template's, writing nothing. A file the template marks as a deliberate tweak is listed as a graduation candidate instead of failing. Put `// kit: tweaked <reason>` (or `<!-- kit: tweaked <reason> -->` in a Vue template) in its first five lines; this follows the house rule: tweak in the app, graduate into the kit once proven. Unmarked differences, and files the template lacks, still fail.
 
 Fresh clone: `composer setup --no-interaction`, the sign-in page returns 200 over HTTP and over HTTPS behind a local TLS-terminating proxy (`bin/tls-proxy.mjs`, with its assets linked over `https://`), then `composer test:browser` (Pest's browser plugin with Playwright Chromium) starts from zero (a local boot with `.env.example`'s local sign-in settings and `starter:first-owner`'s defaults), signs the owner in with Concierge's one-click button, sees their workspace listed in the shell nav and their name only in the user menu, then opens the workspace, saving screenshots to `tests/Browser/Screenshots` (an artifact in CI).
 
@@ -69,7 +69,7 @@ vendor/bin/pest tests/TransportTest.php
 | `TransportTest.php` | Session requests through the HTTP kernel: Fortify login, cookie reuse, foreign tenant refusal, settings retry/stale/audit, CSRF, logout |
 | `InertiaTransportTest.php` | Inertia components and props, navigation, redirects, validation and error outcomes |
 | `McpTransportTest.php` | OAuth consent, code and token exchange, MCP JSON-RPC for settings, scope, origin, expiry and revocation limits |
-| `LifecycleTest.php` | `kit:add` of the template's features through the released tey/kit and Mod in temp checkouts: the written files equal the template's, a no-op rerun, adopting the template's own files by reviewed claim, an edited file refused, the fail-closed operation check, the console command |
+| `LifecycleTest.php` | The released tey/kit, Concierge and Mod and the adopted features; the template's kit files equal `kit:scaffold` of every adopted feature (since kit 0.18 there are no installed records); scaffolding an empty checkout writes them and a second run writes nothing; an edited file is reported by `--diff` and kept until `--force` |
 | `FeatureSeamsTest.php` | The 0.2.1 schema with what the kit has added since, the route seams each route declares, the registry wiring, and databases migrated by 0.2 moving onto the kit migrations with their data |
 | `FeatureGraphTest.php` | The kit library's feature graph, and pages importing only their own folder |
 | `LocalLoginOfferTest.php` | The sign-in page offers Concierge's one-click local sign-in (and it signs in) exactly when `LocalLogin::isAvailable()` says so, and not otherwise |

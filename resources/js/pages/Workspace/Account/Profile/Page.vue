@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Alert, Avatar, Button, Dialog, Field, FileInput, FormActions, FormCard, Input, Page, Section } from '@kit/ui';
+import { Alert, Avatar, Button, Dialog, Field, FileInput, FormActions, FormCard, Input, Page, RadioCardGroup, Section, TimezoneSelect } from '@kit/ui';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 // Your profile: your name and email address (Fortify's update; a changed address stays unconfirmed until its link is followed) and your photo. The photo
-// can be removed in the danger zone, after a confirmation. Initials show wherever there is no photo.
+// can be removed in the danger zone, after a confirmation. Initials show wherever there is no photo. Date & time holds your regional preferences, saved
+// together: the time zone your dates and times show in, then the time format, which decides how times of day show to you, here and in mail: the
+// workspace's (its own setting, else the locale's), or 12- or 24-hour.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.ProfileViewModel>();
+const clock = ref<string>(props.clock);
+watch(() => props.clock, (value) => (clock.value = value));
+const clocks = [
+    { value: 'workspace', label: 'Use workspace setting', description: 'The workspace’s clock, or your language’s own.' },
+    { value: '12h', label: '12-hour', description: '3:30 PM' },
+    { value: '24h', label: '24-hour', description: '15:30' },
+];
 const chosen = ref<File | null>(null);
 const preview = ref<string | null>(null);
 watch(chosen, (file) => {
@@ -28,6 +37,16 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
             </Form>
             <Form v-if="!email_verified" :action="verify_url" method="post" :options="{ preserveScroll: true }">
                 <FormActions submit-label="Send the confirmation link again" busy-label="Sending…" :cancel="false" :sticky="false" :warn-on-leave="false" />
+            </Form>
+            <Form :action="clock_url" method="put" :options="{ preserveScroll: true }" set-defaults-on-success data-clock-form>
+                <FormCard title="Date & time" description="How dates and times show to you, on pages and in email." submit-label="Save date & time">
+                    <Field id="timezone" name="timezone" label="Time zone" :span="4">
+                        <TimezoneSelect id="timezone" name="timezone" :model-value="timezone" />
+                    </Field>
+                    <Field id="clock" name="clock" label="Time format" :span="6">
+                        <RadioCardGroup id="clock" v-model="clock" name="clock" :options="clocks" :columns="3" />
+                    </Field>
+                </FormCard>
             </Form>
             <Form :action="store_url" method="post" :options="{ preserveScroll: true }" reset-on-success @success="chosen = null">
                 <FormCard title="Photo" :description="`A square photo, JPEG, PNG or WebP, up to ${max_kb} KB. Your initials show until you add one.`" :submit-label="avatar ? 'Replace photo' : 'Upload photo'" busy-label="Uploading…">

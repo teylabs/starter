@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { Avatar, Badge, Button, Dialog, EmptyState, Page, PageSection, Surface } from '@kit/ui';
+import { loadWorkspaceLandings, workspaceLanding } from '@/pages/Workspace/Partials/workspaceLandings';
 const props = defineProps<Tey.Kit.Features.Workspaces.ViewModels.IndexWorkspaceViewModel>();
 // The person's workspaces, each on its own card: the mark, their role, the member count and a Current marker on the one they are in or used last. The whole card
 // is the workspace's link (its name stretched over the card, so the focus ring is the card's); a workspace with no page they may open is shown, not linked.
 // Leave is there for everyone but the owner, who has to transfer ownership first; it asks before it acts. New workspace is a header action, sent only when
 // provisioning allows it (with no workspace, the empty state offers it instead, so it is there once). Open invitations come first: each is accepted from the
 // link in its email.
-// The link into each workspace is the shell's: its switcher choices, or the one workspace the bar names. No link means no page there the person may open.
+// The link into each workspace is the switcher's: the one the bar names from the server, the others loaded as the page opens (the shell's
+// `switcher.landings`), each decided in its own workspace. A workspace is listed by name until its link arrives; no link means no page there the person may open.
 const page = usePage<{ shell?: Tey.Kit.Features.Shell.Data.ShellData }>();
-const urls = computed(() => new Map((page.props.shell?.switcher?.choices ?? (page.props.shell?.workspace ? [page.props.shell.workspace] : [])).map((choice) => [choice.id, choice.url ?? null])));
+const landing = (id: number) => (id === page.props.shell?.workspace?.id ? page.props.shell.workspace.url : workspaceLanding(id));
+onMounted(() => {
+    if (props.workspaces.some((workspace) => workspace.id !== page.props.shell?.workspace?.id)) loadWorkspaceLandings(page.props.shell?.switcher?.landings);
+});
 const actions = computed(() => (props.create ? [props.create] : []));
 const members = (count: number) => `${count} ${count === 1 ? 'member' : 'members'}`;
 </script>
@@ -34,7 +39,8 @@ const members = (count: number) => `${count} ${count === 1 ? 'member' : 'members
                     <Surface padding="sm" class="relative flex h-full items-center gap-3 transition-colors has-[a:hover]:bg-accent/40 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-background" :data-workspace="workspace.id" :data-current="workspace.current || undefined">
                         <Avatar :initials="workspace.initials" class="size-10 rounded-lg text-sm" />
                         <div class="grid min-w-0 flex-1 gap-0.5">
-                            <Link v-if="urls.get(workspace.id)" :href="urls.get(workspace.id)!" class="font-medium break-words outline-none after:absolute after:inset-0" data-workspace-link>{{ workspace.name }}</Link>
+                            <Link v-if="landing(workspace.id)" :href="landing(workspace.id)!" class="font-medium break-words outline-none after:absolute after:inset-0" data-workspace-link>{{ workspace.name }}</Link>
+                            <span v-else-if="landing(workspace.id) === undefined" class="font-medium break-words" aria-busy="true" data-workspace-loading>{{ workspace.name }}</span>
                             <span v-else class="font-medium break-words">{{ workspace.name }} <span class="font-normal text-muted-foreground">· unavailable</span></span>
                             <p class="text-sm text-muted-foreground"><span v-if="workspace.role" data-workspace-role>{{ workspace.role }} · </span><span data-workspace-members>{{ members(workspace.members) }}</span></p>
                         </div>

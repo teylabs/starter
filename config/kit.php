@@ -3,8 +3,8 @@
 // tey/kit's defaults. Publish them with `php artisan vendor:publish --tag=kit-config`;
 // the published config/kit.php is the app's own file, and kit updates never touch it.
 return [
-    // The adopted features. The template ships every feature's files, but no installed record, which is bound to a
-    // checkout's own path. Null reads them from that record once `kit:add` has claimed the files (docs/lifecycle.md).
+    // The adopted features: the kit registers exactly these (since 0.18; unset or empty registers none). Each one's pages are
+    // the app's own, written once by `kit:scaffold <feature>` (docs/lifecycle.md).
     'features' => ['core', 'workspaces', 'access', 'settings', 'shell', 'session-ui', 'workspace-ui', 'mcp'],
 
     // The host's user model. Null uses the `users` auth provider's model.

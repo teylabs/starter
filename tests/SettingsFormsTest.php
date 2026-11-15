@@ -28,7 +28,7 @@ test('every page form is an inertia form with form actions or a form card', func
             continue;
         }
         $name = substr($file->getPathname(), strlen(dirname(__DIR__)) + 1);
-        // A page tey/kit owns is the kit's to shape (kit:add writes it byte for byte); this reads the app's own pages.
+        // A page tey/kit owns is the kit's to shape (kit:scaffold writes it byte for byte); this reads the app's own pages.
         if (in_array($name, kitOwnedFiles(), true)) {
             continue;
         }
@@ -136,7 +136,7 @@ test('button labels are specific verbs never submit ok or save changes', functio
     expect($checked)->toBeGreaterThan(15);
 
     // The bar's defaults are the specified ones.
-    $actions = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Form/FormActions.vue');
+    $actions = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/Form/FormActions.vue');
     $this->assertStringContainsString("submitLabel: 'Save'", $actions);
     $this->assertDoesNotMatchRegularExpression("/submitLabel: '(Submit|OK|Save changes)'/", $actions);
 });
@@ -160,7 +160,7 @@ test('the cursor rule is the kits stylesheet and disabled items are not pointer 
 
     // Disabled menu and select items are blocked by the disabled state, so the not-allowed cursor can show; none of them is pointer-events: none.
     // A LockedForm's read-only trigger is not disabled: its `locked ? '…'` branch may use the default cursor.
-    // The kit's own controls are tey/kit's (kit:add byte for byte); the app's shadcn-vue menu is the app's.
+    // The kit's own controls are tey/kit's (loaded from the package); the app's shadcn-vue menu is the app's.
     foreach (glob($root.'/resources/js/components/ui/dropdown-menu/*.vue') as $file) {
         $source = (string) preg_replace("/locked \\? '[^']*'/", '', (string) file_get_contents($file));
         $this->assertStringNotContainsString('data-[disabled]:pointer-events-none', $source, basename($file));

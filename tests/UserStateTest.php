@@ -17,14 +17,14 @@ test('the state goes with the account and a soft delete keeps it', function () {
 
     // Deleting a user removes their rows and leaves everyone else's.
     User::findOrFail(50)->delete();
-    expect(DB::table('kit_user_state')->where('user_id', 50)->count())->toBe(0);
-    expect(DB::table('kit_user_state')->where('user_id', 1)->count())->toBe(2);
-    expect(DB::table('kit_user_state')->where('user_id', 51)->count())->toBe(2);
+    expect(DB::table('user_state')->where('user_id', 50)->count())->toBe(0);
+    expect(DB::table('user_state')->where('user_id', 1)->count())->toBe(2);
+    expect(DB::table('user_state')->where('user_id', 51)->count())->toBe(2);
 
     // The foreign key removes the rows in the database itself, whatever the model does.
     DB::table('users')->where('id', 51)->delete();
-    expect(DB::table('kit_user_state')->where('user_id', 51)->count())->toBe(0);
-    expect(DB::table('kit_user_state')->where('user_id', 1)->count())->toBe(2);
+    expect(DB::table('user_state')->where('user_id', 51)->count())->toBe(0);
+    expect(DB::table('user_state')->where('user_id', 1)->count())->toBe(2);
 
     // A model that soft-deletes keeps the state until the force delete.
     $soft = new class
@@ -42,8 +42,8 @@ test('the state goes with the account and a soft delete keeps it', function () {
         }
     };
     SecurityLog::forget($soft);
-    expect(DB::table('kit_user_state')->where('user_id', 1)->count())->toBe(2, 'a soft delete keeps the state');
+    expect(DB::table('user_state')->where('user_id', 1)->count())->toBe(2, 'a soft delete keeps the state');
     $soft->force = true;
     SecurityLog::forget($soft);
-    expect(DB::table('kit_user_state')->where('user_id', 1)->count())->toBe(0, 'a force delete removes it');
+    expect(DB::table('user_state')->where('user_id', 1)->count())->toBe(0, 'a force delete removes it');
 });

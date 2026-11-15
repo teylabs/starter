@@ -34,7 +34,7 @@ test('inertia session pages share real operations and fresh navigation', functio
     $this->get('/@alpha/records', $inertia)->assertOk()->assertHeader('X-Inertia', 'true')
         ->assertJsonPath('component', 'Workspace/Record/Index/Page')->assertJsonPath('props.records.0.title', 'Alpha private')->assertJsonCount(1, 'props.records')
         ->assertJsonPath('props.shell.workspace.id', 1)->assertJsonCount(1, 'props.shell.switcher.choices')->assertJsonPath('props.shell.navigation.0.label', 'Dashboard');
-    // Notes is opt-in (kit:add notes): its link sits between Dashboard and Records only once adopted.
+    // Notes is opt-in (kit.features, kit:scaffold notes): its link sits between Dashboard and Records only once adopted.
     $navigation = $this->get('/@alpha/records', $inertia)->json('props.shell.navigation');
     expect(array_column($navigation, 'label'))->toBe(['Dashboard', ...(notesAdopted() ? ['Notes'] : []), 'Records', 'Settings'])
         ->and(array_column($navigation, 'current'))->toBe([false, ...(notesAdopted() ? [false] : []), true, false]);
@@ -65,7 +65,9 @@ test('inertia session pages share real operations and fresh navigation', functio
     config(['kit.capabilities' => ['workspace.dashboard' => true, 'workspace.settings' => true, 'workspace.records' => true]]);
     Feature::define('workspace.records', fn (): bool => false);
     Feature::flushCache();
-    $navigation = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('props.shell.switcher.choices.0.url', '/')->json('props.shell.navigation');
+    $navigation = $this->get('/@alpha/settings/general', $inertia)->assertOk()->assertJsonPath('props.shell.switcher.choices.0.slug', 'alpha')->json('props.shell.navigation');
+    // The switcher's link for the one workspace comes from its own request (kit 0.23), in the short form.
+    $this->getJson('/me/switcher')->assertOk()->assertJsonPath('workspaces.0.url', '/');
     expect(collect($navigation)->firstWhere('current', true)['label'])->toBe('Settings');
 
     // A capability that is off is absent: a 404, not a 403.

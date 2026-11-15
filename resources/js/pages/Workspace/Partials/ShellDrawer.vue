@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Menu } from '@lucide/vue';
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import UserAvatar from './UserAvatar.vue';
+import { loadWorkspaceLandings, workspaceLanding } from './workspaceLandings';
 import { Button, Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@kit/ui';
 
 // Below `lg` the same items, in the same order: workspaces, pages, the account, then Sign out. Any navigation closes it.
 // `pages` false leaves the workspace's pages out: the Layout's `nav` slot shows them at every width instead. The `nav` slot replaces them either way.
-withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData; pages?: boolean }>(), { pages: true });
+const props = withDefaults(defineProps<{ shell: Tey.Kit.Features.Shell.Data.ShellData; pages?: boolean }>(), { pages: true });
 
 const open = ref(false);
+// The workspaces' pages, as the switcher has them: the bar's own from the server, the others loaded when the drawer opens.
+const landing = (id: number) => (id === props.shell.workspace?.id ? props.shell.workspace.url : workspaceLanding(id));
+watch(open, (opened) => {
+    if (opened && (props.shell.switcher?.choices ?? []).some((choice) => choice.id !== props.shell.workspace?.id)) loadWorkspaceLandings(props.shell.switcher?.landings);
+});
 const stop = router.on('navigate', () => {
     open.value = false;
 });
@@ -32,7 +38,8 @@ onBeforeUnmount(stop);
             <nav v-if="shell.switcher" aria-label="Workspaces" class="grid gap-1 px-2 pt-4">
                 <p class="px-3 text-xs font-medium text-muted-foreground">Workspaces</p>
                 <template v-for="choice in shell.switcher.choices" :key="choice.id">
-                    <Link v-if="choice.url" :href="choice.url" :aria-current="choice.current ? 'true' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', choice.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ choice.name }}</Link>
+                    <Link v-if="landing(choice.id)" :href="landing(choice.id)!" :aria-current="choice.current ? 'true' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', choice.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ choice.name }}</Link>
+                    <span v-else-if="landing(choice.id) === undefined" class="flex min-h-11 items-center px-3 text-sm text-muted-foreground" aria-busy="true" data-shell-switcher-loading>{{ choice.name }}</span>
                     <span v-else class="flex min-h-11 items-center px-3 text-sm text-muted-foreground">{{ choice.name }} · unavailable</span>
                 </template>
             </nav>

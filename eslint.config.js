@@ -103,7 +103,6 @@ export default defineConfigWithVueTs(
             // Node's built-in test runner files (npm run test:js): run by Node, not bundled or type-checked by vue-tsc.
             'tests/js',
             // Kit-owned, shadcn-vue primitives and generated types: .prettierignore lists the same paths.
-            'resources/js/components/Kit/**',
             'resources/js/pages/Auth/ConfirmPassword/**',
             'resources/js/pages/Auth/ForgotPassword/**',
             'resources/js/pages/Auth/Invitation/**',

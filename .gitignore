@@ -13,8 +13,5 @@
 /node_modules/
 /public/build/
 /public/hot
-/.mod-maintenance/journal-*.json
-/.mod-maintenance/lock
-/.mod-maintenance/owner.json
 /tests/Browser/Screenshots/
 /.phpunit.cache/

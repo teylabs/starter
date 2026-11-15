@@ -11,8 +11,7 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 ### Schema
 
 - The host's own migrations create `users` and `media` (medialibrary).
-- Each kit feature's migrations live in `database/migrations/kit/<feature>` (`0001_01_02_000NXX_*`) and load because the feature is adopted. Permission and Settings tables come from the locked packages' own migrations; Passport's and Concierge's migrations load from the packages.
-- tey/kit 0.1.5 still orders core's migration before the workspaces table it references. PostgreSQL refuses that, so `App\Support\KitMigrator` runs core right after the workspaces table until the kit fixes its order.
+- Each adopted kit feature's migrations load from the package (`vendor/tey/kit/database/migrations/<feature>`, since kit 0.18), under the names the template's copies had, so a database migrated before keeps its rows and runs only the newer ones (the 0.18 renames that drop the `kit_` prefix from the infrastructure tables, and 0.24's `signed_in_devices`). A copy under `database/migrations/kit/<feature>` would win by name; the template ships none. Permission and Settings tables come from the locked packages' own migrations; Passport's and Concierge's migrations load from the packages.
 - Re-running `migrate` is a no-op.
 
 ### Databases migrated by 0.2
@@ -21,22 +20,21 @@ Boot never migrates, seeds, creates accounts or provisions workspaces. Registrat
 
 ## Kit features
 
-`config/kit.php` adopts every catalog feature except the opt-in `notes`, `finalize` and `deliver` (`features`). The template ships tey/mod's installed records for them (`.mod-maintenance/installed/*.json`, relative to the checkout, so a clone carries them; the journals, lock and owner file stay local and gitignored). `php artisan kit:status --check` reads them and fails on an unmarked edit to a kit-owned file, and `php artisan kit:update plan --lineage=<feature>` / `apply` updates each feature in place. To add an opt-in feature, run `php artisan kit:add <feature>` and list it in `features`. tey/standards reads the same records, so a kit-owned file is the kit's, not the app's, to the frontend rules. `tests/LifecycleTest.php` proves the add, the claim, the refusals and the fail-closed operation check in disposable checkouts.
+`config/kit.php` adopts every catalog feature except the opt-in `notes`, `finalize` and `deliver` (`features`); the kit registers exactly the features it lists. Since kit 0.18 there is no install or update tooling and no installed record: a feature's pages are written once by `php artisan kit:scaffold <feature>` and are the app's own from then on, and the shared components (`@kit/ui`, `@/components/Kit`) load from `vendor/tey/kit` through the Vite and TypeScript aliases. The template keeps every scaffolded file at the bytes the locked kit writes, so an app that forks it starts from the kit's pages. `php artisan kit:scaffold <feature> --diff` shows a kit release's changes to them and writes nothing; `--force=<path>` takes the kit's file. tey/standards counts a scaffolded file as the kit's, not the app's, to the frontend rules while its bytes equal the kit's stub. `tests/LifecycleTest.php` proves the template's files equal `kit:scaffold` of every adopted feature, that scaffolding an empty checkout writes them and a second run writes nothing, and that an edited file is reported and kept until forced.
 
 ### Adding notes
 
 New apps do not ship the kit's `notes` feature (the notes wall, its dashboard card, its MCP tools and the `kit_notes` table); apps that already have it keep it. To add it:
 
-1. `php artisan kit:add notes` previews the plan and prints its identity; review it.
-2. `php artisan kit:add notes --apply --expected-plan=<plan>` writes the pages, widget and migration and records the lineage.
-3. Add `'notes'` to `features` and `'workspace.notes' => true` to `capabilities` in `config/kit.php`, then `php artisan migrate`.
+1. Add `'notes'` to `features` and `'workspace.notes' => true` to `capabilities` in `config/kit.php`.
+2. `php artisan kit:scaffold notes` writes its pages and widget; `php artisan migrate` creates its table from the package.
+3. Optionally make its table the app's: `php artisan kit:scaffold notes --adopt` (tey/kit docs/domain-tables.md).
 4. Add the notes rows back to `app/Support/McpCapabilities.php` (the notes tools, the `session_notes` test and the page and controller inventory; see this file's history) and run `php bin/mcp-capabilities.php`.
 
 The notes tests stay in the template and switch on with the feature: `tests/NotesTest.php` and `tests/Browser/Notes.php` skip until `notes` is adopted, and the shared pins (`notesAdopted()` in `tests/Pest.php`: dashboard widgets, navigation, breadcrumbs, migrations, MCP scopes and tools, schema) expect the notes contributions once it is.
 
-Never edit a generated feature file (`database/migrations/kit/**`, the kit's pages): copy a page to your own name, or add a migration of your own. CI's parity job runs `kit:add` of the template's features on a clean Laravel app and fails when the template's files differ.
+In the template, never edit a scaffolded kit file (the kit's pages, `resources/css/kit.css`): copy a page to your own name, or add a migration of your own. CI's parity job (`sh bin/kit-parity.sh`) runs `kit:scaffold --diff` of the template's features and fails when a file differs, unless it is marked `kit: tweaked <reason>`. An app made from the template owns its copies and may edit them.
 
 ## Not available yet
 
 - `laravel new --using=tey/starter`: the template is not on Packagist yet.
-- `kit:add --all`: the command takes the feature list; `kit:list --json` prints it.

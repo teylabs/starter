@@ -2,13 +2,14 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
-import { kitImports } from './resources/js/components/Kit/kitImports.js';
+import { kitImports } from './vendor/tey/kit/resources/js/components/Kit/kitImports.js';
 
 // tey/kit pages type their props with the generated global ViewModel types; the SFC compiler resolves them from here.
 const globalTypeFiles = [decodeURIComponent(new URL('./resources/js/types.generated.d.ts', import.meta.url).pathname)];
 
-// Kit pages and the shell import UI only through `@kit/ui`. It resolves to the kit's own set; point it at your own module to use your own components (see the kit README).
-const kitUi = decodeURIComponent(new URL('./resources/js/components/Kit/index.ts', import.meta.url).pathname);
+// The kit's shared components load from the package (tey/kit docs/kit-components.md): `@/components/Kit` and `@kit/ui` resolve into vendor/tey/kit.
+// Kit pages and the shell import UI only through `@kit/ui`; point it at your own module to use your own components (see the kit README).
+const kitComponents = decodeURIComponent(new URL('./vendor/tey/kit/resources/js/components/Kit', import.meta.url).pathname);
 // The shell Layout takes UserMenu and WorkspaceSwitcher only through `@kit/shell`, the generated Partials barrel; point it at your own module to replace them (or use the Layout's slots).
 const kitShell = decodeURIComponent(new URL('./resources/js/pages/Workspace/Partials/index.ts', import.meta.url).pathname);
 
@@ -37,7 +38,7 @@ const preBundled = [
     '@tiptap/pm/history', '@tiptap/starter-kit', '@tiptap/vue-3', '@vueuse/core', 'class-variance-authority', 'clsx', 'reka-ui',
     'tailwind-merge', 'vue', 'vue-draggable-plus', 'vue-sonner',
 ];
-const warmup = ['./resources/js/app.ts', './resources/js/components/Kit/index.ts', './resources/js/layouts/*.vue', './resources/js/pages/Workspace/Partials/index.ts'];
+const warmup = ['./resources/js/app.ts', './vendor/tey/kit/resources/js/components/Kit/index.ts', './resources/js/layouts/*.vue', './resources/js/pages/Workspace/Partials/index.ts'];
 
 // Dev only: kitImports rewrites each `@kit/ui` import into imports of the files it names, so a page requests only the kit components it
 // uses instead of every file the barrel lists (tey/kit docs/kit-imports.md). Builds are unchanged: the bundler already tree-shakes the barrel.
@@ -51,6 +52,6 @@ export default defineConfig({
     },
     optimizeDeps: { include: preBundled },
     server: { warmup: { clientFiles: warmup } },
-    resolve: { alias: { '@kit/ui': kitUi, '@kit/shell': kitShell } },
+    resolve: { alias: { '@/components/Kit': kitComponents, '@kit/ui': `${kitComponents}/index.ts`, '@kit/shell': kitShell } },
     plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } }), kitImports()],
 });

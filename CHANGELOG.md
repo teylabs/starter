@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Changed
+
+- **tey/kit is upgraded to v0.25.0** (from v0.17.0, through v0.17.8 for `kit:detach`; `composer update tey/kit -W`, constraint `^0.25`). Every upgrade step the kit lists for 0.18 to 0.25 that applies to the starter's features was taken, and pest, phpunit and paratest did not move.
+  - **0.18: no install records.** `kit:detach` on 0.17.8 reported every kit file unchanged and `config/kit.php` already listing the features. Its checklist is deleted: `.mod-maintenance/`, the `kit:install` host binding (`app/Kit`, `config/kit-lifecycle.php`, `config/kit-executor.json`, `KitHostServiceProvider`) and the identical copies under `database/migrations/kit`, which now load from the package with the 0.18 renames (`kit_user_state` → `user_state` and the rest). `App\Support\KitMigrator` is gone: core's migration no longer references `workspaces`, and its binding replaced the kit's `PackageMigrator`.
+  - **0.18: the shared components load from the package.** `resources/js/components/Kit` is deleted; Vite and `tsconfig.json` alias `@/components/Kit` and `@kit/ui` to `vendor/tey/kit`, `kitImports` and the warmup come from there, and `app.css` names the package in `@source`.
+  - **0.20 to 0.24: the scaffolded pages.** Each feature's changed pages are taken with `kit:scaffold <feature> --force` (all were unedited): the Security page's per-device Sign out, the switcher, drawer and workspace list loading `/me/switcher` (`workspaceLandings.ts` is new), the auth pages' `ActionGroup` and `Stack`, the dashboard's `WidgetCard` and the settings pages. The generated types follow, through the kit's `AttributedDataTransformer`, which keeps docblock literal unions.
+  - **0.23: no `choice.url`.** After sign-in, `LoginResponse` reads `PageShell::landings()` to land a person with one reachable workspace in it. The URL, home-landing and Inertia tests read each choice's slug and the links from `GET /me/switcher`.
+  - **0.24: signed-in devices.** The base `TestCase` calls `withCredentials()`, so a JSON request after a sign-in keeps the session (without it the device row moves to a fresh id and the next request is signed out). The devices tests adopt a `sessions` row with `SignedInDevices::adopt()` before expecting it listed, as the list reads `signed_in_devices`; the browser test runs on the database driver and signs that device out from the page. `model:prune` also prunes `SignedInDevice`.
+  - **0.22 and 0.25: Alert actions** change look with the package alone; every Alert with actions in the starter is in a kit page.
+  - **Checks.** `bin/kit-parity.sh` and the Kit parity job compare the template with `kit:scaffold --diff`, and `tests/LifecycleTest.php` proves the same plus scaffolding an empty checkout and keeping an edited file. tey/standards is updated to v0.11.103 (within `^0.11.94`), which counts scaffolded files as the kit's while they equal its stubs.
+  - **Not taken:** 0.19's optional `kit:scaffold <feature> --adopt` (the domain tables stay the kit's), `kit.devices.store` (the database cache store holds the revocation marks: one query per signed-in page), and `kit:devices:backfill`, a one-off for an app upgrading a database with live sessions.
+
 ### Fixed
 
 - **`.agents/setup` never creates a hooks folder outside the checkout.** A configured `core.hooksPath` is resolved (the nearest existing parent, realpath-ed) and checked before anything is created; one outside the checkout or git dir is left alone. Development tooling only.

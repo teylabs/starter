@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
-import { Alert, Button, Field, Page, PasswordInput } from '@kit/ui';
+import { Alert, Button, Field, Page, PasswordInput, Stack } from '@kit/ui';
 
 // Asks for the password again before a sensitive step (Fortify's password.confirm), then returns to that step. Cancel goes back on the app only.
 // A guest card: one full-width button.
@@ -42,10 +42,10 @@ const formOptions = failureHandlers as FormOptions;
 <template>
     <Head :title="title" />
     <Page xs :heading="false">
-        <div class="space-y-2">
+        <Stack class="gap-2">
             <h1 class="text-xl font-medium">Confirm your password</h1>
             <p class="text-sm text-muted-foreground">For your security, confirm your password to continue.</p>
-        </div>
+        </Stack>
         <Form ref="form" novalidate v-slot="{ errors, processing }" action="/user/confirm-password" method="post" :reset-on-error="['password']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <Field id="password" name="password" label="Password"><PasswordInput id="password" v-model="password" name="password" required autofocus autocomplete="current-password" :invalid="Boolean(errors.password)" /></Field>

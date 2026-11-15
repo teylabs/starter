@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { Alert, Badge, Button, checkedAtLabel, CopyButton, Field, FormCard, fromLine, fromPreview, fullRecordName, Input, Page, RadioCardGroup, recordKind, useTimezone } from '@kit/ui';
+import { Alert, Badge, Button, checkedAtLabel, CopyButton, Field, FormCard, fromLine, fromPreview, fullRecordName, Input, Page, RadioCardGroup, recordKind, useClock, useTimezone } from '@kit/ui';
 
 // Email sending: who this workspace's mail is from, which address it goes from and where replies go. Inertia <Form>s only: Save is a PUT visit,
 // Check now a POST visit; the server answers with the page again (pure Inertia). A custom domain shows its DNS records and status; until it is
@@ -32,7 +32,8 @@ const chosenReplies = computed(() => ({ member: 'the member who sent it', fixed:
 const currentFrom = computed(() => fromLine(props.identity.sender_name ?? props.identity.sender_name_default, props.identity.effective_from));
 const waitingFor = computed(() => (props.identity.from_mode === 'domain' && props.identity.domain_status !== 'verified' ? props.identity.domain : null));
 const timezone = useTimezone();
-const lastChecked = computed(() => (props.identity.checked_at ? checkedAtLabel(props.identity.checked_at, timezone.value) : null));
+const clock = useClock();
+const lastChecked = computed(() => (props.identity.checked_at ? checkedAtLabel(props.identity.checked_at, timezone.value, undefined, undefined, clock.value) : null));
 </script>
 <template>
     <Page md>

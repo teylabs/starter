@@ -2,10 +2,10 @@
 import { Form, Head, Link, http, router, usePage } from '@inertiajs/vue3';
 import { KeyRound } from '@lucide/vue';
 import { nextTick, onMounted, ref } from 'vue';
-import { Alert, Button, Field, FormStatus, Input, InputCheckbox, Page, PasswordInput, Stack, passkeySignInSupported, signInWithPasskey } from '@kit/ui';
+import { ActionGroup, Alert, Button, Field, FormStatus, Input, InputCheckbox, Page, PasswordInput, Stack, passkeySignInSupported, signInWithPasskey } from '@kit/ui';
 
 // A forgotten password is reset by emailed link (Auth/ForgotPassword). `status`, `localLogin` and `register` are the view model's: an app that offers a one-click local sign-in passes the offer, and one that opens registration (Fortify's `registration` feature) the link to Auth/Register (null elsewhere).
-// A guest card is not a settings form: no sticky FormActions bar, one full-width primary button, everything aligned to the card's left edge.
+// A guest card is not a settings form: no sticky FormActions bar; its actions stack full-width (ActionGroup's column), Sign in first, everything aligned to the card's left edge.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.LoginViewModel>();
 
 // A failed sign-in clears the password and returns focus to the first invalid field. A 429 (Fortify's login limiter) stays on the page: Inertia's error modal is
@@ -87,11 +87,11 @@ async function passkeySignIn(): Promise<void> {
                 <InputCheckbox id="remember" name="remember" value="1">Remember me</InputCheckbox>
                 <Link href="/forgot-password" class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-forgot-password>Forgot your password?</Link>
             </div>
-            <Button type="submit" class="w-full" :disabled="processing" data-test="login-button">{{ processing ? 'Signing in…' : 'Sign in' }}</Button>
-            <template v-if="passkeyReady">
-                <Button type="button" variant="secondary" class="w-full" :disabled="passkeyBusy" data-passkey-sign-in @click="passkeySignIn"><KeyRound class="size-4" aria-hidden="true" />{{ passkeyBusy ? 'Waiting for your passkey…' : 'Sign in with a passkey' }}</Button>
-                <Alert v-if="passkeyFailed" variant="danger" live="alert" data-passkey-failed>That passkey didn't sign you in. Try again, or use your password.</Alert>
-            </template>
+            <ActionGroup direction="column">
+                <Button type="submit" :disabled="processing" data-test="login-button">{{ processing ? 'Signing in…' : 'Sign in' }}</Button>
+                <Button v-if="passkeyReady" type="button" variant="secondary" :disabled="passkeyBusy" data-passkey-sign-in @click="passkeySignIn"><KeyRound class="size-4" aria-hidden="true" />{{ passkeyBusy ? 'Waiting for your passkey…' : 'Sign in with a passkey' }}</Button>
+            </ActionGroup>
+            <Alert v-if="passkeyReady && passkeyFailed" variant="danger" live="alert" data-passkey-failed>That passkey didn't sign you in. Try again, or use your password.</Alert>
             <p v-if="register" class="text-sm text-muted-foreground">New here? <Link :href="register" class="underline underline-offset-4 hover:text-foreground" data-register-link>Create an account</Link></p>
         </Form>
     </Page>

@@ -373,7 +373,7 @@ test('an owner confirms the workspace timezone and a member never sees the step'
     $this->actingAs($owner)->withSession($session)->get('/welcome/workspace-timezone', firstRunInertia())->assertNotFound();
 
     // A member is never asked: the step does not exist for them.
-    DB::table('kit_user_state')->where('workspace_id', $workspace->id)->where('key', 'workspace.timezone.confirmed')->delete();
+    DB::table('user_state')->where('workspace_id', $workspace->id)->where('key', 'workspace.timezone.confirmed')->delete();
     $this->actingAs($member)->withSession($session)->get('/welcome/workspace-timezone', firstRunInertia())->assertNotFound();
     $this->actingAs($member)->withSession($session)->put('/welcome/workspace-timezone', ['timezone' => 'Asia/Tokyo'])->assertNotFound();
 });

@@ -117,7 +117,7 @@ test('links flip from short to full when a second workspace appears', function (
     $page = $this->get('/records', $inertia)->assertOk()
         ->assertJsonPath('props.shell.workspace.url', '/')->assertJsonCount(1, 'props.shell.switcher.choices')
         ->assertJsonPath('props.create_url', '/records')->json('props');
-    // Notes is opt-in (kit:add notes): its link appears only once adopted.
+    // Notes is opt-in (kit.features, kit:scaffold notes): its link appears only once adopted.
     expect(array_column($page['shell']['navigation'], 'url'))->toBe(['/', ...(notesAdopted() ? ['/notes'] : []), '/records', '/settings']);
     expect(array_values($page['actions'])[0]['url'])->toStartWith('/records/');
     $this->get('/me/workspaces', $inertia)->assertRedirect('/');
@@ -126,8 +126,12 @@ test('links flip from short to full when a second workspace appears', function (
     // A second workspace appears mid-session: nothing else changes, but the switcher has choices and every link is the full form.
     urlConventionAddSecondWorkspace();
     $page = $this->get('/@alpha/records', $inertia)->assertOk()
-        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.url', '/@alpha')
-        ->assertJsonPath('props.shell.switcher.choices.1.url', '/@beta')->assertJsonPath('props.create_url', '/@alpha/records')->json('props');
+        ->assertJsonCount(2, 'props.shell.switcher.choices')->assertJsonPath('props.shell.switcher.choices.0.slug', 'alpha')
+        ->assertJsonPath('props.shell.switcher.choices.1.slug', 'beta')->assertJsonPath('props.shell.switcher.landings', '/me/switcher')
+        ->assertJsonPath('props.create_url', '/@alpha/records')->json('props');
+    // The switcher's links come from its own request when it opens (kit 0.23), each workspace's page in the full form.
+    expect(array_column($this->getJson('/me/switcher')->assertOk()->json('workspaces'), 'url', 'id'))
+        ->toBe(array_combine(array_column($page['shell']['switcher']['choices'], 'id'), ['/@alpha', '/@beta']));
     expect(array_column($page['shell']['navigation'], 'url'))->toBe(['/@alpha', ...(notesAdopted() ? ['/@alpha/notes'] : []), '/@alpha/records', '/@alpha/settings']);
     expect(array_values($page['actions'])[0]['url'])->toStartWith('/@alpha/records/');
     $this->get('/me/workspaces', $inertia)->assertOk()->assertJsonPath('component', 'Workspace/Index/Page');

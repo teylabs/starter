@@ -227,17 +227,15 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: template
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: none
-      - name: A clean Laravel app
-        run: composer create-project laravel/laravel clean --no-interaction --no-progress
-      - name: The template's feature files equal kit:add of every feature
-        run: sh template/bin/kit-parity.sh clean
+      - run: composer install --no-interaction
+      # Since kit 0.18 the app owns its kit pages; kit:scaffold --diff compares each with the locked kit's, writing nothing.
+      - name: The template's kit files equal kit:scaffold of every adopted feature
+        run: sh bin/kit-parity.sh
 
   fresh-clone:
     name: Fresh clone
