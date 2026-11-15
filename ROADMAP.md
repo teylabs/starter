@@ -2,7 +2,7 @@
 
 tey/starter is the new-app template for tenant-aware Laravel apps: `laravel new app --using=tey/starter`. It is built on [tey/kit](https://github.com/teylabs/kit), the library that adds the same features to an app you already have (`composer require tey/kit`, list the features in `config/kit.php`'s `features`, and `php artisan kit:scaffold <feature>` writes a feature's pages).
 
-1.0 means a new app gets every kit feature, upgrades with `kit:update` without overwriting your changes, and the template's public API and support policy are documented and frozen.
+1.0 means a new app gets every kit feature, upgrades with `kit:scaffold <feature> --diff` (then `--force=<path>` for the files you never edited) without overwriting your changes, and the template's public API and support policy are documented and frozen.
 
 **Versions are milestones, not dates.**
 
@@ -13,7 +13,7 @@ tey/starter is the new-app template for tenant-aware Laravel apps: `laravel new 
 
 ## The countdown to 1.0
 
-- [ ] **[v0.3 — Built on tey/kit](https://github.com/teylabs/starter/milestone/8).** The template becomes tey/kit with every feature added, checked in CI against `kit:add --all`; feature adoption for existing apps lives in tey/kit.
+- [ ] **[v0.3 — Built on tey/kit](https://github.com/teylabs/starter/milestone/8).** The template becomes tey/kit with every feature added, checked in CI against the kit's scaffolded files (`kit:add` and `kit:update` were removed in kit 0.18; `kit:scaffold` replaces them); feature adoption for existing apps lives in tey/kit.
 - [ ] **[v0.4 — Production first run](https://github.com/teylabs/starter/milestone/2).** A fresh install creates its first operator and verifies email, with no default credentials.
 - [ ] **[v0.5 — Real browsers and databases](https://github.com/teylabs/starter/milestone/3).** Browser, mobile, accessibility and PostgreSQL concurrency acceptance, with full hosted CI.
 - [ ] **[v0.6 — Wider isolation](https://github.com/teylabs/starter/milestone/4).** Jobs, files, cache and search stay inside their workspace.
