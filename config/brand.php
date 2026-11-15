@@ -4,7 +4,7 @@
 // vendor/tey/kit/resources/stubs/brand.php, which lists every key with its default.
 //
 // This file is the only brand source: a key left out uses the kit's default, and KIT_BRAND_* env is ignored (since tey/kit 0.17;
-// php artisan kit:status lists any that is left). Colours are a #rgb or #rrggbb; null means "use the theme"; an empty string is refused.
+// php artisan kit:brand:migrate lists any that is left). Colours are a #rgb or #rrggbb; null means "use the theme"; an empty string is refused.
 //
 // The template sets none: each line below is the kit's default, the stand-in an app replaces with its own before it deploys
 // (php artisan kit:preflight and /up refuse these in production; kit's Brand::placeholders() lists what is left). Uncomment a key to

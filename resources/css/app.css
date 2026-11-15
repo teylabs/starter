@@ -6,6 +6,8 @@
 @import './kit.css';
 
 @source '../views';
+/* The kit's shared components load from the package; Tailwind skips the git-ignored vendor/ unless it is named (tey/kit docs/kit-components.md). */
+@source '../../vendor/tey/kit/resources/js/components/Kit';
 /* inertiaui/modal's own markup (its backdrop, panel and positioning classes) lives in its package. */
 @source '../../node_modules/@inertiaui/modal-vue/src';
 

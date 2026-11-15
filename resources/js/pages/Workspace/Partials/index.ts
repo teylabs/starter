@@ -7,3 +7,5 @@ export { default as WorkspaceSwitcher } from './WorkspaceSwitcher.vue';
 // The focus shell (welcome steps, no workspace yet): the Workspace Layout renders it for a `kind: 'focus'` shell.
 export { default as FocusShell } from './FocusShell.vue';
 export type { FocusShellShape } from './focusShell';
+// The page each workspace opens on, which the shell sends only on request: a replaced switcher loads and reads it the same way.
+export { loadWorkspaceLandings, workspaceLanding } from './workspaceLandings';

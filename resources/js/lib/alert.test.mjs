@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
     alertIconClass,
     alertVariants,
-} from '../components/Kit/Feedback/alertVariants.ts';
+} from '../../../vendor/tey/kit/resources/js/components/Kit/Feedback/alertVariants.ts';
 
 const variants = [
     'info',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
-import { Alert, Button, Field, FormStatus, Input, Page, PasswordInput } from '@kit/ui';
+import { Alert, Button, Field, FormStatus, Input, Page, PasswordInput, Stack } from '@kit/ui';
 
 // Chooses the new password from the emailed link (Fortify's resetPasswords): the token and address come back with it, and the rules show before typing.
 // Completing it signs nothing in; it returns to sign in with a note. A guest card: one full-width button.
@@ -45,10 +45,10 @@ const formOptions = failureHandlers as FormOptions;
 <template>
     <Head :title="title" />
     <Page xs :heading="false">
-        <div class="space-y-2">
+        <Stack class="gap-2">
             <h1 class="text-xl font-medium">Choose a new password</h1>
             <p class="text-sm text-muted-foreground">For {{ email }}</p>
-        </div>
+        </Stack>
         <Form ref="form" novalidate v-slot="{ errors, processing }" action="/reset-password" method="post" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <FormStatus data-reset-password-status />
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>

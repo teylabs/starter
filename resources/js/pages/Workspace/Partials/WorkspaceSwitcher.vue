@@ -3,6 +3,7 @@ import { Link, router } from '@inertiajs/vue3';
 import { Check, ChevronsUpDown } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Dialog, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@kit/ui';
+import { loadWorkspaceLandings, workspaceLanding } from './workspaceLandings';
 
 // The workspace in the bar, beside the product symbol: its name (a link home) and a caret (the menu). The server sends `workspace` (the current one, or the only one) and `switcher` (only with two or more);
 // this renders what is there: the workspaces to switch to, "Workspace settings" when the server sends that action, and the server's `all` action (the chooser; null with one workspace). The trigger is one truncated line,
@@ -16,6 +17,15 @@ const asking = ref(false);
 const ask = () => setTimeout(() => (asking.value = true), 0);
 const leave = computed(() => props.workspace?.leave ?? null);
 const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? props.placeholder ?? 'Choose a workspace';
+// The server sends the page of the workspace in the bar (`workspace.url`); the others' are loaded when the menu opens, or on hover or focus of its caret,
+// each decided on the server in its own workspace. Until then a workspace is listed by name alone, and one with nothing to open is unavailable.
+const landing = (id: number) => (id === props.workspace?.id ? props.workspace.url : workspaceLanding(id));
+const load = () => {
+    if ((props.switcher?.choices ?? []).some((choice) => choice.id !== props.workspace?.id)) loadWorkspaceLandings(props.switcher?.landings);
+};
+const opened = (open: boolean) => {
+    if (open) load();
+};
 </script>
 <template>
     <!-- A split control: the name goes to the workspace's home (the server's URL), the caret opens the menu. Two focus targets in one group with no line between them: each half has its own hover background, so the split shows only on interaction; the name truncates, the caret never shrinks. -->
@@ -23,8 +33,8 @@ const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? pro
         <component :is="workspace?.url ? Link : 'span'" :href="workspace?.url ?? undefined" class="flex min-h-11 min-w-0 items-center rounded-l-md px-2 text-sm font-medium text-shell-bar-foreground focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none" :class="workspace?.url ? 'hover:bg-shell-bar-foreground/10' : ''" :title="name()" data-shell-home>
             <span class="min-w-0 truncate" data-shell-workspace>{{ name() }}</span>
         </component>
-        <DropdownMenu :modal="false">
-            <DropdownMenuTrigger class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-r-md text-shell-bar-foreground/70 hover:bg-shell-bar-foreground/10 hover:text-shell-bar-foreground focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none" :aria-label="'Switch workspace'" aria-haspopup="menu" data-shell-switcher>
+        <DropdownMenu :modal="false" @update:open="opened">
+            <DropdownMenuTrigger @pointerenter="load" @focus="load" class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-r-md text-shell-bar-foreground/70 hover:bg-shell-bar-foreground/10 hover:text-shell-bar-foreground focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none" :aria-label="'Switch workspace'" aria-haspopup="menu" data-shell-switcher>
                 <ChevronsUpDown class="size-3.5" aria-hidden="true" />
             </DropdownMenuTrigger>
         <DropdownMenuContent align="start" class="min-w-56">
@@ -35,12 +45,13 @@ const name = () => props.workspace?.name ?? props.switcher?.current?.name ?? pro
             </DropdownMenuItem>
             <DropdownMenuLabel v-else class="text-xs font-medium text-muted-foreground">Workspaces</DropdownMenuLabel>
             <template v-for="choice in switcher?.choices ?? []" :key="choice.id">
-                <DropdownMenuItem v-if="choice.url" as-child>
-                    <Link :href="choice.url" :aria-current="choice.current ? 'true' : undefined" class="flex min-h-9 w-full items-center justify-between gap-3">
+                <DropdownMenuItem v-if="landing(choice.id)" as-child>
+                    <Link :href="landing(choice.id)!" :aria-current="choice.current ? 'true' : undefined" class="flex min-h-9 w-full items-center justify-between gap-3">
                         <span class="truncate">{{ choice.name }}</span>
                         <Check v-if="choice.current" class="size-4" aria-hidden="true" />
                     </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem v-else-if="landing(choice.id) === undefined" disabled aria-busy="true" data-shell-switcher-loading>{{ choice.name }}</DropdownMenuItem>
                 <DropdownMenuItem v-else disabled>{{ choice.name }} · unavailable</DropdownMenuItem>
             </template>
             <template v-if="workspace?.settings || leave">

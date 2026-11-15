@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0d8d3512a65e6f387e7b0772c2affb57",
+    "content-hash": "5b0938d4c377469f1e985445c4e81747",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1242,25 +1242,26 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "8.3.1",
+            "version": "8.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "7d9b1f430bb65ac664e120af227bf9a795ad6333"
+                "reference": "f8aca40edffeae0ec508b92f4594766083c6e203"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/7d9b1f430bb65ac664e120af227bf9a795ad6333",
-                "reference": "7d9b1f430bb65ac664e120af227bf9a795ad6333",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/f8aca40edffeae0ec508b92f4594766083c6e203",
+                "reference": "f8aca40edffeae0ec508b92f4594766083c6e203",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^3.1",
-                "guzzlehttp/psr7": "^3.2",
+                "guzzlehttp/psr7": "^3.4",
                 "php": "^7.4 || ^8.0",
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
                 "symfony/polyfill-php80": "^1.25",
                 "symfony/polyfill-php82": "^1.27"
             },
@@ -1348,7 +1349,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/8.3.1"
+                "source": "https://github.com/guzzle/guzzle/tree/8.5.0"
             },
             "funding": [
                 {
@@ -1364,8 +1365,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-25T21:35:34+00:00",
-            "published-time": "2026-10-25T21:37:39+00:00"
+            "time": "2026-11-13T03:12:32+00:00",
+            "published-time": "2026-11-13T03:13:04+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1454,22 +1455,23 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "3.2.0",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "cdc139396207a5eba10c242d241fb014cb098390"
+                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/cdc139396207a5eba10c242d241fb014cb098390",
-                "reference": "cdc139396207a5eba10c242d241fb014cb098390",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/180bd6fcebd1dc289cbec5c576135f4b6f576e02",
+                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
                 "psr/http-factory": "^1.1",
                 "psr/http-message": "^2.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
                 "symfony/polyfill-php80": "^1.25",
                 "symfony/polyfill-php82": "^1.27"
             },
@@ -1553,7 +1555,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/3.2.0"
+                "source": "https://github.com/guzzle/psr7/tree/3.4.0"
             },
             "funding": [
                 {
@@ -1569,8 +1571,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-17T23:57:19+00:00",
-            "published-time": "2026-10-17T23:57:53+00:00"
+            "time": "2026-11-13T03:03:24+00:00",
+            "published-time": "2026-11-13T03:06:05+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -5669,16 +5671,16 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.4",
+            "version": "4.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2"
+                "reference": "f9aa3efc8015fcbc013d84d699583b268ccb593a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/75d73f48d02797c2c285a7e9f348fadc0102ffe2",
-                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/f9aa3efc8015fcbc013d84d699583b268ccb593a",
+                "reference": "f9aa3efc8015fcbc013d84d699583b268ccb593a",
                 "shasum": ""
             },
             "require": {
@@ -5690,23 +5692,22 @@
                 "rhumsaa/uuid": "self.version"
             },
             "require-dev": {
-                "captainhook/captainhook": "^5.25",
-                "captainhook/plugin-composer": "^5.3",
-                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "ergebnis/composer-normalize": "^2.47",
-                "mockery/mockery": "^1.6",
-                "paragonie/random-lib": "^2",
-                "php-mock/php-mock": "^2.6",
-                "php-mock/php-mock-mockery": "^1.5",
+                "captainhook/captainhook": "^5.29.3",
+                "captainhook/plugin-composer": "^5.3.3",
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.2.1",
+                "mockery/mockery": "^1.6.15",
+                "paragonie/random-lib": "^2.0.3",
+                "php-mock/php-mock": "^2.7.0",
+                "php-mock/php-mock-mockery": "^1.5.0",
                 "php-parallel-lint/php-parallel-lint": "^1.4.0",
                 "phpbench/phpbench": "^1.2.14",
-                "phpstan/extension-installer": "^1.4",
-                "phpstan/phpstan": "^2.1",
-                "phpstan/phpstan-mockery": "^2.0",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^9.6",
-                "slevomat/coding-standard": "^8.18",
-                "squizlabs/php_codesniffer": "^3.13"
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.3.5",
+                "phpstan/phpstan-mockery": "^2.0.0",
+                "phpstan/phpstan-phpunit": "^2.1.2",
+                "phpunit/phpunit": "^9.6.39",
+                "slevomat/coding-standard": "^8.31.3",
+                "squizlabs/php_codesniffer": "^4.0.4"
             },
             "suggest": {
                 "ext-bcmath": "Enables faster math with arbitrary-precision integers using BCMath.",
@@ -5741,10 +5742,10 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.9.4"
+                "source": "https://github.com/ramsey/uuid/tree/4.10.0"
             },
-            "time": "2026-09-16T11:39:30+00:00",
-            "published-time": "2026-09-16T11:41:15+00:00"
+            "time": "2026-11-14T23:23:20+00:00",
+            "published-time": "2026-11-14T23:35:39+00:00"
         },
         {
             "name": "resend/resend-php",
@@ -6024,16 +6025,16 @@
         },
         {
             "name": "spatie/laravel-medialibrary",
-            "version": "11.23.12",
+            "version": "11.23.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-medialibrary.git",
-                "reference": "eb5bc0bb3532ebe82d180320af4c270cfbb367fc"
+                "reference": "3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/eb5bc0bb3532ebe82d180320af4c270cfbb367fc",
-                "reference": "eb5bc0bb3532ebe82d180320af4c270cfbb367fc",
+                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a",
+                "reference": "3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a",
                 "shasum": ""
             },
             "require": {
@@ -6118,7 +6119,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-medialibrary/issues",
-                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.12"
+                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.13"
             },
             "funding": [
                 {
@@ -6130,8 +6131,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-06T09:26:36+00:00",
-            "published-time": "2026-11-06T09:30:12+00:00"
+            "time": "2026-11-13T09:09:46+00:00",
+            "published-time": "2026-11-13T09:15:00+00:00"
         },
         {
             "name": "spatie/laravel-multitenancy",
@@ -6364,16 +6365,16 @@
         },
         {
             "name": "spatie/laravel-query-builder",
-            "version": "7.3.8",
+            "version": "7.3.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-query-builder.git",
-                "reference": "3260d474ef6623a0c1445dfbdaae8f4a70977897"
+                "reference": "cc3c04129a87bb910570d97d9c44fe0ca9ef6656"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-query-builder/zipball/3260d474ef6623a0c1445dfbdaae8f4a70977897",
-                "reference": "3260d474ef6623a0c1445dfbdaae8f4a70977897",
+                "url": "https://api.github.com/repos/spatie/laravel-query-builder/zipball/cc3c04129a87bb910570d97d9c44fe0ca9ef6656",
+                "reference": "cc3c04129a87bb910570d97d9c44fe0ca9ef6656",
                 "shasum": ""
             },
             "require": {
@@ -6434,8 +6435,8 @@
                     "type": "custom"
                 }
             ],
-            "time": "2026-11-06T10:50:13+00:00",
-            "published-time": "2026-11-06T10:54:58+00:00"
+            "time": "2026-11-13T09:17:31+00:00",
+            "published-time": "2026-11-13T09:20:05+00:00"
         },
         {
             "name": "spatie/laravel-settings",
@@ -10292,16 +10293,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.17.0",
+            "version": "v0.25.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "b64915ee8fc939ff559dee23019c4d7ce62f31be"
+                "reference": "74b2b4141bef71fa5a13e3f13a035e44d2e0f454"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/b64915ee8fc939ff559dee23019c4d7ce62f31be",
-                "reference": "b64915ee8fc939ff559dee23019c4d7ce62f31be",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/74b2b4141bef71fa5a13e3f13a035e44d2e0f454",
+                "reference": "74b2b4141bef71fa5a13e3f13a035e44d2e0f454",
                 "shasum": ""
             },
             "require": {
@@ -10315,7 +10316,7 @@
                 "spatie/laravel-data": "^4.23",
                 "spatie/laravel-medialibrary": "^11.13",
                 "spatie/laravel-query-builder": "^7.3",
-                "tey/mod": "^0.11.6"
+                "tey/mod": "^0.11.6 || ^0.12 || ^0.13"
             },
             "require-dev": {
                 "inertiajs/inertia-laravel": "^3.0",
@@ -10361,7 +10362,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.17.0"
+                "source": "https://github.com/teylabs/kit/tree/v0.25.0"
             },
             "funding": [
                 {
@@ -10369,8 +10370,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-12T15:04:33+00:00",
-            "published-time": "2026-11-12T15:05:09+00:00"
+            "time": "2026-11-15T02:04:00+00:00",
+            "published-time": "2026-11-15T02:04:12+00:00"
         },
         {
             "name": "tey/mod",
@@ -10483,16 +10484,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.11.94",
+            "version": "v0.11.103",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "f7b3cf295b27f7847a123e920a5a3d9547f95aec"
+                "reference": "6cb02fb70c7d1f6a415f5b432daff7272e9fb3d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/f7b3cf295b27f7847a123e920a5a3d9547f95aec",
-                "reference": "f7b3cf295b27f7847a123e920a5a3d9547f95aec",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/6cb02fb70c7d1f6a415f5b432daff7272e9fb3d4",
+                "reference": "6cb02fb70c7d1f6a415f5b432daff7272e9fb3d4",
                 "shasum": ""
             },
             "require": {
@@ -10567,7 +10568,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.11.94"
+                "source": "https://github.com/teylabs/standards/tree/v0.11.103"
             },
             "funding": [
                 {
@@ -10575,8 +10576,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-12T02:07:20+00:00",
-            "published-time": "2026-11-12T02:07:25+00:00"
+            "time": "2026-11-15T03:05:01+00:00",
+            "published-time": "2026-11-15T03:05:06+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Tey\Kit\Features\SessionUi\Account\OtherSessions;
 use Tey\Kit\Features\SessionUi\Account\SecurityLog;
+use Tey\Kit\Features\SessionUi\Account\SignedInDevices;
 use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\Models\SecurityEvent;
 
@@ -191,19 +192,19 @@ test('two factor is turned on with a code and a password and used to sign in', f
     expect(accountEvents(1))->toContain('two_factor_disabled');
     expect(accountEvents(1))->toContain('two_factor_failed');
 });
-test('signed in devices are listed and ended only with the database driver', function () {
+test('signed in devices are listed and ended on every driver but array', function () {
     require dirname(__DIR__).'/database/fixture.php';
 
-    // Not the database driver to begin with, whatever an earlier test or the environment left in the config; put back afterwards.
+    // The array driver to begin with, whatever an earlier test or the environment left in the config; put back afterwards.
     $driver = config('session.driver');
     config(['session.driver' => 'array']);
     try {
-        accountDevicesAreListedAndEndedOnlyWithTheDatabaseDriver();
+        accountDevicesAreListedAndEndedOnEveryDriverButArray();
     } finally {
         config(['session.driver' => $driver]);
     }
 });
-function accountDevicesAreListedAndEndedOnlyWithTheDatabaseDriver(): void
+function accountDevicesAreListedAndEndedOnEveryDriverButArray(): void
 {
     accountSignIn(1);
     $page = test()->get('/me/security', accountInertia())->assertOk()->json('props.sessions');
@@ -220,21 +221,26 @@ function accountDevicesAreListedAndEndedOnlyWithTheDatabaseDriver(): void
     });
     config(['session.driver' => 'database']);
     test()->get('/me/security', accountInertia())->assertOk();
-    $current = (string) DB::table('sessions')->where('user_id', 1)->value('id');
-    test()->assertNotSame('', $current);
-    DB::table('sessions')->where('id', $current)->update(['ip_address' => '127.0.0.1', 'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit Version/17.0 Safari/605.1.15']);
-    DB::table('sessions')->insert([['id' => 'phone', 'user_id' => 1, 'ip_address' => '198.51.100.4', 'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604', 'payload' => '', 'last_activity' => time() - 3600]]);
+    test()->assertNotSame('', (string) DB::table('sessions')->where('user_id', 1)->value('id'));
+    // The list reads signed_in_devices (kit 0.24), not the sessions table: a session signed in before it is listed once it has its row, as
+    // kit:devices:backfill gives it one. It shows the browser and platform and the network's prefix, never the raw user agent or address.
+    $agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604';
+    DB::table('sessions')->insert([['id' => 'phone', 'user_id' => 1, 'ip_address' => '198.51.100.4', 'user_agent' => $agent, 'payload' => '', 'last_activity' => time() - 3600]]);
+    expect(array_column(test()->get('/me/security', accountInertia())->assertOk()->json('props.sessions.items'), 'agent'))->not->toContain('Safari on iOS');
+    expect(SignedInDevices::adopt('phone', 1, $agent, '198.51.100.4', now()->subHour()))->toBeTrue();
     $page = test()->get('/me/security', accountInertia())->assertOk()->json('props.sessions');
     expect($page['supported'])->toBeTrue();
     expect(array_column($page['items'], 'agent'))->toContain('Safari on iOS');
+    expect(array_column($page['items'], 'ip'))->toContain('198.51.100.0/24');
 
     // The row of the session being read is marked, the others are not.
-    $marked = array_column(OtherSessions::list(User::findOrFail(1), 'phone'), 'current', 'ip');
-    expect($marked['198.51.100.4'])->toBeTrue();
-    expect($marked['127.0.0.1'])->toBeFalse();
+    $marked = array_column(OtherSessions::list(User::findOrFail(1), 'phone'), 'current', 'agent');
+    expect($marked['Safari on iOS'])->toBeTrue();
+    expect(array_values(array_filter($marked)))->toHaveCount(1);
     test()->deleteJson('/me/security/sessions', [])->assertUnprocessable()->assertJsonValidationErrors('password');
     test()->deleteJson('/me/security/sessions', ['password' => test()->password])->assertOk();
     expect(DB::table('sessions')->where('id', 'phone')->count())->toBe(0);
+    expect(array_column(test()->get('/me/security', accountInertia())->assertOk()->json('props.sessions.items'), 'agent'))->not->toContain('Safari on iOS');
     expect(accountEvents(1))->toContain('sessions_ended');
 }
 test('the security log records sign ins and failures and is only yours', function () {

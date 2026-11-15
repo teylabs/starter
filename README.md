@@ -2,7 +2,7 @@
 
 > Built for the Tey Labs fleet. Public but unsupported: no support, no stability promise, use at your own risk.
 
-The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with the kit's default features added: workspace membership and invitations, versioned settings shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Notes is opt-in: add it with `php artisan kit:add notes` ([lifecycle](docs/lifecycle.md#adding-notes)). Maintained packages own their jobs; no production application or database is copied.
+The new-app template for tenant-aware Laravel apps, built on [tey/kit](https://github.com/teylabs/kit) with the kit's default features added: workspace membership and invitations, versioned settings shared by session pages and MCP tools, Fortify sessions, Inertia/Vue pages, and Passport OAuth with PKCE. Notes is opt-in: list it in `config/kit.php`'s `features` and run `php artisan kit:scaffold notes` ([lifecycle](docs/lifecycle.md#adding-notes)). Maintained packages own their jobs; no production application or database is copied.
 
 PHP 8.4 or 8.5 and Node 22 are required.
 
@@ -41,7 +41,7 @@ SQLite stays only for the few checks that read a SQLite dump (`TEST_DB_CONNECTIO
 
 `php artisan standards:check` runs tey/standards' conformance rules (configured in `tests/Arch/configuration.php`) and must exit 0. The gate is strict: every optional and advisory rule is on (`optionalRules`), rule 51 (CI shape) is enforced (`ciEnforce`, and `PREFLIGHT_CI_ENFORCE=true` in CI), and the allowlist is empty. A finding is fixed in the code, never allowlisted. Before building a page, action, MCP tool or setting, find its pattern with `bakery.find` (offline: `php artisan standards:pattern "<intent>"`). `standards:install` also adds Claude Code hooks in `.claude/settings.json` (a pre-commit and Stop check, a pattern lookup for new files, and a check after each edit) and a git pre-push hook running `standards:check --changed`. Laravel Boost (`boost.json`, `.ai/guidelines`) publishes the guidelines and skills to Claude Code and Codex; refresh them with `php artisan boost:update`.
 
-CI checks Pint and standards, runs the PHP suites in parallel on PostgreSQL, checks the template's feature files against `kit:add` on a clean Laravel app, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
+CI checks Pint and standards, runs the PHP suites in parallel on PostgreSQL, checks the template's kit files against `kit:scaffold --diff`, and runs `composer setup` and the browser test on a fresh clone. See [testing](docs/testing.md).
 
 ## Status
 

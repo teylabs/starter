@@ -2,7 +2,7 @@
 import { Form, Link, usePage } from '@inertiajs/vue3';
 import { ArrowRight } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
-import { browserTimezone, Button, Field, Input, Page, PasswordInput } from '@kit/ui';
+import { ActionGroup, browserTimezone, Button, Field, Input, Page, PasswordInput, Stack } from '@kit/ui';
 
 // A workspace invitation link: the workspace, who invited you, then the next step for this state, or a clear reason the link no longer works.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.InvitationViewModel>();
@@ -49,20 +49,23 @@ const body = computed(() => {
 </script>
 <template>
     <Page xs :heading="false">
-        <div class="space-y-2">
+        <!-- The heading block: 8px between its lines, 12px around the inviter's note (the gap plus its my-1). -->
+        <Stack class="gap-2">
             <h1 class="text-xl font-medium" data-invitation-title>{{ title }}</h1>
             <p v-if="context" class="text-sm font-medium" data-invitation-summary>{{ context }}</p>
-            <figure v-if="invitation?.message && joining" class="my-3 border-l-2 pl-3" data-invitation-note>
+            <figure v-if="invitation?.message && joining" class="my-1 border-l-2 pl-3" data-invitation-note>
                 <blockquote class="text-sm">{{ invitation.message }}</blockquote>
                 <figcaption class="mt-1 text-xs text-muted-foreground">{{ who }}</figcaption>
             </figure>
             <p class="text-sm text-muted-foreground" data-invitation-message :data-state="state">{{ body }}</p>
-        </div>
+        </Stack>
         <Form v-if="state === 'ready'" v-slot="{ processing }" :action="accept_url" method="post" class="grid gap-4">
             <Input type="hidden" name="timezone" :model-value="timezone" />
-            <Button type="submit" class="w-full" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
-            <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">{{ other_email ? 'Switch account' : `Not ${signed_in_as}? Switch account` }}</Link>
-            <Link v-if="other_email" href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
+            <ActionGroup direction="column">
+                <Button type="submit" :disabled="processing" data-test="accept-invitation">{{ processing ? 'Joining…' : other_email ? `Join as ${signed_in_as}` : 'Accept invitation' }}</Button>
+                <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">{{ other_email ? 'Switch account' : `Not ${signed_in_as}? Switch account` }}</Link>
+                <Link v-if="other_email" href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
+            </ActionGroup>
         </Form>
         <div v-else-if="state === 'unverified'" class="grid gap-3" data-invitation-unverified>
             <Link v-if="verify_url" :href="verify_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-verify">Verify your email to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
@@ -79,10 +82,10 @@ const body = computed(() => {
             <Field id="password_confirmation" name="password_confirmation" label="Confirm password"><PasswordInput id="password_confirmation" name="password_confirmation" required autocomplete="new-password" /></Field>
             <Button type="submit" class="w-full" :disabled="processing" data-test="invitation-register">{{ processing ? 'Creating…' : 'Create account' }}</Button>
         </Form>
-        <div v-else-if="state === 'wrong_account'" class="grid gap-3" data-invitation-wrong-account>
+        <ActionGroup v-else-if="state === 'wrong_account'" direction="column" data-invitation-wrong-account>
             <Link href="/switch-account" method="post" as="button" class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-switch-account">Switch account</Link>
             <Link href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
-        </div>
+        </ActionGroup>
         <div v-else-if="state === 'already_member'" class="grid gap-3">
             <Link v-if="workspace_url" :href="workspace_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-open-workspace">Go to {{ invitation?.workspace ?? 'the workspace' }}<ArrowRight class="size-4" aria-hidden="true" /></Link>
             <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">Not {{ signed_in_as }}? Switch account</Link>

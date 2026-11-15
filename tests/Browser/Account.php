@@ -3,17 +3,22 @@
 require_once __DIR__.'/../Concerns/FreshClone.php';
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Concerns\FreshClone;
 use Tey\Concierge\LocalAuth\LocalAuthServiceProvider;
 use Tey\Concierge\Support\ConciergeModels;
+use Tey\Kit\Features\SessionUi\Account\SignedInDevices;
 
 // The account pages in a real browser: the two-factor setup flow (password, QR code and key, a code from the authenticator, the recovery codes shown once,
-// then turned off again) and the signed-in devices section. Listing devices needs the database session driver, which the harness does not use, so it says so.
+// then turned off again) and the signed-in devices section. The harness runs on the array session driver, which can't list devices (the page says so); this
+// test runs on the database driver, so the list shows this device and one signed in before kit 0.24, adopted as kit:devices:backfill adopts it, then signs that one out.
 it('sets two-factor authentication up with a code and shows the devices section', function (): void {
     $environment = getenv('APP_ENV');
+    $driver = config('session.driver');
     try {
+        config(['session.driver' => 'database']);
         putenv('APP_ENV=local');
         app()['env'] = 'local';
         config(['concierge.local_login' => FreshClone::localLogin('local')]);
@@ -26,8 +31,20 @@ it('sets two-factor authentication up with a code and shows the devices section'
 
         $page = visit('/login')->click('[data-local-login] button')->assertPathIs('/');
         $page->navigate('/me/security')->assertSee('Two-factor authentication')->assertSee('Security log')->assertNoJavaScriptErrors();
-        // The devices section says why it cannot list devices here.
-        $page->assertPresent('[data-sessions-unsupported]')->assertSee('SESSION_DRIVER=database');
+        // The devices section lists this device, with no Sign out of its own.
+        $page->assertMissing('[data-sessions-unsupported]')->assertCount('[data-sessions] [data-device]', 1)->assertPresent('[data-sessions] [data-this-device]')->assertMissing('[data-device-sign-out]');
+        // The list reads signed_in_devices, not the sessions table: a session signed in before kit 0.24 is listed once it has its row.
+        $phone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604';
+        DB::table('sessions')->insert(['id' => 'phone-session', 'user_id' => $user->id, 'ip_address' => '198.51.100.4', 'user_agent' => $phone, 'payload' => '', 'last_activity' => time() - 3600]);
+        $page->navigate('/me/security')->assertCount('[data-sessions] [data-device]', 1);
+        expect(SignedInDevices::adopt('phone-session', $user->id, $phone, '198.51.100.4', now()->subHour()))->toBeTrue();
+        $page->navigate('/me/security')->assertCount('[data-sessions] [data-device]', 2)->assertSeeIn('[data-sessions]', 'Safari on iOS')->assertSeeIn('[data-sessions]', '198.51.100.0/24');
+        assertAccessible($page, 'the Security page with two devices');
+        // Signing it out asks for the password and confirms, naming the device; this device stays.
+        $page->type('[data-device-sign-out] input[name=password]', 'account-test-pass-1')->click('[data-device-sign-out] button[data-variant=destructive]')->assertPresent('[data-confirm-dialog]')->assertSee('Sign out Safari on iOS?');
+        $page->click('[data-confirm-action]')->assertSee('Signed out Safari on iOS.')->assertNoJavaScriptErrors();
+        $page->navigate('/me/security')->assertCount('[data-sessions] [data-device]', 1)->assertPresent('[data-sessions] [data-this-device]');
+        expect(DB::table('sessions')->where('id', 'phone-session')->exists())->toBeFalse();
         // The sign-in is in the log.
         $page->assertPresent('[data-security-log] [data-event="sign_in"]');
         assertAccessible($page, 'the Security page');
@@ -78,6 +95,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->navigate('/me/profile')->assertPresent('#profile-email')->assertNoJavaScriptErrors();
         assertAccessible($page, 'the Profile page');
     } finally {
+        config(['session.driver' => $driver]);
         putenv('APP_ENV='.$environment);
         app()['env'] = $environment;
     }

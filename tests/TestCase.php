@@ -21,6 +21,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         $this->withoutVite();
+        // JSON requests (postJson, putJson, getJson) send the session cookie too. Without it each one after a sign-in runs under a fresh session id, the kit's
+        // signed-in devices middleware (0.24) moves the device row to that id, and the next cookie request is signed out.
+        $this->withCredentials();
     }
 
     /** Forget the cookies a test has set on its next requests. */

@@ -47,14 +47,16 @@ foreach ([...$tests($arch), ...$tests($plain)] as $index => $file) {
     $tia->watch($index < count($arch) ? ['app/**' => $target, '.github/workflows/**' => $target] : ['tests/**' => $target]);
 }
 
-/** @return list<string> the project-relative files tey/kit's installed lineage records (.mod-maintenance/installed) list as generated: kit:add writes them byte for byte, so the kit's own checks hold them */
+/** @return list<string> the project-relative files tey/kit scaffolds for the adopted features (kit:scaffold writes them byte for byte, and tests/LifecycleTest.php keeps them so), so the kit's own checks hold them */
 function kitOwnedFiles(): array
 {
     static $owned = null;
     if ($owned === null) {
+        // Since kit 0.18 the files `kit:scaffold` writes for each adopted feature are the ones its feature.json lists (there are no installed records).
         $owned = [];
-        foreach (glob(dirname(__DIR__).'/.mod-maintenance/installed/*.json') ?: [] as $record) {
-            $owned = [...$owned, ...array_keys(json_decode((string) file_get_contents($record), true)['artifact']['files'] ?? [])];
+        foreach (config('kit.features') as $feature) {
+            $manifest = dirname(__DIR__).'/vendor/tey/kit/resources/features/'.$feature.'/feature.json';
+            $owned = [...$owned, ...array_keys(json_decode((string) file_get_contents($manifest), true)['files'] ?? [])];
         }
     }
 
@@ -71,7 +73,7 @@ if (! function_exists('settled')) {
     }
 }
 
-/** Whether this app adopted the kit's opt-in notes feature (`php artisan kit:add notes`). New starters do not; tests pin both. */
+/** Whether this app adopted the kit's opt-in notes feature (`php artisan kit:scaffold notes`, listed in kit.features). New starters do not; tests pin both. */
 function notesAdopted(): bool
 {
     return in_array('notes', config('kit.features'), true);

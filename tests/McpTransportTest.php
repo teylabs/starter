@@ -24,7 +24,9 @@ test('delegated settings', function () {
         (require $migration)->up();
     }
     // The consent gate's intent ledger, which replays a capability tool's retry (notes_write) on its intent_key.
-    (require base_path('database/migrations/kit/mcp/0001_01_02_000601_create_kit_mcp_intents_table.php'))->up();
+    // The kit's migrations load from the package; its 0.18 rename makes kit_mcp_intents mcp_intents.
+    (require base_path('vendor/tey/kit/database/migrations/mcp/0001_01_02_000601_create_kit_mcp_intents_table.php'))->up();
+    (require base_path('vendor/tey/kit/database/migrations/mcp/2026_11_14_000605_rename_mcp_tables.php'))->up();
     $keys = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
     openssl_pkey_export($keys, $private);
     $public = openssl_pkey_get_details($keys)['key'];
@@ -125,7 +127,7 @@ test('delegated settings', function () {
     $this->withoutToken();
     Auth::forgetGuards();
     $verifier = Str::random(64);
-    // Notes is opt-in (kit:add notes): its scopes, dashboard card and tools are proved only when the app adopted it.
+    // Notes is opt-in (kit.features, kit:scaffold notes): its scopes, dashboard card and tools are proved only when the app adopted it.
     $notes = in_array('notes', config('kit.features'), true);
     $query['scope'] = 'mcp:use settings.read dashboard.read'.($notes ? ' notes.read notes.write' : '');
     $query['code_challenge'] = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');

@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Console\Commands\FirstOwnerCommand;
 use App\Support\KitMigrationRepository;
-use App\Support\KitMigrator;
 use App\Support\LoginResponse;
 use Composer\InstalledVersions;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +25,6 @@ final class AppServiceProvider extends ServiceProvider
             return new KitMigrationRepository($app['db'], is_array($migrations) ? ($migrations['table'] ?? null) : $migrations);
         });
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
-        $this->app->extend('migrator', fn ($migrator, $app) => new KitMigrator($app['migration.repository'], $app['db'], $app['files'], $app['events']));
     }
 
     public function boot(): void

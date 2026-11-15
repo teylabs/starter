@@ -20,8 +20,8 @@ trait AssertsPlaceholder
             $this->{$verb}($path)->assertStatus(405);
         }
         // Nothing on it takes input: neither placeholder page, nor the component, has a form.
-        foreach (['pages/Workspace/Placeholder/Page.vue', 'pages/Workspace/Settings/Placeholder/Page.vue', 'components/Kit/Feedback/Placeholder.vue'] as $file) {
-            $source = (string) file_get_contents(dirname(__DIR__, 2).'/resources/js/'.$file);
+        foreach (['resources/js/pages/Workspace/Placeholder/Page.vue', 'resources/js/pages/Workspace/Settings/Placeholder/Page.vue', 'vendor/tey/kit/resources/js/components/Kit/Feedback/Placeholder.vue'] as $file) {
+            $source = (string) file_get_contents(dirname(__DIR__, 2).'/'.$file);
             $this->assertDoesNotMatchRegularExpression('/<(form|Form|FormActions|FormCard|input|Input|button|Button)\b/', $source, $file.' has no form or control');
         }
     }

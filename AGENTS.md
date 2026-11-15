@@ -9,7 +9,7 @@ Guidance for contributors and coding agents working in this repository.
 - Keep capabilities, entitlements, membership and admission distinct.
 - State missing Inertia, protocol, lifecycle or platform coverage explicitly rather than implying it.
 - Run local tests with `composer test` (`pest --tia --parallel`, impacted tests only) or `vendor/bin/pest --tia …`; `--no-tia` only for browser specs. A bare local `pest` refuses to run; a non-empty CI, or a set PARATEST or PEST_TIA, bypasses the guard (an empty `CI=` does not). TIA diffs against `main`, or `TIA_DEFAULT_BRANCH` when set.
-- Never edit a file a kit feature owns (`database/migrations/kit/**`, the kit's pages): CI checks them against `kit:add`.
+- Never edit a file a kit feature scaffolds (the kit's pages, `resources/css/kit.css`): CI checks them against `kit:scaffold --diff`.
 
 ## Gates
 
@@ -121,7 +121,7 @@ Before implementing a page, action, MCP tool, setting, notification, job or inte
 # Starter
 
 - Run `php artisan standards:check` before pushing; it must exit 0. Find the pattern for new work with `php artisan standards:pattern "<intent>"` (offline `bakery.find`).
-- Kit-owned files under `resources/js/components/Kit` and the kit's server classes are not edited here; fix them in the kit.
+- The kit's shared components (`@kit/ui`, `@/components/Kit`, loaded from `vendor/tey/kit`) and its server classes are not edited here; fix them in the kit.
 - Pages render server-provided descriptors and capability flags; they never check roles or permissions themselves.
 - Tests run with `--tia` locally (`--no-tia` for browser specs); see `tests/Pest.php`.
 

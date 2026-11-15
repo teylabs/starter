@@ -91,8 +91,9 @@ test('every page route has a breadcrumb', function () {
     $checked = [];
     foreach (Route::getRoutes() as $route) {
         $action = $route->getActionName();
-        if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'ModalController') && ! str_contains($action, 'DemoLogin') && ! str_contains($action, 'Moved') && ! str_contains($action, 'ModalController') && ! str_contains($action, 'AvatarImage') && ! str_contains($action, 'NoteMedia') && ! str_starts_with($route->uri(), '.well-known')) {
-            // (The OAuth discovery documents under /.well-known, served by the mcp feature since kit 0.7, are protocol endpoints, not pages.)
+        if (in_array('GET', $route->methods(), true) && (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) && ! str_contains($action, 'ModalController') && ! str_contains($action, 'DemoLogin') && ! str_contains($action, 'Moved') && ! str_contains($action, 'ModalController') && ! str_contains($action, 'AvatarImage') && ! str_contains($action, 'NoteMedia') && ! str_contains($action, 'SwitcherController') && ! str_starts_with($route->uri(), '.well-known')) {
+            // (The OAuth discovery documents under /.well-known, served by the mcp feature since kit 0.7, are protocol endpoints, not pages; so is the
+            // switcher's JSON of each workspace's page, /me/switcher, since kit 0.23.)
             expect($registry->get($route))->not->toBeNull($route->uri().' declares no breadcrumb');
             $checked[] = $route->uri();
         }
@@ -126,7 +127,7 @@ test('every trail starts at home', function () {
     $checked = 0;
     foreach (Route::getRoutes() as $route) {
         $action = $route->getActionName();
-        if (! in_array('GET', $route->methods(), true) || str_contains($action, 'ModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage') || str_contains($action, 'NoteMedia') || str_contains($action, 'DemoLogin') || str_starts_with($route->uri(), '.well-known')) {
+        if (! in_array('GET', $route->methods(), true) || str_contains($action, 'ModalController') || ! (str_starts_with($action, 'Tey\\Kit\\Features\\') || str_starts_with($action, 'App\\') || str_starts_with($action, 'Tests\\Fixtures\\')) || str_contains($action, 'Moved') || str_contains($action, 'AvatarImage') || str_contains($action, 'NoteMedia') || str_contains($action, 'SwitcherController') || str_contains($action, 'DemoLogin') || str_starts_with($route->uri(), '.well-known')) {
             continue;
         }
         $crumb = $registry->get($route);

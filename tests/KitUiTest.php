@@ -23,14 +23,14 @@ test('kit pages import ui only from the kit alias', function () {
     }
     expect($checked)->toBeGreaterThan(10);
 
-    // The alias resolves in the build and the typecheck, and defaults to the kit's own set.
+    // The alias resolves in the build and the typecheck, and defaults to the kit's own set, which loads from the package (kit 0.18).
     $this->assertStringContainsString("'@kit/ui'", (string) file_get_contents(dirname(__DIR__).'/vite.config.ts'));
     $this->assertStringContainsString('"@kit/ui"', (string) file_get_contents(dirname(__DIR__).'/tsconfig.json'));
-    expect(dirname(__DIR__).'/resources/js/components/Kit/index.ts')->toBeFile();
-    expect(dirname(__DIR__).'/resources/js/components/Kit/contract.ts')->toBeFile();
+    expect(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/index.ts')->toBeFile();
+    expect(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/contract.ts')->toBeFile();
 });
 test('page widths are a static lookup', function () {
-    $vue = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/FocusPage.vue');
+    $vue = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/Layout/FocusPage.vue');
     preg_match('/const maxWidths[^{]*\{(.*?)\};/s', $vue, $lookup);
     preg_match_all("/(\w+): '([^']+)'/", $lookup[1] ?? '', $pairs, PREG_SET_ORDER);
 
@@ -45,21 +45,21 @@ test('page widths are a static lookup', function () {
 
     // The shell owns the gutters: the primitive adds no padding of its own.
     $this->assertDoesNotMatchRegularExpression('/(?<![\w-])p[xytblr]?-\d/', substr($vue, strpos($vue, '<template>')));
-    $index = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/index.ts');
+    $index = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/index.ts');
     $this->assertStringContainsString("export { default as Page } from './Layout/Page.vue';", $index);
 
     // FocusPage is internal to <Page>, never exported.
     $this->assertStringNotContainsString('FocusPage', $index);
 
     // Widths are boolean props (`<Page sm>`); the heading carries its own utilities, not a stylesheet rule.
-    $page = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Layout/Page.vue');
+    $page = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/Layout/Page.vue');
     foreach (['xs', 'sm', 'md', 'lg', 'xl', 'full'] as $width) {
         $this->assertMatchesRegularExpression('/\b'.$width.'\?: boolean;/', $page);
     }
     $this->assertStringNotContainsString('page-heading', (string) file_get_contents(dirname(__DIR__).'/resources/css/app.css'));
 });
 test('every app page roots in page and fixed content declares a width', function () {
-    // A page tey/kit owns (listed in .mod-maintenance/installed) is the kit's to shape and kit:add's to replace: the kit's own checks hold it, so this reads the app's pages.
+    // A page tey/kit scaffolds (kitOwnedFiles()) is the kit's to shape and kit:scaffold's to replace: the kit's own checks hold it, so this reads the app's pages.
     // Every page roots in <Page>; the default is full, for lists, tables and grids that grow with data. A page whose content does not
     // grow (forms, settings sections, detail and confirmation pages, empty states, account and guest pages) declares a focused width
     // (`<Page sm>`). Add a page to $full only when it is a full data page.
@@ -118,7 +118,7 @@ test('hand rolled controls live only in kit components', function () {
     expect(count($outside))->toBeGreaterThan(5);
 
     // The appearance controls and the password input are kit components on Reka, exported from @kit/ui.
-    $index = (string) file_get_contents($root.'/components/Kit/index.ts');
+    $index = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/index.ts');
     foreach (['AppearanceToggle', 'AppearanceChoice', 'PasswordInput'] as $name) {
         $this->assertStringContainsString('as '.$name.' }', $index);
     }
@@ -126,7 +126,7 @@ test('hand rolled controls live only in kit components', function () {
     $this->assertFileDoesNotExist($root.'/components/Shell/Segmented.vue');
 
     // <Page> warns in development when more than one width is set.
-    $this->assertStringContainsString('set one width at most', (string) file_get_contents($root.'/components/Kit/Layout/Page.vue'));
+    $this->assertStringContainsString('set one width at most', (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/Layout/Page.vue'));
 });
 test('the saved appearance is applied before first paint', function () {
     $html = $this->get('/login')->assertOk()->getContent();
@@ -138,7 +138,7 @@ test('the saved appearance is applied before first paint', function () {
     // The toggle is in the header and the drawer through the shell's `actions` slot, and names itself.
     $layout = (string) file_get_contents(dirname(__DIR__).'/resources/js/layouts/AppLayout.vue');
     $this->assertStringContainsString('<template #actions><AppearanceToggle />', $layout);
-    $toggle = (string) file_get_contents(dirname(__DIR__).'/resources/js/components/Kit/Appearance/AppearanceToggle.vue');
+    $toggle = (string) file_get_contents(dirname(__DIR__).'/vendor/tey/kit/resources/js/components/Kit/Appearance/AppearanceToggle.vue');
     $this->assertStringContainsString('aria-label="Dark mode"', $toggle);
 
     // Reka's Toggle holds the pressed state (it renders aria-pressed), so none is hand-rolled here.

@@ -16,8 +16,9 @@ final class LoginResponse implements LoginResponseContract
             // inertia.pure: package the same Fortify contract's JSON body.
             return response()->json(['two_factor' => false]);
         }
-        $reachable = array_values(array_filter(app(PageShell::class)->choices($request), fn (array $workspace) => $workspace['url'] !== null));
+        // Each workspace's landing page, by id (null where the person may open nothing), decided as the switcher decides it (kit 0.23: choices carry no url).
+        $reachable = array_values(array_filter(app(PageShell::class)->landings($request)));
 
-        return redirect()->intended(count($reachable) === 1 ? $reachable[0]['url'] : Fortify::redirects('login'));
+        return redirect()->intended(count($reachable) === 1 ? $reachable[0] : Fortify::redirects('login'));
     }
 }

@@ -17,12 +17,10 @@
     "tests/",
     "README.md"
   ],
-  "upgrade_policy": "Update maintained dependencies through a reviewed lockfile diff. Kit feature files change only through kit:add/kit:update, never by hand; preview regenerated types and review host changes.",
+  "upgrade_policy": "Update maintained dependencies through a reviewed lockfile diff. Kit feature files change only through kit:scaffold (--diff, then --force for an unedited file), never by hand; preview regenerated types and review host changes.",
   "kit_generated": {
-    "by": "php artisan kit:add core workspaces access settings session-ui mcp (tey/kit, checked by bin/kit-parity.sh in CI)",
+    "by": "php artisan kit:scaffold <feature> for each of config/kit.php's features (tey/kit, checked by bin/kit-parity.sh in CI)",
     "paths": [
-      "resources/js/components/Kit/",
-      "database/migrations/kit/",
       "resources/js/pages/Auth/Login/",
       "resources/js/pages/Workspace/Layout.vue",
       "resources/js/pages/Workspace/Partials/",

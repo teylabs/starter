@@ -25,7 +25,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         expect(Schema::hasTable($table))->toBeTrue($table);
         expect(DB::table($table)->count())->toBe(0, 'Migrate must not seed '.$table);
     }
-    // Notes is opt-in (kit:add notes): a new starter has no kit_notes table.
+    // Notes is opt-in (kit.features, kit:scaffold notes): a new starter has no kit_notes table.
     expect(Schema::hasTable('kit_notes'))->toBe(notesAdopted());
     $migrations = DB::table('migrations')->orderBy('id')->pluck('migration')->all();
     expect($migrations)->toBe([
@@ -36,9 +36,9 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_01_000004_create_sessions_table',
         '0001_01_01_000005_create_cache_table',
         '0001_01_01_000006_create_jobs_table',
+        '0001_01_02_000100_create_kit_core_tables',
         '0001_01_02_000101_create_kit_meta_table',
         '0001_01_02_000200_create_kit_workspaces_table',
-        '0001_01_02_000100_create_kit_core_tables',
         '0001_01_02_000201_create_permission_tables',
         '0001_01_02_000202_create_kit_operators_table',
         '0001_01_02_000203_add_slug_to_kit_workspaces_table',
@@ -74,6 +74,12 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '2016_06_01_000003_create_oauth_refresh_tokens_table',
         '2016_06_01_000004_create_oauth_clients_table',
         '2024_06_01_000001_create_oauth_device_codes_table',
+        // kit 0.18's renames of the infrastructure tables, and 0.24's signed-in devices.
+        '2026_11_14_000304_rename_access_tables',
+        '2026_11_14_000506_rename_session_ui_tables',
+        '2026_11_14_000507_create_signed_in_devices_table',
+        '2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table',
+        '2026_11_14_000605_rename_mcp_tables',
         'create_concierge_tables',
         'create_concierge_tenant_invitations_table',
         'create_concierge_user_accounts_table',
