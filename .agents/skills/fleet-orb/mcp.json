@@ -1,8 +1,0 @@
-{
-    "fleet-orb": {
-        "url": "https://fleet.tey.pub/mcp/fleet",
-        "headers": {
-            "Authorization": "Bearer ${amp:id-token}"
-        }
-    }
-}
