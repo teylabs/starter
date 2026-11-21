@@ -35,9 +35,22 @@ test('media is on the private media disk: storage/app/private/media by default, 
     expect(config('filesystems.disks.media.root'))->toBe(storage_path('app/private/media'));
     expect(config('filesystems.disks.s3.visibility'))->toBe('private');
 
-    putenv('MEDIA_DISK=s3');
-    $disks = (require config_path('filesystems.php'))['disks'];
-    putenv('MEDIA_DISK');
+    // env() reads $_ENV and $_SERVER before getenv(), and a checkout's own .env has already filled them, so set all three.
+    $before = [getenv('MEDIA_DISK'), $_ENV['MEDIA_DISK'] ?? null, $_SERVER['MEDIA_DISK'] ?? null];
+    try {
+        putenv('MEDIA_DISK=s3');
+        $_ENV['MEDIA_DISK'] = $_SERVER['MEDIA_DISK'] = 's3';
+        $disks = (require config_path('filesystems.php'))['disks'];
+    } finally {
+        putenv($before[0] === false ? 'MEDIA_DISK' : 'MEDIA_DISK='.$before[0]);
+        unset($_ENV['MEDIA_DISK'], $_SERVER['MEDIA_DISK']);
+        if ($before[1] !== null) {
+            $_ENV['MEDIA_DISK'] = $before[1];
+        }
+        if ($before[2] !== null) {
+            $_SERVER['MEDIA_DISK'] = $before[2];
+        }
+    }
     expect($disks['media']['driver'])->toBe('s3');
     expect($disks['media']['bucket'])->toBe('synthetic-bucket');
     expect($disks['media']['root'])->toBe('media');
