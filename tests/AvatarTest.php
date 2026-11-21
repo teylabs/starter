@@ -14,9 +14,9 @@ use Tey\Kit\Features\SessionUi\Http\Middleware\HandleInertiaRequests;
 use Tey\Kit\Features\SessionUi\Models\UserAvatar;
 
 beforeEach(function () {
+    Storage::fake('media');
     Storage::fake('local');
     Storage::fake('public');
-    config(['media-library.disk_name' => 'local']);
 });
 function avatarInertia(): array
 {
@@ -138,12 +138,13 @@ test('the avatar is a media library item on the private disk and never under the
     $this->postJson('/me/avatar', ['avatar' => UploadedFile::fake()->image('a.png', 100, 100)])->assertCreated();
     $media = avatarOriginal(1);
     expect($media->collection_name)->toBe('avatar');
-    expect($media->disk)->toBe('local');
-    expect($media->conversions_disk)->toBe('local');
+    expect($media->disk)->toBe('media');
+    expect($media->conversions_disk)->toBe('media');
     expect($media->model_type)->toBe('kit-user-avatar');
     expect(strlen($media->getCustomProperty('token')))->toBe(40);
-    expect(Storage::disk('local')->exists($media->getPathRelativeToRoot()))->toBeTrue();
-    expect(Storage::disk('local')->exists($media->getPathRelativeToRoot('thumb')))->toBeTrue();
+    expect(Storage::disk('media')->exists($media->getPathRelativeToRoot()))->toBeTrue();
+    expect(Storage::disk('media')->exists($media->getPathRelativeToRoot('thumb')))->toBeTrue();
+    expect(Storage::disk('local')->allFiles())->toBe([], 'media stays under its own disk, off the rest of the private storage');
     expect(Storage::disk('public')->allFiles())->toBe([], 'nothing is stored under the public disk');
     expect(config('filesystems.disks.local.visibility') === 'public')->toBeFalse();
 });
