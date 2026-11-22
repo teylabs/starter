@@ -43,7 +43,9 @@ it('walks an invitee from the invitation through the welcome steps to the dashbo
             ->assertMissing('[data-shell-bar]')
             ->assertNoJavaScriptErrors();
         assertAccessible($page, 'the timezone welcome step');
-        $page->click('[data-welcome-submit]')->assertPathIs('/welcome/photo')->assertSeeIn('[data-focus-step]', 'Step 2 of 2')->assertScript('document.activeElement.id', 'avatar');
+        $page->click('[data-welcome-submit]')->assertPathIs('/welcome/photo')->assertSeeIn('[data-focus-step]', 'Step 2 of 2')
+            // The photo field has the focus on arrival: its dropzone (kit 0.28), which holds the field's own file input.
+            ->assertScript('document.activeElement.matches("[data-dropzone]") && document.activeElement.contains(document.getElementById("avatar"))', true);
         assertAccessible($page, 'the photo welcome step');
         foreach ([[390, 844], [1440, 900]] as [$width, $height]) {
             $page->resize($width, $height);
