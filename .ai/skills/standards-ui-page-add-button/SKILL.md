@@ -13,7 +13,7 @@ Scaffold: `php artisan standards:make page --flavor=index <Name>`.
 
 Kit: @kit/ui Button.
 - `Button` from `@kit/ui` for the add button: Add, New or Create with the Plus icon (props: href or @click, icon).
-- `ActionBar` from `@kit/ui` for the action bar: Where page-level actions sit (props: actions descriptors).
+- `ButtonGroup` from `@kit/ui` for the action group: Where page-level actions sit, each one written out by name (props: default slot, #menu).
 Checks: ui plus. Run `php artisan standards:check --changed` before committing.
 
 Not sure this is the right leaf? It answers "Which kind of control?" Call bakery.find, or run `php artisan standards:pattern --recipe=ui-page.add-button` to see its siblings.

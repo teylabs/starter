@@ -13,6 +13,6 @@ No generator yet; follow the summary and stamp the file `standards-pattern: data
 
 Kit: @kit/ui FileInput.
 - `FileInput` from `@kit/ui` for the file field: Uploads the record's file or photo (props: v-model, accept).
-Checks: 19, ui dropzone. Run `php artisan standards:check --changed` before committing.
+Checks: 19, ui dropzone, media.image-api, media.image-scoped. Run `php artisan standards:check --changed` before committing.
 
 Not sure this is the right leaf? It answers "Which addition?" Call bakery.find, or run `php artisan standards:pattern --recipe=data-actions.media-library` to see its siblings.
