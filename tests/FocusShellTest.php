@@ -42,7 +42,7 @@ test('each viewer gets the shell the server picks and only its fields', function
     expect($focus['kind'])->toBe('focus');
     expect(array_keys(Arr::sortRecursive($focus)))->toBe(['kind', 'links', 'product', 'step', 'user']);
     expect($focus['links'])->toBe(['sign_out' => '/logout', 'switch_account' => '/switch-account']);
-    expect(array_keys(Arr::sortRecursive($focus['user'])))->toBe(['avatar_url', 'avatar_url_2x', 'email', 'initials', 'name']);
+    expect(array_keys(Arr::sortRecursive($focus['user'])))->toBe(['avatar_color', 'avatar_url', 'avatar_url_2x', 'email', 'initials', 'name']);
     expect($focus['user']['email'])->toBe('actor1@example.test');
     expect($focus['step'])->toBeNull();
     expect($focus['product']['name'])->toBe(config('app.name'));

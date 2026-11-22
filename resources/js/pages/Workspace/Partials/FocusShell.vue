@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<{ shell: FocusShellShape; toaster?: boole
 <template>
     <div class="flex min-h-svh flex-col bg-[var(--shell-ground,var(--color-background))] text-foreground" data-shell-focus>
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
-        <header class="border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground" data-shell-bar>
+        <header class="border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground [--avatar-ring:var(--shell-bar,var(--background))]" data-shell-bar>
             <div :class="['mx-auto flex h-16 min-w-0 items-center gap-3 px-4 sm:px-6', props.widthClass]">
                 <Wordmark :product="props.shell.product" />
                 <p v-if="props.shell.step" class="min-w-0 truncate text-sm opacity-80" data-focus-step>Step {{ props.shell.step.current }} of {{ props.shell.step.total }}<span class="max-sm:hidden"> · {{ props.shell.step.label }}</span></p>

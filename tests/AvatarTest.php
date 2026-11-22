@@ -140,7 +140,7 @@ test('the avatar is a media library item on the private disk and never under the
     expect($media->collection_name)->toBe('avatar');
     expect($media->disk)->toBe('media');
     expect($media->conversions_disk)->toBe('media');
-    expect($media->model_type)->toBe('kit-user-avatar');
+    expect($media->model_type)->toBe('user-avatar');
     expect(strlen($media->getCustomProperty('token')))->toBe(40);
     expect(Storage::disk('media')->exists($media->getPathRelativeToRoot()))->toBeTrue();
     expect(Storage::disk('media')->exists($media->getPathRelativeToRoot('thumb')))->toBeTrue();

@@ -4,12 +4,10 @@ namespace App\Providers;
 
 use App\Console\Commands\FirstOwnerCommand;
 use App\Support\KitMigrationRepository;
-use App\Support\LoginResponse;
 use Composer\InstalledVersions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
-use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Fortify;
 use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Kit\Features\SessionUi\ViewModels\LoginViewModel;
@@ -24,7 +22,6 @@ final class AppServiceProvider extends ServiceProvider
 
             return new KitMigrationRepository($app['db'], is_array($migrations) ? ($migrations['table'] ?? null) : $migrations);
         });
-        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
     }
 
     public function boot(): void

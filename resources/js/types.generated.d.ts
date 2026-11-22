@@ -26,6 +26,7 @@ priority: 'primary' | 'secondary' | 'overflow' | null,
 checked: boolean | null,
 ariaLabel: string | null,
 description: string | null,
+download: boolean | null,
 };
 export type ActivityEntryData = {
 id: string,
@@ -108,6 +109,8 @@ token?: string | null,
 export type NavGroup = {
 label: string | null,
 items: Tey.Kit.Features.Core.Data.NavItem[],
+nested: boolean,
+sidebar: boolean,
 };
 export type NavItem = {
 label: string,
@@ -119,6 +122,7 @@ badge: string | null,
 export type NavigationHeader = {
 label: string,
 url: string,
+trail: boolean,
 };
 export type PageLayout = {
 navigation: Tey.Kit.Features.Core.Data.NavGroup[],
@@ -126,6 +130,7 @@ title: string,
 documentTitle: string,
 breadcrumbs: Tey.Kit.Features.Core.Data.Breadcrumb[],
 navigationHeader: Tey.Kit.Features.Core.Data.NavigationHeader | null,
+width: undefined | null,
 };
 export type SeeAll = {
 label: string,
@@ -165,7 +170,11 @@ label: string,
 options: {
 value: string,
 label: string,
+group?: string,
 }[],
+kind: 'select' | 'multi' | 'search',
+default: string | null,
+narrows: string | null,
 };
 export type TablePagination = {
 page: number,
@@ -529,6 +538,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -549,6 +559,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -564,6 +575,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -578,6 +590,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -593,6 +606,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -634,6 +648,7 @@ readonly key: string,
 readonly kind: 'task' | 'feed' | 'status' | 'setup',
 readonly region: 'main' | 'aside',
 readonly span: Tey.Kit.Features.SessionUi.Dashboard.WidgetSpanData,
+readonly headless: boolean,
 readonly state: string,
 readonly empty: Tey.Kit.Features.SessionUi.Dashboard.WidgetEmptyData | null,
 readonly error: Tey.Kit.Features.SessionUi.Dashboard.WidgetErrorData | null,
@@ -674,6 +689,7 @@ email: string,
 initials: string,
 avatar_url: string | null,
 avatar_url_2x: string | null,
+avatar_color: string,
 },
 links: {
 sign_out: string,
@@ -1116,6 +1132,7 @@ email: string,
 initials: string,
 avatar_url: string | null,
 avatar_url_2x: string | null,
+avatar_color: string,
 items: {
 label: string,
 url: string,
@@ -1144,7 +1161,16 @@ items: {
 label: string,
 url: string,
 current: boolean,
+group?: string,
 }[],
+child?: {
+label: string,
+items: {
+label: string,
+url: string,
+current: boolean,
+}[],
+},
 } | null,
 search: {
 url: string,
@@ -1163,6 +1189,16 @@ readonly html: string,
 }
 }
 export namespace Workspaces {
+export namespace Flags {
+export type TagItemData = {
+key: string,
+label: string,
+kind: 'flag' | 'tag',
+tone: string,
+tooltip: string | null,
+href: string | null,
+};
+}
 export namespace ViewModels {
 export type IndexWorkspaceViewModel = {
 readonly title: string,

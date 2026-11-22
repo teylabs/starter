@@ -17,6 +17,37 @@
         }
     }
 
+    /*
+     * Avatar's gap ring takes the colour of the surface it sits on (docs/avatars.md): the host's shadcn-vue surfaces set `--avatar-ring` to their own background,
+     * a menu or popover to the popover, a card to the card, a dialog or sheet to the page background. The kit's own surfaces set it on their markup; a surface
+     * of the host's sets it with `[--avatar-ring:…]`. Unset, the ring is the page background.
+     */
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='popover-content'],
+    [data-slot='select-content'] {
+        --avatar-ring: var(--popover);
+    }
+
+    [data-slot='card'] {
+        --avatar-ring: var(--card);
+    }
+
+    [data-slot='dialog-content'],
+    [data-slot='sheet-content'] {
+        --avatar-ring: var(--background);
+    }
+
+    /*
+     * The app shell publishes its pinned top stack's height as `--shell-top` (docs/shell.md). A #hash target, or a field focused by keyboard or scrolled to by
+     * validation, lands below the bar rather than under it. Outside the shell the variable is unset and the margin is just the 0.5rem.
+     */
+    :target,
+    [id]:focus-visible,
+    :is(input, select, textarea):focus {
+        scroll-margin-top: calc(var(--shell-top, 0px) + 0.5rem);
+    }
+
     /* PageTabs' row scrolls sideways when its tabs don't fit, by touch, trackpad or keyboard, without drawing a scrollbar under the tabs. */
     [data-page-tabs] > ul {
         scrollbar-width: none;
@@ -49,8 +80,24 @@
  * values the group always had, so the default theme looks the same (none of the shadcn surface tokens equals them, so they stay as aliases; the menu panel uses popover); a theme overrides them, and a surface (the FloatingToolbar pill) sets them on its own element.
  */
 :root {
+    /*
+     * The elevation scale (Refactoring UI D3, D4): five levels, each a tight dark layer and a soft one, the tight layer fading as the level rises. 1: cards, buttons
+     * and fields. 2: raised controls (a switch's thumb, the segmented toggle). 3: menus, popovers, selects and pickers. 4: toasts and the floating toolbar.
+     * 5: dialogs and modals. A theme overrides any level. Surface tokens a theme sets (README, "Page grounds") draw from it: `--kit-card-shadow`, every card's
+     * shadow (level 1); `--kit-modal-shadow`, Modal's and Dialog's (level 5); `--kit-field` and `--kit-field-edge`, a field's fill (the card's white in light
+     * mode; dark keeps its input wash) and edge (`--input`, 3:1 on the card).
+     */
+    --kit-elevation-1: 0 1px 2px rgb(28 25 23 / 0.06), 0 1px 3px rgb(28 25 23 / 0.1);
+    --kit-elevation-2: 0 1px 2px rgb(28 25 23 / 0.06), 0 3px 6px rgb(28 25 23 / 0.1);
+    --kit-elevation-3: 0 3px 6px rgb(28 25 23 / 0.05), 0 10px 20px rgb(28 25 23 / 0.12);
+    --kit-elevation-4: 0 4px 8px rgb(28 25 23 / 0.05), 0 15px 25px rgb(28 25 23 / 0.14);
+    --kit-elevation-5: 0 5px 15px rgb(28 25 23 / 0.07), 0 15px 35px rgb(28 25 23 / 0.2);
+    --kit-card-shadow: var(--kit-elevation-1);
+    --kit-field: var(--card);
+    --kit-field-edge: var(--input);
+    --kit-modal-shadow: var(--kit-elevation-5);
     --kit-paper: #fff;
-    --kit-outline: oklch(87.2% 0.01 258.338);
+    --kit-outline: var(--border);
     --kit-outline-foreground: oklch(37.3% 0.034 259.733);
     --kit-outline-muted: oklch(70.7% 0.022 261.325);
     --kit-outline-wash: oklch(98.5% 0.002 247.839);
@@ -58,8 +105,12 @@
 }
 
 .dark {
+    --kit-elevation-1: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.4);
+    --kit-elevation-2: 0 1px 2px rgb(0 0 0 / 0.3), 0 3px 6px rgb(0 0 0 / 0.4);
+    --kit-elevation-3: 0 3px 6px rgb(0 0 0 / 0.3), 0 10px 20px rgb(0 0 0 / 0.45);
+    --kit-elevation-4: 0 4px 8px rgb(0 0 0 / 0.3), 0 15px 25px rgb(0 0 0 / 0.5);
+    --kit-elevation-5: 0 5px 15px rgb(0 0 0 / 0.35), 0 15px 35px rgb(0 0 0 / 0.55);
     --kit-paper: color-mix(in oklab, #fff 10%, transparent);
-    --kit-outline: oklch(37.3% 0.034 259.733);
     --kit-outline-foreground: oklch(92.8% 0.006 264.531);
     --kit-outline-wash: color-mix(in oklab, #fff 20%, transparent);
     --kit-scrim: rgb(0 0 0 / 0.7);
@@ -137,7 +188,7 @@
 }
 
 :where(:root) {
-    --background: hsl(0 0% 100%);
+    --background: hsl(60 9.1% 97.8%);
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(0 0% 3.9%);
@@ -145,11 +196,11 @@
     --popover-foreground: hsl(0 0% 3.9%);
     --primary: hsl(0 0% 9%);
     --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
+    --secondary: hsl(60 6.4% 90.8%);
     --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
+    --muted: hsl(60 7.1% 94.5%);
     --muted-foreground: hsl(0 0% 41%);
-    --accent: hsl(0 0% 96.1%);
+    --accent: hsl(60 5.3% 92.5%);
     --accent-foreground: hsl(0 0% 9%);
     --destructive: hsl(0 74% 42%);
     --destructive-foreground: hsl(0 0% 98%);
@@ -157,34 +208,40 @@
     --success-text: hsl(142 76% 26%);
     --warning-text: hsl(26 90% 33%);
     --info-text: hsl(201 90% 32%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
+    --border: hsl(60 5.3% 88.8%);
+    --input: hsl(0 0% 56%);
     --ring: hsl(0 0% 3.9%);
+    --kit-ground: tinted;
 }
 /* A subtree that stays light under .dark (the PublicShell's theme="light": a page with no dark styling yet). It restates the neutral surface tokens with their light
    values, not the brand's primary, so a host's own brand colours stand. */
 .kit-theme-light {
     color-scheme: light;
-    --background: hsl(0 0% 100%);
+    --background: hsl(60 9.1% 97.8%);
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(0 0% 3.9%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(0 0% 3.9%);
-    --muted: hsl(0 0% 96.1%);
+    --muted: hsl(60 7.1% 94.5%);
     --muted-foreground: hsl(0 0% 41%);
-    --accent: hsl(0 0% 96.1%);
+    --accent: hsl(60 5.3% 92.5%);
     --accent-foreground: hsl(0 0% 9%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
+    --border: hsl(60 5.3% 88.8%);
+    --input: hsl(0 0% 56%);
+    --kit-elevation-1: 0 1px 2px rgb(28 25 23 / 0.06), 0 1px 3px rgb(28 25 23 / 0.1);
+    --kit-elevation-2: 0 1px 2px rgb(28 25 23 / 0.06), 0 3px 6px rgb(28 25 23 / 0.1);
+    --kit-elevation-3: 0 3px 6px rgb(28 25 23 / 0.05), 0 10px 20px rgb(28 25 23 / 0.12);
+    --kit-elevation-4: 0 4px 8px rgb(28 25 23 / 0.05), 0 15px 25px rgb(28 25 23 / 0.14);
+    --kit-elevation-5: 0 5px 15px rgb(28 25 23 / 0.07), 0 15px 35px rgb(28 25 23 / 0.2);
 }
 
 :where(.dark) {
     --background: hsl(0 0% 3.9%);
     --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
+    --card: hsl(0 0% 9%);
     --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
+    --popover: hsl(0 0% 11%);
     --popover-foreground: hsl(0 0% 98%);
     --primary: hsl(0 0% 98%);
     --primary-foreground: hsl(0 0% 9%);
@@ -200,8 +257,8 @@
     --success-text: hsl(142 69% 58%);
     --warning-text: hsl(43 96% 56%);
     --info-text: hsl(199 89% 64%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
+    --border: hsl(0 0% 18%);
+    --input: hsl(0 0% 40%);
     --ring: hsl(0 0% 83.1%);
 }
 
@@ -240,6 +297,10 @@
 }
 
 :where(:root) {
+    /* Neutral follows the theme's muted surface, so it matches the theme in light and dark. */
+    --kit-tone-neutral-bg: var(--muted);
+    --kit-tone-neutral-border: var(--border);
+    --kit-tone-neutral-fg: var(--muted-foreground);
     --kit-tone-success-bg: #f0fdf4;
     --kit-tone-success-border: #bbf7d0;
     --kit-tone-success-fg: #166534;
@@ -252,6 +313,32 @@
     --kit-tone-error-bg: #fef2f2;
     --kit-tone-error-border: #fecaca;
     --kit-tone-error-fg: #991b1b;
+    --kit-tone-purple-bg: #faf5ff;
+    --kit-tone-purple-border: #e9d5ff;
+    --kit-tone-purple-fg: #6b21a8;
+    --kit-tone-teal-bg: #f0fdfa;
+    --kit-tone-teal-border: #99f6e4;
+    --kit-tone-teal-fg: #115e59;
+    --kit-tone-pink-bg: #fdf2f8;
+    --kit-tone-pink-border: #fbcfe8;
+    --kit-tone-pink-fg: #9d174d;
+    --kit-tone-orange-bg: #fff7ed;
+    --kit-tone-orange-border: #fed7aa;
+    --kit-tone-orange-fg: #9a3412;
+    --kit-tone-slate-bg: #f8fafc;
+    --kit-tone-slate-border: #e2e8f0;
+    --kit-tone-slate-fg: #334155;
+    /* A tone's dot (ColourDot, Badge `dot`, ToneLabel): the 600 shade, at least 3:1 on a white or near-white surface. */
+    --kit-tone-neutral-dot: #737373;
+    --kit-tone-info-dot: #2563eb;
+    --kit-tone-success-dot: #16a34a;
+    --kit-tone-warning-dot: #d97706;
+    --kit-tone-error-dot: #dc2626;
+    --kit-tone-purple-dot: #9333ea;
+    --kit-tone-teal-dot: #0d9488;
+    --kit-tone-pink-dot: #db2777;
+    --kit-tone-orange-dot: #ea580c;
+    --kit-tone-slate-dot: #475569;
 }
 
 :where(.dark) {
@@ -267,4 +354,68 @@
     --kit-tone-error-bg: #450a0a;
     --kit-tone-error-border: #991b1b;
     --kit-tone-error-fg: #fecaca;
+    --kit-tone-purple-bg: #3b0764;
+    --kit-tone-purple-border: #6b21a8;
+    --kit-tone-purple-fg: #e9d5ff;
+    --kit-tone-teal-bg: #042f2e;
+    --kit-tone-teal-border: #115e59;
+    --kit-tone-teal-fg: #99f6e4;
+    --kit-tone-pink-bg: #500724;
+    --kit-tone-pink-border: #9d174d;
+    --kit-tone-pink-fg: #fbcfe8;
+    --kit-tone-orange-bg: #431407;
+    --kit-tone-orange-border: #9a3412;
+    --kit-tone-orange-fg: #fed7aa;
+    --kit-tone-slate-bg: #0f172a;
+    --kit-tone-slate-border: #334155;
+    --kit-tone-slate-fg: #e2e8f0;
+    /* The 400 shade in dark, at least 3:1 on a dark surface. */
+    --kit-tone-neutral-dot: #a3a3a3;
+    --kit-tone-info-dot: #60a5fa;
+    --kit-tone-success-dot: #4ade80;
+    --kit-tone-warning-dot: #fbbf24;
+    --kit-tone-error-dot: #f87171;
+    --kit-tone-purple-dot: #c084fc;
+    --kit-tone-teal-dot: #2dd4bf;
+    --kit-tone-pink-dot: #f472b6;
+    --kit-tone-orange-dot: #fb923c;
+    --kit-tone-slate-dot: #94a3b8;
+}
+
+/*
+ * The shell bar's foreground (`--shell-bar-foreground`: its text, and PrimaryNav's current mark, tint and underline) defaults to the theme's foreground, at the
+ * lowest precedence: a host's own value (the starter's app.css) wins. Without it the current mark computed transparent and silently disappeared.
+ */
+@theme default inline {
+    --color-shell-bar-foreground: var(--shell-bar-foreground);
+}
+
+:where(:root) {
+    --shell-bar-foreground: var(--foreground);
+    --shell-bar-field: var(--card);
+    --shell-bar-field-edge: var(--input);
+}
+
+/*
+ * A field in the shell bar (the global search) takes the bar's own fill and edge, not the page's: `--shell-bar-field` and `--shell-bar-field-edge`, the card
+ * and --input by default (white and 3:1 on a light bar), which an ink header sets for its dark bar (Brand::css). The edge needs 3:1 against the bar, and the
+ * placeholder (--muted-foreground) 4.5:1 on the fill.
+ */
+[data-shell-bar] {
+    --kit-field: var(--shell-bar-field);
+    --kit-field-edge: var(--shell-bar-field-edge);
+}
+
+/*
+ * Card variants (docs/cards.md, Variants): each is a set of card tokens. A theme picks its default by setting them on :root in app.css (open:
+ * `--kit-card-rule: 0px; --kit-card-title: 1rem;`); unset, cards are `ruled`. A card's `variant` sets them for it and its parts. A new variant is a block here.
+ */
+[data-card-variant='ruled'] {
+    --kit-card-rule: 1px;
+    --kit-card-title: initial;
+}
+
+[data-card-variant='open'] {
+    --kit-card-rule: 0px;
+    --kit-card-title: 1rem;
 }

@@ -43,7 +43,9 @@ test('an invitation sends one branded email with the inviter the message and one
     $text = (string) $mail->getTextBody();
     $this->assertStringContainsString('Glad to have you on the team.', $html);
     $this->assertStringContainsString('<blockquote', $html);
-    $this->assertStringContainsString('Join '.$workspace->name, $html);
+    // The button is a neutral "Accept invitation" (kit 0.42.1): the workspace's name stays in the heading and the paragraph.
+    $this->assertStringContainsString('invited to join '.$workspace->name, $html);
+    $this->assertStringContainsString('Accept invitation', $html);
     expect(substr_count($html, 'class="button'))->toBe(1, 'one button');
     expect($html)->toMatch('#/invitations/[A-Za-z0-9_-]{20,}#');
 
@@ -53,7 +55,8 @@ test('an invitation sends one branded email with the inviter the message and one
     // The preheader is for inbox previews only: the text part carries the message once, in the quote.
     expect(substr_count($text, 'Glad to have you on the team.'))->toBe(1);
     expect($text)->toMatch('#/invitations/[A-Za-z0-9_-]{20,}#');
-    $this->assertStringContainsString('Join '.$workspace->name, $text);
+    $this->assertStringContainsString('invited to join '.$workspace->name, $text);
+    $this->assertStringContainsString('Accept invitation', $text);
     $this->assertStringContainsString($owner->name, $text);
 });
 test('without a message there is no quote and the preheader names the workspace', function () {

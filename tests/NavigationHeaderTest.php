@@ -78,6 +78,6 @@ test('a nested resource page declares its parent explicitly through its view mod
             return 'A page';
         }
     };
-    expect($declared->layout()->navigationHeader?->toArray())->toBe(['label' => 'Back to People', 'url' => '/settings/people']);
+    expect($declared->layout()->navigationHeader?->toArray())->toBe(['label' => 'Back to People', 'url' => '/settings/people', 'trail' => false]);
     expect($plain->layout()->navigationHeader)->toBeNull('nothing is derived: a page with no declaration has no strip');
 });

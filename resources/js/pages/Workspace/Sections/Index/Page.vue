@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import { Stack, Page, SectionIcon } from '@kit/ui';
 // A settings landing page: the registered sections as cards, grouped and in the registry's order; each card is one link (icon, label, a line saying what it holds).
-defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
+const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.SectionsViewModel>();
+// A landing with one group named like the page (Admin's Admin) doesn't repeat the title as its group heading.
+const title = usePage<{ layout?: { title?: string } }>().props.layout?.title;
+const headed = computed(() => !(props.groups.length === 1 && props.groups[0].label === title));
 </script>
 <template>
     <Page md>
         <Stack class="gap-8">
         <p v-if="!groups.length" class="text-sm text-muted-foreground">There is nothing to set up here yet.</p>
         <Stack v-for="group in groups" :key="group.label" as="section" class="gap-3" :aria-label="group.label">
-            <h2 class="text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
+            <h2 v-if="headed" class="text-sm font-medium text-muted-foreground" data-section-group-heading>{{ group.label }}</h2>
             <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <li v-for="section in group.sections" :key="section.url" :data-section="section.key">
                     <Link :href="section.url" class="flex h-full gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors hover:border-ring hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-settings-card>

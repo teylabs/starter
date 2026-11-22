@@ -78,7 +78,7 @@ async function passkeySignIn(): Promise<void> {
         <Form ref="form" novalidate v-slot="{ errors, processing }" action="/login" method="post" :reset-on-success="['password']" :reset-on-error="['password']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">
             <Alert v-if="throttled" variant="danger" live="alert" data-auth-throttled>{{ throttled }}</Alert>
             <Field id="email" name="email" label="Email address">
-                <Input id="email" name="email" type="email" required autofocus autocomplete="email" placeholder="email@example.com" :invalid="Boolean(errors.email)" />
+                <Input id="email" name="email" type="email" required autofocus autocomplete="username" placeholder="email@example.com" :invalid="Boolean(errors.email)" />
             </Field>
             <Field id="password" name="password" label="Password">
                 <PasswordInput id="password" v-model="password" name="password" required autocomplete="current-password" placeholder="Password" :invalid="Boolean(errors.password)" />

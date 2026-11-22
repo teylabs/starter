@@ -25,7 +25,7 @@ const shown = computed(() => preview.value);
             <div class="flex items-center gap-4">
                 <Avatar :initials="initials" :src="shown" large />
                 <Field id="avatar" name="avatar" label="Choose a photo" :description="`JPEG, PNG or WebP, up to ${max_kb} KB.`" :error="errors.avatar" class="min-w-0 flex-1">
-                    <FileInput id="avatar" v-model="chosen" name="avatar" autofocus accept="image/jpeg,image/png,image/webp" />
+                    <FileInput id="avatar" v-model="chosen" name="avatar" autofocus accept="image/jpeg,image/png,image/webp" dropzone :max-bytes="max_kb * 1024" label="a photo" />
                 </Field>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3">

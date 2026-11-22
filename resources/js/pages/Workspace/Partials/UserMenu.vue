@@ -10,12 +10,12 @@ defineProps<{ user: NonNullable<Tey.Kit.Features.Shell.Data.ShellData['user']>; 
 <template>
     <DropdownMenu :modal="false">
         <DropdownMenuTrigger class="flex min-h-11 min-w-11 items-center justify-center rounded-full text-shell-bar-foreground hover:bg-shell-bar-foreground/10 focus-visible:ring-2 focus-visible:ring-shell-bar-foreground/40 focus-visible:outline-none" data-shell-user-menu>
-            <UserAvatar :initials="user.initials" :src="user.avatar_url" :src2x="user.avatar_url_2x" />
+            <UserAvatar :initials="user.initials" :src="user.avatar_url" :src2x="user.avatar_url_2x" :color="user.avatar_color" />
             <span class="sr-only">Account menu for {{ user.name }}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" :side-offset="6" class="w-72 max-w-[calc(100vw-1rem)]">
             <DropdownMenuLabel class="flex items-center gap-3 font-normal">
-                <UserAvatar :initials="user.initials" :src="user.avatar_url" :src2x="user.avatar_url_2x" />
+                <UserAvatar :initials="user.initials" :src="user.avatar_url" :src2x="user.avatar_url_2x" :color="user.avatar_color" />
                 <span class="flex min-w-0 flex-col">
                     <span class="truncate text-sm font-medium text-foreground">{{ user.name }}</span>
                     <span class="truncate text-xs text-muted-foreground">{{ user.email }}</span>

@@ -34,7 +34,7 @@ const focus = computed((): FocusShellShape | null => (props.shell.kind === 'focu
 const app = computed(() => props.shell as Tey.Kit.Features.Shell.Data.ShellData);
 const drawer = computed(() => !focus.value && Boolean(app.value.user) && (Boolean(slots.nav) || Boolean(slots['drawer-nav']) || (app.value.navigation?.length ?? 0) > 0));
 // The document title comes from the page's `layout` (composed on the server), never set per page.
-const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string } | null; breadcrumbs?: unknown[] }; environment?: { label: string; colour: string } | null }>();
+const page = usePage<{ layout?: { documentTitle: string; navigationHeader?: { label: string; url: string; trail?: boolean } | null; breadcrumbs?: unknown[] }; environment?: { label: string; colour: string } | null }>();
 // The document title is the page's `layout.documentTitle`, written by the shell itself in the same flush as the page (documentTitle.ts: Inertia's debounced
 // <Head> could otherwise land an older page's title after Back). <Head> carries it only on the server, for the first HTML.
 useDocumentTitle(() => (props.documentTitle ? page.props.layout?.documentTitle : undefined));
@@ -78,16 +78,49 @@ onMounted(() => {
     rootObserver.observe(document.documentElement, { attributes: true });
 });
 onBeforeUnmount(() => rootObserver?.disconnect());
+// The pinned top stack's height (the environment edge, the bar and the trail bar), published on the root as `--shell-top` so a page's sticky element sits
+// flush under it (`sticky top-(--shell-top)`) and kit.css keeps scroll targets out from under it. One ResizeObserver, owned here: it follows the trail bar
+// coming and going, the bar growing at a narrow width and a theme changing the mark. Written in whole pixels and only on a change; 0px with nothing pinned.
+const top = ref<HTMLElement | null>(null);
+let topObserver: ResizeObserver | null = null;
+let published: string | null = null;
+const publishTop = (height: number) => {
+    const value = `${Math.round(height)}px`;
+    if (value === published) return;
+    published = value;
+    document.documentElement.style.setProperty('--shell-top', value);
+};
+watch(
+    top,
+    (element) => {
+        topObserver?.disconnect();
+        topObserver = null;
+        if (!element) return publishTop(0);
+        if (typeof ResizeObserver === 'undefined') return publishTop(element.getBoundingClientRect().height);
+        topObserver = new ResizeObserver(([entry]) => publishTop(entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height));
+        topObserver.observe(element, { box: 'border-box' });
+    },
+    { flush: 'post' },
+);
+onMounted(() => {
+    if (!top.value) publishTop(0);
+});
+onBeforeUnmount(() => {
+    topObserver?.disconnect();
+    topObserver = null;
+    published = null;
+    document.documentElement.style.removeProperty('--shell-top');
+});
 </script>
 <template>
     <Head v-if="ssr && props.documentTitle" :title="page.props.layout?.documentTitle" />
     <FocusShell v-if="focus" :shell="focus" :toaster="props.toaster"><slot /></FocusShell>
     <div v-else :class="['flex flex-col bg-[var(--shell-ground,var(--color-background))] text-foreground', props.fill ? 'h-svh overflow-hidden' : 'min-h-svh']" :data-shell-fill="props.fill || undefined">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:ring-2 focus:ring-ring">Skip to content</a>
-        <div v-if="app.user || props.guestHeader" class="sticky top-0 z-(--z-header)" data-shell-top>
+        <div v-if="app.user || props.guestHeader" class="sticky top-0 z-(--z-header)" ref="top" data-shell-top>
             <!-- Outside production (the server decides; null there): a 2px edge in the environment's colour, with its name for a screen reader. It takes no space beyond its 2px. -->
             <div v-if="page.props.environment" class="h-0.5 w-full bg-(--kit-environment)" :style="{ '--kit-environment': page.props.environment.colour }" data-environment-edge><span class="sr-only">{{ page.props.environment.label }} environment</span></div>
-            <header ref="bar" :class="['border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground', barBlur && 'backdrop-blur-(--shell-bar-blur)']" :data-shell-bar-blur="barBlur || undefined" data-shell-bar>
+            <header ref="bar" :class="['border-b border-shell-bar-border bg-shell-bar text-shell-bar-foreground [--avatar-ring:var(--shell-bar,var(--background))]', barBlur && 'backdrop-blur-(--shell-bar-blur)']" :data-shell-bar-blur="barBlur || undefined" data-shell-bar>
                 <div :class="['mx-auto flex h-16 min-w-0 items-center gap-2 px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <!-- The product lockup (Partials/Wordmark, shared with the GuestShell); the mark slot replaces its symbol. -->
                     <Wordmark :product="app.product" :label="props.wordmarkLabel"><template v-if="$slots.mark" #default><slot name="mark" /></template></Wordmark>
@@ -96,8 +129,8 @@ onBeforeUnmount(() => rootObserver?.disconnect());
                     <!-- The workspace switcher is always there: with one workspace its menu is just Workspace settings (when the server sends it), with two or more it lists them too. -->
                     <!-- The `workspace-switcher` slot replaces it; its props are the switcher's own, plus the bar's sizing `class`. -->
                     <template v-if="app.workspace || app.switcher">
-                        <slot name="workspace-switcher" :workspace="app.workspace" :switcher="app.switcher" :account="app.account" :class="['flex-1 lg:max-w-72 lg:flex-none', $slots.bar ? 'min-w-24' : 'min-w-0']">
-                            <WorkspaceSwitcher :workspace="app.workspace" :switcher="app.switcher" :account="app.account" :class="['flex-1 lg:max-w-72 lg:flex-none', $slots.bar ? 'min-w-24' : 'min-w-0']" />
+                        <slot name="workspace-switcher" :workspace="app.workspace" :switcher="app.switcher" :account="app.account" :class="['flex-1 lg:max-w-72', $slots.bar ? 'min-w-24 lg:flex-none' : 'min-w-0 lg:min-w-24 lg:flex-[0_10000000_auto]']">
+                            <WorkspaceSwitcher :workspace="app.workspace" :switcher="app.switcher" :account="app.account" :class="['flex-1 lg:max-w-72', $slots.bar ? 'min-w-24 lg:flex-none' : 'min-w-0 lg:min-w-24 lg:flex-[0_10000000_auto]']" />
                         </slot>
                     </template>
                     <!-- The nav slot replaces PrimaryNav at every width (an app's own module switcher): one live copy, and the drawer then lists no pages. -->
@@ -143,7 +176,7 @@ onBeforeUnmount(() => rootObserver?.disconnect());
                 </div>
             </header>
             <!-- The trail as a bar, unless the page has a "Back to <parent>" strip, which replaces the trail. -->
-            <div v-if="props.breadcrumbs === 'bar' && app.user && page.props.layout?.breadcrumbs?.length && !page.props.layout?.navigationHeader" ref="subbar" :class="['border-b border-shell-subbar-border bg-shell-subbar text-foreground', subbarBlur && 'backdrop-blur-(--shell-subbar-blur)']" :data-shell-subbar-blur="subbarBlur || undefined" data-shell-breadcrumbs>
+            <div v-if="props.breadcrumbs === 'bar' && app.user && page.props.layout?.breadcrumbs?.length && (!page.props.layout?.navigationHeader || page.props.layout.navigationHeader.trail)" ref="subbar" :class="['border-b border-shell-subbar-border bg-shell-subbar text-foreground', subbarBlur && 'backdrop-blur-(--shell-subbar-blur)']" :data-shell-subbar-blur="subbarBlur || undefined" data-shell-breadcrumbs>
                 <div :class="['mx-auto flex h-10 min-w-0 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
                     <Breadcrumbs bar />
                 </div>
@@ -153,14 +186,16 @@ onBeforeUnmount(() => rootObserver?.disconnect());
         <div v-if="props.subNav === 'strip' && app.user && app.subNavigation?.items.length" class="border-b border-shell-subbar-border bg-shell-subbar text-foreground">
             <div :class="['mx-auto min-w-0 px-4 sm:px-6 lg:px-8', props.widthClass]">
                 <SubNav :label="app.subNavigation.label" :items="app.subNavigation.items" />
+                <!-- A nested module's pages (a section's module): a second strip under the first, while one of them is current. -->
+                <SubNav v-if="app.subNavigation.child" :label="app.subNavigation.child.label" :items="app.subNavigation.child.items" class="border-t border-shell-subbar-border" data-shell-subnav-child />
             </div>
         </div>
-        <!-- A nested page's way up one level (the page's `layout.navigationHeader`: a breakout page or an account page): a strip under the header that scrolls with the page, in place of the trail, tinted from --shell-band. -->
-        <div v-if="page.props.layout?.navigationHeader" class="border-b border-shell-band-border bg-shell-band text-shell-band-foreground" data-navigation-header>
+        <!-- A nested page's way up one level (the page's `layout.navigationHeader`: a breakout page or an account page): a strip under the header that scrolls with the page, in place of the trail (or under it, when the breakout keeps its trail: `trail`), tinted from --shell-band. A labelled nav, so its link sits in a landmark. -->
+        <nav v-if="page.props.layout?.navigationHeader" aria-label="Back" class="border-b border-shell-band-border bg-shell-band text-shell-band-foreground" data-navigation-header>
             <div :class="['mx-auto flex min-h-11 min-w-0 items-center px-4 sm:px-6 lg:px-8', props.widthClass]">
                 <Link :href="page.props.layout.navigationHeader.url" class="inline-flex min-h-9 min-w-0 items-center gap-2 rounded-md text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"><ArrowLeft class="size-4 shrink-0" aria-hidden="true" /><span class="min-w-0 truncate">{{ page.props.layout.navigationHeader.label }}</span></Link>
             </div>
-        </div>
+        </nav>
         <main id="main" :class="props.fill ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'flex-1'">
             <div :class="props.fill ? ['mx-auto flex min-h-0 w-full flex-1 flex-col gap-6', props.widthClass] : ['mx-auto flex w-full flex-col gap-6 px-4 pt-4 pb-8 sm:px-6 sm:pt-5 sm:pb-10 lg:px-8', props.widthClass]" data-shell-content>
                 <!-- After an invited sign-up, where the app has passkeys: "Add a passkey for next time" (session-ui's PasskeyOffer). -->

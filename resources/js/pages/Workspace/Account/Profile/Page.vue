@@ -55,7 +55,7 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
                         <p class="text-sm font-medium">{{ name }}</p>
                     </div>
                     <Field id="avatar" name="avatar" label="Choose a photo" :span="6">
-                        <FileInput id="avatar" v-model="chosen" name="avatar" accept="image/jpeg,image/png,image/webp" />
+                        <FileInput id="avatar" v-model="chosen" name="avatar" accept="image/jpeg,image/png,image/webp" dropzone :max-bytes="max_kb * 1024" label="a photo" />
                     </Field>
                 </FormCard>
             </Form>

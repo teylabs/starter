@@ -109,7 +109,8 @@ Schema::create('password_reset_tokens', function (Blueprint $t): void {
 // The database cache store's tables and the database queue's.
 (require base_path('database/migrations/0001_01_01_000005_create_cache_table.php'))->up();
 (require base_path('database/migrations/0001_01_01_000006_create_jobs_table.php'))->up();
-// The kit's migrations load from the package (0.18), with its 0.18 renames of the infrastructure tables and its 0.24 signed-in devices table.
+// The kit's migrations load from the package (0.18), with its 0.18 renames of the infrastructure tables, its 0.24 signed-in devices table, its 0.39 flag and
+// tag tables and its 0.43 renames (kit_meta to app_meta; tags, taggables and flag_dismissals).
 foreach ([
     'session-ui/0001_01_02_000500_create_kit_security_events_table.php',
     'session-ui/0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table.php',
@@ -117,6 +118,7 @@ foreach ([
     'access/0001_01_02_000302_create_kit_capability_overrides_table.php',
     'access/2026_11_14_000304_rename_access_tables.php',
     'core/0001_01_02_000101_create_kit_meta_table.php',
+    'core/0001_01_02_000102_unprefix_kit_tables.php',
     'session-ui/0001_01_02_000502_create_kit_user_state_table.php',
     'session-ui/0001_01_02_000503_add_user_foreign_key_to_kit_user_state_table.php',
     'settings/0001_01_02_000403_create_workspace_mail_identities_table.php',
@@ -125,6 +127,8 @@ foreach ([
     'session-ui/2026_11_14_000506_rename_session_ui_tables.php',
     'session-ui/2026_11_14_000507_create_signed_in_devices_table.php',
     'session-ui/2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table.php',
+    'workspaces/0001_01_02_000211_create_kit_tags_tables.php',
+    'workspaces/0001_01_02_000212_unprefix_and_protect_tags_tables.php',
 ] as $migration) {
     (require base_path('vendor/tey/kit/database/migrations/'.$migration))->up();
 }

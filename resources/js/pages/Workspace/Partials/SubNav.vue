@@ -34,7 +34,7 @@ watch(() => props.items, () => revealCurrent(true));
     <nav v-if="props.items.length" :aria-label="props.label" class="-mx-3 min-w-0" data-shell-subnav>
         <ul ref="strip" class="relative flex overflow-x-auto overscroll-x-contain">
             <li v-for="item in props.items" :key="item.url" class="shrink-0">
-                <Link :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset', item.current ? 'border-foreground text-foreground' : 'border-transparent text-foreground/70 hover:border-foreground/30 hover:text-foreground']" @focus="reveal($event.currentTarget as HTMLElement, false)">{{ item.label }}</Link>
+                <Link :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset', item.current ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground']" @focus="reveal($event.currentTarget as HTMLElement, false)">{{ item.label }}</Link>
             </li>
         </ul>
     </nav>

@@ -28,7 +28,7 @@ if ($roles !== ['admin', 'owner', 'viewer']) {
 if (DB::table('role_has_permissions')->count() === 0) {
     $fail('no default grants');
 }
-if (DB::table('kit_meta')->where('key', 'catalog_fingerprint')->doesntExist()) {
+if (DB::table('app_meta')->where('key', 'catalog_fingerprint')->doesntExist()) {
     $fail('no catalog fingerprint');
 }
 foreach (['bootstrap/cache/config.php', 'bootstrap/cache/routes-v7.php'] as $cache) {

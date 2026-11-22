@@ -40,7 +40,7 @@ onUnmounted(() => window.removeEventListener('pageshow', restore));
             <form v-if="workspaces.length" :action="approve_url" method="post" class="grid gap-4" data-kit-consent="approve" @submit="submit($event, 'approve')">
                 <input type="hidden" name="_token" :value="csrf_token" />
                 <input type="hidden" name="auth_token" :value="auth_token" />
-                <Field id="consent-workspace" label="Workspace" description="The assistant works in this workspace only.">
+                <Field id="consent-workspace" label="Workspace" description="The agent works in this workspace only.">
                     <InputSelect id="consent-workspace" v-model="workspace" name="workspace" :options="options" />
                 </Field>
                 <fieldset v-if="grants.length" class="grid gap-2" data-consent-grants>
@@ -50,7 +50,7 @@ onUnmounted(() => window.removeEventListener('pageshow', restore));
                 </fieldset>
                 <Button type="submit" class="w-full" :disabled="sent !== null || workspace === null" :aria-busy="sent === 'approve'" data-test="consent-approve">{{ sent === 'approve' ? 'Connecting…' : 'Approve' }}</Button>
             </form>
-            <p v-else class="text-sm text-muted-foreground" data-consent-no-workspace>You have no workspace you can connect an assistant to. Ask a workspace owner for access, then try again.</p>
+            <p v-else class="text-sm text-muted-foreground" data-consent-no-workspace>You have no workspace you can connect an agent to. Ask a workspace owner for access, then try again.</p>
             <form :action="deny_url" method="post" class="grid" data-kit-consent="deny" @submit="submit($event, 'deny')">
                 <input type="hidden" name="_token" :value="csrf_token" />
                 <input type="hidden" name="_method" value="DELETE" />

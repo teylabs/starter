@@ -6,7 +6,7 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 
 | Package | Job |
 | --- | --- |
-| `tey/kit` (0.25) | The features (core, workspaces, access, settings, shell, session-ui, workspace-ui, mcp), their migrations and shared components (loaded from the package), and `kit:scaffold`, which writes a feature's pages once. |
+| `tey/kit` (0.48) | The features (core, workspaces, access, settings, shell, session-ui, workspace-ui, mcp), their migrations and shared components (loaded from the package), and `kit:scaffold`, which writes a feature's pages once. |
 | `tey/concierge` (^0.7.4) | Workspace membership, ownership, account state and tenant/member invitations, with its own migrations, and `concierge:owners`. |
 | `spatie/laravel-multitenancy` | The current workspace (tenant) context. |
 | `spatie/laravel-permission` (via Concierge) | Roles within a workspace. |

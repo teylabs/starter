@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { Stack, Button, DataTable, Field, FormCard, Input, InputCheckbox, Page, Section, Select } from '@kit/ui';
-import { computed, ref } from 'vue';
+import { Stack, Button, DataTable, Field, FormCard, Input, InputCheckbox, Page, Section, InputSelect } from '@kit/ui';
+import { computed, ref, watch } from 'vue';
 
 // AI assistants: connect assistants like Claude or ChatGPT to this workspace over MCP. The server sends the address and the "add an assistant" cards (a one-click link, a
 // command, or steps); an assistant that has signed in shows up under "Waiting for your approval" until you approve it, and the connected ones are a table with Revoke.
 const props = defineProps<Tey.Kit.Features.Mcp.ViewModels.ConnectionsViewModel>();
 const options = computed(() => props.pending.map((token) => ({ value: token.id, label: token.label })));
+// InputSelect is controlled: the chosen assistant lives here, and its hidden input submits it.
+const chosenToken = ref<string | null>(null);
+// An approval refreshes `pending` without a remount: a choice that left the list is dropped, so the next approval can't resubmit it.
+watch(options, (list) => {
+    if (chosenToken.value !== null && !list.some((option) => option.value === chosenToken.value)) chosenToken.value = null;
+});
 const copied = ref<string | null>(null);
 async function copy(text: string, key: string) {
     try {
@@ -22,10 +28,10 @@ const empty = computed(() => !props.approve && props.table.rows.length === 0);
 <template>
     <Page md>
         <Form v-if="approve" :action="approve.url" method="post" :options="{ preserveScroll: true }" reset-on-success>
-            <FormCard title="Waiting for your approval" description="An assistant signed in and is asking to use this workspace. Choose it and what it may do." :submit="approve" busy-label="Approving…" :cancel="false" :sticky="false">
+            <FormCard title="Waiting for your approval" description="An agent signed in and is asking to use this workspace. Choose it and what it may do." :submit="approve" busy-label="Approving…" :cancel="false" :sticky="false">
                 <Input type="hidden" name="intent_key" :model-value="intent_key" />
-                <Field id="token" name="token_id" label="Assistant" :span="6">
-                    <Select id="token" name="token_id" :options="options" placeholder="Choose an assistant" />
+                <Field id="token" name="token_id" label="Agent" :span="6">
+                    <InputSelect id="token" v-model="chosenToken" name="token_id" :options="options" placeholder="Choose an agent" />
                 </Field>
                 <div class="col-span-6 grid gap-3">
                     <template v-for="scope in scopes" :key="scope.key">
@@ -36,7 +42,7 @@ const empty = computed(() => !props.approve && props.table.rows.length === 0);
             </FormCard>
         </Form>
         <DataTable v-if="table.rows.length" :table="table as never" :toolbar="false" @act="() => undefined" />
-        <Section :title="empty ? 'Connect an AI assistant' : 'Add an assistant'" :description="empty ? 'Let assistants like Claude or ChatGPT work with this workspace over MCP. They only see what you approve, and you can revoke access at any time.' : undefined">
+        <Section :title="empty ? 'Connect an agent' : 'Add an agent'" :description="empty ? 'Let agents like Claude or ChatGPT work with this workspace over MCP. They only see what you approve, and you can revoke access at any time.' : undefined">
             <Stack>
                 <div class="flex flex-wrap items-center gap-2" data-mcp-address>
                     <code class="min-w-0 flex-1 rounded-md bg-muted px-3 py-2 text-sm break-all">{{ server_url }}</code>

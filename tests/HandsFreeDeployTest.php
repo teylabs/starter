@@ -26,7 +26,7 @@ function handsFreeDeployMigrate(string $command = 'migrate', array $options = []
 }
 function handsFreeDeployFingerprint(): ?string
 {
-    return DB::table('kit_meta')->where('key', 'catalog_fingerprint')->value('value');
+    return DB::table('app_meta')->where('key', 'catalog_fingerprint')->value('value');
 }
 /** @return list<string> the data-changing statements a callback ran */
 function handsFreeDeployWrites(callable $run): array
@@ -67,7 +67,7 @@ test('a changed catalog is synced by a migrate that has nothing to migrate', fun
 });
 test('a rollback does not sync', function () {
     expect(handsFreeDeployMigrate())->toBe(0);
-    DB::table('kit_meta')->where('key', 'catalog_fingerprint')->delete();
+    DB::table('app_meta')->where('key', 'catalog_fingerprint')->delete();
     Role::findByName('viewer')->delete();
     expect(app(Kernel::class)->call('migrate:rollback', ['--force' => true, '--step' => 1]))->toBe(0);
     expect(Role::query()->where('name', 'viewer')->exists())->toBeFalse('a rollback leaves the roles alone');

@@ -12,6 +12,8 @@ export type WidgetFrame = {
     region: 'main' | 'aside';
     /** @deprecated No longer drives the layout; set `region` on the widget instead. */
     span: { md: number; lg: number };
+    /** True: the card draws without its title bar (You, or a widget that opens with a Composer); its title stays the accessible name. Absent in older payloads. */
+    headless?: boolean;
     /** The body's minimum height while ready (a CSS length such as `18rem`), so the card holds its place while deferred content loads. Null or absent: natural height. */
     loadingHeight?: string | null;
     state: 'ready' | 'empty' | 'error';
