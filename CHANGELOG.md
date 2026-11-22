@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## v0.5.0
+
+### Changed
+
+- **Media Library files live under `media/` in the app's one bucket** (#129, #130). A new `media` disk shares the bucket with `root` `media` when `MEDIA_DISK=s3`, and uses `storage/app/private/media` locally; Media Library's `disk_name` is `media`, and `s3` stays the whole bucket for the app's own files. A disk rather than Media Library's `prefix`, because a prefix recomputes every existing item's path and orphans its files; existing rows keep resolving on the disk they name. `tests/StorageTest.php` checks both disk shapes and sets `MEDIA_DISK` in `$_ENV` and `$_SERVER` as well as `putenv()`, restored in `finally`.
+- **tey/standards is upgraded to v0.12.3** (from v0.11.103; constraint `^0.12.3`) (#132). v0.12 enforces the first-party-packages rule, under which the starter has no findings. The regenerated patterns table names the Bakery recipes for `settings.form` and `ui-page.show`, and a leaf whose packages the app doesn't require (such as `ui-page.modal-run`) is no longer installed.
+- **Pest 5.3.6** (#123), dev dependencies only; pest-plugin-browser stays at 5.1.2.
+- **`.agents/setup` runs on Debian 13 orbs** (#127): the PHP 8.5 source is a pinned signed-by keyring plus one sources entry instead of `add-apt-repository`. Development tooling only.
+
+### Fixed
+
+- **Web requests no longer bootstrap the console kernel** (#121). `bootstrap/app.php` ended by bootstrapping the console kernel, which Laravel's skeleton never does; dropping it saves its deferred providers and command registration on each request.
+
+### Security
+
+- **phpseclib/phpseclib is updated** (#124); `composer audit --locked` reports no advisories.
+
 ### Changed
 
 - **tey/kit is upgraded to v0.25.0** (from v0.17.0, through v0.17.8 for `kit:detach`; `composer update tey/kit -W`, constraint `^0.25`). Every upgrade step the kit lists for 0.18 to 0.25 that applies to the starter's features was taken, and pest, phpunit and paratest did not move.
