@@ -14,4 +14,4 @@ No generator yet; follow the summary and stamp the file `standards-pattern: ui-p
 Kit: none.
 Checks: none. Run `php artisan standards:check --changed` before committing.
 
-Not sure this is the right leaf? It answers "Is it a full set of CRUD screens, or a workflow page beyond CRUD?" Call bakery.find, or run `php artisan standards:pattern --recipe=ui-page.activity-feed` to see its siblings.
+Not sure this is the right leaf? It answers "Which workflow page?" Call bakery.find, or run `php artisan standards:pattern --recipe=ui-page.activity-feed` to see its siblings.

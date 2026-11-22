@@ -14,6 +14,6 @@ A queued job that calls the Action doing the work, so the logic is shared and th
 Scaffold: `php artisan standards:make job --flavor=plain <Name>`.
 
 Kit: none.
-Checks: actions. Run `php artisan standards:check --changed` before committing.
+Checks: actions, tenant-aware, tenant.queued-declared. Run `php artisan standards:check --changed` before committing.
 
 Not sure this is the right leaf? It answers "When does it run?" Call bakery.find, or run `php artisan standards:pattern --recipe=background.job` to see its siblings.

@@ -11,12 +11,12 @@ Action menus run actions only. Navigation goes in links or tabs, never in an act
 
 Scaffold: `php artisan standards:make page --flavor=show <Name>`.
 
-Kit: @kit/ui RowActions, @kit/ui DropdownAction, @kit/ui DropdownConfirm.
-- `RowActions` from `@kit/ui` for the row menu: The action menu on a record (props: actions descriptors).
+Kit: @kit/ui ButtonGroup, @kit/ui DropdownAction, @kit/ui DropdownConfirm.
+- `ButtonGroup` from `@kit/ui` for the record menu: The action menu on a record: its #menu, each item written out by name (props: #menu).
 - `DropdownAction` from `@kit/ui` for the action item: Runs an action (props: action).
 - `DropdownConfirm` from `@kit/ui` for the confirm item: An action that needs confirmation (props: action, confirm text).
 - `DropdownDelete` from `@kit/ui` for the delete item: Deletes with confirmation (props: href).
 - `Dialog` from `@kit/ui` for the dialog: A confirmation or detail dialog (props: open, title).
 Checks: descriptors, js-imports. Run `php artisan standards:check --changed` before committing.
 
-Not sure this is the right leaf? It answers "Which kind of control?" Call bakery.find, or run `php artisan standards:pattern --recipe=ui-page.action-menu` to see its siblings.
+Not sure this is the right leaf? It answers "Where do the actions sit?" Call bakery.find, or run `php artisan standards:pattern --recipe=ui-page.action-menu` to see its siblings.
