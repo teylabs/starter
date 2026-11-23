@@ -38,8 +38,8 @@ test('media is on the private media disk: storage/app/private/media by default, 
     // env() reads $_ENV and $_SERVER before getenv(), and a checkout's own .env has already filled them, so set all three.
     $before = [getenv('MEDIA_DISK'), $_ENV['MEDIA_DISK'] ?? null, $_SERVER['MEDIA_DISK'] ?? null];
     try {
-        putenv('MEDIA_DISK=s3');
-        $_ENV['MEDIA_DISK'] = $_SERVER['MEDIA_DISK'] = 's3';
+        putenv('MEDIA_DISK=private');
+        $_ENV['MEDIA_DISK'] = $_SERVER['MEDIA_DISK'] = 'private';
         $disks = (require config_path('filesystems.php'))['disks'];
     } finally {
         putenv($before[0] === false ? 'MEDIA_DISK' : 'MEDIA_DISK='.$before[0]);
@@ -51,20 +51,22 @@ test('media is on the private media disk: storage/app/private/media by default, 
             $_SERVER['MEDIA_DISK'] = $before[2];
         }
     }
-    expect($disks['media'])->toBe(['driver' => 'scoped', 'disk' => 's3', 'prefix' => 'media']);
+    // On Laravel Cloud MEDIA_DISK is the attached bucket's disk name (here 'private'), not s3.
+    expect($disks['media'])->toBe(['driver' => 'scoped', 'disk' => 'private', 'prefix' => 'media']);
     expect($disks['s3'])->not->toHaveKey('root', 'the s3 disk stays the whole bucket for the app\'s other files');
     if (Template::isTemplate()) {
         $this->assertStringContainsString('MEDIA_DISK=local', (string) file_get_contents(dirname(__DIR__).'/.env.example'));
     }
 });
 
-test('the media disk uses the bucket injected into the s3 disk, not a copy taken when the config loaded', function () {
-    // Laravel Cloud sets an attached bucket on filesystems.disks.s3 only; a media disk copied from $s3 at load time kept a null bucket.
+test('the media disk uses the bucket Laravel Cloud injects under the disk name it was given', function () {
+    // Cloud adds the attached bucket as its own disk (LARAVEL_CLOUD_DISK_CONFIG) under the chosen name, at runtime; s3 keeps a null bucket.
     config([
-        'filesystems.disks.s3.bucket' => 'injected-bucket',
-        'filesystems.disks.media' => ['driver' => 'scoped', 'disk' => 's3', 'prefix' => 'media'],
+        'filesystems.disks.private' => [...config('filesystems.disks.s3'), 'bucket' => 'injected-bucket'],
+        'filesystems.disks.s3.bucket' => null,
+        'filesystems.disks.media' => ['driver' => 'scoped', 'disk' => 'private', 'prefix' => 'media'],
     ]);
-    Storage::forgetDisk(['s3', 'media']);
+    Storage::forgetDisk(['s3', 'private', 'media']);
 
     expect(Storage::disk('media')->temporaryUrl('1.txt', now()->addMinutes(5)))
         ->toStartWith('https://synthetic.r2.example.test/injected-bucket/media/1.txt?');
