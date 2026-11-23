@@ -35,6 +35,16 @@ test('the default is the neutral zinc with no variant css', function () {
     $this->assertStringNotContainsString('--brand-marker', $html);
     $this->assertStringNotContainsString('--primary:#', $html);
 });
+test('an ink header on the neutral accent colours the bar and leaves the buttons and the marker to the theme', function () {
+    // The template's one brand key (config/brand.php): what sits on the near-black bar takes the bar's own colours, and nothing else is recoloured.
+    config(['kit.brand.header' => 'ink']);
+    $html = $this->get('/login')->assertOk()->getContent();
+    $this->assertStringContainsString('[data-shell-bar]{--background:#09090b', $html);
+    $this->assertStringContainsString('--shell-bar-field:#27272a', $html);
+    $this->assertStringNotContainsString('--primary:#', $html);
+    $this->assertStringNotContainsString('--brand-marker', $html);
+    $this->assertStringNotContainsString('--ring:#52525b', $html);
+});
 test('the switch chooses a preset for the session and clears it in a local environment', function () {
     require dirname(__DIR__).'/database/fixture.php';
     $password = Str::random(40);

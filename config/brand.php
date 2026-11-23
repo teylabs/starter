@@ -6,7 +6,7 @@
 // This file is the only brand source: a key left out uses the kit's default, and KIT_BRAND_* env is ignored (since tey/kit 0.17;
 // php artisan kit:brand:migrate lists any that is left). Colours are a #rgb or #rrggbb; null means "use the theme"; an empty string is refused.
 //
-// The template sets none: each line below is the kit's default, the stand-in an app replaces with its own before it deploys
+// The template sets only `header`: every other line below is the kit's default, the stand-in an app replaces with its own before it deploys
 // (php artisan kit:preflight and /up refuse these in production; kit's Brand::placeholders() lists what is left). Uncomment a key to
 // set it, commit this file, and keep brand values out of .env. `php artisan kit:brand` then makes the favicons, touch icon, mail mark
 // and social image from the logomark and accent.
@@ -16,6 +16,10 @@ return [
     // accent), accent_strong (the accent as links and focus on white: 4.5:1), accent_dark (fills in dark mode), and
     // 'style' => 'fill'|'mono' (mono: an ink header and primary buttons, the accent only a highlight).
     // 'accent' => '#52525b',
+    // The one key the template sets. The app's bar is near-black in light and dark (`--shell-bar` in resources/css/app.css), so the header role is ink:
+    // the kit then gives what sits on the bar (the search field, its edge and placeholder, the phone search button, hover washes and the focus ring) the
+    // bar's own colours instead of the page's. An app with a light bar removes this line and sets `--shell-bar` to match.
+    'header' => 'ink',
     // To compare variants side by side in a LOCAL environment, name them here and open any page with ?brand=<name> (?brand= clears
     // it); the switch is ignored everywhere else.
     // 'presets' => ['example' => ['accent' => '#2563eb', 'accent_foreground' => '#ffffff', 'accent_strong' => '#1d4ed8', 'accent_dark' => '#60a5fa']],
