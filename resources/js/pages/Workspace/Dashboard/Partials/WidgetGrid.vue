@@ -12,7 +12,8 @@ import type { WidgetFrame } from './types';
 // The dashboard's two columns: a PageGrid `main-aside` (8 and 4 of 12 from `md`, one column below it; `main-aside-wide`, 7 and 5, when `aside` is `wide`), each column a Stack of its widgets' cards in order. Below `md`
 // the main column's cards come first, then the aside's. Each card spans its column; `span` no longer drives the layout. With only one column in use it takes the
 // full width. A widget's `component` picks its body: the kit's own, or `resources/js/widgets/{Name}.vue` in the app (`queue` renders `widgets/Queue.vue`). An
-// unknown component renders the card with no body. A widget whose `headless()` is true (the kit's You card, or one that opens with a Composer) has no title bar; a
+// unknown component renders the card with no body. A widget whose `headless()` is true (the kit's You card, or one that opens with a Composer) has no title bar, and
+// any but the You card no frame either (its body is its own card); a
 // You frame from an older payload, without `headless`, still draws without one.
 const props = withDefaults(defineProps<{ widgets: WidgetFrame[]; aside?: 'narrow' | 'wide' }>(), { aside: 'narrow' });
 const own = import.meta.glob<{ default: Component }>('/resources/js/widgets/*.vue', { eager: true });
@@ -31,7 +32,7 @@ const columns = computed(() => {
 <template>
     <PageGrid :preset="columns.length > 1 ? (aside === 'wide' ? 'main-aside-wide' : 'main-aside') : undefined" data-widget-grid>
         <Stack v-for="column in columns" :key="column.region" :data-widget-region="column.region">
-            <WidgetCard v-for="widget in column.widgets" :key="widget.key" :widget="widget" :headless="widget.headless === true || widget.component === 'you'">
+            <WidgetCard v-for="widget in column.widgets" :key="widget.key" :widget="widget" :headless="widget.headless === true || widget.component === 'you'" :frameless="widget.headless === true && widget.component !== 'you'">
                 <component :is="body(widget.component)" v-if="body(widget.component)" :widget="widget" />
             </WidgetCard>
         </Stack>

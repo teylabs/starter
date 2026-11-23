@@ -69,11 +69,9 @@ const formOptions = failureHandlers as FormOptions;
         <Form ref="form" novalidate v-slot="{ errors, processing }" :action="action" method="post" :transform="(data) => ({ ...data, ...submit })" :reset-on-success="['password', 'password_confirmation']" :reset-on-error="['password', 'password_confirmation']" class="grid gap-4" @start="failure = null" @error="refocus" @finish="clearPasswords" :options="formOptions">
             <Alert v-if="otherError(errors)" variant="danger" live="alert" data-register-error>{{ otherError(errors) }}</Alert>
             <Alert v-else-if="failure" variant="danger" live="alert" data-auth-throttled>{{ failure }}</Alert>
-            <div v-if="email !== null" class="grid gap-2">
-                <label id="register-email-label" for="register-email" class="text-sm font-medium">Email address</label>
-                <Input id="register-email" type="email" :model-value="email" readonly autocomplete="username" aria-labelledby="register-email-label" :aria-describedby="emailHint ? 'register-email-hint' : undefined" data-register-email />
-                <p v-if="emailHint" id="register-email-hint" class="text-sm text-muted-foreground">{{ emailHint }}</p>
-            </div>
+            <Field v-if="email !== null" id="register-email" label="Email address" :description="emailHint ?? undefined">
+                <Input id="register-email" type="email" :model-value="email" readonly autocomplete="username" data-register-email />
+            </Field>
             <Field id="name" name="name" label="Name">
                 <Input id="name" name="name" required autofocus autocomplete="name" :invalid="Boolean(errors.name)" />
             </Field>

@@ -33,7 +33,7 @@ const rowLabel = (row: Row) => row.member?.name ?? row.email;
             <p v-if="invite_link" class="text-sm" role="status" data-invite-link>Invitation link (send it to them; it is shown once): <code class="break-all">{{ invite_link }}</code></p>
             <DataTable :table="table as never" :intercept="['change-role', 'transfer-ownership']" :row-label="rowLabel" :search-label="members ? 'Search members' : 'Search invitations'" @act="act">
                 <template #cell-member="{ row }">
-                    <span class="flex min-w-0 items-center gap-3" data-person>
+                    <span class="flex min-w-0 items-center gap-3 sm:max-w-72" data-person>
                         <Avatar :initials="row.member.initials" :src="row.member.avatar?.url" :src2x="row.member.avatar?.url_2x" :color="row.member.avatar_color" />
                         <span class="flex min-w-0 flex-col">
                             <span class="truncate font-medium">{{ row.member.name }}<span v-if="row.member.is_you" class="font-normal text-muted-foreground"> (you)</span></span>

@@ -11,7 +11,9 @@ import type { WidgetFrame } from './types';
 // minimum height, so the card holds the space its deferred content will fill and nothing below shifts. The server also sends a widget's see-all as a header
 // action for a card copied before this one (Widgets); CollectionSection leaves out the GET action with its URL, so it is drawn once. Only the frame's section fields
 // are passed on: a widget's own props (which may share a name with another section field, such as `segments`) never reach the card.
-const props = defineProps<{ widget: WidgetFrame; headless?: boolean }>();
+// A `frameless` widget (a headless one whose body is its own card, such as a Composer: Jasper's seamless-composer ruling) has no card at all, no border,
+// padding or fill: only a section named by its title, so it is not a card inside a card.
+const props = defineProps<{ widget: WidgetFrame; headless?: boolean; frameless?: boolean }>();
 const section = computed<CollectionSectionData>(() => ({
     title: props.widget.title,
     state: props.widget.state,
@@ -24,7 +26,10 @@ const section = computed<CollectionSectionData>(() => ({
 const loadingHeight = computed(() => props.widget.loadingHeight ?? null);
 </script>
 <template>
-    <CollectionCard :section="section" :level="2" :headless="headless" :min-height="loadingHeight" :data-widget="widget.key">
+    <section v-if="frameless" :aria-label="widget.title" :data-widget="widget.key" data-widget-frameless class="min-h-(--widget-min-height)" :style="loadingHeight ? { '--widget-min-height': loadingHeight } : undefined">
+        <slot />
+    </section>
+    <CollectionCard v-else :section="section" :level="2" :headless="headless" :min-height="loadingHeight" :data-widget="widget.key">
         <slot />
     </CollectionCard>
 </template>
