@@ -2,10 +2,12 @@
 
 ## Unreleased
 
+## v0.6.2
+
 ### Changed
 
-- **The bar's search field takes the bar's ink** (#142). `config/brand.php` sets `'header' => 'ink'`, the one brand key the template sets, because its bar is near-black in light and dark. The kit then prints the bar's own colours for what sits on it. In light mode the search field was the card's white on the bar (19.9:1), the brightest thing on every signed-in page; it is now #27272a (1.34:1 against the bar) with a 4.12:1 edge and a 5.81:1 placeholder, and on a phone the search button is the same wash instead of a light chip. The current page's underline stays #fafafa, the bar's focus outline is #d4d4d8 (13.46:1 on the bar, 10.08:1 on the field), and primary buttons and the page's own focus ring are unchanged. The `--shell-bar` tokens stay in `resources/css/app.css`: they paint the bar, and the kit colours what is on it. An app with a light bar removes the key and sets `--shell-bar` to match.
-- **tey/kit is upgraded to v0.49.2** (#142; from v0.49.1; `composer require tey/kit:^0.49.2`, constraint `^0.49.2`). Only tey/kit moved, and no scaffolded file changed (`sh bin/kit-parity.sh`: 71 files equal). 0.49.2 is what makes the ink header usable on the neutral accent: before it, the bar's marker and focus ring were printed as #52525b, 2.57:1 on the bar.
+- **The bar's search field takes the bar's ink** (#147). `config/brand.php` sets `'header' => 'ink'`, the one brand key the template sets, because its bar is near-black in light and dark. The kit then prints the bar's own colours for what sits on it. In light mode the search field was the card's white on the bar (19.9:1), the brightest thing on every signed-in page; it is now #27272a (1.34:1 against the bar) with a 4.12:1 edge and a 5.81:1 placeholder, and on a phone the search button is the same wash instead of a light chip. The current page's underline stays #fafafa, the bar's focus outline is #d4d4d8 (13.46:1 on the bar, 10.08:1 on the field), and primary buttons and the page's own focus ring are unchanged. The `--shell-bar` tokens stay in `resources/css/app.css`: they paint the bar, and the kit colours what is on it. An app with a light bar removes the key and sets `--shell-bar` to match.
+- **tey/kit is upgraded to v0.49.2** (#147; from v0.49.1; `composer require tey/kit:^0.49.2`, constraint `^0.49.2`). Only tey/kit moved, and no scaffolded file changed (`sh bin/kit-parity.sh`: 71 files equal). 0.49.2 is what makes the ink header usable on the neutral accent: before it, the bar's marker and focus ring were printed as #52525b, 2.57:1 on the bar.
 
 ## v0.6.1
 
