@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ca602090b4cc08d1e8c2628f8caa773b",
+    "content-hash": "559737f6f43fa2f3548a2a5d20900c2e",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10766,16 +10766,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.12.9",
+            "version": "v0.12.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "36638a0fb8356460fdeb11885ba7af8980059981"
+                "reference": "2939e475c50a5eb975107303f2a3a87fb1f96723"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/36638a0fb8356460fdeb11885ba7af8980059981",
-                "reference": "36638a0fb8356460fdeb11885ba7af8980059981",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/2939e475c50a5eb975107303f2a3a87fb1f96723",
+                "reference": "2939e475c50a5eb975107303f2a3a87fb1f96723",
                 "shasum": ""
             },
             "require": {
@@ -10850,7 +10850,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.12.9"
+                "source": "https://github.com/teylabs/standards/tree/v0.12.11"
             },
             "funding": [
                 {
@@ -10858,8 +10858,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-23T03:29:03+00:00",
-            "published-time": "2026-11-23T03:29:13+00:00"
+            "time": "2026-11-23T03:46:17+00:00",
+            "published-time": "2026-11-23T03:46:26+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
