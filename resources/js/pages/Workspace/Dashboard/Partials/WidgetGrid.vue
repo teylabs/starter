@@ -10,7 +10,7 @@ import YouWidget from './YouWidget.vue';
 import type { WidgetFrame } from './types';
 
 // The dashboard's two columns: a PageGrid `main-aside` (8 and 4 of 12 from `md`, one column below it; `main-aside-wide`, 7 and 5, when `aside` is `wide`), each column a Stack of its widgets' cards in order. Below `md`
-// the main column's cards come first, then the aside's. Each card spans its column; `span` no longer drives the layout. With only one column in use it takes the
+// the aside's cards come first (the You card, the counts and status cards), then the main column's feed, so they are not screens down; from `md` main is left. Each card spans its column; `span` no longer drives the layout. With only one column in use it takes the
 // full width. A widget's `component` picks its body: the kit's own, or `resources/js/widgets/{Name}.vue` in the app (`queue` renders `widgets/Queue.vue`). An
 // unknown component renders the card with no body. A widget whose `headless()` is true (the kit's You card, or one that opens with a Composer) has no title bar, and
 // any but the You card no frame either (its body is its own card); a
@@ -31,7 +31,7 @@ const columns = computed(() => {
 </script>
 <template>
     <PageGrid :preset="columns.length > 1 ? (aside === 'wide' ? 'main-aside-wide' : 'main-aside') : undefined" data-widget-grid>
-        <Stack v-for="column in columns" :key="column.region" :data-widget-region="column.region">
+        <Stack v-for="column in columns" :key="column.region" :data-widget-region="column.region" :class="column.region === 'aside' ? 'max-md:order-first' : undefined">
             <WidgetCard v-for="widget in column.widgets" :key="widget.key" :widget="widget" :headless="widget.headless === true || widget.component === 'you'" :frameless="widget.headless === true && widget.component !== 'you'">
                 <component :is="body(widget.component)" v-if="body(widget.component)" :widget="widget" />
             </WidgetCard>

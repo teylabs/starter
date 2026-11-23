@@ -1025,6 +1025,7 @@ retry: Record<string, any> | null,
 } | null,
 actions: Record<string, any>[],
 }[],
+readonly actions: Tey.Kit.Features.Core.Data.Action[],
 };
 }
 }

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- **tey/kit ^0.49.6.** Tables scroll with the page, the header sticking under the app bar, and a wide table scrolls sideways only while it overflows (v0.49.5). On phones the dashboard shows its aside before the feed, and `Registry::dashboardActions()` gives the dashboard heading its actions (v0.49.6). The dashboard page and WidgetGrid are re-taken from `kit:scaffold workspace-ui`, and the types are regenerated for the dashboard's `actions`.
+
 ## v0.6.5
 
 ### Changed
