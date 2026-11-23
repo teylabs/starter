@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+## v0.6.1
+
 ### Changed
 
-- **tey/kit is upgraded to v0.49.1** (#143; from v0.48.0; `composer require tey/kit:^0.49.1`, constraint `^0.49.1`). Only tey/kit moved. The steps the kit lists for 0.48.1 to 0.49.1 that apply to the template's features:
+- **tey/kit is upgraded to v0.49.1** (#144; from v0.48.0; `composer require tey/kit:^0.49.1`, constraint `^0.49.1`). Only tey/kit moved. The steps the kit lists for 0.48.1 to 0.49.1 that apply to the template's features:
   - **The scaffolded files.** Three changed files are taken with `kit:scaffold <feature> --force=<path>` (all were unedited): `resources/css/kit.css` (core), `resources/js/pages/Auth/Login/Page.vue` (session-ui) and `resources/js/pages/Workspace/Settings/People/Page.vue` (workspace-ui).
   - **0.49.1: the field edge and dark fields.** The template sets no `--input` of its own, so it takes the kit's new defaults: `--input` is #8f8f8c in light and #686866 in dark, and a dark field fills with the card (#171717) instead of a wash of `--input`.
   - **0.49.1: the sign-in page's reset link comes from its view model.** The kit's Login page draws "Forgot your password?" from the `forgot` prop. The template builds that view model itself (`AppServiceProvider`, for the local sign-in offer), so it now passes `forgot` while Fortify's `resetPasswords` feature is on, as the kit's own `loginView` does; without it the link would have gone. `resources/js/types.generated.d.ts` is regenerated (`composer types:generate`), and `tests/PasswordResetTest.php` asserts the prop instead of reading the page's source.
