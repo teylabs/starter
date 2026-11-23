@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Changed
+
+- **tey/kit is upgraded to v0.49.1** (#143; from v0.48.0; `composer require tey/kit:^0.49.1`, constraint `^0.49.1`). Only tey/kit moved. The steps the kit lists for 0.48.1 to 0.49.1 that apply to the template's features:
+  - **The scaffolded files.** Three changed files are taken with `kit:scaffold <feature> --force=<path>` (all were unedited): `resources/css/kit.css` (core), `resources/js/pages/Auth/Login/Page.vue` (session-ui) and `resources/js/pages/Workspace/Settings/People/Page.vue` (workspace-ui).
+  - **0.49.1: the field edge and dark fields.** The template sets no `--input` of its own, so it takes the kit's new defaults: `--input` is #8f8f8c in light and #686866 in dark, and a dark field fills with the card (#171717) instead of a wash of `--input`.
+  - **0.49.1: the sign-in page's reset link comes from its view model.** The kit's Login page draws "Forgot your password?" from the `forgot` prop. The template builds that view model itself (`AppServiceProvider`, for the local sign-in offer), so it now passes `forgot` while Fortify's `resetPasswords` feature is on, as the kit's own `loginView` does; without it the link would have gone. `resources/js/types.generated.d.ts` is regenerated (`composer types:generate`), and `tests/PasswordResetTest.php` asserts the prop instead of reading the page's source.
+  - **0.49.1: People on a phone.** A long email no longer hides a member's role and join date, and a date never wraps. At 1280 a very long email still widens the table, which scrolls inside its card; that is the kit's to fix.
+  - **Checks.** `sh bin/kit-parity.sh` reports the template's 71 kit files equal to `kit:scaffold`, with no tweaks.
+  - **Not taken:** `'header' => 'ink'` (0.49.1 fixes its primary buttons), because on the neutral accent the bar block still sets the bar's ring and marker to #52525b: the current page's underline and the search field's focus outline come out at 2.57:1 on the bar (#142, waiting on the kit). The 0.48.2 migration-order notes (the template has no stamped copies of the workspaces baselines and no adopt migration), `Composer`'s `rows` and the sibling-pill rule (0.49.0: the template has no Composer and no module pills).
+
 ## v0.6.0
 
 ### Added

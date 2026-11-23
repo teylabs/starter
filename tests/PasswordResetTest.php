@@ -18,8 +18,8 @@ test('forgot your password on the sign-in page leads to the reset pages', functi
     $this->get('/forgot-password', passwordResetInertia())->assertOk()->assertJsonPath('component', 'Auth/ForgotPassword/Page');
     $this->get('/reset-password/a-token?email=actor1@example.test', passwordResetInertia())->assertOk()->assertJsonPath('component', 'Auth/ResetPassword/Page')
         ->assertJsonPath('props.token', 'a-token');
-    // The link the kit's sign-in page draws is the route this app now answers.
-    $this->assertStringContainsString('href="/forgot-password"', (string) file_get_contents(resource_path('js/pages/Auth/Login/Page.vue')));
+    // The sign-in page is sent the link (the kit draws it only while reset is on), and it is the route this app answers.
+    $this->get('/login', passwordResetInertia())->assertOk()->assertJsonPath('component', 'Auth/Login/Page')->assertJsonPath('props.forgot', '/forgot-password');
 });
 test('a reset link is mailed and sets a new password', function () {
     require dirname(__DIR__).'/database/fixture.php';

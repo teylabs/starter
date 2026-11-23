@@ -85,7 +85,7 @@ async function passkeySignIn(): Promise<void> {
             </Field>
             <div class="flex items-center justify-between gap-3">
                 <InputCheckbox id="remember" name="remember" value="1">Remember me</InputCheckbox>
-                <Link href="/forgot-password" class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-forgot-password>Forgot your password?</Link>
+                <Link v-if="forgot" :href="forgot" class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-forgot-password>Forgot your password?</Link>
             </div>
             <ActionGroup direction="column">
                 <Button type="submit" :disabled="processing" data-test="login-button">{{ processing ? 'Signing in…' : 'Sign in' }}</Button>

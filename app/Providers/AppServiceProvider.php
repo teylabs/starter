@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
+use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Kit\Features\SessionUi\ViewModels\LoginViewModel;
@@ -34,7 +35,8 @@ final class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(InstalledVersions::getInstallPath('laravel/passport').'/database/migrations');
         $this->commands([FirstOwnerCommand::class]);
         // The kit's sign-in page takes the status and the local offer as extra props; this overrides session-ui's loginView with them. Concierge decides
-        // whether the one-click local sign-in is offered: the offer is null wherever it isn't available.
-        Fortify::loginView(fn () => Inertia::render('Auth/Login/Page', new LoginViewModel('Sign in', session('status'), app(LocalLogin::class)->offer()?->toArray())));
+        // whether the one-click local sign-in is offered: the offer is null wherever it isn't available. "Forgot your password?" is sent while Fortify's
+        // resetPasswords feature is on (config/fortify.php), as the kit's own loginView sends it; the page draws no link without it.
+        Fortify::loginView(fn () => Inertia::render('Auth/Login/Page', new LoginViewModel('Sign in', session('status'), app(LocalLogin::class)->offer()?->toArray(), forgot: Features::enabled(Features::resetPasswords()) ? '/forgot-password' : null)));
     }
 }
