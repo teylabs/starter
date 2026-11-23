@@ -48,4 +48,4 @@ The template is a Laravel host application built on [tey/kit](https://github.com
 
 ## Not covered
 
-Delegated initial onboarding, password reset and branded mail (#24), jobs and files isolation, PostgreSQL concurrency and the deploy smoke command (#32) are not implemented or not proven. See [ROADMAP.md](../ROADMAP.md).
+Delegated initial onboarding, branded mail (#24), jobs and files isolation, PostgreSQL concurrency and the deploy smoke command (#32) are not implemented or not proven. See [ROADMAP.md](../ROADMAP.md).

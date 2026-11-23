@@ -234,6 +234,14 @@ test('a private app leaves the legal parts out of the mail and web footers', fun
         }
     }
 });
+test('the footer stand-in terms and privacy links answer with pages that say to replace them', function () {
+    $inertia = ['X-Inertia' => 'true', 'Accept' => 'text/html', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(Request::create('/')) ?? ''];
+    // The footer's defaults (the brand's terms_url and privacy_url) are these two paths; each is a public Markdown page, open to a guest.
+    foreach ([[Brand::get('terms_url'), 'Terms of service', '/privacy'], [Brand::get('privacy_url'), 'Privacy policy', '/terms']] as [$url, $title, $other]) {
+        $page = $this->get((string) $url, $inertia)->assertOk()->assertJsonPath('component', 'Public/Markdown/Page')->assertJsonPath('props.title', $title);
+        expect($page->json('props.html'))->toContain('Replace it before you deploy')->toContain('href="'.$other.'"');
+    }
+});
 test('the web footer is copyright identity credit and legal links', function () {
     require dirname(__DIR__).'/database/fixture.php';
     $password = Str::random(40);

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { Surface } from '@kit/ui';
 import Wordmark from '@/components/Shell/Wordmark.vue';
+
+// The guest pages sit on the page ground, and their card is the kit's own (Surface): the radius, border and lifted shadow of every card after sign-in, and
+// what is inside knows it is on a card.
 
 withDefaults(
     defineProps<{
@@ -23,7 +27,7 @@ const product = computed(() => page.props.shell?.product.name ?? '');
 <template>
     <Head :title="page.props.layout?.documentTitle" />
     <div
-        class="flex min-h-svh flex-col bg-muted/40 text-foreground"
+        class="flex min-h-svh flex-col bg-background text-foreground"
         :class="
             wide ? '' : 'items-center justify-center gap-6 px-4 py-10 sm:px-6'
         "
@@ -35,13 +39,16 @@ const product = computed(() => page.props.shell?.product.name ?? '');
         >
             <Wordmark href="/" :product="product" data-guest-wordmark />
         </header>
-        <main
+        <Surface
+            as="main"
             id="main"
-            class="w-full min-w-0 rounded-lg bg-card text-card-foreground shadow-xs ring-1 ring-border"
+            :padding="wide ? 'none' : 'md'"
+            :clip="false"
+            class="w-full min-w-0"
             :class="
                 wide
                     ? 'flex-1 [&>.h-svh]:h-[calc(100svh-4rem)]'
-                    : 'max-w-md space-y-6 p-6 sm:p-8'
+                    : 'max-w-md space-y-6 sm:p-8'
             "
             data-guest-card
         >
@@ -54,6 +61,6 @@ const product = computed(() => page.props.shell?.product.name ?? '');
                 </p>
             </div>
             <slot />
-        </main>
+        </Surface>
     </div>
 </template>

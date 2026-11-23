@@ -45,7 +45,7 @@ CI checks Pint and standards, runs the PHP suites in parallel on PostgreSQL, che
 
 ## Status
 
-v0.3 rebuilds the template on tey/kit 0.1. Not yet available: `laravel new --using=tey/starter` (not on Packagist yet), password reset (it needs mail, #24) and the deploy smoke command (#32). Not yet proven: PostgreSQL concurrency, jobs and files. See [ROADMAP.md](ROADMAP.md).
+v0.3 rebuilds the template on tey/kit 0.1. Not yet available: `laravel new --using=tey/starter` (not on Packagist yet) and the deploy smoke command (#32). Password reset by emailed link is on; it needs a mailer that can send the link. Not yet proven: PostgreSQL concurrency, jobs and files. See [ROADMAP.md](ROADMAP.md).
 
 ## License
 

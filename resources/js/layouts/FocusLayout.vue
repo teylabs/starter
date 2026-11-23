@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { AppearanceToggle, Avatar, Toaster, Toolbar } from '@kit/ui';
+import { AppearanceToggle, Avatar, Surface, Toaster, Toolbar } from '@kit/ui';
 
 /*
  * The FocusShell: a signed-in page outside any workspace (accept an invitation, switch account, the welcome steps, the no-workspace page). The product's mark and name
  * sit at the left, the account cluster at the right, a centred column below with an optional "Step n of m". No switcher, navigation, breadcrumbs or footer.
+ * On a phone the mark stands alone (the name stays for screen readers), so the account cluster fits beside it. The page sits on the page ground and its card is
+ * the kit's own (Surface), as on the guest pages.
  * Everything comes from the server's `shell` (FocusShellData); this decides nothing.
  */
 defineOptions({ inheritAttrs: false });
@@ -20,7 +22,7 @@ const shell = computed(() => page.props.shell);
 <template>
     <Head :title="page.props.layout?.documentTitle" />
     <div
-        class="flex min-h-svh flex-col bg-muted/40 text-foreground"
+        class="flex min-h-svh flex-col bg-background text-foreground"
         data-focus-shell
     >
         <header
@@ -38,7 +40,12 @@ const shell = computed(() => page.props.shell);
                     alt=""
                     class="h-6 w-auto shrink-0 dark:invert"
                 />
-                <span class="truncate">{{ shell.product.name }}</span>
+                <span
+                    class="truncate"
+                    :class="shell.product.logomark ? 'max-sm:sr-only' : ''"
+                >
+                    {{ shell.product.name }}
+                </span>
             </Link>
             <Toolbar class="shrink-0 flex-nowrap" data-focus-account>
                 <Avatar
@@ -86,12 +93,13 @@ const shell = computed(() => page.props.shell);
                 Step {{ shell.step.current }} of {{ shell.step.total }} ·
                 {{ shell.step.label }}
             </p>
-            <div
-                class="w-full max-w-xl min-w-0 rounded-lg bg-card p-6 text-card-foreground shadow-xs ring-1 ring-border sm:p-8"
+            <Surface
+                :clip="false"
+                class="w-full max-w-xl min-w-0 sm:p-8"
                 data-focus-card
             >
                 <slot />
-            </div>
+            </Surface>
         </main>
     </div>
     <Toaster />
