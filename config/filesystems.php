@@ -5,7 +5,7 @@
 // app's own files (exports, imports, generated files); Media Library writes only through the `media` disk, the same bucket under `media/` when
 // MEDIA_DISK names the bucket's disk, and storage/app/private/media in development (MEDIA_DISK=local). The media disk is scoped over the disk
 // MEDIA_DISK names rather than a copy of it, so it uses whatever bucket and credentials that disk holds when it is built. Laravel Cloud injects an
-// attached bucket as the disk name you chose when attaching it (LARAVEL_CLOUD_DISK_CONFIG), not as AWS_* variables: set MEDIA_DISK to that name.
+// attached bucket as the disk name you chose when attaching it (LARAVEL_CLOUD_DISK_CONFIG) and doesn't fill `s3`: set MEDIA_DISK to that name.
 $s3 = [
     'driver' => 's3',
     'key' => env('AWS_ACCESS_KEY_ID'),

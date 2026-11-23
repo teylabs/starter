@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- **`MEDIA_DISK` names the bucket's disk, so media works on Laravel Cloud.** v0.6.3 scoped the `media` disk over `s3`, but Laravel Cloud injects an attached bucket as the disk name chosen when attaching it (`LARAVEL_CLOUD_DISK_CONFIG`), not as `s3` or `AWS_*` variables, so `s3` and anything scoped over it had a null bucket. Any `MEDIA_DISK` other than `local` now scopes `media/` over the disk it names: set it to the Cloud disk name (`MEDIA_DISK=s3` with `AWS_*` still works elsewhere). `docs/deploy.md` and `.env.example` say so.
+- **`MEDIA_DISK` names the bucket's disk, so media works on Laravel Cloud.** v0.6.3 scoped the `media` disk over `s3`, but Laravel Cloud injects an attached bucket as the disk name chosen when attaching it (`LARAVEL_CLOUD_DISK_CONFIG`), and doesn't fill the `s3` disk, so `s3` and anything scoped over it had a null bucket. Any `MEDIA_DISK` other than `local` now scopes `media/` over the disk it names: set it to the Cloud disk name (`MEDIA_DISK=s3` with `AWS_*` still works elsewhere). `docs/deploy.md` and `.env.example` say so.
 
 ## v0.6.3
 
