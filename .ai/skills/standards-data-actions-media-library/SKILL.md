@@ -15,4 +15,6 @@ Kit: @kit/ui FileInput.
 - `FileInput` from `@kit/ui` for the file field: Uploads the record's file or photo (props: v-model, accept).
 Checks: 19, ui dropzone, media.image-api, media.image-scoped. Run `php artisan standards:check --changed` before committing.
 
+Related: `data-actions.media-disk`.
+
 Not sure this is the right leaf? It answers "Which addition?" Call bakery.find, or run `php artisan standards:pattern --recipe=data-actions.media-library` to see its siblings.

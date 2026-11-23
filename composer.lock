@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b3fd133c870cc23b43cb3af8a27aa0f",
+    "content-hash": "559737f6f43fa2f3548a2a5d20900c2e",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10574,16 +10574,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.49.2",
+            "version": "v0.49.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "f7c1ed111644534e87723589f94afb74653b4c7b"
+                "reference": "106d6c45de328033219a4dd4e97e044f58fff242"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/f7c1ed111644534e87723589f94afb74653b4c7b",
-                "reference": "f7c1ed111644534e87723589f94afb74653b4c7b",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/106d6c45de328033219a4dd4e97e044f58fff242",
+                "reference": "106d6c45de328033219a4dd4e97e044f58fff242",
                 "shasum": ""
             },
             "require": {
@@ -10644,7 +10644,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.49.2"
+                "source": "https://github.com/teylabs/kit/tree/v0.49.3"
             },
             "funding": [
                 {
@@ -10652,8 +10652,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-23T02:31:28+00:00",
-            "published-time": "2026-11-23T02:32:01+00:00"
+            "time": "2026-11-23T03:27:50+00:00",
+            "published-time": "2026-11-23T03:28:58+00:00"
         },
         {
             "name": "tey/mod",
@@ -10766,16 +10766,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.12.3",
+            "version": "v0.12.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "4363eb6063b442902ee1f005b85bb94a22ee2a92"
+                "reference": "2939e475c50a5eb975107303f2a3a87fb1f96723"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/4363eb6063b442902ee1f005b85bb94a22ee2a92",
-                "reference": "4363eb6063b442902ee1f005b85bb94a22ee2a92",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/2939e475c50a5eb975107303f2a3a87fb1f96723",
+                "reference": "2939e475c50a5eb975107303f2a3a87fb1f96723",
                 "shasum": ""
             },
             "require": {
@@ -10850,7 +10850,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.12.3"
+                "source": "https://github.com/teylabs/standards/tree/v0.12.11"
             },
             "funding": [
                 {
@@ -10858,8 +10858,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-22T16:54:16+00:00",
-            "published-time": "2026-11-22T16:59:26+00:00"
+            "time": "2026-11-23T03:46:17+00:00",
+            "published-time": "2026-11-23T03:46:26+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

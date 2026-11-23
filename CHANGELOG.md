@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- **tey/kit ^0.49.3 and tey/standards ^0.12.11.** Kit caps People's identity cell at 288px from `sm`, so the table no longer scrolls inside its card at 1280, and adds `Registry::moduleVariant()` for a top-level module drawn as pills (NavGroup gains `variant`; run `php artisan types:generate`). Standards' `media.disk` rule now checks the scoped-over-`env('MEDIA_DISK')` shape the starter uses, and `ui-page.page-tabs` names `Registry::moduleVariant()`; the regenerated agent guidance and skills are included.
+
 ## v0.6.4
 
 ### Fixed
