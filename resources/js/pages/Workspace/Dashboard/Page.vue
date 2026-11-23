@@ -5,11 +5,11 @@ import WidgetGrid from './Partials/WidgetGrid.vue';
 import type { WidgetFrame } from './Partials/types';
 // The workspace home. The greeting is the page heading; below it the widget grid (`Registry::widget()`), or the empty state when the viewer has no widgets. The
 // viewer's own onboarding steps are in the You card and the workspace's in the "Set up this workspace" card, last in the aside. An app adds widgets rather than
-// forking this page; it can still replace it by registering its own dashboard component, which receives the same props and can render <WidgetGrid> where it likes.
+// forking this page, and its header actions with `Registry::dashboardActions()`; it can still replace it by registering its own dashboard component, which receives the same props and can render <WidgetGrid> where it likes.
 defineProps<Tey.Kit.Features.SessionUi.ViewModels.WorkspaceDashboardViewModel>();
 </script>
 <template>
-    <Page :title="greeting">
+    <Page :title="greeting" :actions="actions">
     <WidgetGrid v-if="widgets.length" :widgets="widgets as WidgetFrame[]" :aside="aside" />
     <section v-else class="grid max-w-xl justify-items-start gap-3 rounded-xl border border-dashed p-8" data-dashboard-empty>
         <h2 class="text-lg font-semibold">Nothing here yet</h2>
