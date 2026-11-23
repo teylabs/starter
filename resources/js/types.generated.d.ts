@@ -111,6 +111,7 @@ label: string | null,
 items: Tey.Kit.Features.Core.Data.NavItem[],
 nested: boolean,
 sidebar: boolean,
+variant: string | null,
 };
 export type NavItem = {
 label: string,
