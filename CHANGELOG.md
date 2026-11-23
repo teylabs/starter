@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **The `media` disk works on Laravel Cloud.** Cloud injects an attached bucket into the `s3` disk only, so a `media` disk copied from `s3` when the config loaded had a null bucket. With `MEDIA_DISK=s3` the `media` disk is now `scoped` over `s3` with prefix `media`, so it uses the bucket and credentials `s3` holds when it is built. Adds `league/flysystem-path-prefixing`, which Laravel's scoped driver needs. `tests/StorageTest.php` sets a bucket on `s3` at runtime and checks the media disk's URLs use it.
+
 ## v0.6.2
 
 ### Changed
