@@ -70,15 +70,15 @@ const formOptions = failureHandlers as FormOptions;
             <Alert v-if="otherError(errors)" variant="danger" live="alert" data-register-error>{{ otherError(errors) }}</Alert>
             <Alert v-else-if="failure" variant="danger" live="alert" data-auth-throttled>{{ failure }}</Alert>
             <div v-if="email !== null" class="grid gap-2">
-                <p id="register-email-label" class="text-sm font-medium">Email address</p>
-                <p aria-labelledby="register-email-label" :aria-describedby="emailHint ? 'register-email-hint' : undefined" class="rounded-md bg-muted px-3 py-2 text-sm break-all" data-register-email>{{ email }}</p>
+                <label id="register-email-label" for="register-email" class="text-sm font-medium">Email address</label>
+                <Input id="register-email" type="email" :model-value="email" readonly autocomplete="username" aria-labelledby="register-email-label" :aria-describedby="emailHint ? 'register-email-hint' : undefined" data-register-email />
                 <p v-if="emailHint" id="register-email-hint" class="text-sm text-muted-foreground">{{ emailHint }}</p>
             </div>
             <Field id="name" name="name" label="Name">
                 <Input id="name" name="name" required autofocus autocomplete="name" :invalid="Boolean(errors.name)" />
             </Field>
             <Field v-if="email === null" id="email" name="email" label="Email address">
-                <Input id="email" name="email" type="email" required autocomplete="email" placeholder="email@example.com" :invalid="Boolean(errors.email)" />
+                <Input id="email" name="email" type="email" required autocomplete="username" placeholder="email@example.com" :invalid="Boolean(errors.email)" />
             </Field>
             <Field id="password" name="password" label="Password"><PasswordInput id="password" v-model="password" name="password" required autocomplete="new-password" :invalid="Boolean(errors.password)" rules /></Field>
             <Field id="password_confirmation" name="password_confirmation" label="Confirm password"><PasswordInput id="password_confirmation" v-model="confirmation" name="password_confirmation" required autocomplete="new-password" :invalid="Boolean(errors.password_confirmation)" /></Field>

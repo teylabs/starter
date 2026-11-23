@@ -57,7 +57,7 @@ const formOptions = failureHandlers as FormOptions;
                 <template #actions><Link href="/forgot-password" class="underline underline-offset-4">Request a new link</Link></template>
             </Alert>
             <Input type="hidden" name="token" :model-value="token" />
-            <Input type="hidden" name="email" :model-value="email" />
+            <Field id="email" label="Email address"><Input id="email" name="email" type="email" :model-value="email" readonly autocomplete="username" /></Field>
             <Field id="password" name="password" label="New password"><PasswordInput id="password" v-model="password" name="password" required autocomplete="new-password" :invalid="Boolean(errors.password)" rules /></Field>
             <Field id="password_confirmation" name="password_confirmation" label="Confirm new password"><PasswordInput id="password_confirmation" v-model="confirmation" name="password_confirmation" required autocomplete="new-password" :invalid="Boolean(errors.password_confirmation)" /></Field>
             <Button type="submit" class="w-full" :disabled="processing">{{ processing ? 'Saving…' : 'Save new password' }}</Button>

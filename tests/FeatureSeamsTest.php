@@ -115,9 +115,10 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
             expect($ran)->toContain($kit);
         }
     }
-    // Since kit 0.18 each adopted feature's migrations load from the package: the 32 baselines, the three 0.18 renames and 0.24's two signed-in device migrations.
+    // Since kit 0.18 each adopted feature's migrations load from the package: the 32 baselines, the three 0.18 renames, 0.24's two signed-in device migrations,
+    // 0.39's flag and tag tables, and 0.43's two renames (kit_meta to app_meta, and the tag tables).
     $kit = array_map(fn (string $path): string => basename($path, '.php'), array_merge(...array_map(fn (string $feature): array => glob(base_path('vendor/tey/kit/database/migrations/'.$feature.'/*.php')), config('kit.features'))));
-    expect($kit)->toHaveCount(notesAdopted() ? 38 : 37);
+    expect($kit)->toHaveCount(notesAdopted() ? 41 : 40);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -208,6 +209,11 @@ function featureSeamsReleased(bool $withNotes): array
     }
     // kit 0.24: one row per signed-in session, on every session driver.
     $schema['signed_in_devices'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-signed-in-devices.json'), true);
+    // kit 0.43: no `kit` in the schema. The bookkeeping table is app_meta, and 0.39's flag and tag tables are tags, taggables and flag_dismissals.
+    test()->assertArrayHasKey('kit_meta', $schema);
+    $schema['app_meta'] = $schema['kit_meta'];
+    unset($schema['kit_meta']);
+    $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-tags.json'), true)];
     ksort($schema);
 
     return $schema;

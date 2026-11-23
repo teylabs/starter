@@ -46,11 +46,33 @@ onBeforeUnmount(stop);
             <!-- The nav slot (the Layout's drawer-nav) replaces the kit's pages with the app's own list. -->
             <div v-if="$slots.nav" class="px-2 pt-4" data-shell-drawer-nav><slot name="nav" /></div>
             <nav v-else-if="pages && shell.navigation.length" :aria-label="shell.workspace?.name ?? shell.product.name" class="grid gap-1 px-2 pt-4">
-                <Link v-for="item in shell.navigation" :key="item.url" :href="item.url" :aria-current="item.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
+                <template v-for="item in shell.navigation" :key="item.url">
+                    <Link :href="item.url" :aria-current="item.current && !(item.label === shell.subNavigation?.label && (shell.subNavigation.child || shell.subNavigation.items.some((tab) => tab.group))) ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', item.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ item.label }}</Link>
+                    <!-- A sidebar module (pages with a `group`): its pages under the link, under their group headings. -->
+                    <div v-if="item.current && shell.subNavigation && !shell.subNavigation.child && item.label === shell.subNavigation.label && shell.subNavigation.items.some((tab) => tab.group)" class="ml-4 grid gap-2 border-l border-border pl-2" data-shell-drawer-sidebar>
+                        <ul v-for="group in [...new Set(shell.subNavigation.items.map((tab) => tab.group ?? ''))]" :key="group" :aria-label="group || shell.subNavigation.label" class="grid gap-1">
+                            <li v-if="group" aria-hidden="true" class="px-3 pt-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">{{ group }}</li>
+                            <li v-for="tab in shell.subNavigation.items.filter((each) => (each.group ?? '') === group)" :key="tab.url">
+                                <Link :href="tab.url" :aria-current="tab.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', tab.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ tab.label }}</Link>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- A section whose current tab is a nested module: the section's tabs under it, and that module's pages expanded in place under its tab. -->
+                    <ul v-if="item.current && shell.subNavigation?.child && item.label === shell.subNavigation.label" :aria-label="shell.subNavigation.label" class="ml-4 grid gap-1 border-l border-border pl-2" data-shell-drawer-section>
+                        <li v-for="tab in shell.subNavigation.items" :key="tab.url">
+                            <Link :href="tab.url" :aria-current="tab.current && !shell.subNavigation.child ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', tab.current ? 'text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ tab.label }}</Link>
+                            <ul v-if="tab.current" :aria-label="shell.subNavigation.child.label" class="ml-4 grid gap-1 border-l border-border pl-2" data-shell-drawer-child>
+                                <li v-for="page in shell.subNavigation.child.items" :key="page.url">
+                                    <Link :href="page.url" :aria-current="page.current ? 'page' : undefined" :class="['flex min-h-11 items-center rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none', page.current ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground']">{{ page.label }}</Link>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </template>
             </nav>
             <div class="mt-auto border-t border-border px-2 py-4">
                 <div class="flex items-center gap-3 px-3 pb-3">
-                    <UserAvatar :initials="shell.user.initials" :src="shell.user.avatar_url" :src2x="shell.user.avatar_url_2x" />
+                    <UserAvatar :initials="shell.user.initials" :src="shell.user.avatar_url" :src2x="shell.user.avatar_url_2x" :color="shell.user.avatar_color" />
                     <span class="flex min-w-0 flex-col">
                         <span class="truncate text-sm font-medium">{{ shell.user.name }}</span>
                         <span class="truncate text-xs text-muted-foreground">{{ shell.user.email }}</span>

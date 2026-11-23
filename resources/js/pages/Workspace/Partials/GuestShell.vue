@@ -34,7 +34,7 @@ provide('kit.shell.titled', computed(() => Boolean(props.title)));
             </div>
         </header>
         <main id="main" :class="['mx-auto w-full flex-1 px-4 pt-4 pb-10 sm:px-6 sm:pt-10 lg:px-8', props.width === 'wide' ? 'max-w-7xl' : 'max-w-md sm:max-w-lg']">
-            <div class="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-xs sm:p-8" data-guest-card>
+            <div class="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-(--kit-card-shadow) sm:p-8" data-guest-card>
                 <div v-if="props.title" class="mb-6 space-y-2">
                     <h1 class="font-display text-2xl font-(weight:--font-display-weight) tracking-tight">{{ props.title }}</h1>
                     <p v-if="props.description" class="text-sm text-muted-foreground">{{ props.description }}</p>

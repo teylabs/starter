@@ -3,7 +3,11 @@ import { putConfig, withInertiaModal } from '@inertiaui/modal-vue';
 import { createApp, defineComponent, h } from 'vue';
 import type { DefineComponent } from 'vue';
 import '../css/app.css';
-import { initializeTheme, syncTimezoneCookie } from '@kit/ui';
+import {
+    applyFormDefaults,
+    initializeTheme,
+    syncTimezoneCookie,
+} from '@kit/ui';
 import { honourReducedMotion } from '@/lib/reduced-motion';
 import ShellLayout from '@/layouts/ShellLayout.vue';
 import PublicShell from '@/pages/Workspace/Partials/PublicShell.vue';
@@ -46,6 +50,9 @@ function nearestPageLayout(name: string): DefineComponent | null {
 
     return null;
 }
+
+// A saved Inertia <Form> takes what it saved as its defaults, so it is no longer unsaved and the leave prompt stops (tey/kit docs/submit-form.md).
+applyFormDefaults();
 
 createInertiaApp({
     resolve: async (name) => {

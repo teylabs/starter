@@ -34,7 +34,7 @@ const rowLabel = (row: Row) => row.member?.name ?? row.email;
             <DataTable :table="table as never" :intercept="['change-role', 'transfer-ownership']" :row-label="rowLabel" :search-label="members ? 'Search members' : 'Search invitations'" @act="act">
                 <template #cell-member="{ row }">
                     <span class="flex items-center gap-3" data-person>
-                        <Avatar :initials="row.member.initials" :src="row.member.avatar?.url" :src2x="row.member.avatar?.url_2x" />
+                        <Avatar :initials="row.member.initials" :src="row.member.avatar?.url" :src2x="row.member.avatar?.url_2x" :color="row.member.avatar_color" />
                         <span class="flex min-w-0 flex-col">
                             <span class="truncate font-medium">{{ row.member.name }}<span v-if="row.member.is_you" class="font-normal text-muted-foreground"> (you)</span></span>
                             <span class="truncate text-muted-foreground">{{ row.member.email }}</span>

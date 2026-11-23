@@ -51,7 +51,7 @@ const body = computed(() => {
     <Page xs :heading="false">
         <!-- The heading block: 8px between its lines, 12px around the inviter's note (the gap plus its my-1). -->
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium" data-invitation-title>{{ title }}</h1>
+            <h1 class="text-xl font-medium break-words" data-invitation-title>{{ title }}</h1>
             <p v-if="context" class="text-sm font-medium" data-invitation-summary>{{ context }}</p>
             <figure v-if="invitation?.message && joining" class="my-1 border-l-2 pl-3" data-invitation-note>
                 <blockquote class="text-sm">{{ invitation.message }}</blockquote>
@@ -76,7 +76,7 @@ const body = computed(() => {
         </div>
         <Form v-else-if="state === 'register_required'" v-slot="{ processing }" :action="register_url" method="post" :reset-on-success="['password', 'password_confirmation']" class="grid gap-4">
             <Input type="hidden" name="timezone" :model-value="timezone" />
-            <Field id="invite-email" label="Email address"><Input id="invite-email" :model-value="invitation?.email" type="email" readonly /></Field>
+            <Field id="invite-email" label="Email address"><Input id="invite-email" name="email" :model-value="invitation?.email" type="email" autocomplete="username" readonly /></Field>
             <Field id="name" name="name" label="Your name"><Input id="name" name="name" required autofocus autocomplete="name" /></Field>
             <Field id="password" name="password" label="Password"><PasswordInput id="password" name="password" required autocomplete="new-password" rules /></Field>
             <Field id="password_confirmation" name="password_confirmation" label="Confirm password"><PasswordInput id="password_confirmation" name="password_confirmation" required autocomplete="new-password" /></Field>

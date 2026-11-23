@@ -1,0 +1,40 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Bus\Batchable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Spatie\Multitenancy\Jobs\NotTenantAware;
+use Spatie\Multitenancy\Jobs\TenantAware;
+
+/**
+ * Tenancy, decided here (tey/kit: queues are not tenant-aware by default): TenantAware runs it in the workspace it was dispatched from;
+ * NotTenantAware runs it centrally, with no workspace. Keep the one that is true. tey/standards' tenant.queued-declared warns on neither.
+ */
+class {{ class }} implements ShouldQueue, TenantAware
+{
+    use Batchable, Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        if ($this->batch()->cancelled()) {
+            // The batch has been cancelled...
+
+            return;
+        }
+
+        //
+    }
+}

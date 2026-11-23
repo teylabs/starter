@@ -38,6 +38,8 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_01_000006_create_jobs_table',
         '0001_01_02_000100_create_kit_core_tables',
         '0001_01_02_000101_create_kit_meta_table',
+        // kit 0.43: kit_meta becomes app_meta, and stored `kit-` morph aliases the plain ones.
+        '0001_01_02_000102_unprefix_kit_tables',
         '0001_01_02_000200_create_kit_workspaces_table',
         '0001_01_02_000201_create_permission_tables',
         '0001_01_02_000202_create_kit_operators_table',
@@ -49,6 +51,9 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_02_000208_add_workspace_name_to_audit_events',
         '0001_01_02_000209_add_missing_audit_events_workspace_id_index',
         '0001_01_02_000210_add_deleting_at_to_kit_workspaces_table',
+        // kit 0.39's flag and tag tables, and 0.43's rename of them to tags, taggables and flag_dismissals.
+        '0001_01_02_000211_create_kit_tags_tables',
+        '0001_01_02_000212_unprefix_and_protect_tags_tables',
         '0001_01_02_000300_create_kit_access_tables',
         '0001_01_02_000301_create_kit_permission_defaults_table',
         '0001_01_02_000302_create_kit_capability_overrides_table',

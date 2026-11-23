@@ -7,7 +7,7 @@ import type { WidgetFrame } from './types';
 // The "You" card: the viewer only, with no title (the card is still named "You" for assistive tech). Avatar, name, their local time and timezone (a permanent
 // read-out, never a to-do) with Edit, then their own onboarding steps (profile photo, timezone) while any is still open. `email`, `role` and `workspace` are
 // still sent for an app's own card.
-type Person = { name: string; email: string; initials: string; avatar: { url: string; url_2x: string } | null; role: string | null; workspace: string; timezone?: string };
+type Person = { name: string; email: string; initials: string; avatar: { url: string; url_2x: string } | null; avatar_color?: string; role: string | null; workspace: string; timezone?: string };
 const props = defineProps<{ widget: WidgetFrame & { person: Person; checklist?: ChecklistItem[] } }>();
 const zone = computed(() => props.widget.person.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone);
 const now = ref(new Date());
@@ -38,7 +38,7 @@ const open = computed(() => (props.widget.checklist ?? []).some((item) => item.s
 <template>
     <div class="grid gap-4">
         <div class="flex min-w-0 items-center gap-3" data-widget-you>
-            <Avatar :initials="widget.person.initials" :src="widget.person.avatar?.url" :src2x="widget.person.avatar?.url_2x" large />
+            <Avatar :initials="widget.person.initials" :src="widget.person.avatar?.url" :src2x="widget.person.avatar?.url_2x" :color="widget.person.avatar_color" size="lg" />
             <div class="grid min-w-0 flex-1">
                 <p class="truncate font-semibold" data-widget-you-name>{{ widget.person.name }}</p>
                 <p class="text-sm text-pretty wrap-anywhere text-muted-foreground" data-widget-you-time><span v-if="time">{{ time }}</span><template v-if="time"> · </template>{{ zone.replace(/_/g, ' ') }}</p>
