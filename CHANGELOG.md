@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- **Cloudflare R2 is the standard for production media.** `docs/deploy.md` and `.env.example` say production media lives in a private R2 bucket per app, never on the server's disk, and give the R2 variables. The config already defaults the `s3` disk to R2's region `auto` and path-style endpoint, so nothing else changes.
+
 ## v0.6.6
 
 ### Changed
