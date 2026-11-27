@@ -26,9 +26,9 @@
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
         "tey/concierge": "^0.12.1",
-        "tey/kit": "^0.51.3",
+        "tey/kit": "^0.51.4",
         "tey/mod": "^0.11",
-        "tey/standards": "^0.14"
+        "tey/standards": "^0.14.1"
     },
     "require-dev": {
         "larastan/larastan": "^3.9",
