@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Telescope, for operators only.** laravel/telescope with a gate on `Operators::allows()` (never an email list), the noisy watchers off, cache and Telescope SQL dropped, and in production only exceptions, 4xx/5xx requests, failed jobs, scheduled tasks, slow queries, warnings and monitored tags kept (`TELESCOPE_LOG_EVERYTHING=true` keeps all). Entries are pruned after 48 hours, daily.
 - **Amp reaches Laravel Boost.** `.amp/settings.json` registers Boost's MCP server (`php artisan boost:mcp`) for Amp, which reads it instead of `.mcp.json`. An orb asks once to allow it.
 
 ### Fixed

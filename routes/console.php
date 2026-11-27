@@ -10,3 +10,5 @@ Schedule::command('model:prune', ['--model' => [McpIntent::class, SignedInDevice
 // Failed jobs are kept a week for a look, then pruned, and finished batches two days; both daily, so an app on the iterating profile can still sleep.
 Schedule::command('queue:prune-failed', ['--hours' => 168])->daily();
 Schedule::command('queue:prune-batches', ['--hours' => 48])->daily();
+// Telescope keeps two days, so its table stays small on the iterating profile's database.
+Schedule::command('telescope:prune', ['--hours' => 48])->daily();
