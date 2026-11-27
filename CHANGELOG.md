@@ -11,6 +11,7 @@
 
 ### Changed
 
+- **tey/kit 0.51.3 and tey/standards 0.14.** Settings → Setup's queue rows (Timeout, Prune, Worker and jobs) come from standards' queue report, the same checks `standards:preflight` runs; the worker timeout and Flex default to the documented worker (85 seconds, flex).
 - **tey/kit 0.51 and tey/concierge 0.12: plain table names.** Concierge's tables become memberships, membership_scopes, ownerships, invitations, account_statuses and owner_invitations; connections becomes mcp_connections and entitlements workspace_entitlements. The packages' own migrations rename them, rows and keys intact. The kit's re-pinned pages are re-taken (heavier auth headings, designed 404, search, no-workspace, security, invitation and People states), and the guest card heading follows them. The build needs `micromark`, `micromark-extension-gfm` and `dompurify` (added).
 - **Lazy loading throws outside production.** `Model::preventLazyLoading()` finds an N+1 in development and the tests; Concierge 0.12.1 eager-loads the memberships it transfers.
 
