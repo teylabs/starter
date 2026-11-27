@@ -42,6 +42,12 @@ add_php_source() {
     fi
     if grep -q 'BEGIN PGP' "$tmp"; then gpg --dearmor < "$tmp" | sudo tee "$keyring" >/dev/null; else sudo install -m 644 "$tmp" "$keyring"; fi
     rm -f "$tmp"; sudo chmod 644 "$keyring"
+    # Another setup may already list the same repository under its own keyring, and apt refuses two Signed-By values for one
+    # source ("Conflicting values set for option Signed-By"): drop every other entry for this repository first.
+    local other
+    for other in /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+        [ -f "$other" ] && [ "$other" != "$list" ] && grep -qsF "${repo%/}" "$other" && sudo rm -f "$other"
+    done
     echo "deb [signed-by=$keyring] $repo $VERSION_CODENAME main" | sudo tee "$list" >/dev/null
 }
 remove_php_source() { sudo rm -f /etc/apt/sources.list.d/ondrej-php.list /usr/share/keyrings/ondrej-php.gpg; }
