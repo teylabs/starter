@@ -10,7 +10,7 @@ use Laravel\Telescope\TelescopeApplicationServiceProvider;
 use Tey\Kit\Features\Workspaces\Operators;
 
 /**
- * Telescope, on from day one (cookbook rule 72). Only the app's operators (the kit's operators table, seeded with kit:operators:seed) open it: it shows
+ * Telescope, on from day one. Only the app's operators (the kit's operators table, seeded with kit:operators:seed) open it: it shows
  * every workspace's requests, so workspace owners do not. Off production it records everything; in production only exceptions, failed requests and jobs,
  * scheduled tasks, slow queries (100 ms), warnings and up, and anything a monitored tag or TELESCOPE_LOG_EVERYTHING asks for. The cache's and Telescope's
  * own SQL is never recorded. telescope:prune keeps 48 hours (routes/console.php).
