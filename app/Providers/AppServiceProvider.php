@@ -10,6 +10,8 @@ use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Laravel\Nightwatch\Facades\Nightwatch;
+use Laravel\Nightwatch\Records\Query;
 use Tey\Concierge\LocalAuth\LocalLogin;
 use Tey\Kit\Features\SessionUi\ViewModels\LoginViewModel;
 
@@ -29,6 +31,9 @@ final class AppServiceProvider extends ServiceProvider
     {
         // migrate:fresh, db:wipe and the like refuse outside the tests: a run against a missing .env.<name> falls back to .env and would wipe it.
         // A deliberate local reset sets the flag for that one command: ALLOW_DESTRUCTIVE_DB=1 php artisan migrate:fresh.
+        // Nightwatch drops SQL on the database cache store's own tables and Telescope's: a cache read or a lock retry is otherwise a recorded query,
+        // which is how one app spent millions of events on its own cache. Everything else, and every cache event, job and exception, is still kept.
+        Nightwatch::rejectQueries(fn (Query $query): bool => preg_match('/\b(?:from|into|update)\s+"?(?:cache|cache_locks|telescope_entries|telescope_entries_tags|telescope_monitoring)"?(?=[\s(;]|$)/i', $query->sql) === 1);
         DB::prohibitDestructiveCommands(! $this->app->runningUnitTests() && ! config('database.allow_destructive'));
         // The template's own cache, tey/mod's discovery, warms and clears with `php artisan optimize` and `optimize:clear`.
         $this->optimizes('mod:cache', 'mod:clear', 'mod');
