@@ -41,7 +41,7 @@ it('sets two-factor authentication up with a code and shows the devices section'
         $page->navigate('/me/security')->assertCount('[data-sessions] [data-device]', 2)->assertSeeIn('[data-sessions]', 'Safari on iOS')->assertSeeIn('[data-sessions]', '198.51.100.0/24');
         assertAccessible($page, 'the Security page with two devices');
         // Signing it out asks for the password and confirms, naming the device; this device stays.
-        $page->type('[data-device-sign-out] input[name=password]', 'account-test-pass-1')->click('[data-device-sign-out] button[data-variant=destructive]')->assertPresent('[data-confirm-dialog]')->assertSee('Sign out Safari on iOS?');
+        $page->type('[data-device-sign-out] input[name=password]', 'account-test-pass-1')->click('[data-device-sign-out] button[data-variant=secondary]')->assertPresent('[data-confirm-dialog]')->assertSee('Sign out Safari on iOS?');
         $page->click('[data-confirm-action]')->assertSee('Signed out Safari on iOS.')->assertNoJavaScriptErrors();
         $page->navigate('/me/security')->assertCount('[data-sessions] [data-device]', 1)->assertPresent('[data-sessions] [data-this-device]');
         expect(DB::table('sessions')->where('id', 'phone-session')->exists())->toBeFalse();

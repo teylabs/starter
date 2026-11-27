@@ -27,7 +27,8 @@ check('Concierge released native membership is the only membership engine', func
     $constraint = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/concierge'];
     same(true, Semver::satisfies((string) InstalledVersions::getPrettyVersion('tey/concierge'), $constraint));
     same(1, preg_match('/^v\d+\.\d+\.\d+$/', (string) InstalledVersions::getPrettyVersion('tey/concierge')));
-    same(false, Schema::hasTable('memberships'));
+    // Concierge 0.12 owns the plain names: its memberships table is the only one, and the old prefixed one is gone.
+    same(false, Schema::hasTable('concierge_memberships'));
     same(2, DB::table('ownerships')->count());
     same(3, DB::table('memberships')->count());
     same(2, DB::table('owner_invitations')->where('status', 'accepted')->count());

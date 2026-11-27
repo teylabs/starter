@@ -87,8 +87,8 @@ it('signs the first owner in with one click and reaches the app shell', function
             ->assertSeeIn('[data-shell-nav]', 'Dashboard')
             ->click('[data-shell-nav] a[href="/settings"]')
             ->assertPathIs('/settings')
-            // The landing page is a grid of cards (General, People, Email), each one link with an icon; the group is "Workspace".
-            ->assertCount('[data-settings-card]', 3)
+            // The landing page is a grid of cards (General, Email, People, Setup), each one link with an icon; the group is "Workspace".
+            ->assertCount('[data-settings-card]', 4)
             ->assertPresent('[data-settings-card] svg')
             ->assertPresent('section[aria-label="Workspace"]')
             ->click('main a[href="/settings/general"]')
