@@ -55,7 +55,7 @@ $tests += [
             }
         }
         // Revoked actors cannot recover a previous success receipt.
-        DB::table('concierge_memberships')->where('workspace_id', 1)->where('user_id', 1)->update(['status' => 'suspended']);
+        DB::table('memberships')->where('workspace_id', 1)->where('user_id', 1)->update(['status' => 'suspended']);
         try {
             $ui->update($actor, 1, $input);
             throw new RuntimeException('Revoked retry accepted');
@@ -64,7 +64,7 @@ $tests += [
                 throw $e;
             }
         }
-        DB::table('concierge_memberships')->where('workspace_id', 1)->where('user_id', 1)->update(['status' => 'active']);
+        DB::table('memberships')->where('workspace_id', 1)->where('user_id', 1)->update(['status' => 'active']);
     },
     'active grant cannot be replaced and revoked retry never reactivates' => function (): void {
         $op = app(ComplimentaryAccess::class);

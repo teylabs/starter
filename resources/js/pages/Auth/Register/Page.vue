@@ -61,7 +61,7 @@ const formOptions = failureHandlers as FormOptions;
         <!-- A compact auth card: the heading and its flashed status sit closer (gap-4) than the page's blocks (docs/page-rhythm.md). -->
         <Stack>
             <div class="space-y-2">
-                <h1 class="text-xl font-medium">{{ heading }}</h1>
+                <h1 class="font-display text-2xl font-semibold tracking-tight">{{ heading }}</h1>
                 <p v-if="lead" class="text-sm text-muted-foreground" data-register-lead>{{ lead }}</p>
             </div>
             <FormStatus class="self-stretch" data-register-status />

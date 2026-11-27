@@ -15,6 +15,7 @@ use Tey\Kit\Features\Notes\Integrations\Mcp\ReadNote;
 use Tey\Kit\Features\Notes\Integrations\Mcp\WriteNote;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadMailIdentity;
 use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSettings;
+use Tey\Kit\Features\Settings\Integrations\Mcp\ReadSetup;
 use Tey\Kit\Features\Settings\Integrations\Mcp\UpdateSettings;
 use Tey\Kit\Features\Workspaces\Http\Middleware\ResolveWorkspace;
 use Tey\Kit\Search\SearchWorkspace;
@@ -54,7 +55,7 @@ test('registry contributions match the released wiring', function () {
     $registry = app(Registry::class);
     // Notes contributes only once adopted (kit.features, kit:scaffold notes); these pins hold for both.
     $notes = notesAdopted();
-    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ...($notes ? [ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class] : []), ReadDashboard::class, SearchWorkspace::class]);
+    expect($registry->mcpTools())->toBe([ReadSettings::class, UpdateSettings::class, ReadMailIdentity::class, ReadSetup::class, ...($notes ? [ListNotes::class, ReadNote::class, WriteNote::class, DeleteNote::class] : []), ReadDashboard::class, SearchWorkspace::class]);
     expect($registry->navigationLinks())->toBe([['ability' => 'dashboard.read', 'label' => 'Dashboard', 'suffix' => '', 'group' => 'workspace', 'order' => -10, 'active' => '', 'slot' => 'primary'], ...($notes ? [['ability' => 'notes.read', 'label' => 'Notes', 'suffix' => 'notes', 'group' => 'workspace', 'order' => 10, 'active' => null, 'slot' => 'primary']] : [])]);
     $scopes = ['mcp:use' => 'Act as you in the workspaces you approve, with what your role there allows', 'mcp:act' => 'Act as you in the workspaces you approve', 'settings.read' => 'Read workspace settings', 'settings.write' => 'Update workspace settings', 'dashboard.read' => 'Read the workspace dashboard', 'search.read' => 'Search the workspace', ...($notes ? ['notes.read' => 'Read workspace notes', 'notes.write' => 'Create, change and delete your workspace notes'] : [])];
     expect($registry->tokenScopes())->toBe($scopes);
@@ -116,9 +117,9 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
         }
     }
     // Since kit 0.18 each adopted feature's migrations load from the package: the 32 baselines, the three 0.18 renames, 0.24's two signed-in device migrations,
-    // 0.39's flag and tag tables, and 0.43's two renames (kit_meta to app_meta, and the tag tables).
+    // 0.39's flag and tag tables, 0.43's two renames (kit_meta to app_meta, and the tag tables), and 0.51's two renames (mcp_connections, workspace_entitlements) and workspace_secrets.
     $kit = array_map(fn (string $path): string => basename($path, '.php'), array_merge(...array_map(fn (string $feature): array => glob(base_path('vendor/tey/kit/database/migrations/'.$feature.'/*.php')), config('kit.features'))));
-    expect($kit)->toHaveCount(notesAdopted() ? 41 : 40);
+    expect($kit)->toHaveCount(notesAdopted() ? 44 : 43);
     expect(array_diff($kit, $ran))->toBe([]);
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
     expect(DB::table('migrations')->orderBy('id')->pluck('migration')->all())->toBe($ran);
@@ -215,6 +216,18 @@ function featureSeamsReleased(bool $withNotes): array
     $schema['app_meta'] = $schema['kit_meta'];
     unset($schema['kit_meta']);
     $schema = [...$schema, ...json_decode(file_get_contents(__DIR__.'/Fixtures/schema-tags.json'), true)];
+    // kit 0.51 and Concierge 0.12: plain table names (generic nouns take their feature's prefix), foreign keys following, and the encrypted workspace_secrets.
+    $plain = ['connections' => 'mcp_connections', 'entitlements' => 'workspace_entitlements', 'concierge_memberships' => 'memberships', 'concierge_membership_scopes' => 'membership_scopes', 'concierge_ownerships' => 'ownerships', 'concierge_invitations' => 'invitations', 'concierge_accounts' => 'account_statuses', 'concierge_tenant_invitations' => 'owner_invitations'];
+    foreach ($plain as $from => $to) {
+        test()->assertArrayHasKey($from, $schema);
+        $schema[$to] = $schema[$from];
+        unset($schema[$from]);
+    }
+    foreach ($schema as $name => $table) {
+        $schema[$name]['foreign_keys'] = array_map(fn (array $key): array => [$key[0], $plain[$key[1]] ?? $key[1], ...array_slice($key, 2)], $table['foreign_keys']);
+        sort($schema[$name]['foreign_keys']);
+    }
+    $schema['workspace_secrets'] = json_decode(file_get_contents(__DIR__.'/Fixtures/schema-workspace-secrets.json'), true);
     ksort($schema);
 
     return $schema;

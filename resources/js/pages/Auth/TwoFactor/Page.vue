@@ -11,7 +11,7 @@ const recovery = ref(false);
     <Head :title="title" />
     <Page xs :heading="false">
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium">Two-factor verification</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Two-factor verification</h1>
             <p class="text-sm text-muted-foreground">{{ recovery ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</p>
         </Stack>
         <Form v-slot="{ processing }" action="/two-factor-challenge" method="post" :reset-on-success="['code', 'recovery_code']" class="grid gap-4">

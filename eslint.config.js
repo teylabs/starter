@@ -132,6 +132,7 @@ export default defineConfigWithVueTs(
             'resources/js/pages/Workspace/Settings/Layout.vue',
             'resources/js/pages/Workspace/Settings/People/**',
             'resources/js/pages/Workspace/Settings/Placeholder/**',
+            'resources/js/pages/Workspace/Settings/Setup/**',
             'resources/js/types/kit-shell.d.ts',
             'resources/js/widgets/Notes.vue',
             'resources/js/components/ui/**',

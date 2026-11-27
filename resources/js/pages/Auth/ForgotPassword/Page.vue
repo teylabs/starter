@@ -35,7 +35,7 @@ const formOptions = failureHandlers as FormOptions;
     <Head :title="title" />
     <Page xs :heading="false">
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium">Reset your password</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Reset your password</h1>
             <p class="text-sm text-muted-foreground">Enter your email address and we'll send you a link to choose a new password.</p>
         </Stack>
         <Form ref="form" novalidate v-slot="{ errors, processing }" action="/forgot-password" method="post" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">

@@ -61,7 +61,7 @@ function remove() { router.delete(props.store_url, { preserveScroll: true }); }
             </Form>
             <Section v-if="avatar" title="Remove photo" description="Your photo is deleted and your initials show instead.">
                 <Dialog variant="danger" title="Remove your photo?" description="Your photo is deleted. You can upload another any time." confirm-label="Remove photo" @confirm="remove">
-                    <Button variant="destructive" type="button">Remove photo</Button>
+                    <Button variant="secondary" type="button">Remove photo</Button>
                 </Dialog>
             </Section>
     </Page>

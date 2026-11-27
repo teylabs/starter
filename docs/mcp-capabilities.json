@@ -54,6 +54,28 @@
             }
         },
         {
+            "path": "resources/js/pages/Workspace/Settings/Setup/Page.vue",
+            "capabilities": [
+                "workspace.setup.read"
+            ],
+            "variants": {
+                "workspace.setup.read": [
+                    "default"
+                ]
+            }
+        },
+        {
+            "path": "vendor/tey/kit/src/Features/Settings/Http/SetupController.php",
+            "capabilities": [
+                "workspace.setup.read"
+            ],
+            "variants": {
+                "workspace.setup.read": [
+                    "default"
+                ]
+            }
+        },
+        {
             "path": "vendor/tey/kit/src/Features/SessionUi/Http/DashboardController.php",
             "capabilities": [
                 "workspace.dashboard.read"
@@ -492,6 +514,116 @@
                         {
                             "path": "tests/MailIdentityTest.php",
                             "name": "test_session_mail_identity",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "no_bypass"
+                            ]
+                        },
+                        {
+                            "path": "tests/McpTransportTest.php",
+                            "name": "test_delegated_settings",
+                            "covers": [
+                                "success",
+                                "authorization",
+                                "validation",
+                                "retry",
+                                "stale",
+                                "audit",
+                                "privacy",
+                                "no_bypass",
+                                "error",
+                                "recovery"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "workspace.setup.read",
+            "kind": "read",
+            "ui": [
+                {
+                    "path": "resources/js/pages/Workspace/Settings/Setup/Page.vue",
+                    "symbol": "props"
+                },
+                {
+                    "path": "vendor/tey/kit/src/Features/Settings/Http/SetupController.php",
+                    "symbol": "show"
+                }
+            ],
+            "domain": {
+                "path": "vendor/tey/kit/src/Features/Settings/Setup/Setup.php",
+                "symbol": "read"
+            },
+            "mcp": {
+                "status": "implemented",
+                "kind": "tool",
+                "name": "workspace_setup_read",
+                "entrypoint": {
+                    "path": "vendor/tey/kit/src/Features/Settings/Integrations/Mcp/ReadSetup.php",
+                    "symbol": "ReadSetup"
+                },
+                "scopes": [
+                    "mcp:use",
+                    "settings.write"
+                ],
+                "description": "Read the approved workspace's setup checklist: mail, media, row-level security, queue and the steps done by hand, each with its state (ok, info, warning, failing, missing, held, overridden, manual) and fix. Owners and admins only; the app-wide rows only for an operator.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "tests": [
+                {
+                    "path": "tests/SetupTest.php",
+                    "name": "test_session_setup",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "no_bypass"
+                    ]
+                },
+                {
+                    "path": "tests/McpTransportTest.php",
+                    "name": "test_delegated_settings",
+                    "covers": [
+                        "success",
+                        "authorization",
+                        "validation",
+                        "retry",
+                        "stale",
+                        "audit",
+                        "privacy",
+                        "no_bypass",
+                        "error",
+                        "recovery"
+                    ]
+                }
+            ],
+            "variants": [
+                {
+                    "id": "default",
+                    "ui": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns each setup row's state, detail and fix; the app's own rows only to an operator"
+                        ]
+                    },
+                    "mcp": {
+                        "options": {},
+                        "defaults": {},
+                        "effects": [
+                            "returns each setup row's state, detail and fix; the app's own rows only to an operator"
+                        ],
+                        "status": "implemented"
+                    },
+                    "tests": [
+                        {
+                            "path": "tests/SetupTest.php",
+                            "name": "test_session_setup",
                             "covers": [
                                 "success",
                                 "authorization",

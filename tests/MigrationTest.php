@@ -21,7 +21,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
     expect([':memory:', 'pgsql'])->toContain(config('database.default') === 'sqlite' ? config('database.connections.sqlite.database') : 'pgsql');
     expect(Schema::hasTable('users'))->toBeFalse();
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);
-    foreach (['users', 'media', 'workspaces', 'settings', 'connections', 'entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'concierge_memberships', 'concierge_ownerships', 'concierge_invitations', 'concierge_accounts', 'concierge_tenant_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
+    foreach (['users', 'media', 'workspaces', 'settings', 'mcp_connections', 'workspace_entitlements', 'operators', 'complimentary_grants', 'settings_intents', 'audit_events', 'permissions', 'roles', 'model_has_roles', 'memberships', 'ownerships', 'invitations', 'account_statuses', 'owner_invitations', 'oauth_clients', 'oauth_auth_codes', 'oauth_access_tokens', 'oauth_refresh_tokens', 'oauth_device_codes'] as $table) {
         expect(Schema::hasTable($table))->toBeTrue($table);
         expect(DB::table($table)->count())->toBe(0, 'Migrate must not seed '.$table);
     }
@@ -62,6 +62,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '0001_01_02_000401_create_kit_settings_tables',
         '0001_01_02_000402_adopt_display_name_as_workspace_name',
         '0001_01_02_000403_create_workspace_mail_identities_table',
+        '0001_01_02_000404_create_workspace_secrets_table',
         '0001_01_02_000500_create_kit_security_events_table',
         '0001_01_02_000501_add_user_foreign_key_to_kit_security_events_table',
         '0001_01_02_000502_create_kit_user_state_table',
@@ -86,6 +87,8 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table',
         '2026_11_14_000605_rename_mcp_tables',
         '2026_11_27_000001_protect_workspace_tables',
+        '2026_11_27_000305_rename_entitlements_table',
+        '2026_11_27_000606_rename_connections_table',
         '2026_11_27_023626_create_telescope_entries_table',
         'create_concierge_tables',
         'create_concierge_tenant_invitations_table',
@@ -93,6 +96,8 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         'update_concierge_invitations_with_acceptor',
         'update_concierge_invitations_with_message',
         'update_concierge_invitations_with_scope',
+        'update_concierge_tables_to_plain_names',
+        'update_concierge_tenant_invitations_to_owner_invitations',
     ]);
 
     // A fresh install keeps sessions in the database, with the table in place: the security page lists devices out of the box.
@@ -128,9 +133,9 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         $workspaces[$id] = $accepted['workspace_id'];
     }
     $this->assertNotSame($workspaces[1], $workspaces[2]);
-    expect(DB::table('concierge_memberships')->count())->toBe(2);
-    expect(DB::table('concierge_ownerships')->count())->toBe(2);
-    expect(DB::table('concierge_tenant_invitations')->where('status', 'accepted')->count())->toBe(2);
+    expect(DB::table('memberships')->count())->toBe(2);
+    expect(DB::table('ownerships')->count())->toBe(2);
+    expect(DB::table('owner_invitations')->where('status', 'accepted')->count())->toBe(2);
     $boundary = app(TenantBoundary::class);
     foreach ([1, 2] as $id) {
         $boundary->run($workspaces[$id], function () use ($id): void {
@@ -152,7 +157,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         expect(app(PermissionRegistrar::class)->getPermissionsTeamId())->toBeNull();
     }
     $before = [];
-    foreach (['users', 'workspaces', 'settings', 'audit_events', 'concierge_memberships', 'concierge_ownerships'] as $table) {
+    foreach (['users', 'workspaces', 'settings', 'audit_events', 'memberships', 'ownerships'] as $table) {
         $before[$table] = DB::table($table)->get()->toJson();
     }
     expect(app(Kernel::class)->call('migrate', ['--force' => true]))->toBe(0);

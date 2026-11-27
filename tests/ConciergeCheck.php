@@ -27,10 +27,11 @@ check('Concierge released native membership is the only membership engine', func
     $constraint = json_decode((string) file_get_contents(dirname(__DIR__).'/composer.json'), true)['require']['tey/concierge'];
     same(true, Semver::satisfies((string) InstalledVersions::getPrettyVersion('tey/concierge'), $constraint));
     same(1, preg_match('/^v\d+\.\d+\.\d+$/', (string) InstalledVersions::getPrettyVersion('tey/concierge')));
-    same(false, Schema::hasTable('memberships'));
-    same(2, DB::table('concierge_ownerships')->count());
-    same(3, DB::table('concierge_memberships')->count());
-    same(2, DB::table('concierge_tenant_invitations')->where('status', 'accepted')->count());
+    // Concierge 0.12 owns the plain names: its memberships table is the only one, and the old prefixed one is gone.
+    same(false, Schema::hasTable('concierge_memberships'));
+    same(2, DB::table('ownerships')->count());
+    same(3, DB::table('memberships')->count());
+    same(2, DB::table('owner_invitations')->where('status', 'accepted')->count());
 });
 check('Concierge and Spatie contexts agree and restore after nested exception', function () use ($boundary): void {
     $boundary->run(1, function () use ($boundary): void {
@@ -59,7 +60,7 @@ check('held User role relations refresh when crossing workspace contexts', funct
     same(false, $held->relationLoaded('roles'));
 });
 check('package suspension immediately denies both UI and MCP; reinstatement restores read', function () use ($ui, $mcp): void {
-    DB::table('connections')->insert(['id' => 3, 'workspace_id' => 1, 'actor_id' => 3, 'scopes' => json_encode(['settings.read'])]);
+    DB::table('mcp_connections')->insert(['id' => 3, 'workspace_id' => 1, 'actor_id' => 3, 'scopes' => json_encode(['settings.read'])]);
     $viewer = User::findOrFail(3);
     $member = app(Concierge::class)->membership($viewer, Workspace::findOrFail(1));
     same('Alpha MCP', $mcp->call(new Principal(3, 3), 1, 'workspace_settings_get')['display_name']);
@@ -129,7 +130,7 @@ check('wrong expired and revoked invitations cannot provision, and accepting ver
 check('host settings failure rolls back package onboarding atomically', function (): void {
     $user = User::create(['name' => 'Epsilon', 'email' => 'epsilon@example.test', 'email_verified_at' => now()]);
     $issued = InviteTenant::run(User::findOrFail(99), $user->email);
-    $counts = [Workspace::count(), DB::table('settings')->count(), DB::table('concierge_memberships')->count()];
+    $counts = [Workspace::count(), DB::table('settings')->count(), DB::table('memberships')->count()];
     failInserts('fail_settings', 'settings', 'synthetic_settings_failure', "NEW.name = 'timezone'");
     try {
         app(AcceptWorkspaceInvitation::class)->handle(new Principal($user->id), $issued->token);
@@ -141,7 +142,7 @@ check('host settings failure rolls back package onboarding atomically', function
     } finally {
         allowInserts('fail_settings', 'settings');
     }
-    same($counts, [Workspace::count(), DB::table('settings')->count(), DB::table('concierge_memberships')->count()]);
+    same($counts, [Workspace::count(), DB::table('settings')->count(), DB::table('memberships')->count()]);
     same('pending', $issued->invitation->fresh()->status->value);
     same(null, Workspace::current());
     $result = app(AcceptWorkspaceInvitation::class)->handle(new Principal($user->id), $issued->token);

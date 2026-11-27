@@ -44,7 +44,7 @@ Schema::create('settings', function (Blueprint $t): void {
     $t->timestamps();
     $t->unique(['group', 'name']);
 });
-Schema::create('connections', function (Blueprint $t): void {
+Schema::create('mcp_connections', function (Blueprint $t): void {
     $t->id();
     $t->foreignId('workspace_id')->constrained();
     $t->unsignedBigInteger('actor_id');
@@ -57,7 +57,7 @@ Schema::create('connections', function (Blueprint $t): void {
     $t->timestamp('revoked_at')->nullable();
     $t->string('oauth_client_id')->nullable();
 });
-Schema::create('entitlements', function (Blueprint $t): void {
+Schema::create('workspace_entitlements', function (Blueprint $t): void {
     $t->id();
     $t->foreignId('workspace_id')->constrained();
     $t->string('kind');
@@ -129,12 +129,13 @@ foreach ([
     'session-ui/2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table.php',
     'workspaces/0001_01_02_000211_create_kit_tags_tables.php',
     'workspaces/0001_01_02_000212_unprefix_and_protect_tags_tables.php',
+    'settings/0001_01_02_000404_create_workspace_secrets_table.php',
 ] as $migration) {
     (require base_path('vendor/tey/kit/database/migrations/'.$migration))->up();
 }
 // Execute pinned package migrations rather than copying membership/role internals.
 (require base_path('vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub'))->up();
-foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php', 'update_concierge_invitations_with_scope.php'] as $migration) {
+foreach (['create_concierge_tables.php', 'create_concierge_user_accounts_table.php', 'create_concierge_tenant_invitations_table.php', 'update_concierge_invitations_with_acceptor.php', 'update_concierge_invitations_with_message.php', 'update_concierge_invitations_with_scope.php', 'update_concierge_tables_to_plain_names.php', 'update_concierge_tenant_invitations_to_owner_invitations.php'] as $migration) {
     (require base_path('vendor/tey/concierge/database/migrations/'.$migration))->up();
 }
 app(Kernel::class)->call('concierge:sync-roles', ['--no-interaction' => true]);
@@ -151,11 +152,11 @@ foreach ([1, 2] as $id) {
 }
 $viewer = InviteMember::run(User::findOrFail(1), Workspace::findOrFail(1), 'actor3@example.test', new GrantSet(['viewer']));
 AcceptInvitation::run(User::findOrFail(3), $viewer->token);
-DB::table('connections')->insert(['id' => 1, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read', 'settings.write'])]);
-DB::table('connections')->insert(['id' => 2, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read'])]);
+DB::table('mcp_connections')->insert(['id' => 1, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read', 'settings.write'])]);
+DB::table('mcp_connections')->insert(['id' => 2, 'workspace_id' => 1, 'actor_id' => 1, 'scopes' => json_encode(['settings.read'])]);
 // PostgreSQL sequences do not follow explicit ids; move them past the synthetic rows.
 if (DB::getDriverName() === 'pgsql') {
-    foreach (['users', 'connections'] as $table) {
+    foreach (['users', 'mcp_connections'] as $table) {
         DB::statement("select setval(pg_get_serial_sequence('{$table}', 'id'), (select max(id) from {$table}))");
     }
 }

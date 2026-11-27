@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { Input, Page, PageEnd } from '@kit/ui';
+import { EmptyState, Input, Page, PageEnd } from '@kit/ui';
 import { ref } from 'vue';
 
 // Global search's full results: each provider's group, as the server sent them. A result without a URL has no page of its own and is shown as text.
@@ -17,7 +17,8 @@ function submit(): void {
             <Input v-model="term" type="search" name="q" maxlength="100" aria-label="Search" placeholder="Search" class="max-w-md" />
         </form>
         <p v-if="partial" class="text-sm text-muted-foreground" role="status" data-search-partial>Some sources could not be searched, so these results may be incomplete.</p>
-        <p v-if="query && !groups.length" class="text-sm text-muted-foreground" data-search-none>No results for “{{ query }}”.</p>
+        <EmptyState v-if="query && !groups.length" :level="2" icon="search" :title="`No results for “${query}”`" body="Check the spelling, or try fewer or different words." data-search-none />
+        <EmptyState v-else-if="!query" :level="2" icon="search" title="Search this workspace" body="Type a name, a title or a few words, then press Enter." data-search-blank />
         <section v-for="group in groups" :key="group.key" :aria-labelledby="`search-group-${group.key}`" :data-search-group="group.key">
             <h2 :id="`search-group-${group.key}`" class="text-sm font-medium text-muted-foreground">{{ group.label }}</h2>
             <ul class="mt-2 divide-y divide-border rounded-lg ring-1 ring-border">

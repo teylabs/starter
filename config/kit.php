@@ -32,9 +32,9 @@ return [
             'connection' => function_exists('env') ? env('KIT_RLS_CONNECTION') : null,
             'admin_connection' => function_exists('env') ? env('KIT_RLS_ADMIN_CONNECTION', 'pgsql_admin') : 'pgsql_admin',
             'except' => [
-                'concierge_memberships', 'concierge_membership_scopes', 'concierge_ownerships', 'concierge_invitations', 'concierge_tenant_invitations',
+                'memberships', 'membership_scopes', 'ownerships', 'invitations', 'owner_invitations',
                 'roles', 'model_has_roles', 'model_has_permissions',
-                'audit_events', 'user_state', 'workspace_mail_identities', 'connections', 'mcp_runs',
+                'audit_events', 'user_state', 'workspace_mail_identities', 'mcp_connections', 'mcp_runs',
             ],
         ],
     ],

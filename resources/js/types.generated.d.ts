@@ -1066,6 +1066,18 @@ version: number,
 clock: 'auto' | '12h' | '24h' | null,
 };
 }
+export namespace Setup {
+export type SetupRow = {
+key: string,
+group: string,
+label: string,
+state: 'ok' | 'info' | 'warning' | 'failing' | 'missing' | 'held' | 'overridden' | 'manual' | 'na',
+detail: string,
+fix: string | null,
+link: { label: string; url: string } | null,
+action: Tey.Kit.Features.Core.Data.Action | null,
+};
+}
 export namespace ViewModels {
 export type EditMailIdentityViewModel = {
 readonly title: string,
@@ -1080,6 +1092,13 @@ readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
 readonly settings: Tey.Kit.Features.Settings.Data.SettingsView,
 readonly save: Tey.Kit.Features.Core.Data.Action | null,
 readonly intent_key: string,
+};
+export type SetupViewModel = {
+readonly title: string,
+readonly layout: Tey.Kit.Features.Core.Data.PageLayout,
+readonly rows: Tey.Kit.Features.Settings.Setup.SetupRow[],
+readonly appRows: boolean,
+readonly testMail: Tey.Kit.Features.Core.Data.Action | null,
 };
 }
 }

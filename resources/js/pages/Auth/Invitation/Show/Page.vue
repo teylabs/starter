@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Form, Link, usePage } from '@inertiajs/vue3';
-import { ArrowRight } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import { ActionGroup, browserTimezone, Button, Field, Input, Page, PasswordInput, Stack } from '@kit/ui';
 
@@ -51,7 +50,7 @@ const body = computed(() => {
     <Page xs :heading="false">
         <!-- The heading block: 8px between its lines, 12px around the inviter's note (the gap plus its my-1). -->
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium break-words" data-invitation-title>{{ title }}</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight break-words" data-invitation-title>{{ title }}</h1>
             <p v-if="context" class="text-sm font-medium" data-invitation-summary>{{ context }}</p>
             <figure v-if="invitation?.message && joining" class="my-1 border-l-2 pl-3" data-invitation-note>
                 <blockquote class="text-sm">{{ invitation.message }}</blockquote>
@@ -68,11 +67,11 @@ const body = computed(() => {
             </ActionGroup>
         </Form>
         <div v-else-if="state === 'unverified'" class="grid gap-3" data-invitation-unverified>
-            <Link v-if="verify_url" :href="verify_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-verify">Verify your email to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
+            <Button v-if="verify_url" :href="verify_url" type="button" class="w-full" data-test="invitation-verify">Verify your email to join</Button>
             <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-switch-account">Switch account</Link>
         </div>
         <div v-else-if="state === 'sign_in_required'" class="grid gap-3">
-            <Link ref="signIn" :href="login_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-sign-in">Sign in to join<ArrowRight class="size-4" aria-hidden="true" /></Link>
+            <Button ref="signIn" :href="login_url" type="button" class="w-full" data-test="invitation-sign-in">Sign in to join</Button>
         </div>
         <Form v-else-if="state === 'register_required'" v-slot="{ processing }" :action="register_url" method="post" :reset-on-success="['password', 'password_confirmation']" class="grid gap-4">
             <Input type="hidden" name="timezone" :model-value="timezone" />
@@ -83,15 +82,15 @@ const body = computed(() => {
             <Button type="submit" class="w-full" :disabled="processing" data-test="invitation-register">{{ processing ? 'Creating…' : 'Create account' }}</Button>
         </Form>
         <ActionGroup v-else-if="state === 'wrong_account'" direction="column" data-invitation-wrong-account>
-            <Link href="/switch-account" method="post" as="button" class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-switch-account">Switch account</Link>
+            <Button href="/switch-account" method="post" type="button" data-test="invitation-switch-account">Switch account</Button>
             <Link href="/" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-cancel">Cancel</Link>
         </ActionGroup>
         <div v-else-if="state === 'already_member'" class="grid gap-3">
-            <Link v-if="workspace_url" :href="workspace_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-open-workspace">Go to {{ invitation?.workspace ?? 'the workspace' }}<ArrowRight class="size-4" aria-hidden="true" /></Link>
+            <Button v-if="workspace_url" :href="workspace_url" type="button" class="w-full" data-test="invitation-open-workspace">Go to {{ invitation?.workspace ?? 'the workspace' }}</Button>
             <Link href="/switch-account" method="post" as="button" class="text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" data-test="invitation-not-you">Not {{ signed_in_as }}? Switch account</Link>
         </div>
         <div v-else-if="['expired', 'revoked', 'invalid', 'accepted'].includes(state)" class="grid" data-invitation-ended>
-            <Link :href="signed_in_as ? '/' : login_url" class="inline-flex min-h-11 items-center gap-2 justify-self-end rounded-md px-1 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-test="invitation-continue">{{ signed_in_as ? 'Go to your workspaces' : 'Sign in' }}<ArrowRight class="size-4" aria-hidden="true" /></Link>
+            <Button :href="signed_in_as ? '/' : login_url" type="button" class="w-full" data-test="invitation-continue">{{ signed_in_as ? 'Go to your workspaces' : 'Sign in' }}</Button>
         </div>
     </Page>
 </template>

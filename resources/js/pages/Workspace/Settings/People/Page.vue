@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ModalLink, visitModal } from '@inertiaui/modal-vue';
-import { Avatar, Stack, DataTable, DateTime, Page } from '@kit/ui';
+import { Avatar, Stack, DataTable, DateTime, EmptyState, Page } from '@kit/ui';
 import { computed, ref } from 'vue';
 
 // Settings › People: the Members and Invitations tabs as one server-driven table. Concierge decides the rows, the counts and each row's actions (an admin has none on
@@ -23,6 +23,8 @@ function act(_row: Row, action: { key: string | null; url: string }) {
 const members = computed(() => props.tab === 'members');
 // Each row's controls are named by the person ("Change role Ana Lopez", "Actions for Ana Lopez"), not the row's number: the member's name, or the invitation's address.
 const rowLabel = (row: Row) => row.member?.name ?? row.email;
+// Only the owner so far (one member, no search): the table shows them, and an empty state below says who else could be here.
+const onlyOwner = computed(() => members.value && !props.table.search && props.table.rows.length === 1);
 </script>
 <template>
     <Page md>
@@ -46,11 +48,13 @@ const rowLabel = (row: Row) => row.member?.name ?? row.email;
                 <template #cell-roles="{ value }">{{ ((value ?? []) as RoleLabel[]).map((granted) => granted.label).join(', ') }}</template>
                                                 <template #cell-expires="{ row }"><span :class="row.status === 'expired' ? 'text-destructive-text' : ''">{{ row.status === 'expired' ? 'Expired ' : '' }}<DateTime v-if="row.expires" :value="row.expires" format="date" /></span></template>
                 <template #empty-first-use>
-                    <p class="font-medium">No invitations yet</p>
-                    <p class="text-sm text-muted-foreground">Invite someone and they show up here until they join.</p>
+                    <EmptyState compact align="start" icon="mail" title="No invitations yet" body="Invite someone and they show up here until they join." class="p-0" />
                 </template>
-                <template #empty-no-results><p class="font-medium">{{ members ? 'No members match' : 'No invitations match' }}</p></template>
+                <template #empty-no-results><EmptyState compact align="start" icon="search" :title="members ? 'No members match' : 'No invitations match'" body="Try a different search." class="p-0" /></template>
             </DataTable>
+            <EmptyState v-if="onlyOwner" variant="first-use" icon="people" title="It's only you so far" body="Invite your team and they can work here with you." data-people-only-owner>
+                <template v-if="invite" #action><ModalLink :href="invite.url" as="a" navigate class="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">{{ invite.label }}</ModalLink></template>
+            </EmptyState>
         </Stack>
     </Page>
 </template>

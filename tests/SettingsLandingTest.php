@@ -30,9 +30,10 @@ test('the landing page lists the registered sections in order', function () {
     $general = ['key' => 'general', 'label' => 'General', 'description' => 'The workspace display name and timezone.', 'icon' => 'sliders-horizontal', 'badge' => null, 'url' => '/settings/general'];
     $email = ['key' => 'email', 'label' => 'Email sending', 'description' => 'The sender name, from address and reply-to of mail from this workspace.', 'icon' => 'mail', 'badge' => null, 'url' => '/settings/email'];
     $people = ['key' => 'people', 'label' => 'People', 'description' => 'Who belongs to this workspace, their roles, and who is invited.', 'icon' => 'users', 'badge' => null, 'url' => '/settings/people'];
+    $setup = ['key' => 'setup', 'label' => 'Setup', 'description' => 'What is set up, what is missing, and how to fix each: mail, media, security and the queue.', 'icon' => 'gauge', 'badge' => null, 'url' => '/settings/setup'];
     $this->get('/@alpha/settings', settingsLandingInertia())->assertOk()->assertJsonPath('component', 'Workspace/Sections/Index/Page')
         // One "Workspace" group for the workspace's sections (a group never repeats a lone item's label); each carries its lucide icon.
-        ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $email, $people]]]);
+        ->assertJsonPath('props.groups', [['label' => 'Workspace', 'sections' => [$general, $email, $people, $setup]]]);
 
     // A provider registers a section with a group and an order, not a nav item; a lower order comes first, and a new group appears in place.
     app(Registry::class)->settingsSection('workspace', 'billing', 'Billing', 'Plan and invoices.', null, 'Account', -50, 'credit-card')->settingsSection('workspace', 'owner-only', 'Owner only', 'Needs write access.', 'settings.write', 'Workspace', 30);
@@ -100,7 +101,7 @@ test('a section page carries the sidebar with the current section marked', funct
         $nav = $this->get($path, settingsLandingInertia())->assertOk()->json('props.layout.navigation');
         expect($nav)->toHaveCount(1);
         expect($nav[0]['label'])->toBe('Workspace');
-        expect(array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']))->toBe([['General', true], ['Email sending', false], ['People', false]]);
+        expect(array_map(fn (array $item): array => [$item['label'], $item['current']], $nav[0]['items']))->toBe([['General', true], ['Email sending', false], ['People', false], ['Setup', false]]);
         expect($nav[0]['items'][0]['icon'])->toBe('sliders-horizontal');
     }
     $this->get('/settings', settingsLandingInertia())->assertJsonPath('props.layout.navigation', []);
