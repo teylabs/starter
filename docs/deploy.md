@@ -41,6 +41,8 @@ Everything the platform does not inject is set by hand. Each line says how to ch
 
 ## TLS
 
+On Forge, add the one approved line from `.forge/nginx-build-cache.conf` to the site's nginx config: Vite's `/build` files are content-hashed, so they are served with a year-long `Cache-Control: public, max-age=31536000, immutable`, and a release's new file names bypass old copies. It is the only line beyond Forge's defaults (approved 2026-11-27); re-apply it if the site's nginx config is regenerated. Laravel Cloud serves `/build` through its CDN and needs nothing.
+
 TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded scheme from any proxy, so URLs and secure cookies follow `https`; the app must only be reachable through that proxy. The host is pinned to `APP_URL`'s (`trustHosts`, anchored and escaped), so a forged `Host` or `X-Forwarded-Host` gets a 400 and can never become the host of a reset or invitation link. Set `APP_URL` to the domain users reach; any other domain, the platform's default one included, is refused outside the local environment. CI proves it behind a local TLS proxy (`bin/tls-proxy.mjs`).
 
 ## CI
