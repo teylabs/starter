@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\AppServiceProvider;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as FlysystemAdapter;
@@ -70,4 +71,59 @@ test('the media disk uses the bucket Laravel Cloud injects under the disk name i
 
     expect(Storage::disk('media')->temporaryUrl('1.txt', now()->addMinutes(5)))
         ->toStartWith('https://synthetic.r2.example.test/injected-bucket/media/1.txt?');
+});
+test('on Laravel Cloud with MEDIA_DISK unset, media scopes over the attached default bucket; MEDIA_DISK still wins', function () {
+    $disksWith = function (array $env): array {
+        $keys = ['MEDIA_DISK', 'LARAVEL_CLOUD_DISK_CONFIG'];
+        $before = [];
+        foreach ($keys as $key) {
+            $before[$key] = [getenv($key), $_ENV[$key] ?? null, $_SERVER[$key] ?? null];
+        }
+        try {
+            foreach ($keys as $key) {
+                putenv($key);
+                unset($_ENV[$key], $_SERVER[$key]);
+                if (isset($env[$key])) {
+                    putenv($key.'='.$env[$key]);
+                    $_ENV[$key] = $_SERVER[$key] = $env[$key];
+                }
+            }
+
+            return (require config_path('filesystems.php'))['disks'];
+        } finally {
+            foreach ($before as $key => [$process, $envValue, $serverValue]) {
+                putenv($process === false ? $key : $key.'='.$process);
+                unset($_ENV[$key], $_SERVER[$key]);
+                if ($envValue !== null) {
+                    $_ENV[$key] = $envValue;
+                }
+                if ($serverValue !== null) {
+                    $_SERVER[$key] = $serverValue;
+                }
+            }
+        }
+    };
+    // Cloud's shape (Illuminate\Foundation\CloudBootstrapper): the default bucket is listed second, after a scoped disk and a non-default bucket.
+    $cloud = json_encode([
+        ['disk' => 'exports', 'scoped_disk' => 'archive', 'prefix' => 'exports'],
+        ['disk' => 'archive', 'bucket' => 'a', 'is_default' => false],
+        ['disk' => 'private', 'bucket' => 'b', 'is_default' => true],
+    ]);
+
+    expect($disksWith(['LARAVEL_CLOUD_DISK_CONFIG' => $cloud])['media'])->toBe(['driver' => 'scoped', 'disk' => 'private', 'prefix' => 'media']);
+    expect($disksWith(['LARAVEL_CLOUD_DISK_CONFIG' => json_encode([['disk' => 'only', 'bucket' => 'c']])])['media']['disk'])->toBe('only');
+    expect($disksWith(['LARAVEL_CLOUD_DISK_CONFIG' => $cloud, 'MEDIA_DISK' => 's3'])['media']['disk'])->toBe('s3');
+    expect($disksWith([])['media']['driver'])->toBe('local');
+});
+
+test('R2 disks, including one Laravel Cloud adds after the config loads, checksum requests only when required', function () {
+    config(['filesystems.disks.attached' => ['driver' => 's3', 'key' => 'k', 'secret' => 's', 'region' => 'auto', 'bucket' => 'b', 'endpoint' => 'https://synthetic.r2.cloudflarestorage.com']]);
+    config(['filesystems.disks.aws' => ['driver' => 's3', 'key' => 'k', 'secret' => 's', 'region' => 'us-east-1', 'bucket' => 'b']]);
+    (new AppServiceProvider(app()))->boot();
+
+    $client = Storage::disk('attached')->getClient();
+    expect($client->getConfig('request_checksum_calculation'))->toBe('when_required');
+    expect($client->getConfig('response_checksum_validation'))->toBe('when_required');
+    expect(config('filesystems.disks.aws'))->not->toHaveKey('request_checksum_calculation', 'a plain AWS S3 disk keeps the SDK default');
+    expect(config('filesystems.disks.s3.request_checksum_calculation'))->toBe('when_required');
 });
