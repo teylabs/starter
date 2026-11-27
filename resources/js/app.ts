@@ -4,7 +4,13 @@ import { createApp, defineComponent, h } from 'vue';
 import type { DefineComponent } from 'vue';
 import '../css/app.css';
 import {
+    Toaster as NotificationsToaster,
+    initNotifications,
+    toast,
+} from '@inertiaui/notifications-vue';
+import {
     applyFormDefaults,
+    bridgeInertiaUIToasts,
     initializeTheme,
     syncTimezoneCookie,
 } from '@kit/ui';
@@ -53,6 +59,10 @@ function nearestPageLayout(name: string): DefineComponent | null {
 
 // A saved Inertia <Form> takes what it saved as its defaults, so it is no longer unsaved and the leave prompt stops (tey/kit docs/submit-form.md).
 applyFormDefaults();
+
+// Toasts render through Inertia Notifications, as AB's do; the shell's one <Toaster> stays the only one mounted (tey/kit docs/toasts.md).
+initNotifications();
+bridgeInertiaUIToasts({ Toaster: NotificationsToaster, toast });
 
 createInertiaApp({
     resolve: async (name) => {

@@ -5,12 +5,15 @@
 /* The kit's own base styles and theme: the pointer cursor (with an opt-out), the semantic colour tokens (--background, --card, --border, --input and the rest, light and
    dark), the near-white page ground and the elevation scale (see kit.css). An app's theme overrides any of them in a :root or .dark block of its own, below. */
 @import './kit.css';
+@import '@inertiaui/notifications-vue/theme.css';
+@import '@inertiaui/notifications-vue/shadcn.css';
 
 @source '../views';
 /* The kit's shared components load from the package; Tailwind skips the git-ignored vendor/ unless it is named (tey/kit docs/kit-components.md). */
 @source '../../vendor/tey/kit/resources/js/components/Kit';
 /* inertiaui/modal's own markup (its backdrop, panel and positioning classes) lives in its package. */
 @source '../../node_modules/@inertiaui/modal-vue/src';
+@source '../../node_modules/@inertiaui/notifications-vue/dist';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -161,9 +164,17 @@
     --shell-mark-invert: 1;
     --shell-bar-blur: 0px;
     /* The context band (account settings, later impersonation or staging): tinted with the brand accent, a neutral zinc until an app sets one. */
-    --shell-band: color-mix(in oklab, var(--color-brand-500) 12%, var(--background));
+    --shell-band: color-mix(
+        in oklab,
+        var(--color-brand-500) 12%,
+        var(--background)
+    );
     --shell-band-foreground: var(--foreground);
-    --shell-band-border: color-mix(in oklab, var(--color-brand-500) 22%, var(--background));
+    --shell-band-border: color-mix(
+        in oklab,
+        var(--color-brand-500) 22%,
+        var(--background)
+    );
     --shell-subbar: hsl(0 0% 96% / 0.7);
     --shell-subbar-border: hsl(0 0% 0% / 0.08);
     --shell-subbar-blur: 8px;
