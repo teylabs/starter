@@ -23,4 +23,7 @@
             <file>Accessible.php</file>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+    </php>
 </phpunit>
