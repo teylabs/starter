@@ -85,6 +85,7 @@ test('clean framework schema and explicit synthetic package onboarding', functio
         '2026_11_14_000507_create_signed_in_devices_table',
         '2026_11_14_000508_add_user_foreign_key_to_signed_in_devices_table',
         '2026_11_14_000605_rename_mcp_tables',
+        '2026_11_27_000001_protect_workspace_tables',
         'create_concierge_tables',
         'create_concierge_tenant_invitations_table',
         'create_concierge_user_accounts_table',

@@ -3,13 +3,13 @@
 Laravel Cloud builds the app (`composer install --no-dev`, then `npm ci && npm run build`), then runs its deploy commands in order, and stops at the first that fails. A deploy is two lines:
 
 ```sh
-php artisan migrate --force
+php artisan migrate --force --database=pgsql_admin
 php artisan optimize
 ```
 
 That is all. Roles and permissions follow the migration by themselves, so there is no sync line to remember and nothing to run per release.
 
-- **`php artisan migrate --force`** migrates, and when the migrations end (or when there was nothing to migrate) the kit syncs the roles, then the permissions the features declare. The sync is gated by a fingerprint of the catalog (the configured roles and every registered permission with its default roles) kept in `app_meta`: an unchanged catalog writes nothing, a changed one (a release that adds a permission and no migration) is picked up by the deploy's own migrate, and a fresh database always syncs. A rollback does not sync, and a failing sync fails the migrate, so the deploy stops. Permissions are created once with their default roles: a default someone removed is not granted again.
+- **`php artisan migrate --force --database=pgsql_admin`** migrates as the database's owner (`DB_*`), never as the runtime role the app serves requests on (see Row-level security below), and when the migrations end (or when there was nothing to migrate) the kit syncs the roles, then the permissions the features declare. The sync is gated by a fingerprint of the catalog (the configured roles and every registered permission with its default roles) kept in `app_meta`: an unchanged catalog writes nothing, a changed one (a release that adds a permission and no migration) is picked up by the deploy's own migrate, and a fresh database always syncs. A rollback does not sync, and a failing sync fails the migrate, so the deploy stops. Permissions are created once with their default roles: a default someone removed is not granted again.
 - **`php artisan optimize`** comes after the migration and builds every cache: config, routes, views, events, glhd/gretel's breadcrumbs, laravel-data's and the discovered structures, laravel-settings' and tey/mod's discovery. Each registers itself with `optimize` (and `optimize:clear`), so there are no cache lines of their own.
 - **`/up` is the health check**, for monitoring only. Besides Laravel's own, it fails (500) on a missing `APP_KEY`, a missing table the kit needs (and `sessions` with `SESSION_DRIVER=database`) and, in production, `APP_DEBUG` on or unresolved brand placeholders. A pass is remembered for thirty seconds. Nothing deploys on it; a failing `/up` is an alert, not a gate.
 - **`php artisan kit:preflight`** is optional. It is tey/standards' full preflight, with a non-zero exit on a misconfigured production, for a pipeline that wants a blocking gate (run it before or after the two lines). The standard deploy does not need it.
@@ -45,7 +45,7 @@ TLS ends at the platform's proxy. `bootstrap/app.php` trusts the forwarded schem
 
 ## CI
 
-The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, once with `QUEUE_CONNECTION=sync` and once with `database`, both with `CACHE_STORE=database` and `SESSION_DRIVER=database` as a platform with a database attached sets them (the cache, session and queue tables are migrations, so the migration has to come before `optimize`: laravel-data keeps its structure cache in the cache store), on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, the configured cache store takes a put, a get and a lock, and `/up` answers 200. The cache key prefix follows `APP_NAME` (set `CACHE_PREFIX` to pin it).
+The **Deploy order (PostgreSQL)** job runs the two lines on every pull request, once with `QUEUE_CONNECTION=sync` and once with `database`, both with `CACHE_STORE=database` and `SESSION_DRIVER=database` as a platform with a database attached sets them (the cache, session and queue tables are migrations, so the migration has to come before `optimize`: laravel-data keeps its structure cache in the cache store), on a fresh PostgreSQL 17 in production mode with throwaway secrets: `php artisan migrate --force --database=pgsql_admin && php artisan optimize`. It then asserts what the deploy did: the roles and the default grants exist, the kit's caches are built, the configured cache store takes a put, a get and a lock, and `/up` answers 200. The cache key prefix follows `APP_NAME` (set `CACHE_PREFIX` to pin it).
 
 The **Production rehearsal** job goes one step further: it fills `.env.production.example` with throwaway values (`bin/rehearsal-env.php`), migrates PostgreSQL with them, and runs `kit:preflight --env-file=` with the production-only checks on, with `QUEUE_CONNECTION` as `sync` and `database` and the Passport keys as real newlines and as escaped newlines. A cache store with no table, a mailer without its package or a malformed key fails a pull request here instead of the first deploy.
 
@@ -63,3 +63,20 @@ Set these per environment (see `.env.example`):
 - `CONCIERGE_OWNERS`: the email of the workspace owner `concierge:owners` keeps. One email for one workspace; leave it empty locally, where `composer setup` creates the owner.
 - `NIGHTWATCH_TOKEN`: Laravel Nightwatch. Requests are sampled at most 0.1; exceptions, commands and scheduled tasks always (`config/nightwatch.php`).
 - Off Laravel Cloud, the bucket variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET`, `AWS_ENDPOINT`, `AWS_URL`, `AWS_USE_PATH_STYLE_ENDPOINT`) feed the private `s3` disk (the whole bucket) and the `media` disk (the same bucket under `media/`).
+
+## Row-level security
+
+Row-level security is on whenever `DB_CONNECTION=pgsql` (`KIT_RLS=false` turns it off; tey/kit's `docs/rls.md` has the detail). Every table with a `workspace_id` is protected, or listed in `config/kit.php` with its reason, and `tests/RlsGuardTest.php` fails on a table that is neither. Two roles share the database:
+
+| Role | Variables | Used for |
+|---|---|---|
+| The owner | `DB_USERNAME`, `DB_PASSWORD` (the `pgsql_admin` connection) | Migrations, seeders and operator commands (`--database=pgsql_admin`). Owns every table |
+| The runtime role | `DB_RUNTIME_USERNAME`, `DB_RUNTIME_PASSWORD` (the `pgsql` connection) | Every request and queued job. Owns nothing, can't bypass RLS |
+
+Without `DB_RUNTIME_*` both connections log in as the owner, which works but enforces nothing; `kit:preflight` and `/up` refuse it in production. On first deploy, after the first migrate, create the runtime role once and set its variables:
+
+```sh
+DB_RUNTIME_PASSWORD=<a new random password> php artisan kit:rls:role app_runtime --database=pgsql_admin
+```
+
+Then set `DB_RUNTIME_USERNAME=app_runtime` and `DB_RUNTIME_PASSWORD` on the environment and redeploy. The command is safe to re-run; it also grants the role every future table through default privileges. On Laravel Cloud the owner is the database user Cloud injects. The **Production rehearsal** CI job does the same with throwaway values on every pull request.
