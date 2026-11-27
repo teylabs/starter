@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **The default font set is `instrument-inter`.** `.env.example` sets `KIT_FONTS=instrument-inter`: Inter for text, Instrument Sans 600 for headings and IBM Plex Mono, all OFL and loaded from fonts.bunny.net (or self-hosted with `KIT_FONTS_SOURCE=self`). Apps that already set `KIT_FONTS` don't change.
 - **laravel/boost ^2.10.4, with Amp as an agent.** `boost.json` lists `amp`, `composer update` runs `boost:update` afterwards, and the guidelines and skills are refreshed with `boost:update --discover`.
 
 ### Changed
