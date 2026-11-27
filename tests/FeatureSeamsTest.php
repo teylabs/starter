@@ -125,7 +125,8 @@ function featureSeamsAssertKeptOnUpgrade(array $legacy): void
 }
 function featureSeamsSchema(): array
 {
-    return json_decode(json_encode((require __DIR__.'/schema.php')()), true);
+    // Telescope's tables are diagnostics, not the app's released schema.
+    return array_filter(json_decode(json_encode((require __DIR__.'/schema.php')()), true), fn (string $table): bool => ! str_starts_with($table, 'telescope_'), ARRAY_FILTER_USE_KEY);
 }
 /** The 0.2.1 schema plus the media table 0.3 adds for spatie/laravel-medialibrary, and the slug the kit adds to workspaces. */
 function featureSeamsReleased(bool $withNotes): array
