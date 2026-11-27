@@ -23,7 +23,8 @@ $get = function (string $key) use ($env): ?string {
 };
 // Sets a key in .env only when it is missing or empty, so a value someone chose is never replaced.
 $set = function (string $key, string $value) use ($root, $env, $get): void {
-    if (($get($key) ?? '') !== '') {
+    $current = $get($key);
+    if (($current ?? '') !== '' || ($current !== null && $value === '')) {
         return;
     }
     $line = $key.'='.(preg_match('/[\s#"]/', $value) === 1 ? '"'.addcslashes($value, '"\\').'"' : $value);
@@ -136,16 +137,16 @@ if ($get('MAIL_MAILER') === 'log') {
 // 6. The Herd site: linked under the folder's name and served over HTTPS, at https://<site>.test.
 $url = 'http://localhost:8000';
 if ($which('herd')) {
-    $links = (string) shell_exec('cd '.escapeshellarg($root).' && herd links 2>/dev/null');
-    if (! str_contains($links, $site)) {
+    // Herd's own files, not `herd links` or `herd secured`: those ask the Herd app through osascript, which hangs without a GUI session or an answered Automation prompt.
+    $valet = getenv('HOME').'/Library/Application Support/Herd/config/valet';
+    if (! file_exists($valet.'/Sites/'.$site)) {
         $run('herd link '.escapeshellarg($site));
     }
-    $secured = (string) shell_exec('herd secured 2>/dev/null');
-    if (! str_contains($secured, $site.'.test')) {
+    if (! is_file($valet.'/Certificates/'.$site.'.test.crt')) {
         $run('herd secure '.escapeshellarg($site));
     }
     $url = 'https://'.$site.'.test';
-    if (in_array($get('APP_URL'), [null, '', 'http://localhost'], true)) {
+    if (in_array($get('APP_URL'), [null, '', 'http://localhost', 'http://'.$site.'.test'], true)) {
         $file = (string) preg_replace('/^APP_URL=.*$/m', 'APP_URL='.$url, $env(), 1);
         file_put_contents($root.'/.env', $file);
         echo "Set APP_URL={$url}\n";
@@ -155,7 +156,15 @@ if ($which('herd')) {
 }
 
 // 7. Assets, then the first owner and their workspace (an operator, so Telescope and the Setup page's app rows are theirs).
-$run('npm ci && npm run build');
+// Skipped when node_modules matches the lockfile and the build is newer than every source file, so a rerun changes nothing.
+$newest = fn (array $paths): int => max(array_map(fn (string $path): int => (int) @filemtime($path), $paths) ?: [0]);
+$sources = [$root.'/package-lock.json', $root.'/vite.config.ts', ...array_map('strval', iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/resources', FilesystemIterator::SKIP_DOTS)), false))];
+if ($newest([$root.'/node_modules/.package-lock.json']) < $newest([$root.'/package-lock.json'])) {
+    $run('npm ci');
+}
+if ($newest([$root.'/public/build/manifest.json']) < $newest($sources)) {
+    $run('npm run build');
+}
 $run($php.' artisan starter:first-owner'.$interaction);
 
 echo "\nReady: {$url}/login (one click signs the owner in, locally only). Settings → Setup shows what is set up.\n";
