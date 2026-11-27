@@ -93,7 +93,7 @@ test('the owner sees the members and the pending invitations', function () {
 
     // The section is listed on the settings landing page, in the Workspace group, between General and Connections.
     $keys = array_column($this->get('/@alpha/settings', peopleInertia())->json('props.groups.0.sections'), 'key');
-    expect($keys)->toBe(['general', 'email', 'people']);
+    expect($keys)->toBe(['general', 'email', 'people', 'setup']);
 });
 test('a viewer is refused and does not see the section', function () {
     require dirname(__DIR__).'/database/fixture.php';

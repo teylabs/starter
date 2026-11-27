@@ -30,7 +30,7 @@ const formOptions = failureHandlers as FormOptions;
     <Head :title="title" />
     <Page xs :heading="false">
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium">Verify your email address</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Verify your email address</h1>
             <p class="text-sm text-muted-foreground">We sent a link to <template v-if="email">{{ email }}</template><template v-else>your email address</template>. Follow it to confirm the address.</p>
         </Stack>
         <Form ref="form" v-slot="{ processing }" action="/email/verification-notification" method="post" class="grid gap-3" @start="throttled = null" :options="formOptions">

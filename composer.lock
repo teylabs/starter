@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b6f0a86838a69c625810387655783575",
+    "content-hash": "3e1a9b9ed45e10930ba75dab13f4882a",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1664,16 +1664,16 @@
         },
         {
             "name": "inertiajs/inertia-laravel",
-            "version": "v3.7.0",
+            "version": "v3.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/inertiajs/inertia-laravel.git",
-                "reference": "9d3f9060c1614565eb4d3a3208015ed01de347bb"
+                "reference": "ee6aa7a7cb0dc384573abec561a96fea4dc64af9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/9d3f9060c1614565eb4d3a3208015ed01de347bb",
-                "reference": "9d3f9060c1614565eb4d3a3208015ed01de347bb",
+                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/ee6aa7a7cb0dc384573abec561a96fea4dc64af9",
+                "reference": "ee6aa7a7cb0dc384573abec561a96fea4dc64af9",
                 "shasum": ""
             },
             "require": {
@@ -1691,7 +1691,7 @@
                 "laravel/pint": "^1.16",
                 "mockery/mockery": "^1.3.3",
                 "orchestra/testbench": "^9.2|^10.0|^11.0",
-                "phpunit/phpunit": "^11.5|^12.0"
+                "phpunit/phpunit": "^11.5|^12.0|^13.0"
             },
             "suggest": {
                 "ext-pcntl": "Recommended when running the Inertia SSR server via the `inertia:start-ssr` artisan command."
@@ -1730,23 +1730,23 @@
             ],
             "support": {
                 "issues": "https://github.com/inertiajs/inertia-laravel/issues",
-                "source": "https://github.com/inertiajs/inertia-laravel/tree/v3.7.0"
+                "source": "https://github.com/inertiajs/inertia-laravel/tree/v3.8.0"
             },
-            "time": "2026-11-02T10:29:10+00:00",
-            "published-time": "2026-11-02T10:45:07+00:00"
+            "time": "2026-11-22T20:06:01+00:00",
+            "published-time": "2026-11-23T20:34:06+00:00"
         },
         {
             "name": "inertiaui/modal",
-            "version": "3.1.2",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/inertiaui/modal.git",
-                "reference": "e6cfbddc9b8795b2460a73a863bd3934b0dcebca"
+                "reference": "6dabc644e5448da1cb7a42d44831a9e0d16559a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inertiaui/modal/zipball/e6cfbddc9b8795b2460a73a863bd3934b0dcebca",
-                "reference": "e6cfbddc9b8795b2460a73a863bd3934b0dcebca",
+                "url": "https://api.github.com/repos/inertiaui/modal/zipball/6dabc644e5448da1cb7a42d44831a9e0d16559a1",
+                "reference": "6dabc644e5448da1cb7a42d44831a9e0d16559a1",
                 "shasum": ""
             },
             "require": {
@@ -1788,7 +1788,7 @@
             "homepage": "https://github.com/inertiaui/modal",
             "support": {
                 "issues": "https://github.com/inertiaui/modal/issues",
-                "source": "https://github.com/inertiaui/modal/tree/3.1.2"
+                "source": "https://github.com/inertiaui/modal/tree/3.2.0"
             },
             "funding": [
                 {
@@ -1796,8 +1796,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-04T21:57:11+00:00",
-            "published-time": "2026-06-04T21:57:16+00:00"
+            "time": "2026-11-21T16:06:46+00:00",
+            "published-time": "2026-11-21T16:06:53+00:00"
         },
         {
             "name": "intervention/gif",
@@ -6275,16 +6275,16 @@
         },
         {
             "name": "spatie/laravel-medialibrary",
-            "version": "11.23.13",
+            "version": "11.23.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-medialibrary.git",
-                "reference": "3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a"
+                "reference": "d6b2817c1c52fb2442f9623aeb9d50418906693c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a",
-                "reference": "3b6ae80ef5b2b42b71fa57fc0de7848d3defe91a",
+                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/d6b2817c1c52fb2442f9623aeb9d50418906693c",
+                "reference": "d6b2817c1c52fb2442f9623aeb9d50418906693c",
                 "shasum": ""
             },
             "require": {
@@ -6369,7 +6369,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-medialibrary/issues",
-                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.13"
+                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.23.14"
             },
             "funding": [
                 {
@@ -6381,8 +6381,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-13T09:09:46+00:00",
-            "published-time": "2026-11-13T09:15:00+00:00"
+            "time": "2026-11-23T14:45:56+00:00",
+            "published-time": "2026-11-23T14:46:44+00:00"
         },
         {
             "name": "spatie/laravel-multitenancy",
@@ -6527,16 +6527,16 @@
         },
         {
             "name": "spatie/laravel-permission",
-            "version": "8.5.0",
+            "version": "8.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-permission.git",
-                "reference": "31c6a4f649c6bc4703ae5546cebb7ce1a20a15e0"
+                "reference": "088c3c643c11f0fc1f711e0e05ee9682560bd562"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/31c6a4f649c6bc4703ae5546cebb7ce1a20a15e0",
-                "reference": "31c6a4f649c6bc4703ae5546cebb7ce1a20a15e0",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/088c3c643c11f0fc1f711e0e05ee9682560bd562",
+                "reference": "088c3c643c11f0fc1f711e0e05ee9682560bd562",
                 "shasum": ""
             },
             "require": {
@@ -6603,7 +6603,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-permission/issues",
-                "source": "https://github.com/spatie/laravel-permission/tree/8.5.0"
+                "source": "https://github.com/spatie/laravel-permission/tree/8.5.1"
             },
             "funding": [
                 {
@@ -6611,7 +6611,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-06T11:43:27+00:00"
+            "time": "2026-11-26T14:02:58+00:00",
+            "published-time": "2026-11-26T14:03:16+00:00"
         },
         {
             "name": "spatie/laravel-query-builder",
@@ -7828,16 +7829,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v8.1.11",
+            "version": "v8.1.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "58f57b6a33e3495f7f41e01258f1ae5ef76cccd2"
+                "reference": "a8f7a3cf9d3140902eaee85baf1f8e98666d336a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/58f57b6a33e3495f7f41e01258f1ae5ef76cccd2",
-                "reference": "58f57b6a33e3495f7f41e01258f1ae5ef76cccd2",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/a8f7a3cf9d3140902eaee85baf1f8e98666d336a",
+                "reference": "a8f7a3cf9d3140902eaee85baf1f8e98666d336a",
                 "shasum": ""
             },
             "require": {
@@ -7875,7 +7876,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v8.1.11"
+                "source": "https://github.com/symfony/filesystem/tree/v8.1.12"
             },
             "funding": [
                 {
@@ -7895,8 +7896,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-04T08:39:20+00:00",
-            "published-time": "2026-11-04T11:32:01+00:00"
+            "time": "2026-11-24T15:59:55+00:00",
+            "published-time": "2026-11-25T09:29:32+00:00"
         },
         {
             "name": "symfony/finder",
@@ -10601,16 +10602,16 @@
         },
         {
             "name": "tey/concierge",
-            "version": "v0.9.3",
+            "version": "v0.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/concierge.git",
-                "reference": "9662ea1944a02be5f2e8e45d0ce1275e1b543778"
+                "reference": "bccc89b1a84c09d51165a0fb6141223ec7df75ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/concierge/zipball/9662ea1944a02be5f2e8e45d0ce1275e1b543778",
-                "reference": "9662ea1944a02be5f2e8e45d0ce1275e1b543778",
+                "url": "https://api.github.com/repos/teylabs/concierge/zipball/bccc89b1a84c09d51165a0fb6141223ec7df75ad",
+                "reference": "bccc89b1a84c09d51165a0fb6141223ec7df75ad",
                 "shasum": ""
             },
             "require": {
@@ -10619,11 +10620,13 @@
                 "spatie/laravel-package-tools": "^1.93",
                 "spatie/laravel-permission": "^8.3",
                 "spatie/laravel-query-builder": "^7.3",
-                "tey/mod": "^0.6.1 || ^0.7 || ^0.8 || ^0.9 || ^0.10 || ^0.11"
+                "tey/mod": "^0.6.1 || ^0.7 || ^0.8 || ^0.9 || ^0.10 || ^0.11 || ^0.12 || ^0.13 || ^0.14"
             },
             "require-dev": {
                 "larastan/larastan": "^3.12",
+                "laravel/boost": "^2.10",
                 "laravel/fortify": "^1.41",
+                "laravel/mcp": "^1.1",
                 "laravel/pint": "^1.27",
                 "laravel/sanctum": "^4.3",
                 "nunomaduro/collision": "^8.9",
@@ -10693,7 +10696,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/concierge/issues",
-                "source": "https://github.com/teylabs/concierge/tree/v0.9.3"
+                "source": "https://github.com/teylabs/concierge/tree/v0.12.1"
             },
             "funding": [
                 {
@@ -10701,20 +10704,21 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-30T13:27:10+00:00"
+            "time": "2026-11-27T02:44:16+00:00",
+            "published-time": "2026-11-27T02:44:42+00:00"
         },
         {
             "name": "tey/kit",
-            "version": "v0.49.6",
+            "version": "v0.51.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "866249d0fc5a675cb35d8e284b8ef99edc7c82bf"
+                "reference": "ee2350ae6b610ac683eb6ccc8f855ce4e59f686c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/866249d0fc5a675cb35d8e284b8ef99edc7c82bf",
-                "reference": "866249d0fc5a675cb35d8e284b8ef99edc7c82bf",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/ee2350ae6b610ac683eb6ccc8f855ce4e59f686c",
+                "reference": "ee2350ae6b610ac683eb6ccc8f855ce4e59f686c",
                 "shasum": ""
             },
             "require": {
@@ -10733,6 +10737,7 @@
             },
             "require-dev": {
                 "inertiajs/inertia-laravel": "^3.0",
+                "inertiaui/notifications": "^1.0",
                 "laravel/fortify": "^1.41",
                 "laravel/framework": "^13.0",
                 "laravel/mcp": "^1.0.2",
@@ -10740,13 +10745,14 @@
                 "laravel/pennant": "^1.0",
                 "laravel/pint": "^1.32",
                 "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.0",
                 "spatie/laravel-multitenancy": "^4.2",
                 "spatie/laravel-settings": "^3.9",
                 "spatie/laravel-typescript-transformer": "^3.3",
                 "spatie/typescript-transformer": "^3.3",
                 "symfony/event-dispatcher-contracts": "^3.5",
                 "symfony/polyfill-php83": "^1.32",
-                "tey/concierge": "^0.8.4 || ^0.9 || ^0.11.1",
+                "tey/concierge": "^0.12",
                 "tey/standards": "^0.11.54"
             },
             "suggest": {
@@ -10775,7 +10781,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.49.6"
+                "source": "https://github.com/teylabs/kit/tree/v0.51.0"
             },
             "funding": [
                 {
@@ -10783,8 +10789,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-23T20:03:41+00:00",
-            "published-time": "2026-11-23T20:05:23+00:00"
+            "time": "2026-11-27T03:56:57+00:00",
+            "published-time": "2026-11-27T03:57:29+00:00"
         },
         {
             "name": "tey/mod",
@@ -11524,16 +11530,16 @@
         },
         {
             "name": "amphp/byte-stream",
-            "version": "v2.1.3",
+            "version": "v2.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/amphp/byte-stream.git",
-                "reference": "1511cdfdf868a706307358bd48f155c3df2c490f"
+                "reference": "de5b94a727c5fb970e018452e552ce20dc75aa16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amphp/byte-stream/zipball/1511cdfdf868a706307358bd48f155c3df2c490f",
-                "reference": "1511cdfdf868a706307358bd48f155c3df2c490f",
+                "url": "https://api.github.com/repos/amphp/byte-stream/zipball/de5b94a727c5fb970e018452e552ce20dc75aa16",
+                "reference": "de5b94a727c5fb970e018452e552ce20dc75aa16",
                 "shasum": ""
             },
             "require": {
@@ -11587,7 +11593,7 @@
             ],
             "support": {
                 "issues": "https://github.com/amphp/byte-stream/issues",
-                "source": "https://github.com/amphp/byte-stream/tree/v2.1.3"
+                "source": "https://github.com/amphp/byte-stream/tree/v2.1.4"
             },
             "funding": [
                 {
@@ -11595,8 +11601,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-31T19:10:04+00:00",
-            "published-time": "2026-10-31T19:16:39+00:00"
+            "time": "2026-11-21T17:57:31+00:00",
+            "published-time": "2026-11-22T22:18:56+00:00"
         },
         {
             "name": "amphp/cache",
@@ -15621,16 +15627,16 @@
         },
         {
             "name": "revolt/event-loop",
-            "version": "v1.0.9",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/revoltphp/event-loop.git",
-                "reference": "44061cf513e53c6200372fc935ac42271566295d"
+                "reference": "93999a4ffca70aaa3890c553001e9f8313a1895c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/44061cf513e53c6200372fc935ac42271566295d",
-                "reference": "44061cf513e53c6200372fc935ac42271566295d",
+                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/93999a4ffca70aaa3890c553001e9f8313a1895c",
+                "reference": "93999a4ffca70aaa3890c553001e9f8313a1895c",
                 "shasum": ""
             },
             "require": {
@@ -15640,7 +15646,7 @@
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "^2019.3",
                 "phpunit/phpunit": "^9",
-                "psalm/phar": "6.16.*"
+                "psalm/phar": "6.20.*"
             },
             "type": "library",
             "extra": {
@@ -15687,10 +15693,10 @@
             ],
             "support": {
                 "issues": "https://github.com/revoltphp/event-loop/issues",
-                "source": "https://github.com/revoltphp/event-loop/tree/v1.0.9"
+                "source": "https://github.com/revoltphp/event-loop/tree/v1.1.0"
             },
-            "time": "2026-05-16T17:55:38+00:00",
-            "published-time": "2026-05-16T18:04:08+00:00"
+            "time": "2026-11-14T19:05:53+00:00",
+            "published-time": "2026-11-19T18:36:08+00:00"
         },
         {
             "name": "roave/better-reflection",

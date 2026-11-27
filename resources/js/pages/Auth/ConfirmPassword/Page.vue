@@ -43,7 +43,7 @@ const formOptions = failureHandlers as FormOptions;
     <Head :title="title" />
     <Page xs :heading="false">
         <Stack class="gap-2">
-            <h1 class="text-xl font-medium">Confirm your password</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Confirm your password</h1>
             <p class="text-sm text-muted-foreground">For your security, confirm your password to continue.</p>
         </Stack>
         <Form ref="form" novalidate v-slot="{ errors, processing }" action="/user/confirm-password" method="post" :reset-on-error="['password']" class="grid gap-4" @start="throttled = null" @error="refocus" :options="formOptions">

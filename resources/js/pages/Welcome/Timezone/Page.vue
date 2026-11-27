@@ -18,7 +18,7 @@ watch(zone, (value, before) => {
     <Page xs :heading="false">
     <div class="grid gap-6" data-welcome-step="timezone">
         <div class="space-y-2">
-            <h1 class="text-xl font-medium" data-welcome-heading>{{ heading }}</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight" data-welcome-heading>{{ heading }}</h1>
             <p class="text-sm text-muted-foreground">{{ description }}</p>
         </div>
         <Form :action="submit.url" :method="submit.method as 'post'" v-slot="{ processing, errors }" class="grid gap-6">

@@ -25,8 +25,8 @@
         "spatie/laravel-multitenancy": "^4.2",
         "spatie/laravel-query-builder": "^7.3",
         "spatie/laravel-settings": "^3.9",
-        "tey/concierge": "^0.9",
-        "tey/kit": "^0.49.6",
+        "tey/concierge": "^0.12.1",
+        "tey/kit": "^0.51",
         "tey/mod": "^0.11",
         "tey/standards": "^0.13.1"
     },

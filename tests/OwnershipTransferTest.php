@@ -124,7 +124,7 @@ test('the target must be an existing active member of this workspace', function 
     $this->deleteJson('/@alpha/settings/people/members/'.ownershipTransferMembership(1, 3)->id)->assertOk();
     $this->putJson('/@alpha/settings/ownership', ['membership' => ownershipTransferMembership(1, 3)->id, 'password' => $this->password, 'confirmation' => ownershipTransferWorkspaceName()])->assertForbidden();
     expect(ownershipTransferRoles(1))->toBe(['owner']);
-    expect(DB::table('concierge_ownerships')->where('workspace_id', 1)->count())->toBe(1);
+    expect(DB::table('ownerships')->where('workspace_id', 1)->count())->toBe(1);
 });
 test('an owner cannot leave until ownership moves and a member can leave', function () {
     require dirname(__DIR__).'/database/fixture.php';

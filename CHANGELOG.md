@@ -4,8 +4,14 @@
 
 ### Added
 
+- **Settings → Setup (tey/kit 0.51).** Each workspace's setup in one place: mail, media, row-level security, the queue and Telescope, each ok, n/a locally or with its fix, plus the steps only a person can do; operators see the app's own rows. MCP reads it as `workspace_setup_read` (settings.write). A fresh local install shows nothing red.
 - **Telescope, for operators only.** laravel/telescope with a gate on `Operators::allows()` (never an email list), the noisy watchers off, cache and Telescope SQL dropped, and in production only exceptions, 4xx/5xx requests, failed jobs, scheduled tasks, slow queries, warnings and monitored tags kept (`TELESCOPE_LOG_EVERYTHING=true` keeps all). Entries are pruned after 48 hours, daily.
 - **Amp reaches Laravel Boost.** `.amp/settings.json` registers Boost's MCP server (`php artisan boost:mcp`) for Amp, which reads it instead of `.mcp.json`. An orb asks once to allow it.
+
+### Changed
+
+- **tey/kit 0.51 and tey/concierge 0.12: plain table names.** Concierge's tables become memberships, membership_scopes, ownerships, invitations, account_statuses and owner_invitations; connections becomes mcp_connections and entitlements workspace_entitlements. The packages' own migrations rename them, rows and keys intact. The kit's re-pinned pages are re-taken (heavier auth headings, designed 404, search, no-workspace, security, invitation and People states), and the guest card heading follows them. The build needs `micromark`, `micromark-extension-gfm` and `dompurify` (added).
+- **Lazy loading throws outside production.** `Model::preventLazyLoading()` finds an N+1 in development and the tests; Concierge 0.12.1 eager-loads the memberships it transfers.
 
 ### Fixed
 

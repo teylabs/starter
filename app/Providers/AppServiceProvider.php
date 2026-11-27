@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Console\Commands\FirstOwnerCommand;
 use App\Support\KitMigrationRepository;
 use Composer\InstalledVersions;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -34,6 +35,8 @@ final class AppServiceProvider extends ServiceProvider
         // Nightwatch drops SQL on the database cache store's own tables and Telescope's: a cache read or a lock retry is otherwise a recorded query,
         // which is how one app spent millions of events on its own cache. Everything else, and every cache event, job and exception, is still kept.
         Nightwatch::rejectQueries(fn (Query $query): bool => preg_match('/\b(?:from|into|update)\s+"?(?:cache|cache_locks|telescope_entries|telescope_entries_tags|telescope_monitoring)"?(?=[\s(;]|$)/i', $query->sql) === 1);
+        // A relation read in a loop is an N+1: outside production a lazy load throws, so it is found in development and the tests, not in the bill.
+        Model::preventLazyLoading(! $this->app->isProduction());
         DB::prohibitDestructiveCommands(! $this->app->runningUnitTests() && ! config('database.allow_destructive'));
         // The template's own cache, tey/mod's discovery, warms and clears with `php artisan optimize` and `optimize:clear`.
         $this->optimizes('mod:cache', 'mod:clear', 'mod');

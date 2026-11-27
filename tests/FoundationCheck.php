@@ -75,9 +75,9 @@ check('viewer reads but cannot configure', function () use ($ui): void {
 check('read-only delegated scope cannot write', fn () => refused('connection_denied', fn () => $mcp->call(new Principal(1, 2), 1, 'workspace_settings_update', ['display_name' => 'x', 'timezone' => 'UTC', 'expected_version' => 1, 'intent_key' => 'denied'])));
 check('connection identity cannot be borrowed by another actor', fn () => refused('connection_denied', fn () => $mcp->call(new Principal(3, 1), 1, 'workspace_settings_get')));
 check('revocation is rechecked at execution', function () use ($mcp, $connection): void {
-    DB::table('connections')->where('id', 1)->update(['revoked_at' => now()]);
+    DB::table('mcp_connections')->where('id', 1)->update(['revoked_at' => now()]);
     refused('connection_denied', fn () => $mcp->call($connection, 1, 'workspace_settings_get'));
-    DB::table('connections')->where('id', 1)->update(['revoked_at' => null]);
+    DB::table('mcp_connections')->where('id', 1)->update(['revoked_at' => null]);
 });
 check('MCP has no SQL or arbitrary execute escape', function () use ($mcp, $connection): void {
     refused('unknown_tool', fn () => $mcp->call($connection, 1, 'execute', ['sql' => 'select * from fixture_records']));
@@ -125,14 +125,14 @@ check('complimentary grants require operator authority and reason', function () 
     refused('reason_required', fn () => app(ComplimentaryAccess::class)->grant($operator, 1, '', now()->addDay(), 'test-grant'));
 });
 check('complimentary grant is auditable and revocable without modifying paid rows', function () use ($operator, $boundary, $alpha): void {
-    DB::table('entitlements')->insert(['workspace_id' => 2, 'kind' => 'paid']);
-    $before = DB::table('entitlements')->get()->toJson();
+    DB::table('workspace_entitlements')->insert(['workspace_id' => 2, 'kind' => 'paid']);
+    $before = DB::table('workspace_entitlements')->get()->toJson();
     $id = app(ComplimentaryAccess::class)->grant($operator, 1, 'Synthetic acceptance', now()->addDay(), 'test-grant');
     $boundary->run(1, fn () => app(Access::class)->authorize($alpha, 'settings.read', paid: true));
     app(ComplimentaryAccess::class)->revoke($operator, $id, 'Synthetic revoke');
     app(ComplimentaryAccess::class)->revoke($operator, $id, 'Duplicate revoke');
     $boundary->run(1, fn () => refused('entitlement_required', fn () => app(Access::class)->authorize($alpha, 'settings.read', paid: true)));
-    same($before, DB::table('entitlements')->get()->toJson());
+    same($before, DB::table('workspace_entitlements')->get()->toJson());
     same(2, DB::table('audit_events')->whereIn('event', ['complimentary.granted', 'complimentary.revoked'])->count());
 });
 check('entitlement does not bypass admission', function () use ($ui): void {

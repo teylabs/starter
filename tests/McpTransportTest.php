@@ -25,8 +25,11 @@ test('delegated settings', function () {
     }
     // The consent gate's intent ledger, which replays a capability tool's retry (notes_write) on its intent_key.
     // The kit's migrations load from the package; its 0.18 rename makes kit_mcp_intents mcp_intents.
+    // Its foreign key names the table before 0.51, so it runs in the real order: on connections, then the kit's 0.51 rename to mcp_connections.
+    Schema::rename('mcp_connections', 'connections');
     (require base_path('vendor/tey/kit/database/migrations/mcp/0001_01_02_000601_create_kit_mcp_intents_table.php'))->up();
     (require base_path('vendor/tey/kit/database/migrations/mcp/2026_11_14_000605_rename_mcp_tables.php'))->up();
+    (require base_path('vendor/tey/kit/database/migrations/mcp/2026_11_27_000606_rename_connections_table.php'))->up();
     $keys = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
     openssl_pkey_export($keys, $private);
     $public = openssl_pkey_get_details($keys)['key'];
@@ -56,7 +59,7 @@ test('delegated settings', function () {
     $token = Token::query()->where('user_id', 1)->where('client_id', $client->id)->firstOrFail();
     $grant = ['token_id' => $token->id, 'scopes' => ['settings.read', 'settings.write'], 'intent_key' => 'approve-one'];
     // The approved consent made the connection in the chosen workspace, for this person and client; a second approval of the same token is refused.
-    $connection = (int) DB::table('connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->value('id');
+    $connection = (int) DB::table('mcp_connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->value('id');
     self::assertNotSame(0, $connection);
     $this->postJson('/@alpha/settings/connections', $grant)->assertConflict()->assertJsonPath('error', 'connection_active');
     self::assertSame(1, DB::table('audit_events')->where('event', 'workspace.connection.approved')->count());
@@ -66,7 +69,7 @@ test('delegated settings', function () {
     $this->withToken($bearer);
     mcpTransportRpc($connection, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => new stdClass, 'clientInfo' => ['name' => 'Synthetic client', 'version' => '1']])->assertOk()->assertJsonPath('result.serverInfo.name', 'Workspace operations');
     // kit 0.7+: a narrow connection lists only the tools its scopes cover: the settings reads and the update.
-    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(3, 'result.tools');
+    mcpTransportRpc($connection, 'tools/list')->assertOk()->assertJsonCount(4, 'result.tools');
     // A connection granted settings only stays narrow: the dashboard read tool needs dashboard.read (or acts-as-me).
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_dashboard', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     // So does global search: workspace_search needs search.read.
@@ -89,7 +92,10 @@ test('delegated settings', function () {
     $token->update(['scopes' => ['mcp:use', 'settings.read']]);
     $data['expected_version'] = 2;
     mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
+    // Settings → Setup's read needs settings.write: refused on a read-only connection, and back once the scope returns.
+    mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_setup_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     $token->update(['scopes' => ['mcp:use', 'settings.read', 'settings.write']]);
+    mcpTransportRpc($connection, 'tools/call', ['name' => 'workspace_setup_read', 'arguments' => new stdClass])->assertOk()->assertJsonPath('result.isError', false);
     $token->update(['expires_at' => now()->subMinute()]);
     mcpTransportRpc($connection, 'tools/list')->assertForbidden();
     $token->update(['expires_at' => now()->addHour()]);
@@ -140,7 +146,7 @@ test('delegated settings', function () {
     $newBearer = $this->postJson('/oauth/token', $exchange)->assertOk()->json('access_token');
     $newToken = Token::query()->where('user_id', 1)->where('client_id', $client->id)->where('id', '!=', $token->id)->firstOrFail();
     // The second consent made a new connection; the revoked first one is not reused.
-    $newConnection = (int) DB::table('connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->whereNull('revoked_at')->value('id');
+    $newConnection = (int) DB::table('mcp_connections')->where('actor_id', 1)->where('workspace_id', 1)->where('oauth_client_id', $client->id)->whereNull('revoked_at')->value('id');
     self::assertNotSame($connection, $newConnection);
     $this->withToken($bearer);
     mcpTransportRpc($newConnection, 'tools/list')->assertUnauthorized();
@@ -167,7 +173,7 @@ test('delegated settings', function () {
 
     // Persisted scopes cannot widen the cryptographically granted JWT scopes.
     $newToken->update(['scopes' => ['mcp:use', 'settings.read', 'settings.write']]);
-    DB::table('connections')->where('id', $newConnection)->update(['scopes' => json_encode(['settings.read', 'settings.write'])]);
+    DB::table('mcp_connections')->where('id', $newConnection)->update(['scopes' => json_encode(['settings.read', 'settings.write'])]);
     mcpTransportRpc($newConnection, 'tools/call', ['name' => 'workspace_settings_update', 'arguments' => $data])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath('result.content.0.text', 'connection_denied');
     $parts = explode('.', $newBearer);
     $claims = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true, flags: JSON_THROW_ON_ERROR);

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Form, http, router } from '@inertiajs/vue3';
+import { KeyRound } from '@lucide/vue';
 import { onMounted, ref } from 'vue';
-import { Alert, Button, CollectionCard, DateTime, Dialog, Field, FormCard, Input, Page, PasswordInput, ScriptForm, Section, confirmPasskeyPassword, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
+import { Alert, Button, CollectionCard, DateTime, Dialog, EmptyState, Field, FormCard, Input, Page, PasswordInput, ScriptForm, Section, confirmPasskeyPassword, passkeyName, passkeysSupported, registerPasskey } from '@kit/ui';
 
 // Security: passkeys, two-factor authentication (Fortify's actions; the password is asked for again, and a code from the authenticator app turns it on), the devices
 // you are signed in on (each but this one signed out on its own, with the password), and your own security log. Turning two-factor off, regenerating the
-// recovery codes, signing out a device and signing out other sessions each ask first.
+// recovery codes, signing out a device and signing out other sessions each ask first. The buttons on the page are quiet (secondary); the destructive one is only
+// the dialog's confirm.
 const props = defineProps<Tey.Kit.Features.SessionUi.ViewModels.SecurityViewModel>();
 
 // Passkeys (`passkeys`, null without Fortify's passkeys feature): add one with the password (confirmed with Fortify first, as its registration requires, then
@@ -72,7 +74,7 @@ async function addPasskey(): Promise<void> {
                         <Field id="cancel-password" name="password" label="Your password" :span="3"><PasswordInput id="cancel-password" name="password" required autocomplete="current-password" /></Field>
                         <template #submit>
                             <Dialog variant="danger" title="Cancel two-factor setup?" description="The secret is discarded. You can start again any time." confirm-label="Cancel setup" @confirm="submit()">
-                                <Button variant="destructive" type="button">Cancel setup</Button>
+                                <Button variant="secondary" type="button">Cancel setup</Button>
                             </Dialog>
                         </template>
                     </FormCard>
@@ -86,7 +88,7 @@ async function addPasskey(): Promise<void> {
                         <Field id="codes-password" name="password" label="Your password" :span="3"><PasswordInput id="codes-password" name="password" required autocomplete="current-password" /></Field>
                         <template #submit>
                             <Dialog variant="danger" title="Regenerate recovery codes?" description="Your current recovery codes stop working. The new ones are shown once." confirm-label="Regenerate recovery codes" @confirm="submit()">
-                                <Button variant="destructive" type="button">Regenerate recovery codes</Button>
+                                <Button variant="secondary" type="button">Regenerate recovery codes</Button>
                             </Dialog>
                         </template>
                     </FormCard>
@@ -96,7 +98,7 @@ async function addPasskey(): Promise<void> {
                         <Field id="off-password" name="password" label="Your password" :span="3"><PasswordInput id="off-password" name="password" required autocomplete="current-password" /></Field>
                         <template #submit>
                             <Dialog variant="danger" title="Turn off two-factor authentication?" description="Your account is protected by your password alone until you turn it on again." confirm-label="Turn off" @confirm="submit()">
-                                <Button variant="destructive" type="button">Turn off</Button>
+                                <Button variant="secondary" type="button">Turn off</Button>
                             </Dialog>
                         </template>
                     </FormCard>
@@ -104,7 +106,7 @@ async function addPasskey(): Promise<void> {
             </template>
 
             <Section v-if="passkeys" title="Passkeys" description="Sign in with your fingerprint, face or device PIN instead of your password." data-passkeys>
-                <p v-if="!passkeys.items.length" class="text-sm text-muted-foreground" data-passkeys-empty>No passkeys yet.</p>
+                <EmptyState v-if="!passkeys.items.length" compact align="start" :level="3" :icon="KeyRound" title="No passkeys yet" body="Add one below to sign in without typing your password." data-passkeys-empty />
                 <ul v-else class="grid divide-y divide-border">
                     <li v-for="passkey in passkeys.items" :key="passkey.id" class="grid gap-3 py-4 text-sm" :data-passkey="passkey.id">
                         <span class="flex flex-col"><span class="font-medium">{{ passkey.name }}</span><span class="text-muted-foreground">Added <DateTime :value="passkey.created" /> · <template v-if="passkey.last_used">Last used <DateTime :value="passkey.last_used" /></template><template v-else>Not used yet</template></span></span>
@@ -115,7 +117,7 @@ async function addPasskey(): Promise<void> {
                         <Form v-slot="{ submit, processing }" :action="`${passkeys.url}/${passkey.id}`" method="delete" :options="{ preserveScroll: true }" reset-on-success class="flex flex-wrap items-end gap-2" data-passkey-remove>
                             <Field :id="`passkey-password-${passkey.id}`" name="password" label="Your password" class="min-w-48 flex-1"><PasswordInput :id="`passkey-password-${passkey.id}`" name="password" required autocomplete="current-password" /></Field>
                             <Dialog variant="danger" :title="`Remove ${passkey.name}?`" description="You can't sign in with it any more. Your password and other passkeys still work." confirm-label="Remove passkey" @confirm="submit()">
-                                <Button variant="destructive" type="button" :disabled="processing">Remove</Button>
+                                <Button variant="secondary" type="button" :disabled="processing">Remove</Button>
                             </Dialog>
                         </Form>
                     </li>
@@ -141,7 +143,7 @@ async function addPasskey(): Promise<void> {
                             <Form v-if="session.url" v-slot="{ submit, processing }" :action="session.url" method="delete" :options="{ preserveScroll: true }" reset-on-success class="flex flex-wrap items-end gap-2" data-device-sign-out>
                                 <Field :id="`device-password-${session.id}`" name="password" label="Your password" class="min-w-48 flex-1"><PasswordInput :id="`device-password-${session.id}`" name="password" required autocomplete="current-password" /></Field>
                                 <Dialog variant="danger" :title="`Sign out ${session.agent}?`" :description="session.remembered ? 'It is signed out straight away. It was remembered, so your other devices will ask you to sign in again next time.' : 'It is signed out straight away. Your other devices stay signed in.'" confirm-label="Sign out device" @confirm="submit()">
-                                    <Button variant="destructive" type="button" :disabled="processing">Sign out</Button>
+                                    <Button variant="secondary" type="button" :disabled="processing">Sign out</Button>
                                 </Dialog>
                             </Form>
                         </li>
@@ -151,7 +153,7 @@ async function addPasskey(): Promise<void> {
                             <Field id="sessions-password" name="password" label="Your password" :span="3"><PasswordInput id="sessions-password" name="password" required autocomplete="current-password" /></Field>
                             <template #submit>
                                 <Dialog variant="danger" title="Sign out your other sessions?" description="Every other device is signed out straight away, and asked to sign in again next time. This one stays." confirm-label="Sign out other sessions" @confirm="submit()">
-                                    <Button variant="destructive" type="button">Sign out other sessions</Button>
+                                    <Button variant="secondary" type="button">Sign out other sessions</Button>
                                 </Dialog>
                             </template>
                         </FormCard>

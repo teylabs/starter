@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-// The guest card heading is Laravel's Vue starter kit's AuthLayout heading, in the text face: exactly this class.
-const heading = 'text-xl font-medium';
+// The guest card heading is the kit's auth heading (its 0.51 Refactoring UI pass), in the display face: exactly this class.
+const heading = 'font-display text-2xl font-semibold tracking-tight';
 
 for (const file of ['GuestLayout.vue', '../pages/Auth/Login/Page.vue']) {
     test(`the guest card heading in ${file} is ${heading}`, () => {

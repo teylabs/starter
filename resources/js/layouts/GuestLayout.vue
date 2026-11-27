@@ -53,7 +53,7 @@ const product = computed(() => page.props.shell?.product.name ?? '');
             data-guest-card
         >
             <div v-if="showHeading && title" class="space-y-2">
-                <h1 class="text-xl font-medium">
+                <h1 class="font-display text-2xl font-semibold tracking-tight">
                     {{ title }}
                 </h1>
                 <p v-if="description" class="text-sm text-muted-foreground">
