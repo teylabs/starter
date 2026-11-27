@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f00b9a695eb35e9216bd998445b7789c",
+    "content-hash": "32acdb4c23c327318f5435fca8bcc348",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1798,6 +1798,86 @@
             ],
             "time": "2026-11-21T16:06:46+00:00",
             "published-time": "2026-11-21T16:06:53+00:00"
+        },
+        {
+            "name": "inertiaui/notifications",
+            "version": "1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/inertiaui/notifications.git",
+                "reference": "25e51e7836d19d10455d7f5d3c2a557772dc9190"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/inertiaui/notifications/zipball/25e51e7836d19d10455d7f5d3c2a557772dc9190",
+                "reference": "25e51e7836d19d10455d7f5d3c2a557772dc9190",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^12.0||^13.0",
+                "illuminate/support": "^12.14.1||^13.0",
+                "inertiajs/inertia-laravel": "^3.8",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.29",
+                "orchestra/testbench": "^10.0||^11.0",
+                "pestphp/pest": "^4.6",
+                "rector/rector": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "InertiaUI\\Notifications\\NotificationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "InertiaUI\\Notifications\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pascal Baljet",
+                    "email": "pascal@protone.media"
+                }
+            ],
+            "description": "Toasts and notifications for Laravel + Inertia.js",
+            "homepage": "https://inertiaui.com/inertia-notifications/docs",
+            "keywords": [
+                "inertia",
+                "inertiajs",
+                "laravel",
+                "notification-center",
+                "notifications",
+                "react",
+                "tailwindcss",
+                "toasts",
+                "vue",
+                "web-push"
+            ],
+            "support": {
+                "docs": "https://inertiaui.com/inertia-notifications/docs",
+                "issues": "https://github.com/inertiaui/notifications/issues",
+                "security": "https://github.com/inertiaui/notifications/security/policy",
+                "source": "https://github.com/inertiaui/notifications"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/pascalbaljet",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-11-24T11:39:09+00:00",
+            "published-time": "2026-11-24T11:41:14+00:00"
         },
         {
             "name": "intervention/gif",

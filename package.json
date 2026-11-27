@@ -17,8 +17,9 @@
     },
     "dependencies": {
         "@inertiajs/core": "3.9.1",
-        "@inertiajs/vue3": "3.9.1",
+        "@inertiajs/vue3": "^3.11.0",
         "@inertiaui/modal-vue": "^3.1.2",
+        "@inertiaui/notifications-vue": "^1.0.3",
         "@internationalized/date": "^3.12.4",
         "@lucide/vue": "1.17.0",
         "@tanstack/vue-table": "^8.21.3",
