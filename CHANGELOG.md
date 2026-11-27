@@ -16,6 +16,7 @@
 
 ### Fixed
 
+- **`composer setup` runs on a fresh orb.** `.agents/setup` gives the orb's `root` role CREATEROLE (still not a superuser), so setup can create the row-level-security runtime role, as Herd's superuser already can.
 - **Nightwatch no longer bills for the cache's own SQL.** Queries on the `cache`, `cache_locks` and `telescope_*` tables are dropped and cache events are ignored by default (`NIGHTWATCH_IGNORE_CACHE_EVENTS=false` to keep them); other queries, jobs, requests and exceptions are kept.
 - **Queues are set correctly from day one.** `DB_QUEUE_RETRY_AFTER` defaults to 180 (was 90, too close to a job's runtime); failed jobs are pruned after 7 days and batches after 2, daily; `docs/deploy.md` has a Queues section with the one worker command (`--timeout=85 --tries=3 --backoff=10,60,300 --max-jobs=500 --max-time=3600 --memory`), Cloud's visibility and shutdown timeouts, and the iterating and production profiles.
 - **`.agents/setup` runs on an orb that already lists the PHP source under another keyring.** apt refused two Signed-By values for one source; setup now drops the other entries for that repository before writing its own.
