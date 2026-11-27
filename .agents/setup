@@ -78,7 +78,7 @@ sudo service postgresql start
 # An image may already have either: reconcile them rather than only creating when missing.
 sudo -u postgres psql -tc "select 1 from pg_roles where rolname = 'root'" | grep -q 1 \
     || sudo -u postgres psql -c "create role root"
-sudo -u postgres psql -c "alter role root login createdb nosuperuser nocreaterole noreplication nobypassrls"
+sudo -u postgres psql -c "alter role root login createdb createrole nosuperuser noreplication nobypassrls"
 sudo -u postgres psql -tc "select 1 from pg_database where datname = 'starter_testing'" | grep -q 1 \
     || sudo -u postgres createdb -O root starter_testing
 sudo -u postgres psql -c "alter database starter_testing owner to root"
