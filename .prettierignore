@@ -28,6 +28,7 @@ resources/js/pages/Workspace/Settings/General/**
 resources/js/pages/Workspace/Settings/Layout.vue
 resources/js/pages/Workspace/Settings/People/**
 resources/js/pages/Workspace/Settings/Placeholder/**
+resources/js/pages/Workspace/Settings/Setup/**
 resources/js/types/kit-shell.d.ts
 resources/js/widgets/Notes.vue
 # shadcn-vue primitives, copied as they ship.
