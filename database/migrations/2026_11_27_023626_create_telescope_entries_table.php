@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function getConnection(): ?string
     {
-        return config('telescope.storage.database.connection');
+        // The migrator's connection (`migrate --database=pgsql_admin` owns the tables); Telescope reads and writes on the app's own.
+        return null;
     }
 
     /**
