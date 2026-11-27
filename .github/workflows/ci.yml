@@ -199,6 +199,9 @@ jobs:
         run: |
           cp "$RUNNER_TEMP/rehearsal.env" .env.rehearsal
           php artisan migrate --force --env=rehearsal
+          # Row-level security is on: the app serves requests as a runtime role that owns nothing and can't bypass RLS (tey/kit docs/rls.md).
+          DB_RUNTIME_PASSWORD=runtime-rehearsal php artisan kit:rls:role starter_app --database=pgsql_admin --env=rehearsal
+          printf 'DB_RUNTIME_USERNAME=starter_app\nDB_RUNTIME_PASSWORD=runtime-rehearsal\n' >> "$RUNNER_TEMP/rehearsal.env"
           rm .env.rehearsal
       - name: The preflight, production-only checks on, reading that file as its environment
         run: php artisan kit:preflight --env-file="$RUNNER_TEMP/rehearsal.env"
