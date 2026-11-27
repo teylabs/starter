@@ -58,6 +58,10 @@
             "@php bin/check.php ConciergeCheck"
         ],
         "setup": "@php bin/setup.php",
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh bin/dev.sh"
+        ],
         "test": "@php vendor/bin/pest --tia --parallel",
         "test:brand-config": "sh bin/fake-brand-config.sh",
         "test:local": [

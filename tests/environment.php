@@ -56,6 +56,12 @@ if ($selected === 'pgsql') {
     }
     putenv('DB_DATABASE='.$database);
     $_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = $database;
+    // The runtime role `composer setup` writes to .env belongs to the app's own database, not the test databases: both connections log in
+    // as the test login, so a suite after a local setup migrates and serves as it does in CI.
+    foreach (['DB_RUNTIME_USERNAME' => (string) getenv('DB_USERNAME'), 'DB_RUNTIME_PASSWORD' => (string) getenv('DB_PASSWORD')] as $key => $value) {
+        putenv($key.'='.$value);
+        $_ENV[$key] = $_SERVER[$key] = $value;
+    }
 }
 if ($token !== '') {
     $previousRoot = getenv('LARAVEL_STORAGE_PATH') ?: '';
