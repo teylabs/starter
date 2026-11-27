@@ -34,6 +34,12 @@ final class AppServiceProvider extends ServiceProvider
         $this->optimizes('mod:cache', 'mod:clear', 'mod');
         $this->loadMigrationsFrom(InstalledVersions::getInstallPath('laravel/passport').'/database/migrations');
         $this->commands([FirstOwnerCommand::class]);
+        // Laravel Cloud writes its attached buckets' disks at boot, after config/filesystems.php, so the R2 checksum mode is applied to every R2 disk here.
+        foreach ((array) config('filesystems.disks') as $name => $disk) {
+            if (($disk['driver'] ?? null) === 's3' && str_contains((string) ($disk['endpoint'] ?? ''), 'r2.cloudflarestorage.com')) {
+                config(["filesystems.disks.$name.request_checksum_calculation" => $disk['request_checksum_calculation'] ?? 'when_required', "filesystems.disks.$name.response_checksum_validation" => $disk['response_checksum_validation'] ?? 'when_required']);
+            }
+        }
         // The kit's sign-in page takes the status and the local offer as extra props; this overrides session-ui's loginView with them. Concierge decides
         // whether the one-click local sign-in is offered: the offer is null wherever it isn't available. "Forgot your password?" is sent while Fortify's
         // resetPasswords feature is on (config/fortify.php), as the kit's own loginView sends it; the page draws no link without it.
