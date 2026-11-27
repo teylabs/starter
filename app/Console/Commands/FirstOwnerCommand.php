@@ -48,9 +48,9 @@ final class FirstOwnerCommand extends Command
             return self::SUCCESS;
         }
         $interactive = $this->input->isInteractive();
-        $name = $this->option('name') ?: ($interactive ? text('Owner name', default: 'Local owner', required: true) : 'Local owner');
-        $email = $this->option('email') ?: ($interactive ? text('Owner email', default: 'owner@example.com', required: true) : 'owner@example.com');
-        $workspaceName = $this->option('workspace') ?: ($interactive ? text('Workspace name', default: 'Local workspace', required: true) : 'Local workspace');
+        $name = $this->option('name') ?: ($interactive ? (text('Owner name', placeholder: 'Local owner', hint: 'Enter keeps the grey value.') ?: 'Local owner') : 'Local owner');
+        $email = $this->option('email') ?: ($interactive ? (text('Owner email', placeholder: 'owner@example.com', hint: 'Enter keeps the grey value.') ?: 'owner@example.com') : 'owner@example.com');
+        $workspaceName = $this->option('workspace') ?: ($interactive ? (text('Workspace name', placeholder: 'Local workspace', hint: 'Enter keeps the grey value.') ?: 'Local workspace') : 'Local workspace');
         $generated = $interactive ? null : Str::password(24);
         $secret = $generated ?? password('Owner password', required: true, validate: fn (string $value): ?string => strlen($value) < 12 ? 'Use at least 12 characters.' : null);
 
