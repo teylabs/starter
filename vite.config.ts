@@ -40,8 +40,9 @@ const preBundled = [
 ];
 const warmup = ['./resources/js/app.ts', './vendor/tey/kit/resources/js/components/Kit/index.ts', './resources/js/layouts/*.vue', './resources/js/pages/Workspace/Partials/index.ts'];
 
-// Dev only: kitImports rewrites each `@kit/ui` import into imports of the files it names, so a page requests only the kit components it
-// uses instead of every file the barrel lists (tey/kit docs/kit-imports.md). Builds are unchanged: the bundler already tree-shakes the barrel.
+// kitImports rewrites each `@kit/ui` import into imports of the files it names (tey/kit docs/kit-imports.md), in dev and in builds. In a build
+// the barrel is tree-shaken either way, but without the rewrite every kit component any page uses lands in one shared chunk that every page
+// loads: the sign-in page pulled the editor (tiptap, prosemirror) and the table with it. Measured in docs/perf-results.md (2026-11-27).
 export default defineConfig({
     build: {
         rolldownOptions: {
@@ -53,5 +54,5 @@ export default defineConfig({
     optimizeDeps: { include: preBundled },
     server: { warmup: { clientFiles: warmup } },
     resolve: { alias: { '@/components/Kit': kitComponents, '@kit/ui': `${kitComponents}/index.ts`, '@kit/shell': kitShell } },
-    plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } }), kitImports()],
+    plugins: [tailwindcss(), laravel({ input: ['resources/js/app.ts'], refresh: true }), vue({ script: { globalTypeFiles } }), { ...kitImports(), apply: undefined }],
 });
