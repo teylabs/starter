@@ -153,7 +153,7 @@
  * The semantic colour tokens the kit's components use (bg-primary, text-muted-foreground, border-input, ring-ring and the rest), as shadcn-vue names them, at the lowest
  * precedence: a host theme always wins. `@theme default inline` maps each `--color-*` to its plain variable unless the host's own @theme maps it (a non-default @theme
  * replaces these). The values are on `:where(:root)` and `:where(.dark)`, so any `:root` or `.dark` of the host overrides them whatever the import order.
- * They are the Laravel starter kit's neutral palette, so a host with no theme of its own still renders the kit's components in colour.
+ * They are a warm-grey palette (ink #28231f on #fafafa, gold #deb100 as the dark primary), so a host with no theme of its own still renders the kit's components in colour.
  * `--destructive-text` is destructive TEXT on a surface (a destructive menu item, an error message); `--destructive-foreground` stays text ON a destructive background.
  * `--destructive` as text fails WCAG AA on white (3.76:1), so the kit's own value is darker in light mode and lighter in dark, and meets 4.5:1 on background, card and
  * popover (6.48:1 light, 7.20:1 dark), on accent, a focused menu item (5.94:1, 5.51:1), and on muted (5.94:1, 5.29:1).
@@ -188,47 +188,47 @@
 }
 
 :where(:root) {
-    --background: hsl(60 9.1% 97.8%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(60 6.4% 90.8%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(60 7.1% 94.5%);
-    --muted-foreground: hsl(0 0% 41%);
-    --accent: hsl(60 5.3% 92.5%);
-    --accent-foreground: hsl(0 0% 9%);
+    --background: #fafafa;
+    --foreground: #28231f;
+    --card: #ffffff;
+    --card-foreground: #28231f;
+    --popover: #ffffff;
+    --popover-foreground: #28231f;
+    --primary: #28231f;
+    --primary-foreground: #ffffff;
+    --secondary: #f2f2f3;
+    --secondary-foreground: #28231f;
+    --muted: #f3f1ec;
+    --muted-foreground: #5f5850;
+    --accent: #f2f2f3;
+    --accent-foreground: #28231f;
     --destructive: hsl(0 74% 42%);
     --destructive-foreground: hsl(0 0% 98%);
     --destructive-text: hsl(0 72% 42%);
     --success-text: hsl(142 76% 26%);
     --warning-text: hsl(26 90% 33%);
     --info-text: hsl(201 90% 32%);
-    --border: hsl(60 5.3% 88.8%);
-    --input: hsl(60 1.3% 55.5%);
-    --ring: hsl(0 0% 3.9%);
+    --border: #e5e1d9;
+    --input: #8f8f8c;
+    --ring: #8a6a00;
     --kit-ground: tinted;
 }
 /* A subtree that stays light under .dark (the PublicShell's theme="light": a page with no dark styling yet). It restates the neutral surface tokens with their light
    values, not the brand's primary, so a host's own brand colours stand. */
 .kit-theme-light {
     color-scheme: light;
-    --background: hsl(60 9.1% 97.8%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --muted: hsl(60 7.1% 94.5%);
-    --muted-foreground: hsl(0 0% 41%);
-    --accent: hsl(60 5.3% 92.5%);
-    --accent-foreground: hsl(0 0% 9%);
-    --border: hsl(60 5.3% 88.8%);
-    --input: hsl(60 1.3% 55.5%);
+    --background: #fafafa;
+    --foreground: #28231f;
+    --card: #ffffff;
+    --card-foreground: #28231f;
+    --popover: #ffffff;
+    --popover-foreground: #28231f;
+    --muted: #f3f1ec;
+    --muted-foreground: #5f5850;
+    --accent: #f2f2f3;
+    --accent-foreground: #28231f;
+    --border: #e5e1d9;
+    --input: #8f8f8c;
     --kit-elevation-1: 0 1px 2px rgb(28 25 23 / 0.06), 0 1px 3px rgb(28 25 23 / 0.1);
     --kit-elevation-2: 0 1px 2px rgb(28 25 23 / 0.06), 0 3px 6px rgb(28 25 23 / 0.1);
     --kit-elevation-3: 0 3px 6px rgb(28 25 23 / 0.05), 0 10px 20px rgb(28 25 23 / 0.12);
@@ -237,29 +237,29 @@
 }
 
 :where(.dark) {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 11%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    --background: #1a1612;
+    --foreground: #faf6ef;
+    --card: #24201b;
+    --card-foreground: #faf6ef;
+    --popover: #24201b;
+    --popover-foreground: #faf6ef;
+    --primary: #deb100;
+    --primary-foreground: #28231f;
+    --secondary: #2e2923;
+    --secondary-foreground: #faf6ef;
+    --muted: #2e2923;
+    --muted-foreground: #b3a99c;
+    --accent: #2e2923;
+    --accent-foreground: #faf6ef;
     --destructive: hsl(0 72% 51%);
     --destructive-foreground: hsl(0 0% 98%);
     --destructive-text: hsl(0 91% 71%);
     --success-text: hsl(142 69% 58%);
     --warning-text: hsl(43 96% 56%);
     --info-text: hsl(199 89% 64%);
-    --border: hsl(0 0% 18%);
-    --input: hsl(60 1% 40.4%);
-    --ring: hsl(0 0% 83.1%);
+    --border: #3a332c;
+    --input: #756d63;
+    --ring: #deb100;
 }
 
 /*
