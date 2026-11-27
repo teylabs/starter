@@ -143,7 +143,9 @@ test('the deploy guide and ci use the standard lines and no deploy command', fun
         $this->assertStringNotContainsString('kit:permissions:sync', preg_replace('/^.*asserts?.*$/mi', '', $source) ?? $source, 'the syncs run when migrations end, not as deploy lines');
     }
     $this->assertStringContainsString('php artisan kit:preflight', $guide, 'the blocking gate is optional and named');
-    expect($ci)->toMatch('/php artisan migrate --force\s*&&\s*php artisan optimize/', 'CI runs exactly the two required lines');
+    // Migrations run as the database's owner, never as the runtime role requests use under row-level security.
+    expect($ci)->toMatch('/php artisan migrate --force --database=pgsql_admin\s*&&\s*php artisan optimize/', 'CI runs exactly the two required lines');
+    $this->assertStringContainsString("php artisan migrate --force --database=pgsql_admin\nphp artisan optimize", $guide);
     $this->assertStringContainsString('/up', $ci);
     $this->assertStringContainsString("health: '/up'", (string) file_get_contents(dirname(__DIR__).'/bootstrap/app.php'));
 });
