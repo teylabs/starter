@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- **Queues are set correctly from day one.** `DB_QUEUE_RETRY_AFTER` defaults to 180 (was 90, too close to a job's runtime); failed jobs are pruned after 7 days and batches after 2, daily; `docs/deploy.md` has a Queues section with the one worker command (`--timeout=85 --tries=3 --backoff=10,60,300 --max-jobs=500 --max-time=3600 --memory`), Cloud's visibility and shutdown timeouts, and the iterating and production profiles.
 - **`.agents/setup` runs on an orb that already lists the PHP source under another keyring.** apt refused two Signed-By values for one source; setup now drops the other entries for that repository before writing its own.
 - **Media on Laravel Cloud needs no `MEDIA_DISK`.** With it unset, the `media` disk scopes over the attached default bucket from Cloud's disk config (else the first bucket); `MEDIA_DISK` still wins.
 - **R2 uploads and reads work on AWS SDK 3.337+.** Every R2 disk, including one Cloud adds at boot, checksums requests and validates responses only when required.

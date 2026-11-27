@@ -80,3 +80,18 @@ DB_RUNTIME_PASSWORD=<a new random password> php artisan kit:rls:role app_runtime
 ```
 
 Then set `DB_RUNTIME_USERNAME=app_runtime` and `DB_RUNTIME_PASSWORD` on the environment and redeploy. The command is safe to re-run; it also grants the role every future table through default privileges. On Laravel Cloud the owner is the database user Cloud injects. The **Production rehearsal** CI job does the same with throwaway values on every pull request.
+
+## Queues
+
+Jobs run in the request (`QUEUE_CONNECTION=sync`) until the app runs a worker. On Laravel Cloud that is a managed Flex queue, which injects its own `cloud` connection; elsewhere `QUEUE_CONNECTION=database`. Set the worker the same way on every app, so a slow job never runs twice and a deploy never kills one:
+
+| Setting | Value | Why |
+|---|---|---|
+| Worker command | `php artisan queue:work <connection> --sleep=0 --timeout=85 --tries=3 --backoff=10,60,300 --max-jobs=500 --max-time=3600 --memory=<worker MiB − 64>` | `--timeout` stays under a Flex worker's 90s limit; workers recycle by job count and age, and stop cleanly near their memory size instead of being killed |
+| Visibility timeout (Cloud) or `DB_QUEUE_RETRY_AFTER` | 180 | Above `--timeout`, so a running job is never handed to a second worker |
+| Shutdown timeout (Cloud) | 90 | Above `--timeout`, so a deploy lets the running job finish |
+| Failed jobs | `failed_jobs`, pruned after 7 days; batches after 2 days | Scheduled in `routes/console.php`, daily |
+
+A job that needs more than 85 seconds goes on a Pro queue (Growth plan), with `--timeout` and the visibility timeout raised together, or is split into smaller jobs. Set a job's own `$timeout` and `$tries` no higher than the worker's.
+
+**Profiles.** New apps start on *iterating*: a Flex 512 MiB app that hibernates, Serverless Postgres at 0.25 CU that suspends after 5 minutes, the database cache, and a Flex queue on 512 MiB workers scaling 0 to 3 (`--memory=448`). An app with real users moves to *production*: a Flex 1 GiB app that stays on, Postgres 0.25 to 1 CU, Valkey 250 MB (`CACHE_STORE=redis`), and a Flex queue on 2 GiB workers scaling 0 to 10 (`--memory=1984`). Moving is Cloud settings only; no code changes.
