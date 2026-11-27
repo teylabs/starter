@@ -27,9 +27,10 @@ return [
     // mcp_runs is read before a workspace is entered. Set KIT_RLS=false only for a database that can't run it.
     'tenancy' => [
         'rls' => [
-            'enabled' => filter_var(env('KIT_RLS', env('DB_CONNECTION') === 'pgsql'), FILTER_VALIDATE_BOOL),
-            'connection' => env('KIT_RLS_CONNECTION'),
-            'admin_connection' => env('KIT_RLS_ADMIN_CONNECTION', 'pgsql_admin'),
+            // bin/kit-parity.sh reads this file with plain PHP, where env() doesn't exist.
+            'enabled' => function_exists('env') && filter_var(env('KIT_RLS', env('DB_CONNECTION') === 'pgsql'), FILTER_VALIDATE_BOOL),
+            'connection' => function_exists('env') ? env('KIT_RLS_CONNECTION') : null,
+            'admin_connection' => function_exists('env') ? env('KIT_RLS_ADMIN_CONNECTION', 'pgsql_admin') : 'pgsql_admin',
             'except' => [
                 'concierge_memberships', 'concierge_membership_scopes', 'concierge_ownerships', 'concierge_invitations', 'concierge_tenant_invitations',
                 'roles', 'model_has_roles', 'model_has_permissions',
