@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- **Amp reaches Laravel Boost.** `.amp/settings.json` registers Boost's MCP server (`php artisan boost:mcp`) for Amp, which reads it instead of `.mcp.json`. An orb asks once to allow it.
+
 ### Fixed
 
+- **`.agents/setup` runs on an orb that already lists the PHP source under another keyring.** apt refused two Signed-By values for one source; setup now drops the other entries for that repository before writing its own.
 - **Media on Laravel Cloud needs no `MEDIA_DISK`.** With it unset, the `media` disk scopes over the attached default bucket from Cloud's disk config (else the first bucket); `MEDIA_DISK` still wins.
 - **R2 uploads and reads work on AWS SDK 3.337+.** Every R2 disk, including one Cloud adds at boot, checksums requests and validates responses only when required.
 - **Security updates:** symfony/http-kernel, mailer, routing and serializer 8.1.12, web-auth/webauthn-lib 5.3.17 (13 advisories).
