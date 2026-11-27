@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a24b1ddedfee4702d3fa254ae986376",
+    "content-hash": "7e0d058fcf121ef484cec3cf24c35976",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10709,16 +10709,16 @@
         },
         {
             "name": "tey/kit",
-            "version": "v0.51.2",
+            "version": "v0.51.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/kit.git",
-                "reference": "3eee8036a3cd3d6f5c947fccf9cf74533f5346d5"
+                "reference": "5c41e3ee16ea83620d6148f5f086f105ec22cf9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/kit/zipball/3eee8036a3cd3d6f5c947fccf9cf74533f5346d5",
-                "reference": "3eee8036a3cd3d6f5c947fccf9cf74533f5346d5",
+                "url": "https://api.github.com/repos/teylabs/kit/zipball/5c41e3ee16ea83620d6148f5f086f105ec22cf9f",
+                "reference": "5c41e3ee16ea83620d6148f5f086f105ec22cf9f",
                 "shasum": ""
             },
             "require": {
@@ -10753,7 +10753,7 @@
                 "symfony/event-dispatcher-contracts": "^3.5",
                 "symfony/polyfill-php83": "^1.32",
                 "tey/concierge": "^0.12",
-                "tey/standards": "^0.11.54"
+                "tey/standards": "^0.14"
             },
             "suggest": {
                 "ext-imagick": "The kit-imagick driver for Laravel's image API, the default image driver when loaded (docs/images.md).",
@@ -10781,7 +10781,7 @@
             "description": "Feature kit for tenant-aware Laravel apps, built for the Tey Labs fleet.",
             "support": {
                 "issues": "https://github.com/teylabs/kit/issues",
-                "source": "https://github.com/teylabs/kit/tree/v0.51.2"
+                "source": "https://github.com/teylabs/kit/tree/v0.51.3"
             },
             "funding": [
                 {
@@ -10789,8 +10789,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-27T07:36:03+00:00",
-            "published-time": "2026-11-27T07:36:14+00:00"
+            "time": "2026-11-27T10:52:19+00:00",
+            "published-time": "2026-11-27T10:53:48+00:00"
         },
         {
             "name": "tey/mod",
@@ -10903,16 +10903,16 @@
         },
         {
             "name": "tey/standards",
-            "version": "v0.13.2",
+            "version": "v0.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teylabs/standards.git",
-                "reference": "b17fd2122e04ce170c2179da29a174446e4e6d52"
+                "reference": "4d3f86fa9075e7ae5a28e6eec018f48aa4265f37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/b17fd2122e04ce170c2179da29a174446e4e6d52",
-                "reference": "b17fd2122e04ce170c2179da29a174446e4e6d52",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/4d3f86fa9075e7ae5a28e6eec018f48aa4265f37",
+                "reference": "4d3f86fa9075e7ae5a28e6eec018f48aa4265f37",
                 "shasum": ""
             },
             "require": {
@@ -10987,7 +10987,7 @@
             ],
             "support": {
                 "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.13.2"
+                "source": "https://github.com/teylabs/standards/tree/v0.14.0"
             },
             "funding": [
                 {
@@ -10995,8 +10995,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-27T04:21:35+00:00",
-            "published-time": "2026-11-27T04:21:51+00:00"
+            "time": "2026-11-27T10:26:07+00:00",
+            "published-time": "2026-11-27T10:26:18+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
