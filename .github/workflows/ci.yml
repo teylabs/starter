@@ -274,9 +274,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # On PostgreSQL, as on Herd: setup finds it on 5432 and creates the app's database and its row-level-security runtime role.
       - name: composer setup
         working-directory: app
+        env:
+          DB_USERNAME: starter
+          DB_PASSWORD: starter
         run: composer setup --no-interaction
+      - name: composer setup again changes nothing
+        working-directory: app
+        run: |
+          cp .env .env.first
+          composer setup --no-interaction
+          diff .env.first .env
       - name: The sign-in page returns 200
         working-directory: app
         run: |

@@ -4,6 +4,7 @@
 
 ### Added
 
+- **One command to a running local app, on Herd.** `composer setup` now uses the local PostgreSQL when it answers (Herd's), creating the database and the row-level-security runtime role, writes Passport's keys, sends mail to Herd's mail catcher or the log, links and secures the Herd site, and ends with what is left for a person; it is safe to re-run and changes nothing the second time. `composer dev` runs the scheduler and Vite. CI runs setup twice on a fresh clone on PostgreSQL.
 - **Settings → Setup (tey/kit 0.51).** Each workspace's setup in one place: mail, media, row-level security, the queue and Telescope, each ok, n/a locally or with its fix, plus the steps only a person can do; operators see the app's own rows. MCP reads it as `workspace_setup_read` (settings.write). A fresh local install shows nothing red.
 - **Telescope, for operators only.** laravel/telescope with a gate on `Operators::allows()` (never an email list), the noisy watchers off, cache and Telescope SQL dropped, and in production only exceptions, 4xx/5xx requests, failed jobs, scheduled tasks, slow queries, warnings and monitored tags kept (`TELESCOPE_LOG_EVERYTHING=true` keeps all). Entries are pruned after 48 hours, daily.
 - **Amp reaches Laravel Boost.** `.amp/settings.json` registers Boost's MCP server (`php artisan boost:mcp`) for Amp, which reads it instead of `.mcp.json`. An orb asks once to allow it.
