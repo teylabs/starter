@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "67458508df2918f657249f75fa06c26b",
+    "content-hash": "b6f0a86838a69c625810387655783575",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -10523,6 +10523,83 @@
             "published-time": "2026-11-25T09:30:09+00:00"
         },
         {
+            "name": "symfony/yaml",
+            "version": "v8.1.12",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "deb300ddc3ef3eab0476569fd88d14e3b194881a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/deb300ddc3ef3eab0476569fd88d14e3b194881a",
+                "reference": "deb300ddc3ef3eab0476569fd88d14e3b194881a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "symfony/polyfill-ctype": "^1.8"
+            },
+            "conflict": {
+                "symfony/console": "<7.4"
+            },
+            "require-dev": {
+                "symfony/console": "^7.4|^8.0",
+                "yaml/yaml-test-suite": "*"
+            },
+            "bin": [
+                "Resources/bin/yaml-lint"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Yaml\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Loads and dumps YAML files",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/yaml/tree/v8.1.12"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-11-16T12:51:10+00:00",
+            "published-time": "2026-11-25T09:28:53+00:00"
+        },
+        {
             "name": "tey/concierge",
             "version": "v0.9.3",
             "source": {
@@ -10817,6 +10894,103 @@
             ],
             "time": "2026-11-03T18:59:28+00:00",
             "published-time": "2026-11-03T18:59:54+00:00"
+        },
+        {
+            "name": "tey/standards",
+            "version": "v0.13.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/teylabs/standards.git",
+                "reference": "f4ba6f4a4e381a169782f9786fdae07a435c7f50"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/teylabs/standards/zipball/f4ba6f4a4e381a169782f9786fdae07a435c7f50",
+                "reference": "f4ba6f4a4e381a169782f9786fdae07a435c7f50",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/config": "^13.0",
+                "illuminate/console": "^13.0",
+                "illuminate/filesystem": "^13.0",
+                "illuminate/log": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.4.1",
+                "symfony/process": "^7.0 || ^8.0",
+                "symfony/yaml": "^7.0 || ^8.0",
+                "vlucas/phpdotenv": "^5.6"
+            },
+            "conflict": {
+                "nikic/php-parser": "<5.0 || >=6.0"
+            },
+            "require-dev": {
+                "illuminate/database": "^13.0",
+                "laravel/mcp": "^0.6 || ^1.0",
+                "nikic/php-parser": "^5.0",
+                "pestphp/pest": "^4.7 || ^5.0",
+                "pestphp/pest-plugin-arch": "^4.0 || ^5.0",
+                "spatie/laravel-multitenancy": "^4.3",
+                "spatie/laravel-webhook-client": "^3.7",
+                "symfony/finder": "^7.0 || ^8.0",
+                "tey/kit": "^0.4.20"
+            },
+            "suggest": {
+                "nikic/php-parser": "Required for architecture checks (^5.0); install in the app's require-dev.",
+                "pestphp/pest": "Required for architecture checks (^4.7 || ^5.0); install in the app's require-dev.",
+                "pestphp/pest-plugin-arch": "Required for architecture checks (^4.0 || ^5.0); install in the app's require-dev.",
+                "symfony/finder": "Required for architecture checks (^7.0 || ^8.0); install in the app's require-dev."
+            },
+            "bin": [
+                "bin/standards"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Tey\\Standards\\StandardsServiceProvider"
+                    ]
+                },
+                "tey-standards": {
+                    "ci": {
+                        "enforce": true
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Tey\\Standards\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tey Labs"
+                }
+            ],
+            "description": "Deployment preflight and configured, rule-tagged architecture checks for Laravel applications.",
+            "homepage": "https://github.com/teylabs/standards",
+            "keywords": [
+                "architecture",
+                "laravel",
+                "pest",
+                "preflight",
+                "standards"
+            ],
+            "support": {
+                "issues": "https://github.com/teylabs/standards/issues",
+                "source": "https://github.com/teylabs/standards/tree/v0.13.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/jaspertey",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-11-27T02:49:44+00:00",
+            "published-time": "2026-11-27T02:49:55+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -16966,83 +17140,6 @@
             "published-time": "2024-10-20T05:09:39+00:00"
         },
         {
-            "name": "symfony/yaml",
-            "version": "v8.1.12",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "deb300ddc3ef3eab0476569fd88d14e3b194881a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/deb300ddc3ef3eab0476569fd88d14e3b194881a",
-                "reference": "deb300ddc3ef3eab0476569fd88d14e3b194881a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.4.1",
-                "symfony/polyfill-ctype": "^1.8"
-            },
-            "conflict": {
-                "symfony/console": "<7.4"
-            },
-            "require-dev": {
-                "symfony/console": "^7.4|^8.0",
-                "yaml/yaml-test-suite": "*"
-            },
-            "bin": [
-                "Resources/bin/yaml-lint"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Loads and dumps YAML files",
-            "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/yaml/tree/v8.1.12"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2026-11-16T12:51:10+00:00",
-            "published-time": "2026-11-25T09:28:53+00:00"
-        },
-        {
             "name": "ta-tikoma/phpunit-architecture-test",
             "version": "0.8.7",
             "source": {
@@ -17101,103 +17198,6 @@
             },
             "time": "2026-02-17T17:25:14+00:00",
             "published-time": "2026-02-17T17:26:32+00:00"
-        },
-        {
-            "name": "tey/standards",
-            "version": "v0.13.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/teylabs/standards.git",
-                "reference": "a28e589d11db6b5e1b2441e6f7b7b2d739550294"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/teylabs/standards/zipball/a28e589d11db6b5e1b2441e6f7b7b2d739550294",
-                "reference": "a28e589d11db6b5e1b2441e6f7b7b2d739550294",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/config": "^13.0",
-                "illuminate/console": "^13.0",
-                "illuminate/filesystem": "^13.0",
-                "illuminate/log": "^13.0",
-                "illuminate/support": "^13.0",
-                "php": "^8.4.1",
-                "symfony/process": "^7.0 || ^8.0",
-                "symfony/yaml": "^7.0 || ^8.0",
-                "vlucas/phpdotenv": "^5.6"
-            },
-            "conflict": {
-                "nikic/php-parser": "<5.0 || >=6.0"
-            },
-            "require-dev": {
-                "illuminate/database": "^13.0",
-                "laravel/mcp": "^0.6 || ^1.0",
-                "nikic/php-parser": "^5.0",
-                "pestphp/pest": "^4.7 || ^5.0",
-                "pestphp/pest-plugin-arch": "^4.0 || ^5.0",
-                "spatie/laravel-multitenancy": "^4.3",
-                "spatie/laravel-webhook-client": "^3.7",
-                "symfony/finder": "^7.0 || ^8.0",
-                "tey/kit": "^0.4.20"
-            },
-            "suggest": {
-                "nikic/php-parser": "Required for architecture checks (^5.0); install in the app's require-dev.",
-                "pestphp/pest": "Required for architecture checks (^4.7 || ^5.0); install in the app's require-dev.",
-                "pestphp/pest-plugin-arch": "Required for architecture checks (^4.0 || ^5.0); install in the app's require-dev.",
-                "symfony/finder": "Required for architecture checks (^7.0 || ^8.0); install in the app's require-dev."
-            },
-            "bin": [
-                "bin/standards"
-            ],
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Tey\\Standards\\StandardsServiceProvider"
-                    ]
-                },
-                "tey-standards": {
-                    "ci": {
-                        "enforce": true
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Tey\\Standards\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Tey Labs"
-                }
-            ],
-            "description": "Deployment preflight and configured, rule-tagged architecture checks for Laravel applications.",
-            "homepage": "https://github.com/teylabs/standards",
-            "keywords": [
-                "architecture",
-                "laravel",
-                "pest",
-                "preflight",
-                "standards"
-            ],
-            "support": {
-                "issues": "https://github.com/teylabs/standards/issues",
-                "source": "https://github.com/teylabs/standards/tree/v0.13.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/jaspertey",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-11-27T02:39:28+00:00",
-            "published-time": "2026-11-27T02:40:05+00:00"
         }
     ],
     "aliases": [],
